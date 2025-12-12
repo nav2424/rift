@@ -1,0 +1,480 @@
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import GlassCard from '@/components/ui/GlassCard'
+
+interface EscrowTransaction {
+  id: string
+  riftNumber: number | null
+  itemTitle: string
+  itemType: string
+  amount: number
+  currency: string
+  status: string
+  buyerId: string
+  sellerId: string
+  createdAt: string
+  buyer: {
+    id: string
+    name: string | null
+    email: string
+  }
+  seller: {
+    id: string
+    name: string | null
+    email: string
+  }
+}
+
+export default function Dashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [escrows, setEscrows] = useState<EscrowTransaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const loadEscrows = async () => {
+    try {
+      const response = await fetch('/api/escrows/list', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setEscrows(data.escrows || [])
+      }
+    } catch (error) {
+      console.error('Error loading escrows:', error)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
+      return
+    }
+
+    if (status === 'authenticated') {
+      loadEscrows()
+    }
+  }, [status, router])
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    loadEscrows()
+  }
+
+  const metrics = useMemo(() => {
+    // Exclude cancelled escrows from all metrics
+    const validEscrows = escrows.filter(e => e.status !== 'CANCELLED')
+    
+    const active = validEscrows.filter(e => 
+      ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
+    )
+    const completed = validEscrows.filter(e => e.status === 'RELEASED')
+    const buying = validEscrows.filter(e => e.buyerId === session?.user?.id)
+    const selling = validEscrows.filter(e => e.sellerId === session?.user?.id)
+    const disputed = validEscrows.filter(e => e.status === 'DISPUTED')
+    const totalTransactions = validEscrows.length
+    const successRate = totalTransactions > 0 
+      ? Math.round((completed.length / totalTransactions) * 100) 
+      : 0
+    
+    // Total value = active + completed (excludes cancelled)
+    const totalValue = active.reduce((sum, e) => sum + e.amount, 0) + completed.reduce((sum, e) => sum + e.amount, 0)
+    const activeValue = active.reduce((sum, e) => sum + e.amount, 0)
+    const completedValue = completed.reduce((sum, e) => sum + e.amount, 0)
+    
+    const pendingActions = validEscrows.filter(e => {
+      if (e.buyerId === session?.user?.id) {
+        return e.status === 'AWAITING_PAYMENT'
+      } else {
+        return e.status === 'AWAITING_SHIPMENT' || e.status === 'DELIVERED_PENDING_RELEASE'
+      }
+    })
+
+    return {
+      totalValue,
+      activeValue,
+      completedValue,
+      activeCount: active.length,
+      buyingCount: buying.length,
+      sellingCount: selling.length,
+      disputedCount: disputed.length,
+      pendingActionsCount: pendingActions.length,
+      pendingActions,
+      totalTransactions,
+      successRate,
+    }
+  }, [escrows, session?.user?.id])
+
+  const activeEscrows = useMemo(() => {
+    return escrows.filter(e => 
+      ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
+    )
+  }, [escrows])
+
+  const getRecentActivity = () => {
+    const sorted = [...escrows].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    ).slice(0, 6)
+
+    return sorted.map(escrow => {
+      const isBuyer = escrow.buyerId === session?.user?.id
+      const otherParty = isBuyer ? escrow.seller : escrow.buyer
+      const name = otherParty.name || otherParty.email.split('@')[0]
+
+      const riftNumber = escrow.riftNumber ?? escrow.id.slice(-4)
+      let message = ''
+      switch (escrow.status) {
+        case 'AWAITING_PAYMENT':
+          message = isBuyer 
+            ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
+            : `Rift #${riftNumber} — ${name} created a rift — awaiting payment`
+          break
+        case 'AWAITING_SHIPMENT':
+          message = isBuyer
+            ? `Rift #${riftNumber} — Payment received — awaiting shipment`
+            : `Rift #${riftNumber} — Payment received — upload proof of shipment`
+          break
+        case 'IN_TRANSIT':
+          message = `Rift #${riftNumber} — Shipment in transit`
+          break
+        case 'DELIVERED_PENDING_RELEASE':
+          message = isBuyer
+            ? `Rift #${riftNumber} — Shipment delivered — waiting for your confirmation`
+            : `Rift #${riftNumber} — Shipment delivered — waiting for buyer confirmation`
+          break
+        case 'RELEASED':
+          message = `Rift #${riftNumber} — Funds released — transaction completed`
+          break
+        default:
+          message = `Rift #${riftNumber} — ${escrow.status.replace(/_/g, ' ').toLowerCase()}`
+      }
+
+      return { ...escrow, message, name }
+    })
+  }
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency || 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'RELEASED': return 'text-green-400'
+      case 'REFUNDED': return 'text-red-400'
+      case 'DISPUTED': return 'text-yellow-400'
+      case 'CANCELLED': return 'text-gray-400'
+      case 'AWAITING_PAYMENT': return 'text-blue-400'
+      case 'AWAITING_SHIPMENT': return 'text-purple-400'
+      case 'IN_TRANSIT': return 'text-cyan-400'
+      case 'DELIVERED_PENDING_RELEASE': return 'text-teal-400'
+      default: return 'text-white/60'
+    }
+  }
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+        <div className="text-white/60 font-light">Loading...</div>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    return null
+  }
+
+  const recentActivity = getRecentActivity()
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
+  const greeting = new Date().getHours() < 12 ? 'Good morning' : 
+                   new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'
+
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-black">
+      {/* Subtle grid background */}
+      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        backgroundSize: '50px 50px'
+      }} />
+      
+      {/* Minimal floating elements */}
+      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">{greeting}</p>
+              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
+                {userName}
+              </h1>
+              {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
+                <p className="text-base text-white/60 font-light">You're all set! Ready to create your first rift?</p>
+              )}
+              {metrics.pendingActionsCount > 0 && (
+                <p className="text-base text-white/60 font-light">
+                  You have {metrics.pendingActionsCount} {metrics.pendingActionsCount === 1 ? 'action' : 'actions'} waiting
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10 text-white/60 hover:text-white font-light text-sm disabled:opacity-50"
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
+        </div>
+
+        {/* Top Actions */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          <Link href="/escrows/new" className="group">
+            <button className="liquid-glass px-6 py-3 rounded-xl text-white font-light text-sm tracking-wide hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 backdrop-blur-xl">
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create New Rift
+              </span>
+            </button>
+          </Link>
+        </div>
+
+        {/* Portfolio Card */}
+        {metrics.totalValue > 0 && (
+          <GlassCard className="mb-6">
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Your Balance</p>
+              <p className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                {formatCurrency(metrics.totalValue, 'USD')}
+              </p>
+              <p className="text-sm text-white/40 font-light mb-6">
+                Total of active and completed transactions
+              </p>
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
+                <div>
+                  <p className="text-xs text-white/60 font-light mb-1">In Rifts</p>
+                  <p className="text-xl font-light text-white">
+                    {formatCurrency(metrics.activeValue, 'USD')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-white/60 font-light mb-1">Settled</p>
+                  <p className="text-xl font-light text-white">
+                    {formatCurrency(metrics.completedValue, 'USD')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Actions Required */}
+        {metrics.pendingActionsCount > 0 && (
+          <GlassCard className="mb-6 border-blue-500/20">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-light text-white">Action Required</h2>
+                  <p className="text-sm text-white/60 font-light">
+                    {metrics.pendingActionsCount === 1 
+                      ? '1 thing needs your attention'
+                      : `${metrics.pendingActionsCount} things need your attention`}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {metrics.pendingActions.slice(0, 3).map((action) => {
+                  const isBuyer = action.buyerId === session?.user?.id
+                  let actionText = ''
+                  let actionDescription = ''
+                  if (isBuyer && action.status === 'AWAITING_PAYMENT') {
+                    actionText = 'Complete payment'
+                    actionDescription = `Pay ${formatCurrency(action.amount, action.currency)}`
+                  } else if (!isBuyer && action.status === 'AWAITING_SHIPMENT') {
+                    actionText = 'Ship your item'
+                    actionDescription = 'Upload tracking information'
+                  } else if (action.status === 'DELIVERED_PENDING_RELEASE') {
+                    actionText = isBuyer ? 'Confirm you received it' : 'Release payment'
+                    actionDescription = isBuyer ? 'Mark as delivered' : 'Send funds to seller'
+                  }
+
+                  return (
+                    <Link
+                      key={action.id}
+                      href={`/escrows/${action.id}`}
+                      className="block p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-light">{actionText}</p>
+                          <p className="text-sm text-white/60 font-light">{actionDescription}</p>
+                        </div>
+                        <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Quick Action: Create Rift */}
+        {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
+          <Link href="/escrows/new">
+            <GlassCard className="mb-6 border-purple-500/20 hover:bg-white/5 transition-colors cursor-pointer">
+              <div className="p-6 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-light text-white mb-1">Create Your First Rift</h3>
+                  <p className="text-sm text-white/60 font-light">
+                    Start a protected transaction with someone you trust
+                  </p>
+                </div>
+                <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </GlassCard>
+          </Link>
+        )}
+
+        {/* Recent Activity */}
+        {recentActivity.length > 0 && (
+          <GlassCard className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                    <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-light text-white">Recent Activity</h2>
+                </div>
+                <Link href="/activity" className="text-sm text-white/60 hover:text-white font-light flex items-center gap-1">
+                  View All
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="space-y-2">
+                {recentActivity.map((activity) => (
+                  <Link
+                    key={activity.id}
+                    href={`/escrows/${activity.id}`}
+                    className="block p-3 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <p className="text-white/80 font-light text-sm">{activity.message}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </GlassCard>
+        )}
+
+        {/* Your Rifts */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-light text-white">Your Rifts</h2>
+            {escrows.length > 0 && (
+              <Link href="/rifts" className="text-sm text-white/60 hover:text-white font-light flex items-center gap-1">
+                View All
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            )}
+          </div>
+          
+          {activeEscrows.length === 0 ? (
+            <GlassCard>
+              <div className="p-12 text-center">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
+                  <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-light text-white mb-2">No rifts yet</h3>
+                <p className="text-white/60 font-light text-sm mb-6">
+                  Create your first rift to get started with protected transactions
+                </p>
+                <Link 
+                  href="/escrows/new"
+                  className="inline-block px-6 py-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 transition-colors border border-purple-500/30 text-white font-light"
+                >
+                  Create Rift
+                </Link>
+              </div>
+            </GlassCard>
+          ) : (
+            <div className="space-y-4">
+              {activeEscrows.map((escrow) => {
+                const isBuyer = escrow.buyerId === session?.user?.id
+                const otherParty = isBuyer ? escrow.seller : escrow.buyer
+
+                return (
+                  <Link key={escrow.id} href={`/escrows/${escrow.id}`}>
+                    <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
+                      <div className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-light text-white">
+                                Rift #{escrow.riftNumber ?? escrow.id.slice(-4)}
+                              </h3>
+                              <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(escrow.status)} border-current/30 bg-current/10`}>
+                                {escrow.status.replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                            <p className="text-white/80 font-light mb-1">{escrow.itemTitle}</p>
+                            <p className="text-sm text-white/60 font-light">
+                              {otherParty.name || otherParty.email.split('@')[0]} • {escrow.itemType.replace(/_/g, ' ')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-light text-white">
+                              {formatCurrency(escrow.amount, escrow.currency)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

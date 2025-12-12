@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/escrows/auto-release",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
+

@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemType {
+  PHYSICAL
+  DIGITAL
+  TICKETS
+  SERVICES
+}
+
+enum EscrowStatus {
+  AWAITING_PAYMENT
+  AWAITING_SHIPMENT
+  IN_TRANSIT
+  DELIVERED_PENDING_RELEASE
+  RELEASED
+  REFUNDED
+  DISPUTED
+  CANCELLED
+}
+
+enum DisputeType {
+  ITEM_NOT_RECEIVED
+  ITEM_NOT_AS_DESCRIBED
+  ITEM_DAMAGED
+  WRONG_ITEM
+  WRONG_ADDRESS
+  OTHER
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+}
+
+model User {
+  id                       String              @id @default(cuid())
+  name                     String?
+  email                    String              @unique
+  phone                    String?
+  passwordHash             String
+  role                     String              @default("USER")
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  totalProcessedAmount     Float               @default(0)
+  availableBalance         Float               @default(0)
+  pendingBalance           Float               @default(0)
+  numCompletedTransactions Int                 @default(0)
+  averageRating            Float?
+  responseTimeMs           Int?
+  level                    String              @default("ROOKIE")
+  xp                       Int                 @default(0)
+  showInActivityFeed       Boolean             @default(true)
+  showAmountsInFeed        Boolean             @default(true)
+  idVerified               Boolean             @default(false)
+  bankVerified             Boolean             @default(false)
+  activities               Activity[]
+  disputesResolved         Dispute[]           @relation("ResolvedDisputes")
+  disputesRaised           Dispute[]           @relation("DisputesRaised")
+  sellerTransactions       EscrowTransaction[] @relation("SellerTransactions")
+  buyerTransactions        EscrowTransaction[] @relation("BuyerTransactions")
+  timelineEvents           TimelineEvent[]
+  badges                   UserBadge[]
+  milestones               UserMilestone[]
+}
+
+model EscrowTransaction {
+  id                    String          @id @default(cuid())
+  riftNumber            Int             @unique // Sequential rift number for easy tracking
+  itemTitle             String
+  itemDescription       String
+  itemType              ItemType        @default(PHYSICAL)
+  amount                Float
+  currency              String          @default("CAD")
+  status                EscrowStatus    @default(AWAITING_PAYMENT)
+  buyerId               String
+  sellerId              String
+  shippingAddress       String?
+  notes                 String?
+  paymentReference      String?
+  stripePaymentIntentId String?
+  shipmentVerifiedAt    DateTime?
+  trackingVerified      Boolean         @default(false)
+  deliveryVerifiedAt    DateTime?
+  gracePeriodEndsAt     DateTime?
+  autoReleaseScheduled  Boolean         @default(false)
+  eventDate             String?
+  venue                 String?
+  transferMethod        String?
+  downloadLink          String?
+  licenseKey            String?
+  serviceDate           String?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  platformFee           Float?
+  sellerPayoutAmount    Float?
+  disputes              Dispute[]
+  seller                User            @relation("SellerTransactions", fields: [sellerId], references: [id])
+  buyer                 User            @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  shipmentProofs        ShipmentProof[]
+  timelineEvents        TimelineEvent[]
+}
+
+model ShipmentProof {
+  id              String            @id @default(cuid())
+  escrowId        String
+  trackingNumber  String?
+  shippingCarrier String?
+  filePath        String?
+  notes           String?
+  verified        Boolean           @default(false)
+  deliveryStatus  String?
+  deliveryDate    DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  escrow          EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+}
+
+model TimelineEvent {
+  id          String            @id @default(cuid())
+  escrowId    String
+  type        String
+  message     String
+  createdById String?
+  createdAt   DateTime          @default(now())
+  createdBy   User?             @relation(fields: [createdById], references: [id])
+  escrow      EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+}
+
+model Dispute {
+  id           String            @id @default(cuid())
+  escrowId     String
+  raisedById   String
+  reason       String
+  type         DisputeType       @default(ITEM_NOT_RECEIVED)
+  status       DisputeStatus     @default(OPEN)
+  adminNote    String?
+  resolvedById String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  resolvedBy   User?             @relation("ResolvedDisputes", fields: [resolvedById], references: [id])
+  raisedBy     User              @relation("DisputesRaised", fields: [raisedById], references: [id])
+  escrow       EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  amount    Float?
+  summary   String
+  metadata  String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+model UserMilestone {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  description String
+  achievedAt  DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  label       String
+  description String
+  icon        String?
+  createdAt   DateTime    @default(now())
+  userBadges  UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}

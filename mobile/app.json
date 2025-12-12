@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Rift",
+    "slug": "rift",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rift.app",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.rift.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "rift",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to upload shipment proof."
+        }
+      ],
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "extra": {
+      "apiUrl": "http://192.168.1.126:3000",
+      "supabaseUrl": "https://zosvdbzroydrwwlwlzvi.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpvc3ZkYnpyb3lkcnd3bHdsenZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxMzMyNzYsImV4cCI6MjA4MDcwOTI3Nn0.CiVvNT8eQ305UcljlA3S69UmJ1V22-GkLkPbRqVdFRI",
+      "stripePublishableKey": "pk_test_51ScBjNRofVCnv21124upMGmeXMYIQa23OAhzQIHAmTJCCaFro2lHlyPDBNc1wynZWtkOqdDWwm3kA7C4Jly5hbxF007R0rBeOy"
+    }
+  }
+}
