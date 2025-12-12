@@ -129,41 +129,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Creative Background Elements */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Animated gradient mesh background */}
-          <div className="absolute inset-0">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-500/12 via-cyan-500/8 to-transparent rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-purple-500/10 via-pink-500/6 to-transparent rounded-full blur-[140px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-            <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-gradient-to-r from-indigo-500/8 via-blue-500/6 to-transparent rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
-          </div>
-
-          {/* Geometric pattern overlay */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `
-              linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
-              linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
-              linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
-              linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1))
-            `,
-            backgroundSize: '80px 140px',
-            backgroundPosition: '0 0, 0 0, 40px 70px, 40px 70px'
-          }} />
-
-          {/* Floating gradient orbs */}
-          <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-cyan-400/20 to-blue-500/10 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '6s' }} />
-          <div className="absolute bottom-32 left-32 w-40 h-40 bg-gradient-to-br from-purple-400/15 to-pink-500/8 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '7s', animationDelay: '1s' }} />
-          <div className="absolute top-1/3 right-1/3 w-24 h-24 bg-gradient-to-br from-indigo-400/18 to-cyan-500/10 rounded-full blur-xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2.5s' }} />
-
+        {/* Background Elements */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden bg-black">
           {/* Subtle grid */}
           <div className="absolute inset-0 opacity-[0.02]" style={{
             backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
             backgroundSize: '120px 120px',
-          }} />
-
-          {/* Radial gradient overlay for depth */}
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-black/20" style={{
-            background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.15) 100%)'
           }} />
         </div>
       </section>
