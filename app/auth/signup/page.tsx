@@ -20,6 +20,18 @@ export default function SignUp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
+    // Client-side validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -32,15 +44,18 @@ export default function SignUp() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create account')
+        setError(data.error || data.message || 'Failed to create account')
+        if (data.details) {
+          console.error('Signup error details:', data.details)
+        }
         return
       }
 
       // Redirect to sign in
       router.push('/auth/signin?registered=true')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup error:', error)
-      setError('An error occurred. Please try again.')
+      setError(error?.message || 'An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }

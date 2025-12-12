@@ -58,10 +58,14 @@ export async function POST(request: NextRequest) {
       { message: 'User created successfully', userId: user.id },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error('Signup error:', error)
+    // Return more detailed error in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? error?.message || 'Internal server error'
+      : 'Internal server error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage, details: process.env.NODE_ENV === 'development' ? error?.stack : undefined },
       { status: 500 }
     )
   }
