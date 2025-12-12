@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 
-export default function SupportPage() {
+function SupportContent() {
   const searchParams = useSearchParams()
   const type = searchParams?.get('type') || 'faq'
 
@@ -156,5 +157,17 @@ export default function SupportPage() {
         </GlassCard>
       </div>
     </div>
+  )
+}
+
+export default function SupportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+        <div className="text-white/60 font-light">Loading...</div>
+      </div>
+    }>
+      <SupportContent />
+    </Suspense>
   )
 }
