@@ -18,7 +18,7 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
 
 - **Framework**: Next.js 14+ (App Router, TypeScript)
 - **Styling**: Tailwind CSS (dark theme)
-- **Database**: Prisma ORM + SQLite
+- **Database**: Prisma ORM + PostgreSQL
 - **Authentication**: NextAuth.js (Credentials provider)
 - **Password Hashing**: bcryptjs
 
@@ -39,12 +39,19 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
    ```
 
 3. **Set up environment variables**:
-   The `.env` file should already exist with:
+   Create a `.env.local` file with:
    ```
-   DATABASE_URL="file:./dev.db"
+   DATABASE_URL="postgresql://user:password@localhost:5432/rift?schema=public"
    NEXTAUTH_SECRET=your-secret-key-change-in-production
    NEXTAUTH_URL=http://localhost:3000
    ```
+   
+   **Note**: For local development, you can use PostgreSQL via Docker:
+   ```bash
+   docker run --name rift-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=rift -p 5432:5432 -d postgres:15
+   ```
+   
+   See `DATABASE_MIGRATION.md` for production database setup options.
 
 4. **Run database migrations**:
    ```bash
