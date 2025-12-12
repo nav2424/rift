@@ -5,11 +5,11 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // PrismaClient configuration with connection pooling for production
-const prismaClientOptions = {
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-}
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient(prismaClientOptions)
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  log: process.env.NODE_ENV === 'development' 
+    ? ['query', 'error', 'warn']
+    : ['error'],
+})
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
