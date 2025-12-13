@@ -500,73 +500,73 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+        <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto mb-12">
           {/* Dashboard - Large Feature */}
-          <GlassCard variant="glass" className="p-6 overflow-hidden">
+          <GlassCard variant="glass" className="p-4 overflow-hidden">
             <div className="mb-4">
               <h3 className="text-2xl font-light text-white mb-2">Complete Dashboard</h3>
               <p className="text-sm text-white/60 font-light">
                 Track wallet balance, pending actions, recent activity, and all your rifts in one unified view
               </p>
             </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl min-h-[400px] flex items-center justify-center">
               <img 
                 src="/dashboard.png" 
                 alt="Rift Dashboard" 
-                className="w-full h-auto"
+                className="w-full h-auto object-contain max-h-[600px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
               />
             </div>
           </GlassCard>
 
           {/* Create Rift - Large Feature */}
-          <GlassCard variant="glass" className="p-6 overflow-hidden">
+          <GlassCard variant="glass" className="p-4 overflow-hidden">
             <div className="mb-4">
               <h3 className="text-2xl font-light text-white mb-2">Create in Seconds</h3>
               <p className="text-sm text-white/60 font-light">
                 Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly
               </p>
             </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl min-h-[400px] flex items-center justify-center">
               <img 
                 src="/rift-created.png" 
                 alt="Create Rift" 
-                className="w-full h-auto"
+                className="w-full h-auto object-contain max-h-[600px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
               />
             </div>
           </GlassCard>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto">
           {/* Rifts List */}
-          <GlassCard variant="glass" className="p-6 overflow-hidden">
+          <GlassCard variant="glass" className="p-4 overflow-hidden">
             <div className="mb-4">
               <h3 className="text-xl font-light text-white mb-2">Manage All Rifts</h3>
               <p className="text-sm text-white/60 font-light">
                 View and manage all your active and completed transactions
               </p>
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5">
+            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5 min-h-[300px] flex items-center justify-center">
               <img 
                 src="/rifts.png" 
                 alt="Rifts List" 
-                className="w-full h-auto"
+                className="w-full h-auto object-contain max-h-[500px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
               />
             </div>
           </GlassCard>
 
           {/* Activity */}
-          <GlassCard variant="glass" className="p-6 overflow-hidden">
+          <GlassCard variant="glass" className="p-4 overflow-hidden">
             <div className="mb-4">
               <h3 className="text-xl font-light text-white mb-2">Activity Tracking</h3>
               <p className="text-sm text-white/60 font-light">
                 Monitor all transaction activity and status updates in real-time
               </p>
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5">
+            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5 min-h-[300px] flex items-center justify-center">
               <img 
                 src="/recent-activity.png" 
                 alt="Recent Activity" 
-                className="w-full h-auto"
+                className="w-full h-auto object-contain max-h-[500px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
               />
             </div>
           </GlassCard>
