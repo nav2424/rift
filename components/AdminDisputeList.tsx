@@ -18,7 +18,7 @@ interface Dispute {
   raisedById: string
   reason: string
   status: 'OPEN' | 'RESOLVED'
-  adminNote: string | null
+  adminNotes: string | null
   resolvedById: string | null
   createdAt: Date
   updatedAt: Date

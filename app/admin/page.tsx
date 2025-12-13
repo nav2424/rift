@@ -67,7 +67,16 @@ export default async function AdminPage() {
     where: {
       status: 'OPEN',
     },
-    include: {
+    select: {
+      id: true,
+      escrowId: true,
+      raisedById: true,
+      reason: true,
+      status: true,
+      adminNotes: true,
+      resolvedById: true,
+      createdAt: true,
+      updatedAt: true,
       escrow: {
         select: {
           id: true,
