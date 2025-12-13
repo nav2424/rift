@@ -70,13 +70,19 @@ async function main() {
     })
     const riftNumber = lastEscrow ? lastEscrow.riftNumber + 1 : 1000
     
+    const subtotal = 100.0
+    const buyerFee = subtotal * 0.03 // 3%
+    const sellerFee = subtotal * 0.05 // 5%
+    
     const escrow = await prisma.escrowTransaction.create({
       data: {
         riftNumber,
         itemTitle: 'Test Item - Hybrid Protection',
         itemDescription: 'Testing the hybrid protection system',
         itemType: 'PHYSICAL',
-        amount: 100.0,
+        subtotal,
+        buyerFee,
+        sellerFee,
         currency: 'CAD',
         status: 'AWAITING_PAYMENT',
         buyerId: buyer.id,
@@ -89,7 +95,7 @@ async function main() {
       },
     })
     console.log('✅ Created escrow:', escrow.id)
-    console.log('   Amount:', escrow.amount, escrow.currency)
+    console.log('   Amount:', escrow.subtotal, escrow.currency)
     console.log('   Status:', escrow.status)
 
     // Step 3: Simulate payment (mark as paid)
