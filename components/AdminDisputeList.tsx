@@ -17,7 +17,7 @@ interface Dispute {
   escrowId: string
   raisedById: string
   reason: string
-  status: 'OPEN' | 'RESOLVED'
+  status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED'
   adminNotes: string | null
   resolvedById: string | null
   createdAt: Date
