@@ -10,7 +10,7 @@ import { createActivity } from '@/lib/activity'
 import { getLevelFromStats, getXpFromStats } from '@/lib/levels'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { checkAndAwardBadges } from '@/lib/badges'
-import { calculatePlatformFee, calculateSellerPayout, roundCurrency, getFeeBreakdown, calculatePaymentProcessingFees } from '@/lib/fees'
+import { calculateSellerFee, calculateSellerNet, roundCurrency, getFeeBreakdown, calculatePaymentProcessingFees } from '@/lib/fees'
 
 export async function POST(
   request: NextRequest,
@@ -120,9 +120,9 @@ export async function POST(
         // Calculate fees and seller payout amount
         // Total fee is 8% (includes platform fee + Stripe fees, all paid by seller)
         // Payment processing fees (2.9% + $0.30) are automatically deducted by Stripe, included in 8% total
-        const feeBreakdown = getFeeBreakdown(updatedEscrow.amount)
-        const platformFee = roundCurrency(feeBreakdown.platformFee)
-        const sellerPayoutAmount = roundCurrency(feeBreakdown.sellerReceives)
+        const feeBreakdown = getFeeBreakdown(updatedEscrow.amount ?? 0)
+        const platformFee = roundCurrency(feeBreakdown.sellerFee)
+        const sellerPayoutAmount = roundCurrency(feeBreakdown.sellerNet)
 
         // Process payout (if seller has payment account connected)
         let payoutId: string | null = null
@@ -132,7 +132,7 @@ export async function POST(
           try {
             payoutId = await createPayout(
               sellerPayoutAmount,
-              updatedEscrow.amount,
+              updatedEscrow.amount ?? 0,
               platformFee,
               updatedEscrow.currency,
               sellerStripeAccountId,
@@ -161,7 +161,7 @@ export async function POST(
           updatedEscrow.sellerId,
           'DEAL_CLOSED',
           `Escrow completed: ${updatedEscrow.itemTitle}`,
-          updatedEscrow.amount,
+          updatedEscrow.amount ?? 0,
           { transactionId: updatedEscrow.id }
         )
 
@@ -176,7 +176,7 @@ export async function POST(
 
         if (sellerStats) {
           const newLevel = getLevelFromStats(sellerStats.totalProcessedAmount, sellerStats.numCompletedTransactions)
-          const xpGained = getXpFromStats(updatedEscrow.amount, sellerStats.numCompletedTransactions)
+          const xpGained = getXpFromStats(updatedEscrow.amount ?? 0, sellerStats.numCompletedTransactions)
 
           await prisma.user.update({
             where: { id: updatedEscrow.sellerId },
@@ -216,8 +216,8 @@ export async function POST(
         )
 
         // Create timeline event for instant release with fee breakdown
-        const processingFees = calculatePaymentProcessingFees(updatedEscrow.amount)
-        const totalFee = updatedEscrow.amount * 0.08
+        const processingFees = calculatePaymentProcessingFees(updatedEscrow.amount ?? 0)
+        const totalFee = (updatedEscrow.amount ?? 0) * 0.08
         const feeMessage = `Total fee (8%: ${updatedEscrow.currency} ${totalFee.toFixed(2)}) deducted, including payment processing (${updatedEscrow.currency} ${processingFees.totalFee.toFixed(2)}) and platform fee (${updatedEscrow.currency} ${platformFee.toFixed(2)}). Seller receives: ${updatedEscrow.currency} ${sellerPayoutAmount.toFixed(2)}`
         await prisma.timelineEvent.create({
           data: {

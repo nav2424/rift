@@ -60,8 +60,8 @@ export async function POST(
     await createActivity(
       escrow.sellerId,
       'PAYMENT_RECEIVED',
-      `Got paid $${escrow.amount.toFixed(2)} for ${escrow.itemTitle}`,
-      escrow.amount,
+      `Got paid $${(escrow.amount ?? 0).toFixed(2)} for ${escrow.itemTitle}`,
+      escrow.amount ?? 0,
       { transactionId: id }
     )
 

@@ -1,21 +1,12 @@
 import Link from 'next/link'
 import EscrowStatusBadge from './EscrowStatusBadge'
 import GlassCard from './ui/GlassCard'
-
-type EscrowStatus = 
-  | 'AWAITING_PAYMENT'
-  | 'AWAITING_SHIPMENT'
-  | 'IN_TRANSIT'
-  | 'DELIVERED_PENDING_RELEASE'
-  | 'RELEASED'
-  | 'REFUNDED'
-  | 'DISPUTED'
-  | 'CANCELLED'
+import { EscrowStatus } from '@prisma/client'
 
 interface EscrowTransaction {
   id: string
   itemTitle: string
-  amount: number
+  amount: number | null
   currency: string
   status: EscrowStatus
   buyer: { name: string | null; email: string }
@@ -53,7 +44,7 @@ export default function EscrowList({ escrows, title }: EscrowListProps) {
                   <h4 className="text-white font-light mb-1.5 text-base tracking-tight truncate group-hover:text-white/90">{escrow.itemTitle}</h4>
                   <div className="flex items-center gap-3 mb-1.5">
                     <p className="text-sm text-white/80 font-light">
-                      {escrow.amount} {escrow.currency}
+                      {escrow.amount != null ? `${escrow.amount} ${escrow.currency}` : 'N/A'}
                     </p>
                   </div>
                   <p className="text-xs text-white/40 font-light truncate">

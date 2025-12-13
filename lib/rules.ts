@@ -1,12 +1,4 @@
-type EscrowStatus = 
-  | 'AWAITING_PAYMENT'
-  | 'AWAITING_SHIPMENT'
-  | 'IN_TRANSIT'
-  | 'DELIVERED_PENDING_RELEASE'
-  | 'RELEASED'
-  | 'REFUNDED'
-  | 'DISPUTED'
-  | 'CANCELLED'
+import { EscrowStatus } from '@prisma/client'
 
 /**
  * Validates escrow status transitions

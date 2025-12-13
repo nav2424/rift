@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { canTransition, getUserRole } from '@/lib/rules'
 import { rollbackBalance } from '@/lib/balance'
+import { EscrowStatus } from '@prisma/client'
 
 export async function POST(
   request: NextRequest,
@@ -48,7 +49,7 @@ export async function POST(
     }
 
     // Use CANCELED for AWAITING_PAYMENT (new state machine) or CANCELLED for legacy
-    const canceledStatus = escrow.status === 'AWAITING_PAYMENT' ? 'CANCELED' : 'CANCELLED'
+    const canceledStatus: EscrowStatus = escrow.status === 'AWAITING_PAYMENT' ? 'CANCELED' : 'CANCELLED'
     
     if (!canTransition(escrow.status, canceledStatus, userRole)) {
       return NextResponse.json(
@@ -70,10 +71,10 @@ export async function POST(
           where: { id: escrow.sellerId },
           data: {
             availableBalance: {
-              decrement: escrow.amount,
+              decrement: escrow.amount ?? 0,
             },
             pendingBalance: {
-              decrement: escrow.amount,
+              decrement: escrow.amount ?? 0,
             },
           },
         })

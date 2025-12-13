@@ -1,23 +1,14 @@
 import Link from 'next/link'
 import EscrowStatusBadge from './EscrowStatusBadge'
 import GlassCard from './ui/GlassCard'
-
-type EscrowStatus = 
-  | 'AWAITING_PAYMENT'
-  | 'AWAITING_SHIPMENT'
-  | 'IN_TRANSIT'
-  | 'DELIVERED_PENDING_RELEASE'
-  | 'RELEASED'
-  | 'REFUNDED'
-  | 'DISPUTED'
-  | 'CANCELLED'
+import { EscrowStatus, DisputeStatus } from '@prisma/client'
 
 interface Dispute {
   id: string
   escrowId: string
   raisedById: string
   reason: string
-  status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED'
+  status: DisputeStatus
   adminNotes: string | null
   resolvedById: string | null
   createdAt: Date

@@ -9,7 +9,7 @@ import { createActivity } from '@/lib/activity'
 import { getLevelFromStats, getXpFromStats } from '@/lib/levels'
 import { checkAndAwardMilestones } from '@/lib/milestones'
 import { checkAndAwardBadges } from '@/lib/badges'
-import { calculatePlatformFee, calculateSellerPayout, roundCurrency, getFeeBreakdown, calculatePaymentProcessingFees } from '@/lib/fees'
+import { calculateSellerFee, calculateSellerNet, roundCurrency, getFeeBreakdown, calculatePaymentProcessingFees } from '@/lib/fees'
 
 export async function POST(
   request: NextRequest,
@@ -73,9 +73,9 @@ export async function POST(
     // Calculate fees and seller payout amount
     // Total fee is 8% (includes platform fee + Stripe fees, all paid by seller)
     // Payment processing fees (2.9% + $0.30) are automatically deducted by Stripe, included in 8% total
-    const feeBreakdown = getFeeBreakdown(escrow.amount)
-    const platformFee = roundCurrency(feeBreakdown.platformFee)
-    const sellerPayoutAmount = roundCurrency(feeBreakdown.sellerReceives)
+    const feeBreakdown = getFeeBreakdown(escrow.amount ?? 0)
+    const platformFee = roundCurrency(feeBreakdown.sellerFee)
+    const sellerPayoutAmount = roundCurrency(feeBreakdown.sellerNet)
 
     // Process payout (if seller has payment account connected)
     // For V1, we'll store payout info even if payment account isn't set up
@@ -85,7 +85,7 @@ export async function POST(
     if (sellerStripeAccountId) {
       payoutId = await createPayout(
         sellerPayoutAmount,
-        escrow.amount,
+        escrow.amount ?? 0,
         platformFee,
         escrow.currency,
         sellerStripeAccountId,
