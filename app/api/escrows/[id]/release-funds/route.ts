@@ -198,7 +198,7 @@ export async function POST(
       escrow.sellerId,
       'DEAL_CLOSED',
       `Closed deal: ${escrow.itemTitle}`,
-      escrow.amount,
+      escrow.amount ?? 0,
       { transactionId: id }
     )
 
