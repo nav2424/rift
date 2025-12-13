@@ -203,8 +203,8 @@ export async function POST(
     )
 
     // Create timeline event with fee breakdown
-    const processingFees = calculatePaymentProcessingFees(escrow.amount)
-    const totalFee = escrow.amount * 0.08
+    const processingFees = calculatePaymentProcessingFees(escrow.amount ?? 0)
+    const totalFee = (escrow.amount ?? 0) * 0.08
     const feeMessage = `Total fee (8%: ${escrow.currency} ${totalFee.toFixed(2)}) deducted, including payment processing (${escrow.currency} ${processingFees.totalFee.toFixed(2)}) and platform fee (${escrow.currency} ${platformFee.toFixed(2)}). Seller receives: ${escrow.currency} ${sellerPayoutAmount.toFixed(2)}`
     await prisma.timelineEvent.create({
       data: {

@@ -25,10 +25,10 @@ export async function updateBalanceOnPayment(transactionId: string) {
     where: { id: escrow.sellerId },
     data: {
       availableBalance: {
-        increment: escrow.amount,
+        increment: escrow.amount ?? 0,
       },
       pendingBalance: {
-        increment: escrow.amount,
+        increment: escrow.amount ?? 0,
       },
     },
   })
@@ -53,10 +53,10 @@ export async function updateBalanceOnRelease(transactionId: string) {
     where: { id: escrow.sellerId },
     data: {
       pendingBalance: {
-        decrement: escrow.amount,
+        decrement: escrow.amount ?? 0,
       },
       totalProcessedAmount: {
-        increment: escrow.amount,
+        increment: escrow.amount ?? 0,
       },
       numCompletedTransactions: {
         increment: 1,
@@ -84,10 +84,10 @@ export async function rollbackBalance(transactionId: string) {
       where: { id: escrow.sellerId },
       data: {
         availableBalance: {
-          decrement: escrow.amount,
+          decrement: escrow.amount ?? 0,
         },
         pendingBalance: {
-          decrement: escrow.amount,
+          decrement: escrow.amount ?? 0,
         },
       },
     })
@@ -99,7 +99,7 @@ export async function rollbackBalance(transactionId: string) {
       where: { id: escrow.sellerId },
       data: {
         totalProcessedAmount: {
-          decrement: escrow.amount,
+          decrement: escrow.amount ?? 0,
         },
         numCompletedTransactions: {
           decrement: 1,
@@ -123,7 +123,7 @@ export async function recalculateUserStats(userId: string) {
   })
 
   const totalProcessedAmount = completedTransactions.reduce(
-    (sum: number, t: any) => sum + t.amount,
+    (sum: number, t: any) => sum + (t.amount ?? 0),
     0
   )
   const numCompletedTransactions = completedTransactions.length
@@ -138,7 +138,7 @@ export async function recalculateUserStats(userId: string) {
     },
   })
 
-  const pendingBalance = pendingTransactions.reduce((sum: number, t: any) => sum + t.amount, 0)
+  const pendingBalance = pendingTransactions.reduce((sum: number, t: any) => sum + (t.amount ?? 0), 0)
 
   // Update user
   await prisma.user.update({

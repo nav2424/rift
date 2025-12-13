@@ -63,15 +63,15 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      case 'transfer.paid': {
-        const transfer = event.data.object as any
-        await handleTransferPaid(transfer)
+      case 'payout.paid': {
+        const payout = event.data.object as any
+        await handleTransferPaid(payout)
         break
       }
 
-      case 'transfer.failed': {
-        const transfer = event.data.object as any
-        await handleTransferFailed(transfer)
+      case 'payout.failed': {
+        const payout = event.data.object as any
+        await handleTransferFailed(payout)
         break
       }
 

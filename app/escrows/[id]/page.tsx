@@ -356,10 +356,10 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
                         {new Date(dispute.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    {dispute.adminNote && (
+                    {dispute.adminNotes && (
                       <div className="mt-3 pt-3 border-t border-white/10">
                         <p className="text-sm text-white/50 font-light">Admin Note:</p>
-                        <p className="text-white/90 mt-1 font-light">{dispute.adminNote}</p>
+                        <p className="text-white/90 mt-1 font-light">{dispute.adminNotes}</p>
                       </div>
                     )}
                   </div>
