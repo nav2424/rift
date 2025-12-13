@@ -7,6 +7,186 @@ import Link from 'next/link'
 import PremiumButton from '@/components/ui/PremiumButton'
 import GlassCard from '@/components/ui/GlassCard'
 
+// Screenshot Gallery Component with Modal
+function ScreenshotGallery() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const screenshots = [
+    {
+      id: 'dashboard',
+      src: '/dashboard.png',
+      title: 'Complete Dashboard',
+      description: 'Track wallet balance, pending actions, recent activity, and all your rifts in one unified view',
+      featured: true,
+    },
+    {
+      id: 'create',
+      src: '/rift-created.png',
+      title: 'Create in Seconds',
+      description: 'Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly',
+      featured: true,
+    },
+    {
+      id: 'rifts',
+      src: '/rifts.png',
+      title: 'Manage All Rifts',
+      description: 'View and manage all your active and completed transactions',
+      featured: false,
+    },
+    {
+      id: 'activity',
+      src: '/recent-activity.png',
+      title: 'Activity Tracking',
+      description: 'Monitor all transaction activity and status updates in real-time',
+      featured: false,
+    },
+  ]
+
+  const featured = screenshots.filter(s => s.featured)
+  const others = screenshots.filter(s => !s.featured)
+
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [selectedImage])
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedImage(null)
+      }
+    }
+    if (selectedImage) {
+      window.addEventListener('keydown', handleEscape)
+    }
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [selectedImage])
+
+  return (
+    <>
+      {/* Featured Screenshots - Full Width, Large */}
+      <div className="space-y-12 mb-16">
+        {featured.map((screenshot, index) => (
+          <div
+            key={screenshot.id}
+            className={`group relative ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} transition-all duration-700`}
+            style={{ transitionDelay: `${index * 150}ms` }}
+          >
+            <GlassCard variant="glass" className="p-6 lg:p-8 overflow-visible hover:border-white/20 transition-all duration-300">
+              <div className="mb-6">
+                <h3 className="text-3xl lg:text-4xl font-light text-white mb-3">{screenshot.title}</h3>
+                <p className="text-base text-white/60 font-light max-w-2xl">
+                  {screenshot.description}
+                </p>
+              </div>
+              <div 
+                className="relative rounded-2xl overflow-hidden border-2 border-white/10 bg-white/5 shadow-2xl cursor-pointer group/image"
+                onClick={() => setSelectedImage(screenshot.src)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 z-10 flex items-end justify-center pb-6">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    <span className="text-sm font-medium text-white">Click to view full size</span>
+                  </div>
+                </div>
+                <img 
+                  src={screenshot.src} 
+                  alt={screenshot.title} 
+                  className="w-full h-auto object-contain transition-transform duration-500 group-hover/image:scale-[1.02]"
+                  style={{ maxHeight: '70vh', minHeight: '500px' }}
+                />
+              </div>
+            </GlassCard>
+          </div>
+        ))}
+      </div>
+
+      {/* Secondary Screenshots - Side by Side */}
+      <div className="grid md:grid-cols-2 gap-8">
+        {others.map((screenshot, index) => (
+          <div
+            key={screenshot.id}
+            className={`group relative ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} transition-all duration-700`}
+            style={{ transitionDelay: `${(featured.length + index) * 150}ms` }}
+          >
+            <GlassCard variant="glass" className="p-6 overflow-visible hover:border-white/20 transition-all duration-300">
+              <div className="mb-5">
+                <h3 className="text-2xl font-light text-white mb-2">{screenshot.title}</h3>
+                <p className="text-sm text-white/60 font-light">
+                  {screenshot.description}
+                </p>
+              </div>
+              <div 
+                className="relative rounded-xl overflow-hidden border-2 border-white/10 bg-white/5 shadow-xl cursor-pointer group/image"
+                onClick={() => setSelectedImage(screenshot.src)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 z-10 flex items-end justify-center pb-4">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    <span className="text-xs font-medium text-white">Click to expand</span>
+                  </div>
+                </div>
+                <img 
+                  src={screenshot.src} 
+                  alt={screenshot.title} 
+                  className="w-full h-auto object-contain transition-transform duration-500 group-hover/image:scale-[1.02]"
+                  style={{ maxHeight: '50vh', minHeight: '400px' }}
+                />
+              </div>
+            </GlassCard>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Lightbox */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 z-10 p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 transition-all duration-200 hover:scale-110"
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="relative max-w-[95vw] max-h-[95vh] w-full h-full flex items-center justify-center">
+            <img 
+              src={selectedImage} 
+              alt="Full size screenshot"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/60 text-sm">
+            Press ESC or click outside to close
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Home() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -490,8 +670,8 @@ export default function Home() {
       </section>
 
       {/* Platform Showcase */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
+      <section className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Your Command Center
           </h2>
@@ -500,77 +680,8 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto mb-12">
-          {/* Dashboard - Large Feature */}
-          <GlassCard variant="glass" className="p-4 overflow-hidden">
-            <div className="mb-4">
-              <h3 className="text-2xl font-light text-white mb-2">Complete Dashboard</h3>
-              <p className="text-sm text-white/60 font-light">
-                Track wallet balance, pending actions, recent activity, and all your rifts in one unified view
-              </p>
-            </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl min-h-[400px] flex items-center justify-center">
-              <img 
-                src="/dashboard.png" 
-                alt="Rift Dashboard" 
-                className="w-full h-auto object-contain max-h-[600px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
-              />
-            </div>
-          </GlassCard>
-
-          {/* Create Rift - Large Feature */}
-          <GlassCard variant="glass" className="p-4 overflow-hidden">
-            <div className="mb-4">
-              <h3 className="text-2xl font-light text-white mb-2">Create in Seconds</h3>
-              <p className="text-sm text-white/60 font-light">
-                Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly
-              </p>
-            </div>
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl min-h-[400px] flex items-center justify-center">
-              <img 
-                src="/rift-created.png" 
-                alt="Create Rift" 
-                className="w-full h-auto object-contain max-h-[600px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
-              />
-            </div>
-          </GlassCard>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* Rifts List */}
-          <GlassCard variant="glass" className="p-4 overflow-hidden">
-            <div className="mb-4">
-              <h3 className="text-xl font-light text-white mb-2">Manage All Rifts</h3>
-              <p className="text-sm text-white/60 font-light">
-                View and manage all your active and completed transactions
-              </p>
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5 min-h-[300px] flex items-center justify-center">
-              <img 
-                src="/rifts.png" 
-                alt="Rifts List" 
-                className="w-full h-auto object-contain max-h-[500px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
-              />
-            </div>
-          </GlassCard>
-
-          {/* Activity */}
-          <GlassCard variant="glass" className="p-4 overflow-hidden">
-            <div className="mb-4">
-              <h3 className="text-xl font-light text-white mb-2">Activity Tracking</h3>
-              <p className="text-sm text-white/60 font-light">
-                Monitor all transaction activity and status updates in real-time
-              </p>
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5 min-h-[300px] flex items-center justify-center">
-              <img 
-                src="/recent-activity.png" 
-                alt="Recent Activity" 
-                className="w-full h-auto object-contain max-h-[500px] hover:scale-105 transition-transform duration-300 cursor-zoom-in"
-              />
-            </div>
-          </GlassCard>
-        </div>
+        {/* Screenshot Gallery with Modal */}
+        <ScreenshotGallery />
       </section>
 
       {/* Protection Features Section */}
