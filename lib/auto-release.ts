@@ -1,55 +1,35 @@
 /**
- * Auto-release system for verified shipments
- * Automatically releases funds after grace period if no disputes
+ * Auto-release system for Rift transactions
+ * Automatically releases funds after review window if no disputes
  */
 
 import { prisma } from './prisma'
-import { updateBalanceOnRelease } from './balance'
-import { createPayout } from './stripe'
 import { sendFundsReleasedEmail } from './email'
 import { createActivity } from './activity'
 import { getLevelFromStats, getXpFromStats } from './levels'
 import { checkAndAwardMilestones } from './milestones'
 import { checkAndAwardBadges } from './badges'
-import { calculatePlatformFee, calculateSellerPayout, roundCurrency, getFeeBreakdown, calculatePaymentProcessingFees } from './fees'
+import { transitionRiftState } from './rift-state'
+import { canAutoRelease } from './state-machine'
 
 /**
- * Check and process auto-releases for escrows past grace period
+ * Check and process auto-releases for rifts past review window
  * This should be called periodically (e.g., via cron job or scheduled task)
  */
 export async function processAutoReleases() {
   const now = new Date()
 
-  // Find escrows that:
-  // 1. Have delivery confirmed (deliveryVerifiedAt is set)
-  // 2. Grace period has ended
+  // Find rifts that:
+  // 1. Have proof submitted
+  // 2. Auto-release deadline has passed
   // 3. No open disputes
-  // 4. Still in DELIVERED_PENDING_RELEASE or IN_TRANSIT status
-  // 5. Auto-release is scheduled
-  // 
-  // For PHYSICAL items: Also require verified shipment
-  // For other items: Just require delivery confirmation
-  const escrowsToAutoRelease = await prisma.escrowTransaction.findMany({
+  // 4. Still in PROOF_SUBMITTED or UNDER_REVIEW status
+  const riftsToAutoRelease = await prisma.escrowTransaction.findMany({
     where: {
-      deliveryVerifiedAt: { not: null },
-      gracePeriodEndsAt: { lte: now },
-      autoReleaseScheduled: true,
+      autoReleaseAt: { lte: now },
       status: {
-        in: ['IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'],
+        in: ['PROOF_SUBMITTED', 'UNDER_REVIEW'],
       },
-      OR: [
-        // Physical items: require shipment verification AND buyer confirmation
-        {
-          itemType: 'PHYSICAL',
-          shipmentVerifiedAt: { not: null },
-        },
-        // Non-physical items: require seller marked as delivered (deliveryVerifiedAt set)
-        // Auto-release after 24 hours if seller marked delivered
-        {
-          itemType: { in: ['DIGITAL', 'TICKETS', 'SERVICES'] },
-          deliveryVerifiedAt: { not: null }, // Seller must have marked as delivered
-        },
-      ],
       disputes: {
         none: {
           status: 'OPEN',
@@ -62,91 +42,59 @@ export async function processAutoReleases() {
       disputes: {
         where: { status: 'OPEN' },
       },
+      proofs: {
+        where: { status: 'VALID' },
+        take: 1,
+      },
     },
   })
 
   const results = []
 
-  for (const escrow of escrowsToAutoRelease) {
+  for (const rift of riftsToAutoRelease) {
     try {
       // Double-check no disputes were raised
-      if (escrow.disputes.length > 0) {
-        console.log(`Skipping auto-release for ${escrow.id}: open disputes exist`)
+      if (rift.disputes.length > 0) {
+        console.log(`Skipping auto-release for ${rift.id}: open disputes exist`)
         continue
       }
 
-      // Calculate fees and seller payout amount
-      // Total fee is 8% (includes platform fee + Stripe fees, all paid by seller)
-      // Payment processing fees (2.9% + $0.30) are automatically deducted by Stripe, included in 8% total
-      const feeBreakdown = getFeeBreakdown(escrow.amount)
-      const platformFee = roundCurrency(feeBreakdown.platformFee)
-      const sellerPayoutAmount = roundCurrency(feeBreakdown.sellerReceives)
-
-      // Process payout (if seller has payment account connected)
-      let payoutId: string | null = null
-      const sellerStripeAccountId = (escrow.seller as any).stripeAccountId
-
-      if (sellerStripeAccountId) {
-        try {
-          payoutId = await createPayout(
-            sellerPayoutAmount,
-            escrow.amount,
-            platformFee,
-            escrow.currency,
-            sellerStripeAccountId,
-            escrow.id
-          )
-        } catch (error) {
-          console.error(`Payout failed for escrow ${escrow.id}:`, error)
-          // Continue with release even if payout fails
-        }
+      // Verify proof is valid
+      if (rift.proofs.length === 0) {
+        console.log(`Skipping auto-release for ${rift.id}: no valid proof`)
+        continue
       }
 
-      // Store fee information in escrow transaction
-      await prisma.escrowTransaction.update({
-        where: { id: escrow.id },
-        data: {
-          platformFee,
-          sellerPayoutAmount,
-        },
-      })
+      // Verify state allows auto-release
+      if (!canAutoRelease(rift.status)) {
+        console.log(`Skipping auto-release for ${rift.id}: invalid state ${rift.status}`)
+        continue
+      }
 
-      // Update balances
-      await updateBalanceOnRelease(escrow.id)
+      // Transition to RELEASED (this handles wallet credit and payout scheduling)
+      await transitionRiftState(rift.id, 'RELEASED')
 
-      // Update escrow status
-      await prisma.escrowTransaction.update({
-        where: { id: escrow.id },
-        data: {
-          status: 'RELEASED',
-          autoReleaseScheduled: false,
-        },
-      })
-
-      // Create timeline event with fee breakdown
-      const processingFees = calculatePaymentProcessingFees(escrow.amount)
-      const totalFee = escrow.amount * 0.08
-      const feeMessage = `Total fee (8%: ${escrow.currency} ${totalFee.toFixed(2)}) deducted, including payment processing (${escrow.currency} ${processingFees.totalFee.toFixed(2)}) and platform fee (${escrow.currency} ${platformFee.toFixed(2)}). Seller receives: ${escrow.currency} ${sellerPayoutAmount.toFixed(2)}`
+      // Create timeline event
       await prisma.timelineEvent.create({
         data: {
-          escrowId: escrow.id,
+          escrowId: rift.id,
           type: 'FUNDS_AUTO_RELEASED',
-          message: `Funds automatically released after grace period. ${feeMessage}${payoutId ? ` (Payout ID: ${payoutId})` : ''}`,
+          message: `Funds automatically released after review period. Seller receives ${rift.currency} ${rift.sellerNet?.toFixed(2) || '0.00'} (${rift.currency} ${rift.sellerFee.toFixed(2)} platform fee deducted)`,
         },
       })
 
       // Create activity for seller
       await createActivity(
-        escrow.sellerId,
+        rift.sellerId,
         'DEAL_CLOSED',
-        `Escrow completed: ${escrow.itemTitle}`,
-        escrow.amount,
-        { transactionId: escrow.id }
+        `Rift completed: ${rift.itemTitle}`,
+        rift.subtotal,
+        { transactionId: rift.id }
       )
 
       // Level and milestone updates
       const sellerStats = await prisma.user.findUnique({
-        where: { id: escrow.sellerId },
+        where: { id: rift.sellerId },
         select: {
           totalProcessedAmount: true,
           numCompletedTransactions: true,
@@ -155,10 +103,10 @@ export async function processAutoReleases() {
 
       if (sellerStats) {
         const newLevel = getLevelFromStats(sellerStats.totalProcessedAmount, sellerStats.numCompletedTransactions)
-        const xpGained = getXpFromStats(escrow.amount, sellerStats.numCompletedTransactions)
+        const xpGained = getXpFromStats(rift.subtotal, sellerStats.numCompletedTransactions)
 
         await prisma.user.update({
-          where: { id: escrow.sellerId },
+          where: { id: rift.sellerId },
           data: {
             level: newLevel,
             xp: { increment: xpGained },
@@ -167,7 +115,7 @@ export async function processAutoReleases() {
 
         // Get seller stats for milestone/badge checking
         const seller = await prisma.user.findUnique({
-          where: { id: escrow.sellerId },
+          where: { id: rift.sellerId },
           select: {
             totalProcessedAmount: true,
             numCompletedTransactions: true,
@@ -176,28 +124,30 @@ export async function processAutoReleases() {
 
         if (seller) {
           await checkAndAwardMilestones(
-            escrow.sellerId,
+            rift.sellerId,
             seller.totalProcessedAmount,
             seller.numCompletedTransactions
           )
-          await checkAndAwardBadges(escrow.sellerId)
+          await checkAndAwardBadges(rift.sellerId)
         }
       }
 
-      // Send email notification with fee breakdown
-      await sendFundsReleasedEmail(
-        escrow.seller.email,
-        escrow.id,
-        escrow.itemTitle,
-        sellerPayoutAmount, // Amount seller actually receives
-        escrow.currency,
-        platformFee // Include platform fee for transparency
-      )
+      // Send email notification
+      if (rift.sellerNet) {
+        await sendFundsReleasedEmail(
+          rift.seller.email,
+          rift.id,
+          rift.itemTitle,
+          rift.sellerNet,
+          rift.currency,
+          rift.sellerFee
+        )
+      }
 
-      results.push({ escrowId: escrow.id, success: true })
+      results.push({ riftId: rift.id, success: true })
     } catch (error) {
-      console.error(`Error auto-releasing escrow ${escrow.id}:`, error)
-      results.push({ escrowId: escrow.id, success: false, error: (error as Error).message })
+      console.error(`Error auto-releasing rift ${rift.id}:`, error)
+      results.push({ riftId: rift.id, success: false, error: (error as Error).message })
     }
   }
 

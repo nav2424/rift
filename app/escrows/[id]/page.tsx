@@ -9,6 +9,7 @@ import DisputeForm from '@/components/DisputeForm'
 import EscrowActions from '@/components/EscrowActions'
 import MessagingPanel from '@/components/MessagingPanel'
 import Card from '@/components/ui/Card'
+import FeeBreakdown from '@/components/FeeBreakdown'
 
 export default async function EscrowDetail({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth()
@@ -64,6 +65,11 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
           createdAt: 'desc',
         },
       },
+      proofs: {
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
     },
   })
 
@@ -80,7 +86,10 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
     notFound()
   }
 
-  const currentUserRole = isAdmin ? 'ADMIN' : isBuyer ? 'BUYER' : 'SELLER'
+  // Determine role for actions - prioritize buyer/seller over admin
+  // Admin can still act as buyer/seller for their own rifts
+  // This is used for display purposes, but we'll pass isBuyer/isSeller flags separately
+  const currentUserRole = isBuyer ? 'BUYER' : isSeller ? 'SELLER' : (isAdmin ? 'ADMIN' : 'SELLER')
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
@@ -102,9 +111,21 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
           <h1 className="text-5xl md:text-6xl font-light text-white mb-4 tracking-tight">{escrow.itemTitle}</h1>
           <div className="flex items-center gap-4">
             <EscrowStatusBadge status={escrow.status} />
-            <span className="text-white/60 font-light">
-              {escrow.amount} {escrow.currency}
-            </span>
+            <div className="flex flex-col gap-1">
+              <span className="text-white/60 font-light">
+                {escrow.subtotal || escrow.amount || 0} {escrow.currency}
+              </span>
+              {escrow.buyerFee && escrow.buyerFee > 0 && (
+                <span className="text-xs text-white/40 font-light">
+                  + {escrow.buyerFee.toFixed(2)} {escrow.currency} processing fee (3%)
+                </span>
+              )}
+              {escrow.sellerFee && escrow.sellerFee > 0 && isSeller && (
+                <span className="text-xs text-white/40 font-light">
+                  You receive: {escrow.sellerNet?.toFixed(2) || 0} {escrow.currency} (5% platform fee deducted)
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -219,7 +240,60 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
             </div>
           </Card>
 
-          {/* Shipment Proofs - Only for physical items */}
+          {/* Proofs - New proof system */}
+          {escrow.proofs && escrow.proofs.length > 0 && (
+            <Card>
+              <h2 className="text-xl font-light text-white mb-6">Proof of Delivery</h2>
+              <div className="space-y-4">
+                {escrow.proofs.map((proof: any) => (
+                  <div key={proof.id} className="glass-light border border-white/10 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-white/90 font-light mb-1">
+                          Type: {proof.proofType.replace(/_/g, ' ')}
+                        </p>
+                        <p className={`text-sm font-light ${
+                          proof.status === 'VALID' ? 'text-green-400' :
+                          proof.status === 'REJECTED' ? 'text-red-400' :
+                          'text-yellow-400'
+                        }`}>
+                          Status: {proof.status}
+                        </p>
+                        {proof.rejectionReason && (
+                          <p className="text-red-400/80 text-sm mt-2 font-light">
+                            {proof.rejectionReason}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-white/40 font-light">
+                        {new Date(proof.submittedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    {proof.uploadedFiles && proof.uploadedFiles.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-white/50 text-sm mb-2">Files:</p>
+                        <div className="space-y-1">
+                          {proof.uploadedFiles.map((file: string, idx: number) => (
+                            <a
+                              key={idx}
+                              href={file}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-white/70 hover:text-white text-sm font-light block transition-colors"
+                            >
+                              View File {idx + 1} →
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Legacy Shipment Proofs - Only for physical items */}
           {escrow.itemType === 'PHYSICAL' && escrow.shipmentProofs.length > 0 && (
             <Card>
               <h2 className="text-xl font-light text-white mb-6">Shipment Proofs</h2>
@@ -305,42 +379,57 @@ export default async function EscrowDetail({ params }: { params: Promise<{ id: s
 
         {/* Sidebar - Actions */}
         <div className="space-y-6">
+          {/* Fee Breakdown */}
+          {(escrow.subtotal || escrow.amount) && (
+            <FeeBreakdown
+              subtotal={escrow.subtotal || escrow.amount || 0}
+              buyerFee={escrow.buyerFee || 0}
+              sellerFee={escrow.sellerFee || 0}
+              sellerNet={escrow.sellerNet || 0}
+              currency={escrow.currency}
+              showBuyer={isBuyer}
+              showSeller={isSeller}
+            />
+          )}
+
           <EscrowActions
-            escrow={escrow}
+            escrow={{
+              id: escrow.id,
+              status: escrow.status,
+              itemType: escrow.itemType,
+              subtotal: escrow.subtotal || escrow.amount || 0,
+              amount: escrow.amount || escrow.subtotal || 0,
+              buyerFee: escrow.buyerFee || 0,
+              currency: escrow.currency,
+            }}
             currentUserRole={currentUserRole}
             userId={userId}
+            isBuyer={isBuyer}
+            isSeller={isSeller}
           />
 
-          {/* Seller: Upload Proof Form - Only for physical items */}
-          {isSeller && escrow.status === 'AWAITING_SHIPMENT' && escrow.itemType === 'PHYSICAL' && (
-            <Card>
-              <h2 className="text-xl font-light text-white mb-6">Upload Shipment Proof</h2>
-              <ShipmentProofForm escrowId={escrow.id} />
-            </Card>
-          )}
-          
-          {/* For non-physical items, require proof upload */}
-          {isSeller && escrow.status === 'AWAITING_SHIPMENT' && escrow.itemType !== 'PHYSICAL' && (
+          {/* Seller: Submit Proof Form */}
+          {isSeller && (escrow.status === 'FUNDED' || escrow.status === 'AWAITING_SHIPMENT') && (
             <Card>
               <h2 className="text-xl font-light text-white mb-6">
-                {escrow.itemType === 'TICKETS' ? 'Transfer Tickets' :
-                 escrow.itemType === 'DIGITAL' ? 'Deliver Digital Product' :
-                 'Complete Service'}
+                {escrow.itemType === 'PHYSICAL' ? 'Submit Shipment Proof' :
+                 escrow.itemType === 'TICKETS' ? 'Submit Transfer Proof' :
+                 escrow.itemType === 'DIGITAL' ? 'Submit Delivery Proof' :
+                 'Submit Completion Proof'}
               </h2>
-              <p className="text-white/60 text-sm font-light mb-4">
-                {escrow.itemType === 'TICKETS' ? 'Transfer the tickets to the buyer and upload proof of transfer.' :
-                 escrow.itemType === 'DIGITAL' ? 'Ensure the download link and license key are accessible, then upload proof of delivery.' :
-                 'Complete the service as agreed, then upload proof of completion.'}
-              </p>
-              <DeliveryProofForm 
-                escrowId={escrow.id} 
-                itemType={escrow.itemType as 'DIGITAL' | 'TICKETS' | 'SERVICES'}
-              />
+              {escrow.itemType === 'PHYSICAL' ? (
+                <ShipmentProofForm escrowId={escrow.id} />
+              ) : (
+                <DeliveryProofForm 
+                  escrowId={escrow.id} 
+                  itemType={escrow.itemType as 'DIGITAL' | 'TICKETS' | 'SERVICES'}
+                />
+              )}
             </Card>
           )}
 
           {/* Buyer: Dispute Form */}
-          {isBuyer && (escrow.status === 'IN_TRANSIT' || escrow.status === 'DELIVERED_PENDING_RELEASE') && (
+          {isBuyer && (escrow.status === 'FUNDED' || escrow.status === 'PROOF_SUBMITTED' || escrow.status === 'UNDER_REVIEW') && (
             <Card>
               <h2 className="text-xl font-light text-white mb-6">Raise Dispute</h2>
               <DisputeForm escrowId={escrow.id} />

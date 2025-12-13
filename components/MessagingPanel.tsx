@@ -38,21 +38,30 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
       })
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
         if (response.status === 403) {
           setError('You do not have access to this conversation.')
         } else {
-          setError('Failed to load messages. Please try again.')
+          // Show detailed error message if available
+          const errorMessage = errorData.details 
+            ? `${errorData.error || 'Failed to load messages'}: ${errorData.details}`
+            : errorData.error || `Failed to load messages: ${response.status}`
+          setError(errorMessage)
         }
+        console.error('Failed to fetch messages:', response.status, errorData)
         return
       }
 
       const data = await response.json()
+      if (!data.conversation || !data.conversation.id) {
+        throw new Error('Invalid response: missing conversation data')
+      }
       setConversationId(data.conversation.id)
       setMessages(data.messages || [])
       setError(null)
     } catch (err: any) {
       console.error('Error fetching messages:', err)
-      setError('Failed to load messages. Please try again.')
+      setError(err.message || 'Failed to load messages. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -115,15 +124,18 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
     setMessageText('')
     setSending(true)
 
+    // Store optimistic message ID for cleanup
+    const optimisticId = `temp-${Date.now()}`
+    const optimisticMessage: Message = {
+      id: optimisticId,
+      body: textToSend,
+      senderId: session?.user?.id || null,
+      createdAt: new Date().toISOString(),
+      readAt: null,
+    }
+
     try {
       // Optimistically add message to UI
-      const optimisticMessage: Message = {
-        id: `temp-${Date.now()}`,
-        body: textToSend,
-        senderId: session?.user?.id || null,
-        createdAt: new Date().toISOString(),
-        readAt: null,
-      }
       setMessages((prev) => [...prev, optimisticMessage])
 
       // Send to server (realtime will add the real message)
@@ -137,21 +149,23 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to send message')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Failed to send message: ${response.status}`)
       }
 
       const newMessage = await response.json()
 
       // Replace optimistic message with real one (in case realtime didn't fire)
       setMessages((prev) =>
-        prev.map((msg) => (msg.id === optimisticMessage.id ? newMessage : msg))
+        prev.map((msg) => (msg.id === optimisticId ? newMessage : msg))
       )
+      setError(null)
     } catch (err: any) {
       console.error('Error sending message:', err)
       // Remove optimistic message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== `temp-${Date.now()}`))
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
       setMessageText(textToSend) // Restore message text
-      setError('Failed to send message. Please try again.')
+      setError(err.message || 'Failed to send message. Please try again.')
     } finally {
       setSending(false)
     }

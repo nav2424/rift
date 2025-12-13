@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { canTransition } from '@/lib/rules'
-import { createPayout, refundPayment } from '@/lib/stripe'
+import { transitionRiftState } from '@/lib/rift-state'
+import { refundPayment } from '@/lib/stripe'
 import { sendFundsReleasedEmail } from '@/lib/email'
-import { calculatePlatformFee, calculateSellerPayout, roundCurrency, getFeeBreakdown } from '@/lib/fees'
+import { DisputeResolution } from '@prisma/client'
+import { debitSellerOnRefund } from '@/lib/wallet'
 
 export async function POST(
   request: NextRequest,
@@ -18,11 +19,11 @@ export async function POST(
     }
     const { id } = await params
     const body = await request.json()
-    const { action, adminNote } = body
+    const { resolution, partialRefundAmount, adminNotes } = body
 
-    if (!['release', 'refund'].includes(action)) {
+    if (!['FULL_RELEASE', 'PARTIAL_REFUND', 'FULL_REFUND'].includes(resolution)) {
       return NextResponse.json(
-        { error: 'Invalid action. Must be "release" or "refund"' },
+        { error: 'Invalid resolution. Must be "FULL_RELEASE", "PARTIAL_REFUND", or "FULL_REFUND"' },
         { status: 400 }
       )
     }
@@ -44,78 +45,88 @@ export async function POST(
 
     if (escrow.status !== 'DISPUTED') {
       return NextResponse.json(
-        { error: 'Escrow is not in disputed status' },
+        { error: 'Rift is not in disputed status' },
         { status: 400 }
       )
     }
 
-    const newStatus = action === 'release' ? 'RELEASED' : 'REFUNDED'
-
-    if (!canTransition(escrow.status, newStatus, 'ADMIN')) {
-      return NextResponse.json(
-        { error: 'Invalid status transition' },
-        { status: 400 }
-      )
-    }
-
-    // Process payout or refund
-    let payoutId: string | null = null
     let refundId: string | null = null
-    let platformFee: number | undefined
-    let sellerPayoutAmount: number | undefined
+    let refundAmount: number = 0
 
-    if (action === 'release' && escrow.paymentReference) {
-      // Calculate fees and seller payout amount
-      // Total fee is 8% (includes platform fee + Stripe fees, all paid by seller)
-      // Payment processing fees (2.9% + $0.30) are automatically deducted by Stripe, included in 8% total
-      const feeBreakdown = getFeeBreakdown(escrow.amount)
-      platformFee = roundCurrency(feeBreakdown.platformFee)
-      sellerPayoutAmount = roundCurrency(feeBreakdown.sellerReceives)
-
-      // Extract payment intent ID from payment reference if available
-      const paymentIntentId = escrow.paymentReference.includes('pi_')
-        ? escrow.paymentReference
-        : null
-
-      // For V1, we'll attempt payout if seller has payment account connected
-      const sellerStripeAccountId = (escrow.seller as any).stripeAccountId
-      if (sellerStripeAccountId) {
-        payoutId = await createPayout(
-          sellerPayoutAmount,
-          escrow.amount,
-          platformFee,
-          escrow.currency,
-          sellerStripeAccountId,
-          id
+    // Handle different resolution types
+    if (resolution === 'FULL_RELEASE') {
+      // Release funds to seller (normal release flow)
+      await transitionRiftState(id, 'RESOLVED', { userId: session.user.id })
+      await transitionRiftState(id, 'RELEASED', { userId: session.user.id })
+    } else if (resolution === 'PARTIAL_REFUND') {
+      // Partial refund to buyer, release remainder to seller
+      if (!partialRefundAmount || partialRefundAmount <= 0) {
+        return NextResponse.json(
+          { error: 'Partial refund amount is required' },
+          { status: 400 }
         )
       }
-    } else if (action === 'refund' && escrow.paymentReference) {
-      // Extract payment intent ID and refund
-      const paymentIntentId = escrow.paymentReference.includes('pi_')
-        ? escrow.paymentReference
-        : null
 
-      if (paymentIntentId) {
-        refundId = await refundPayment(paymentIntentId, escrow.amount)
+      refundAmount = partialRefundAmount
+      const buyerTotal = escrow.subtotal + escrow.buyerFee
+
+      if (refundAmount >= buyerTotal) {
+        return NextResponse.json(
+          { error: 'Partial refund amount cannot exceed buyer total' },
+          { status: 400 }
+        )
       }
-    }
 
-    // Update escrow status and store fee information
-    await prisma.escrowTransaction.update({
-      where: { id },
-      data: {
-        status: newStatus,
-        ...(action === 'release' && platformFee && sellerPayoutAmount ? {
-          platformFee,
-          sellerPayoutAmount,
-        } : {}),
-        paymentReference: payoutId
-          ? `${escrow.paymentReference} | Payout: ${payoutId}`
-          : refundId
-          ? `${escrow.paymentReference} | Refund: ${refundId}`
-          : escrow.paymentReference,
-      },
-    })
+      // Refund buyer
+      if (escrow.stripePaymentIntentId) {
+        refundId = await refundPayment(escrow.stripePaymentIntentId, refundAmount)
+      }
+
+      // Debit seller wallet for refund
+      await debitSellerOnRefund(id, escrow.sellerId, refundAmount, escrow.currency, {
+        resolution: 'PARTIAL_REFUND',
+        adminId: session.user.id,
+      })
+
+      // Calculate seller net after partial refund
+      const sellerNetAfterRefund = (escrow.sellerNet || 0) - refundAmount
+
+      // Update rift
+      await prisma.escrowTransaction.update({
+        where: { id },
+        data: {
+          sellerNet: sellerNetAfterRefund,
+        },
+      })
+
+      // Release remaining to seller
+      if (sellerNetAfterRefund > 0) {
+        await transitionRiftState(id, 'RESOLVED', { userId: session.user.id })
+        await transitionRiftState(id, 'RELEASED', { userId: session.user.id })
+      } else {
+        await transitionRiftState(id, 'RESOLVED', { userId: session.user.id })
+        await transitionRiftState(id, 'CANCELED', { userId: session.user.id })
+      }
+    } else if (resolution === 'FULL_REFUND') {
+      // Full refund to buyer, seller gets nothing
+      const buyerTotal = escrow.subtotal + escrow.buyerFee
+      refundAmount = buyerTotal
+
+      // Refund buyer
+      if (escrow.stripePaymentIntentId) {
+        refundId = await refundPayment(escrow.stripePaymentIntentId, refundAmount)
+      }
+
+      // Debit seller wallet for full refund
+      await debitSellerOnRefund(id, escrow.sellerId, escrow.subtotal, escrow.currency, {
+        resolution: 'FULL_REFUND',
+        adminId: session.user.id,
+      })
+
+      // Cancel rift
+      await transitionRiftState(id, 'RESOLVED', { userId: session.user.id })
+      await transitionRiftState(id, 'CANCELED', { userId: session.user.id })
+    }
 
     // Resolve all open disputes
     if (escrow.disputes.length > 0) {
@@ -126,39 +137,46 @@ export async function POST(
         },
         data: {
           status: 'RESOLVED',
-          adminNote: adminNote || null,
+          resolution: resolution as DisputeResolution,
+          adminNotes: adminNotes || null,
           resolvedById: session.user.id,
+          resolvedAt: new Date(),
         },
       })
     }
 
     // Create timeline event
+    const resolutionMessage = 
+      resolution === 'FULL_RELEASE' ? 'Admin released funds to seller' :
+      resolution === 'PARTIAL_REFUND' ? `Admin partially refunded buyer ${escrow.currency} ${refundAmount.toFixed(2)}` :
+      `Admin fully refunded buyer ${escrow.currency} ${refundAmount.toFixed(2)}`
+
     await prisma.timelineEvent.create({
       data: {
         escrowId: id,
-        type: action === 'release' ? 'ADMIN_RELEASED' : 'ADMIN_REFUNDED',
-        message: `Admin ${action === 'release' ? 'released funds to seller' : 'refunded buyer'}. ${adminNote ? `Note: ${adminNote}` : ''}`,
+        type: 'DISPUTE_RESOLVED',
+        message: `${resolutionMessage}. ${adminNotes ? `Note: ${adminNotes}` : ''}`,
         createdById: session.user.id,
       },
     })
 
-    // Send email notification with fee breakdown
-    if (action === 'release' && sellerPayoutAmount && platformFee) {
+    // Send email notification
+    if (resolution === 'FULL_RELEASE' && escrow.sellerNet) {
       await sendFundsReleasedEmail(
         escrow.seller.email,
         id,
         escrow.itemTitle,
-        sellerPayoutAmount, // Amount seller actually receives
+        escrow.sellerNet,
         escrow.currency,
-        platformFee // Include platform fee for transparency
+        escrow.sellerFee
       )
     }
 
     return NextResponse.json({
       success: true,
-      newStatus,
-      payoutId,
+      resolution,
       refundId,
+      refundAmount,
     })
   } catch (error) {
     console.error('Resolve dispute error:', error)

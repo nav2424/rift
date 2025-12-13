@@ -15,13 +15,22 @@ enum ItemType {
 }
 
 enum EscrowStatus {
+  DRAFT
+  FUNDED
+  PROOF_SUBMITTED
+  UNDER_REVIEW
+  RELEASED
+  DISPUTED
+  RESOLVED
+  PAYOUT_SCHEDULED
+  PAID_OUT
+  CANCELED
+  // Legacy statuses for backward compatibility
   AWAITING_PAYMENT
   AWAITING_SHIPMENT
   IN_TRANSIT
   DELIVERED_PENDING_RELEASE
-  RELEASED
   REFUNDED
-  DISPUTED
   CANCELLED
 }
 
@@ -36,7 +45,49 @@ enum DisputeType {
 
 enum DisputeStatus {
   OPEN
+  UNDER_REVIEW
   RESOLVED
+}
+
+enum DisputeResolution {
+  FULL_RELEASE
+  PARTIAL_REFUND
+  FULL_REFUND
+}
+
+enum RiskTier {
+  TIER0_NEW
+  TIER1_NORMAL
+  TIER2_TRUSTED
+  TIER3_PRO
+}
+
+enum WalletLedgerType {
+  CREDIT_RELEASE
+  DEBIT_WITHDRAWAL
+  DEBIT_CHARGEBACK
+  DEBIT_REFUND
+  ADJUSTMENT
+}
+
+enum ProofType {
+  PHYSICAL
+  SERVICE
+  DIGITAL
+}
+
+enum ProofStatus {
+  PENDING
+  VALID
+  REJECTED
+}
+
+enum PayoutStatus {
+  PENDING
+  SCHEDULED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model User {
@@ -60,6 +111,10 @@ model User {
   showAmountsInFeed        Boolean             @default(true)
   idVerified               Boolean             @default(false)
   bankVerified             Boolean             @default(false)
+  emailVerified            Boolean             @default(false)
+  phoneVerified            Boolean             @default(false)
+  stripeConnectAccountId   String?
+  stripeIdentityVerified   Boolean             @default(false)
   activities               Activity[]
   disputesResolved         Dispute[]           @relation("ResolvedDisputes")
   disputesRaised           Dispute[]           @relation("DisputesRaised")
@@ -68,6 +123,11 @@ model User {
   timelineEvents           TimelineEvent[]
   badges                   UserBadge[]
   milestones               UserMilestone[]
+  walletAccounts           WalletAccount[]
+  riskProfile              UserRiskProfile?
+  blocks                   UserBlock[]         @relation("BlockedUser")
+  blockedBy                UserBlock[]         @relation("BlockedByUser")
+  payouts                  Payout[]
 }
 
 model EscrowTransaction {
@@ -76,20 +136,28 @@ model EscrowTransaction {
   itemTitle             String
   itemDescription       String
   itemType              ItemType        @default(PHYSICAL)
-  amount                Float
+  subtotal              Float // Original transaction amount
+  buyerFee              Float // 3% buyer fee
+  sellerFee             Float // 5% seller fee
+  sellerNet             Float? // Subtotal - sellerFee (amount seller receives)
   currency              String          @default("CAD")
-  status                EscrowStatus    @default(AWAITING_PAYMENT)
+  status                EscrowStatus    @default(DRAFT)
   buyerId               String
   sellerId              String
   shippingAddress       String?
   notes                 String?
   paymentReference      String?
   stripePaymentIntentId String?
+  stripeChargeId        String?
   shipmentVerifiedAt    DateTime?
   trackingVerified      Boolean         @default(false)
   deliveryVerifiedAt    DateTime?
   gracePeriodEndsAt     DateTime?
   autoReleaseScheduled  Boolean         @default(false)
+  autoReleaseAt         DateTime? // When auto-release should trigger
+  proofSubmittedAt      DateTime? // When proof was submitted
+  fundedAt              DateTime? // When payment was captured
+  releasedAt            DateTime? // When funds were released
   eventDate             String?
   venue                 String?
   transferMethod        String?
@@ -98,13 +166,18 @@ model EscrowTransaction {
   serviceDate           String?
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
-  platformFee           Float?
-  sellerPayoutAmount    Float?
+  // Legacy fields for backward compatibility
+  amount                Float? // Use subtotal instead
+  platformFee           Float? // Use sellerFee instead
+  sellerPayoutAmount    Float? // Use sellerNet instead
   disputes              Dispute[]
+  proofs                Proof[]
   seller                User            @relation("SellerTransactions", fields: [sellerId], references: [id])
   buyer                 User            @relation("BuyerTransactions", fields: [buyerId], references: [id])
   shipmentProofs        ShipmentProof[]
   timelineEvents        TimelineEvent[]
+  payouts               Payout[]
+  version               Int             @default(0) // For optimistic locking
 }
 
 model ShipmentProof {
@@ -134,19 +207,22 @@ model TimelineEvent {
 }
 
 model Dispute {
-  id           String            @id @default(cuid())
+  id           String             @id @default(cuid())
   escrowId     String
   raisedById   String
   reason       String
-  type         DisputeType       @default(ITEM_NOT_RECEIVED)
-  status       DisputeStatus     @default(OPEN)
-  adminNote    String?
+  type         DisputeType        @default(ITEM_NOT_RECEIVED)
+  status       DisputeStatus      @default(OPEN)
+  resolution   DisputeResolution?
+  evidence     Json? // JSON field for evidence files/links
+  adminNotes   String?
   resolvedById String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  resolvedBy   User?             @relation("ResolvedDisputes", fields: [resolvedById], references: [id])
-  raisedBy     User              @relation("DisputesRaised", fields: [raisedById], references: [id])
-  escrow       EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  resolvedAt   DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  resolvedBy   User?              @relation("ResolvedDisputes", fields: [resolvedById], references: [id])
+  raisedBy     User               @relation("DisputesRaised", fields: [raisedById], references: [id])
+  escrow       EscrowTransaction  @relation(fields: [escrowId], references: [id], onDelete: Cascade)
 }
 
 model Activity {
@@ -195,5 +271,113 @@ model UserBadge {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model WalletAccount {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  currency         String              @default("CAD")
+  availableBalance Float               @default(0)
+  pendingBalance   Float               @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries    WalletLedgerEntry[]
+
+  @@index([userId])
+}
+
+model WalletLedgerEntry {
+  id              String           @id @default(cuid())
+  walletAccountId String
+  type            WalletLedgerType
+  amount          Float
+  currency        String           @default("CAD")
+  relatedRiftId   String?
+  metadata        Json?
+  createdAt       DateTime         @default(now())
+  walletAccount   WalletAccount    @relation(fields: [walletAccountId], references: [id], onDelete: Cascade)
+
+  @@index([walletAccountId, createdAt])
+  @@index([relatedRiftId])
+  @@index([createdAt])
+}
+
+model Proof {
+  id              String            @id @default(cuid())
+  riftId          String
+  proofType       ProofType
+  proofPayload    Json // Flexible JSON for different proof types
+  uploadedFiles   String[] // Array of file URLs
+  status          ProofStatus       @default(PENDING)
+  submittedAt     DateTime          @default(now())
+  validatedAt     DateTime?
+  validatedBy     String? // Admin user ID if manually validated
+  rejectionReason String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  rift            EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+
+  @@index([riftId])
+  @@index([status])
+}
+
+model Payout {
+  id               String             @id @default(cuid())
+  userId           String
+  riftId           String?
+  amount           Float
+  currency         String             @default("CAD")
+  status           PayoutStatus       @default(PENDING)
+  scheduledAt      DateTime?
+  processedAt      DateTime?
+  stripePayoutId   String?
+  stripeTransferId String?
+  failureReason    String?
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rift             EscrowTransaction? @relation(fields: [riftId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([riftId])
+  @@index([status, scheduledAt])
+}
+
+model UserRiskProfile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  tier                  RiskTier  @default(TIER0_NEW)
+  completedRifts        Int       @default(0)
+  accountAgeDays        Int       @default(0)
+  chargebacksLast60Days Int       @default(0)
+  disputesLast60Days    Int       @default(0)
+  totalVolume           Float     @default(0)
+  lastChargebackAt      DateTime?
+  lastDisputeAt         DateTime?
+  tier3Approved         Boolean   @default(false)
+  tier3ApprovedAt       DateTime?
+  tier3ApprovedBy       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tier])
+}
+
+model UserBlock {
+  id          String   @id @default(cuid())
+  userId      String // User who is blocked
+  blockedById String // User/admin who blocked them
+  reason      String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  user        User     @relation("BlockedUser", fields: [userId], references: [id], onDelete: Cascade)
+  blockedBy   User     @relation("BlockedByUser", fields: [blockedById], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blockedById])
   @@index([userId])
 }

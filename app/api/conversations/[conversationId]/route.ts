@@ -98,15 +98,29 @@ export async function GET(
     const { conversationId } = await params
     const userId = auth.userId
 
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (error: any) {
+      console.error('Supabase configuration error:', error)
+      return NextResponse.json(
+        {
+          error: 'Internal server error',
+          details: error?.message?.includes('Supabase configuration missing')
+            ? error.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.'
+            : error.message || 'Supabase environment variables are missing',
+        },
+        { status: 500 }
+      )
+    }
 
     // Check if user is a participant
     const { data: participant, error: participantError } = await supabase
-      .from('conversation_participants')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .eq('user_id', userId)
-      .maybeSingle()
+    .from('conversation_participants')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', userId)
+    .maybeSingle()
 
     if (participantError) {
       console.error('Error checking participant:', participantError)
@@ -195,7 +209,21 @@ export async function POST(
       )
     }
 
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (error: any) {
+      console.error('Supabase configuration error:', error)
+      return NextResponse.json(
+        {
+          error: 'Internal server error',
+          details: error?.message?.includes('Supabase configuration missing')
+            ? error.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.'
+            : error.message || 'Supabase environment variables are missing',
+        },
+        { status: 500 }
+      )
+    }
 
     // Check if user is a participant
     const { data: participant, error: participantError } = await supabase
@@ -265,7 +293,21 @@ export async function DELETE(
     const { conversationId } = await params
     const userId = auth.userId
 
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (error: any) {
+      console.error('Supabase configuration error:', error)
+      return NextResponse.json(
+        {
+          error: 'Internal server error',
+          details: error?.message?.includes('Supabase configuration missing')
+            ? error.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.'
+            : error.message || 'Supabase environment variables are missing',
+        },
+        { status: 500 }
+      )
+    }
 
     // Check if user is a participant
     const { data: participant, error: participantError } = await supabase

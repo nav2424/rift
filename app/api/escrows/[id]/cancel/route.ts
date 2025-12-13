@@ -39,6 +39,7 @@ export async function POST(
       return NextResponse.json({ error: 'Only buyer can cancel' }, { status: 403 })
     }
 
+    // Allow cancellation from AWAITING_PAYMENT or AWAITING_SHIPMENT
     if (!['AWAITING_PAYMENT', 'AWAITING_SHIPMENT'].includes(escrow.status)) {
       return NextResponse.json(
         { error: 'Cannot cancel in current status' },
@@ -46,7 +47,10 @@ export async function POST(
       )
     }
 
-    if (!canTransition(escrow.status, 'CANCELLED', userRole)) {
+    // Use CANCELED for AWAITING_PAYMENT (new state machine) or CANCELLED for legacy
+    const canceledStatus = escrow.status === 'AWAITING_PAYMENT' ? 'CANCELED' : 'CANCELLED'
+    
+    if (!canTransition(escrow.status, canceledStatus, userRole)) {
       return NextResponse.json(
         { error: 'Invalid status transition' },
         { status: 400 }
@@ -82,7 +86,7 @@ export async function POST(
     // Update escrow status
     await prisma.escrowTransaction.update({
       where: { id },
-      data: { status: 'CANCELLED' },
+      data: { status: canceledStatus },
     })
 
     // Create timeline event

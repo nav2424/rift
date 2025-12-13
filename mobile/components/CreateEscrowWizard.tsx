@@ -182,6 +182,13 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
       return;
     }
 
+    // Verify creatorRole is set
+    if (!creatorRole) {
+      Alert.alert('Role Required', 'Please select whether you are the buyer or seller');
+      setCurrentStep('role');
+      return;
+    }
+
     setLoading(true);
     try {
       // Verify token is still valid by checking current user
@@ -233,7 +240,14 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
       const result = await api.createEscrow(payload);
       router.push(`/escrows/${result.escrowId}`);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create rift');
+      console.error('Create escrow error:', error);
+      // Show more detailed error message
+      const errorMessage = error.message || 'Failed to create rift';
+      Alert.alert(
+        'Error Creating Rift',
+        errorMessage,
+        [{ text: 'OK' }]
+      );
     } finally {
       setLoading(false);
     }
@@ -354,103 +368,92 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
 
   const renderBasicStep = () => (
     <View style={styles.stepContainer}>
-      {/* Header Section */}
-      <View style={styles.headerSection}>
-        <View style={styles.headerIconContainer}>
-          <View style={styles.headerIconShadow} />
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)', 'rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.02)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Ionicons name="document-text" size={28} color={Colors.text} />
-        </View>
-        <Text style={styles.stepTitle}>Basic Information</Text>
-        <Text style={styles.stepSubtitle}>Tell us about the item you're protecting</Text>
-      </View>
-
       {/* Form Card */}
       <PremiumGlassCard variant="premium" style={styles.formCard}>
-        <View style={styles.inputGroup}>
-          <View style={styles.labelRow}>
-            <Ionicons name="pricetag-outline" size={16} color={Colors.textSecondary} />
-            <Text style={styles.label}>Item Title</Text>
-            <Text style={styles.required}>*</Text>
-          </View>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., iPhone 15 Pro Max"
-              placeholderTextColor={Colors.textTertiary}
-              value={formData.itemTitle}
-              onChangeText={(v) => updateFormData('itemTitle', v)}
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <View style={styles.labelRow}>
-            <Ionicons name="document-text-outline" size={16} color={Colors.textSecondary} />
-            <Text style={styles.label}>Description</Text>
-            <Text style={styles.required}>*</Text>
-          </View>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Describe the item in detail..."
-              placeholderTextColor={Colors.textTertiary}
-              value={formData.itemDescription}
-              onChangeText={(v) => updateFormData('itemDescription', v)}
-              multiline
-              numberOfLines={5}
-              textAlignVertical="top"
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
-            <View style={styles.labelRow}>
-              <Ionicons name="cash-outline" size={16} color={Colors.textSecondary} />
-              <Text style={styles.label}>Amount</Text>
-              <Text style={styles.required}>*</Text>
+        {/* Basic Information Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconBox, styles.basicInfoIconBox]}>
+              <Ionicons name="document-text-outline" size={20} color="#60A5FA" />
             </View>
+            <Text style={styles.sectionTitle}>Basic Information</Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Item Title *</Text>
             <View style={styles.inputWrapper}>
-              <Text style={styles.currencySymbol}>$</Text>
               <TextInput
-                style={[styles.input, styles.amountInput]}
-                placeholder="0.00"
+                style={styles.input}
+                placeholder="e.g., iPhone 15 Pro Max"
                 placeholderTextColor={Colors.textTertiary}
-                value={formData.amount}
-                onChangeText={(v) => {
-                  // Only allow numbers and decimal point
-                  const numericValue = v.replace(/[^0-9.]/g, '');
-                  // Ensure only one decimal point
-                  const parts = numericValue.split('.');
-                  const filteredValue = parts.length > 2 
-                    ? parts[0] + '.' + parts.slice(1).join('')
-                    : numericValue;
-                  updateFormData('amount', filteredValue);
-                }}
-                keyboardType="decimal-pad"
+                value={formData.itemTitle}
+                onChangeText={(v) => updateFormData('itemTitle', v)}
               />
             </View>
           </View>
-              <View style={[styles.inputGroup, { flex: 0.5 }]}>
-            <View style={styles.labelRow}>
-              <Ionicons name="globe-outline" size={16} color={Colors.textSecondary} />
-              <Text style={styles.label}>Currency</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Description *</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Describe the item in detail..."
+                placeholderTextColor={Colors.textTertiary}
+                value={formData.itemDescription}
+                onChangeText={(v) => updateFormData('itemDescription', v)}
+                multiline
+                numberOfLines={5}
+                textAlignVertical="top"
+              />
             </View>
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => setShowCurrencyPicker(true)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.currencyText, !formData.currency && styles.currencyPlaceholder]}>
-                {formData.currency || 'Select currency'}
-              </Text>
-            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Payment Details Section */}
+        <View style={[styles.sectionContainer, styles.sectionDivider]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIconBox, styles.paymentIconBox]}>
+              <Ionicons name="cash-outline" size={20} color="#34D399" />
+            </View>
+            <Text style={styles.sectionTitle}>Payment Details</Text>
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
+              <Text style={styles.inputLabel}>Amount *</Text>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.currencySymbol}>$</Text>
+                <TextInput
+                  style={[styles.input, styles.amountInput]}
+                  placeholder="0.00"
+                  placeholderTextColor={Colors.textTertiary}
+                  value={formData.amount}
+                  onChangeText={(v) => {
+                    // Only allow numbers and decimal point
+                    const numericValue = v.replace(/[^0-9.]/g, '');
+                    // Ensure only one decimal point
+                    const parts = numericValue.split('.');
+                    const filteredValue = parts.length > 2 
+                      ? parts[0] + '.' + parts.slice(1).join('')
+                      : numericValue;
+                    updateFormData('amount', filteredValue);
+                  }}
+                  keyboardType="decimal-pad"
+                />
+              </View>
+            </View>
+            <View style={[styles.inputGroup, { flex: 0.5 }]}>
+              <Text style={styles.inputLabel}>Currency</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowCurrencyPicker(true)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.currencyText, !formData.currency && styles.currencyPlaceholder]}>
+                  {formData.currency || 'Select currency'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </PremiumGlassCard>
@@ -1147,11 +1150,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   formCard: {
-    padding: Spacing.xl + 6,
+    padding: Spacing.xl + 8,
     marginTop: 12,
-    borderRadius: 28,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
@@ -1159,7 +1162,7 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   inputGroup: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
   labelRow: {
     flexDirection: 'row',
@@ -1183,35 +1186,30 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 20,
-    padding: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 14,
     color: Colors.text,
     fontSize: 16,
-    fontWeight: '400',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    fontWeight: '300',
   },
   amountInput: {
-    paddingLeft: 28,
+    paddingLeft: 26,
   },
   currencySymbol: {
     position: 'absolute',
-    left: 16,
-    top: 16,
+    left: 14,
+    top: 14,
     fontSize: 16,
     color: Colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '300',
     zIndex: 1,
   },
   textArea: {
     minHeight: 120,
-    paddingTop: 18,
+    paddingTop: 14,
     textAlignVertical: 'top',
   },
   row: {
@@ -1518,5 +1516,47 @@ const styles = StyleSheet.create({
   currencyItemNameActive: {
     color: Colors.text,
     opacity: 0.9,
+  },
+  sectionContainer: {
+    marginBottom: 32,
+  },
+  sectionDivider: {
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    gap: 12,
+  },
+  sectionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  basicInfoIconBox: {
+    backgroundColor: 'rgba(96, 165, 250, 0.2)',
+    borderColor: 'rgba(96, 165, 250, 0.3)',
+  },
+  paymentIconBox: {
+    backgroundColor: 'rgba(52, 211, 153, 0.2)',
+    borderColor: 'rgba(52, 211, 153, 0.3)',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '300',
+    color: Colors.text,
+    letterSpacing: -0.3,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 12,
   },
 });

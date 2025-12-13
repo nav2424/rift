@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
+    "dev:stop": "node scripts/stop-dev-server.js",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
+    "@stripe/react-stripe-js": "^5.4.1",
     "@stripe/stripe-js": "^8.5.3",
     "@supabase/supabase-js": "^2.87.1",
     "@types/jsonwebtoken": "^9.0.10",

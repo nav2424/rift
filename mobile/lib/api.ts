@@ -67,13 +67,21 @@ export interface User {
 
 export interface EscrowTransaction {
   id: string;
-  riftNumber: number; // Sequential rift number for tracking
+  riftNumber: number | null; // Sequential rift number for tracking
   itemTitle: string;
   itemDescription: string;
   itemType: 'PHYSICAL' | 'TICKETS' | 'DIGITAL' | 'SERVICES';
-  amount: number;
+  // New fee structure
+  subtotal?: number | null; // Transaction amount (before fees)
+  amount: number; // Legacy field, use subtotal if available
+  buyerFee?: number | null; // 3% buyer fee
+  sellerFee?: number | null; // 5% seller fee
+  sellerNet?: number | null; // Amount seller receives (subtotal - sellerFee)
   currency: string;
-  status: 'AWAITING_PAYMENT' | 'AWAITING_SHIPMENT' | 'IN_TRANSIT' | 'DELIVERED_PENDING_RELEASE' | 'RELEASED' | 'REFUNDED' | 'DISPUTED' | 'CANCELLED';
+  // New state machine statuses
+  status: 'AWAITING_PAYMENT' | 'FUNDED' | 'PROOF_SUBMITTED' | 'UNDER_REVIEW' | 'RELEASED' | 'DISPUTED' | 'RESOLVED' | 'PAYOUT_SCHEDULED' | 'PAID_OUT' | 'CANCELED' 
+    // Legacy statuses (for backward compatibility)
+    | 'AWAITING_SHIPMENT' | 'IN_TRANSIT' | 'DELIVERED_PENDING_RELEASE' | 'REFUNDED' | 'CANCELLED';
   buyerId: string;
   sellerId: string;
   buyer: User;
@@ -81,15 +89,16 @@ export interface EscrowTransaction {
   shippingAddress?: string | null;
   notes?: string | null;
   paymentReference?: string | null;
-  // Fee tracking
+  // Legacy fee tracking (deprecated, use buyerFee/sellerFee)
   platformFee?: number | null;
   sellerPayoutAmount?: number | null;
-  // Hybrid protection fields
+  // Hybrid protection fields (legacy)
   shipmentVerifiedAt?: string | null;
   trackingVerified?: boolean;
   deliveryVerifiedAt?: string | null;
   gracePeriodEndsAt?: string | null;
   autoReleaseScheduled?: boolean;
+  autoReleaseAt?: string | null; // New auto-release deadline
   // Type-specific fields
   eventDate?: string | null;
   venue?: string | null;
@@ -99,7 +108,10 @@ export interface EscrowTransaction {
   serviceDate?: string | null;
   createdAt: string;
   updatedAt: string;
+  // Legacy proofs
   shipmentProofs?: ShipmentProof[];
+  // New proof system
+  proofs?: Proof[];
   timelineEvents?: TimelineEvent[];
   disputes?: Dispute[];
 }
@@ -111,6 +123,17 @@ export interface ShipmentProof {
   filePath?: string | null;
   notes?: string | null;
   createdAt: string;
+}
+
+export interface Proof {
+  id: string;
+  proofType: 'PHYSICAL' | 'SERVICE' | 'DIGITAL';
+  proofPayload: any; // JSON payload with proof data
+  uploadedFiles?: string[] | null;
+  status: 'PENDING' | 'VALID' | 'REJECTED';
+  submittedAt: string;
+  validatedAt?: string | null;
+  rejectionReason?: string | null;
 }
 
 export interface TimelineEvent {
@@ -175,12 +198,20 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ 
-          error: 'Unknown error',
-          details: `HTTP ${response.status}: ${response.statusText}`
-        }));
-        const errorMessage = error.error || 'Request failed';
-        const errorDetails = error.details ? ` (${error.details})` : '';
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { 
+            error: 'Unknown error',
+            details: `HTTP ${response.status}: ${response.statusText}`
+          };
+        }
+        const errorMessage = errorData.error || `Request failed (${response.status})`;
+        // Include details if available (for development)
+        const errorDetails = errorData.details && process.env.NODE_ENV === 'development' 
+          ? `\n\nDetails: ${errorData.details}` 
+          : '';
         throw new Error(`${errorMessage}${errorDetails}`);
       }
 
@@ -281,8 +312,13 @@ class ApiClient {
     itemType: 'PHYSICAL' | 'TICKETS' | 'DIGITAL' | 'SERVICES';
     amount: number;
     currency: string;
+    creatorRole?: 'BUYER' | 'SELLER';
     sellerId?: string;
     sellerEmail?: string;
+    buyerId?: string;
+    buyerEmail?: string;
+    partnerId?: string;
+    partnerEmail?: string;
     shippingAddress?: string;
     notes?: string;
     eventDate?: string;
@@ -298,17 +334,32 @@ class ApiClient {
     });
   }
 
-  async createPaymentIntent(escrowId: string): Promise<{ clientSecret: string; paymentIntentId: string }> {
-    return this.request(`/api/escrows/${escrowId}/payment-intent`, {
+  // New payment flow: fund endpoint (POST to create payment intent, PUT to confirm)
+  async fundEscrow(escrowId: string): Promise<{ clientSecret: string; paymentIntentId: string; buyerTotal: number; subtotal: number; buyerFee: number }> {
+    return this.request(`/api/escrows/${escrowId}/fund`, {
       method: 'POST',
     });
   }
 
-  async markPaid(escrowId: string, paymentIntentId?: string): Promise<{ success: boolean; paymentReference?: string }> {
-    return this.request(`/api/escrows/${escrowId}/mark-paid`, {
-      method: 'POST',
+  async confirmPayment(escrowId: string, paymentIntentId: string): Promise<{ success: boolean; status: string }> {
+    return this.request(`/api/escrows/${escrowId}/fund`, {
+      method: 'PUT',
       body: JSON.stringify({ paymentIntentId }),
     });
+  }
+
+  // Legacy methods (deprecated, use fundEscrow + confirmPayment instead)
+  async createPaymentIntent(escrowId: string): Promise<{ clientSecret: string; paymentIntentId: string }> {
+    // Redirect to new fund endpoint
+    return this.fundEscrow(escrowId);
+  }
+
+  async markPaid(escrowId: string, paymentIntentId?: string): Promise<{ success: boolean; paymentReference?: string }> {
+    if (!paymentIntentId) {
+      throw new Error('paymentIntentId is required');
+    }
+    const result = await this.confirmPayment(escrowId, paymentIntentId);
+    return { success: result.success, paymentReference: undefined };
   }
 
   async cancelEscrow(escrowId: string): Promise<{ success: boolean }> {
@@ -323,12 +374,28 @@ class ApiClient {
     });
   }
 
-  async releaseFunds(escrowId: string): Promise<{ success: boolean; newStatus?: string; payoutId?: string }> {
-    return this.request(`/api/escrows/${escrowId}/release-funds`, {
+  async releaseFunds(escrowId: string): Promise<{ success: boolean; status: string }> {
+    // Use new /release endpoint (matches website)
+    return this.request(`/api/escrows/${escrowId}/release`, {
       method: 'POST',
     });
   }
 
+  // New proof submission system
+  async submitProof(
+    escrowId: string,
+    data: {
+      proofPayload: any; // JSON payload with proof data (trackingNumber, carrier, etc.)
+      uploadedFiles?: string[]; // Array of file URLs
+    }
+  ): Promise<{ success: boolean; proofId: string; status: string; autoReleaseAt?: string; validation: any }> {
+    return this.request(`/api/escrows/${escrowId}/proof`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Legacy methods (deprecated, use submitProof instead)
   async uploadShipmentProof(
     escrowId: string,
     data: {
@@ -338,33 +405,21 @@ class ApiClient {
       notes?: string;
     }
   ): Promise<{ success: boolean }> {
-    const formData = new FormData();
-    if (data.trackingNumber) formData.append('trackingNumber', data.trackingNumber);
-    if (data.shippingCarrier) formData.append('shippingCarrier', data.shippingCarrier);
-    if (data.notes) formData.append('notes', data.notes);
+    // Convert to new proof format
+    const proofPayload: any = {};
+    if (data.trackingNumber) proofPayload.trackingNumber = data.trackingNumber;
+    if (data.shippingCarrier) proofPayload.carrier = data.shippingCarrier;
+    if (data.notes) proofPayload.notes = data.notes;
+
+    const uploadedFiles: string[] = [];
     if (data.fileUri) {
-      formData.append('file', {
-        uri: data.fileUri,
-        type: 'image/jpeg',
-        name: 'shipment-proof.jpg',
-      } as any);
+      // In a real implementation, upload the file first and get the URL
+      // For now, we'll include the URI (this should be uploaded to a file service)
+      uploadedFiles.push(data.fileUri);
     }
 
-    const token = await this.getAuthToken();
-    const response = await fetch(`${API_URL}/api/escrows/${escrowId}/upload-shipment-proof`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'Upload failed');
-    }
-
-    return response.json();
+    const result = await this.submitProof(escrowId, { proofPayload, uploadedFiles });
+    return { success: result.success };
   }
 
   async markDelivered(
@@ -374,38 +429,23 @@ class ApiClient {
       notes?: string;
     }
   ): Promise<{ success: boolean; status?: string }> {
-    const formData = new FormData();
-    if (data.notes) formData.append('notes', data.notes);
+    // Convert to new proof format
+    const proofPayload: any = {};
+    if (data.notes) proofPayload.notes = data.notes;
+
+    const uploadedFiles: string[] = [];
     if (data.fileUri) {
-      formData.append('file', {
-        uri: data.fileUri,
-        type: 'image/jpeg',
-        name: 'delivery-proof.jpg',
-      } as any);
+      uploadedFiles.push(data.fileUri);
     }
 
-    const token = await this.getAuthToken();
-    const API_URL = getApiUrl();
-    const response = await fetch(`${API_URL}/api/escrows/${escrowId}/mark-delivered`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'Failed to mark as delivered');
-    }
-
-    return response.json();
+    const result = await this.submitProof(escrowId, { proofPayload, uploadedFiles });
+    return { success: result.success, status: result.status };
   }
 
-  async raiseDispute(escrowId: string, reason: string, type?: string): Promise<{ success: boolean }> {
-    return this.request(`/api/escrows/${escrowId}/raise-dispute`, {
+  async raiseDispute(escrowId: string, reason: string, type: string, evidence?: any): Promise<{ success: boolean; disputeId: string; status: string }> {
+    return this.request(`/api/escrows/${escrowId}/dispute`, {
       method: 'POST',
-      body: JSON.stringify({ reason, type }),
+      body: JSON.stringify({ reason, type, evidence }),
     });
   }
 

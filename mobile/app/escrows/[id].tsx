@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import Constants from 'expo-constants';
+import { subscribeToEscrow } from '@/lib/realtime-escrows';
 
 export default function EscrowDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,6 +35,30 @@ export default function EscrowDetailScreen() {
 
   useEffect(() => {
     loadEscrow();
+  }, [id]);
+
+  // Real-time sync for this escrow
+  useEffect(() => {
+    if (!id) return;
+
+    const unsubscribe = subscribeToEscrow(
+      id as string,
+      (update) => {
+        // Update escrow when changes occur
+        setEscrow((prev) => {
+          if (!prev) return prev;
+          return { ...prev, ...update };
+        });
+      },
+      (error) => {
+        console.error('Realtime escrow sync error:', error);
+        // Silently fail - don't disrupt user experience
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
   }, [id]);
 
   const loadEscrow = async () => {
@@ -75,17 +100,15 @@ export default function EscrowDetailScreen() {
 
     setActionLoading('mark-paid');
     try {
-      // 1. Create payment intent (always use real Stripe - no mock mode)
-      const { clientSecret, paymentIntentId } = await api.createPaymentIntent(escrow.id);
+      // 1. Fund escrow - creates payment intent (new endpoint)
+      const { clientSecret, paymentIntentId, buyerTotal } = await api.fundEscrow(escrow.id);
 
       if (!clientSecret || !paymentIntentId) {
         throw new Error('Failed to create payment intent. Please check your payment configuration.');
       }
 
       // 2. Initialize Payment Sheet
-      // Note: Apple Pay requires merchantIdentifier in payment provider
-      // For now, we'll skip Apple Pay and focus on card payments
-      // You can enable Apple Pay later by adding merchantIdentifier
+      // Note: Only allow card payments (no Link, no wallets)
       const { error: initError } = await initPaymentSheet({
         merchantDisplayName: 'Rift',
         paymentIntentClientSecret: clientSecret,
@@ -94,15 +117,10 @@ export default function EscrowDetailScreen() {
           name: user?.name || undefined,
         },
         allowsDelayedPaymentMethods: false,
-        returnURL: 'rift://payment-result', // Required for payment methods that redirect
-        // Skip Apple Pay for now (requires merchantIdentifier setup)
-        // applePay: {
-        //   merchantCountryCode: 'US',
-        // },
-        googlePay: {
-          merchantCountryCode: 'US',
-          testEnv: true, // Set to false in production
-        },
+        returnURL: 'rift://payment-result',
+        // Disable wallets - only card payments
+        applePay: undefined,
+        googlePay: undefined,
       });
 
       if (initError) {
@@ -111,17 +129,14 @@ export default function EscrowDetailScreen() {
       }
 
       // 3. Present Payment Sheet - THIS IS WHERE THE USER PAYS
-      // This opens the actual payment UI where user enters card details
       const { error: presentError } = await presentPaymentSheet();
 
       if (presentError) {
         // User cancelled or error occurred
         if (presentError.code === 'Canceled') {
-          // User cancelled - this is fine, just stop loading
           setActionLoading(null);
           return;
         } else {
-          // Actual error
           console.error('Payment Sheet present error:', presentError);
           Alert.alert('Payment Error', presentError.message || 'Payment failed. Please try again.');
           setActionLoading(null);
@@ -129,21 +144,17 @@ export default function EscrowDetailScreen() {
         }
       }
 
-      // 4. Payment Sheet completed successfully - payment was confirmed client-side
-      // Now we need to verify with backend and update escrow status
-      // The backend will check the payment intent status (may take a moment to update)
+      // 4. Payment Sheet completed successfully - confirm payment with backend
       try {
-        const result = await api.markPaid(escrow.id, paymentIntentId);
+        const result = await api.confirmPayment(escrow.id, paymentIntentId);
         Alert.alert(
           'Payment Successful',
-          result.paymentReference 
-            ? `Payment processed successfully. Reference: ${result.paymentReference}`
-            : 'Payment processed successfully. The seller has been notified.',
+          `Payment processed successfully. Total: ${escrow.currency} ${buyerTotal.toFixed(2)}`,
           [{ text: 'OK', onPress: () => loadEscrow() }]
         );
       } catch (error: any) {
         Alert.alert('Error', 'Payment was processed but there was an error updating the escrow. Please contact support.');
-        console.error('Error marking escrow as paid:', error);
+        console.error('Error confirming payment:', error);
       }
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -200,7 +211,12 @@ export default function EscrowDetailScreen() {
           }
           break;
         case 'release-funds':
-          await api.releaseFunds(escrow.id);
+          const releaseResult = await api.releaseFunds(escrow.id);
+          Alert.alert(
+            'Funds Released!',
+            'The seller has been notified and will receive payment.',
+            [{ text: 'OK', onPress: () => loadEscrow() }]
+          );
           break;
         case 'upload-proof':
           await handleUploadProof();
@@ -236,32 +252,75 @@ export default function EscrowDetailScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      // In a real app, you'd upload the image first
-      Alert.prompt(
-        'Upload Shipment Proof',
-        'Enter tracking number and carrier',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Upload',
-            onPress: async (trackingNumber) => {
-              try {
-                setActionLoading('upload-proof');
-                await api.uploadShipmentProof(escrow.id, {
-                  trackingNumber: trackingNumber || undefined,
-                  fileUri: result.assets[0].uri,
-                });
-                loadEscrow();
-              } catch (error: any) {
-                Alert.alert('Error', error.message || 'Upload failed');
-              } finally {
-                setActionLoading(null);
-              }
+      // For physical items, prompt for tracking info
+      if (escrow.itemType === 'PHYSICAL') {
+        Alert.prompt(
+          'Upload Shipment Proof',
+          'Enter tracking number',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Upload',
+              onPress: async (trackingNumber) => {
+                try {
+                  setActionLoading('upload-proof');
+                  // Use new proof system
+                  const proofPayload: any = {};
+                  if (trackingNumber) proofPayload.trackingNumber = trackingNumber;
+                  
+                  // In production, upload file to storage service first, then use URL
+                  const uploadedFiles = [result.assets[0].uri]; // Should be file URLs after upload
+                  
+                  await api.submitProof(escrow.id, {
+                    proofPayload,
+                    uploadedFiles,
+                  });
+                  Alert.alert('Success', 'Proof submitted successfully');
+                  loadEscrow();
+                } catch (error: any) {
+                  Alert.alert('Error', error.message || 'Upload failed');
+                } finally {
+                  setActionLoading(null);
+                }
+              },
             },
-          },
-        ],
-        'plain-text'
-      );
+          ],
+          'plain-text'
+        );
+      } else {
+        // For non-physical items, just upload with optional notes
+        Alert.prompt(
+          'Upload Delivery Proof',
+          'Add optional notes',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Upload',
+              onPress: async (notes) => {
+                try {
+                  setActionLoading('upload-proof');
+                  const proofPayload: any = {};
+                  if (notes) proofPayload.notes = notes;
+                  
+                  const uploadedFiles = [result.assets[0].uri];
+                  
+                  await api.submitProof(escrow.id, {
+                    proofPayload,
+                    uploadedFiles,
+                  });
+                  Alert.alert('Success', 'Proof submitted successfully');
+                  loadEscrow();
+                } catch (error: any) {
+                  Alert.alert('Error', error.message || 'Upload failed');
+                } finally {
+                  setActionLoading(null);
+                }
+              },
+            },
+          ],
+          'plain-text'
+        );
+      }
     }
   };
 
@@ -298,9 +357,15 @@ export default function EscrowDetailScreen() {
             onPress: async (notes) => {
               try {
                 setActionLoading('mark-delivered');
-                await api.markDelivered(escrow.id, {
-                  fileUri: result.assets[0].uri,
-                  notes: notes || undefined,
+                // Use new proof system
+                const proofPayload: any = {};
+                if (notes) proofPayload.notes = notes;
+                
+                const uploadedFiles = [result.assets[0].uri];
+                
+                const result = await api.submitProof(escrow.id, {
+                  proofPayload,
+                  uploadedFiles,
                 });
                 Alert.alert('Success', 'Proof uploaded successfully. Buyer has 24 hours to review.');
                 loadEscrow();
@@ -320,43 +385,29 @@ export default function EscrowDetailScreen() {
   const handleRaiseDispute = () => {
     if (!escrow) return;
 
-    // Hybrid protection only applies to PHYSICAL items
-    const isPhysical = escrow.itemType === 'PHYSICAL';
-    const shipmentVerified = isPhysical && escrow.shipmentVerifiedAt !== null && escrow.trackingVerified;
-    const deliveryVerified = escrow.deliveryVerifiedAt !== null;
-
-    // Determine available dispute types
-    let disputeTypes: { label: string; value: string }[] = [];
+    // Determine available dispute types based on status
+    // Can only dispute between FUNDED and before RELEASED
+    const canDispute = ['FUNDED', 'PROOF_SUBMITTED', 'UNDER_REVIEW'].includes(escrow.status);
     
-    // For PHYSICAL items: If shipment is verified and delivered, restrict dispute types
-    // For non-physical items: Always allow all dispute types (no hybrid protection)
-    if (isPhysical && shipmentVerified && deliveryVerified) {
-      // After verified delivery for PHYSICAL items, buyer can only dispute certain types
-      disputeTypes = [
-        { label: 'Item Not as Described', value: 'ITEM_NOT_AS_DESCRIBED' },
-        { label: 'Item Damaged', value: 'ITEM_DAMAGED' },
-        { label: 'Wrong Item Received', value: 'WRONG_ITEM' },
-        { label: 'Wrong Address', value: 'WRONG_ADDRESS' },
-        { label: 'Other', value: 'OTHER' },
-      ];
-    } else {
-      // Before verified delivery OR non-physical items: buyer can dispute anything
-      disputeTypes = [
-        { label: 'Item Not Received', value: 'ITEM_NOT_RECEIVED' },
-        { label: 'Item Not as Described', value: 'ITEM_NOT_AS_DESCRIBED' },
-        { label: 'Item Damaged', value: 'ITEM_DAMAGED' },
-        { label: 'Wrong Item', value: 'WRONG_ITEM' },
-        { label: 'Wrong Address', value: 'WRONG_ADDRESS' },
-        { label: 'Other', value: 'OTHER' },
-      ];
+    if (!canDispute) {
+      Alert.alert('Cannot Dispute', `Cannot open a dispute in ${escrow.status} status. Disputes can only be opened after payment and before funds are released.`);
+      return;
     }
+
+    // Standard dispute types
+    const disputeTypes = [
+      { label: 'Item Not Received', value: 'ITEM_NOT_RECEIVED' },
+      { label: 'Item Not as Described', value: 'ITEM_NOT_AS_DESCRIBED' },
+      { label: 'Item Damaged', value: 'ITEM_DAMAGED' },
+      { label: 'Wrong Item', value: 'WRONG_ITEM' },
+      { label: 'Wrong Address', value: 'WRONG_ADDRESS' },
+      { label: 'Other', value: 'OTHER' },
+    ];
 
     // Show dispute type selection
     Alert.alert(
       'Raise Dispute',
-      isPhysical && shipmentVerified && deliveryVerified
-        ? 'Shipment has been verified and delivered. You can dispute: item not as described, damaged, wrong item, or wrong address.'
-        : 'Select the type of dispute:',
+      'Select the type of dispute:',
       [
         { text: 'Cancel', style: 'cancel' },
         ...disputeTypes.map(type => ({
@@ -377,6 +428,7 @@ export default function EscrowDetailScreen() {
                     try {
                       setActionLoading('raise-dispute');
                       await api.raiseDispute(escrow.id, reason, type.value);
+                      Alert.alert('Success', 'Dispute opened successfully');
                       loadEscrow();
                     } catch (error: any) {
                       Alert.alert('Error', error.message || 'Failed to raise dispute');
@@ -430,13 +482,20 @@ export default function EscrowDetailScreen() {
   const getStatusColor = (status: EscrowTransaction['status']) => {
     switch (status) {
       case 'RELEASED':
+      case 'PAID_OUT':
         return '#4ade80';
       case 'REFUNDED':
+      case 'CANCELED':
+      case 'CANCELLED':
         return '#f87171';
       case 'DISPUTED':
+      case 'UNDER_REVIEW':
         return '#fbbf24';
-      case 'CANCELLED':
-        return '#9ca3af';
+      case 'FUNDED':
+      case 'PROOF_SUBMITTED':
+        return '#60a5fa';
+      case 'AWAITING_PAYMENT':
+        return '#a78bfa';
       default:
         return '#60a5fa';
     }
@@ -483,11 +542,47 @@ export default function EscrowDetailScreen() {
         <PremiumGlassCard variant="premium" style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Details</Text>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount</Text>
+            <Text style={styles.detailLabel}>Transaction Amount</Text>
             <Text style={styles.detailValue}>
-              {escrow.amount} {escrow.currency}
+              {escrow.subtotal || escrow.amount} {escrow.currency}
             </Text>
           </View>
+          {escrow.buyerFee && escrow.buyerFee > 0 && isBuyer && (
+            <>
+              <View style={styles.detailDivider} />
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Processing Fee (3%)</Text>
+                <Text style={styles.detailValue}>
+                  +{escrow.buyerFee.toFixed(2)} {escrow.currency}
+                </Text>
+              </View>
+              <View style={styles.detailDivider} />
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { fontWeight: '600' }]}>Total You Pay</Text>
+                <Text style={[styles.detailValue, { color: '#4ade80', fontWeight: '600' }]}>
+                  {((escrow.subtotal || escrow.amount) + escrow.buyerFee).toFixed(2)} {escrow.currency}
+                </Text>
+              </View>
+            </>
+          )}
+          {escrow.sellerFee && escrow.sellerFee > 0 && isSeller && (
+            <>
+              <View style={styles.detailDivider} />
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Platform Fee (5%)</Text>
+                <Text style={styles.detailValue}>
+                  -{escrow.sellerFee.toFixed(2)} {escrow.currency}
+                </Text>
+              </View>
+              <View style={styles.detailDivider} />
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { fontWeight: '600' }]}>You Receive</Text>
+                <Text style={[styles.detailValue, { color: '#4ade80', fontWeight: '600' }]}>
+                  {escrow.sellerNet?.toFixed(2) || ((escrow.subtotal || escrow.amount) - escrow.sellerFee).toFixed(2)} {escrow.currency}
+                </Text>
+              </View>
+            </>
+          )}
           <View style={styles.detailDivider} />
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Buyer</Text>
@@ -658,10 +753,11 @@ export default function EscrowDetailScreen() {
               
               // Buyer actions
               if (currentUserRole === 'BUYER' && escrow.status === 'AWAITING_PAYMENT') {
+                const buyerTotal = (escrow.subtotal || escrow.amount || 0) + (escrow.buyerFee || 0);
                 actions.push(
                   <GlassButton
                     key="pay-escrow"
-                    title={actionLoading === 'mark-paid' ? 'Processing Payment...' : `Pay ${escrow.amount} ${escrow.currency}`}
+                    title={actionLoading === 'mark-paid' ? 'Processing Payment...' : `Pay Rift ${escrow.currency} ${buyerTotal.toFixed(2)}`}
                     onPress={() => handlePayEscrow()}
                     variant="primary"
                     size="md"
@@ -670,31 +766,21 @@ export default function EscrowDetailScreen() {
                     style={styles.actionButton}
                   />
                 );
-              }
-
-              if (currentUserRole === 'BUYER' && escrow.status === 'IN_TRANSIT') {
-                const buttonTitle = 
-                  actionLoading === 'confirm-received' 
-                    ? 'Processing...' 
-                    : escrow.itemType !== 'PHYSICAL'
-                    ? 'Release Funds Early (Optional)'
-                    : 'Confirm Item Received';
-                
                 actions.push(
                   <GlassButton
-                    key="confirm-received"
-                    title={buttonTitle}
-                    onPress={() => handleAction('confirm-received')}
-                    variant="primary"
+                    key="cancel"
+                    title="Cancel Rift"
+                    onPress={() => handleAction('cancel')}
+                    variant="outline"
                     size="md"
-                    disabled={actionLoading === 'confirm-received'}
-                    loading={actionLoading === 'confirm-received'}
                     style={styles.actionButton}
                   />
                 );
               }
 
-              if (currentUserRole === 'BUYER' && escrow.status === 'DELIVERED_PENDING_RELEASE') {
+              // Buyer: Release funds (after proof submitted)
+              if (currentUserRole === 'BUYER' && 
+                (escrow.status === 'PROOF_SUBMITTED' || escrow.status === 'UNDER_REVIEW')) {
                 actions.push(
                   <GlassButton
                     key="release-funds"
@@ -709,13 +795,14 @@ export default function EscrowDetailScreen() {
                 );
               }
 
-              // Seller actions
-              if (currentUserRole === 'SELLER' && escrow.status === 'AWAITING_SHIPMENT') {
+              // Seller actions: Submit proof (after funded)
+              if (currentUserRole === 'SELLER' && 
+                (escrow.status === 'FUNDED' || escrow.status === 'AWAITING_SHIPMENT')) {
                 if (escrow.itemType === 'PHYSICAL') {
                   actions.push(
                     <GlassButton
                       key="upload-proof"
-                      title={actionLoading === 'upload-proof' ? 'Uploading...' : 'Upload Shipment Proof'}
+                      title={actionLoading === 'upload-proof' ? 'Uploading...' : 'Submit Shipment Proof'}
                       onPress={() => handleAction('upload-proof')}
                       variant="primary"
                       size="md"
@@ -725,11 +812,11 @@ export default function EscrowDetailScreen() {
                     />
                   );
                 } else {
-                  // Non-physical items: Mark as delivered
+                  // Non-physical items: Submit delivery proof
                   const deliverButtonTitle = 
-                    escrow.itemType === 'DIGITAL' ? 'Mark Digital Product Delivered' :
-                    escrow.itemType === 'TICKETS' ? 'Mark Tickets Transferred' :
-                    'Mark Service Completed';
+                    escrow.itemType === 'DIGITAL' ? 'Submit Delivery Proof' :
+                    escrow.itemType === 'TICKETS' ? 'Submit Transfer Proof' :
+                    'Submit Completion Proof';
                   
                   actions.push(
                     <GlassButton
@@ -746,29 +833,14 @@ export default function EscrowDetailScreen() {
                 }
               }
 
-              // Dispute action
+              // Dispute action (buyer can dispute between FUNDED and before RELEASED)
               if (currentUserRole === 'BUYER' &&
-                (escrow.status === 'IN_TRANSIT' || escrow.status === 'DELIVERED_PENDING_RELEASE')) {
+                (escrow.status === 'FUNDED' || escrow.status === 'PROOF_SUBMITTED' || escrow.status === 'UNDER_REVIEW')) {
                 actions.push(
                   <GlassButton
                     key="raise-dispute"
                     title="Raise Dispute"
                     onPress={() => handleAction('raise-dispute')}
-                    variant="outline"
-                    size="md"
-                    style={styles.actionButton}
-                  />
-                );
-              }
-
-              // Cancel action
-              if (currentUserRole === 'BUYER' &&
-                ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT'].includes(escrow.status)) {
-                actions.push(
-                  <GlassButton
-                    key="cancel"
-                    title="Cancel Rift"
-                    onPress={() => handleAction('cancel')}
                     variant="outline"
                     size="md"
                     style={styles.actionButton}
@@ -784,7 +856,7 @@ export default function EscrowDetailScreen() {
                   <View key="empty" style={styles.emptyActionsContainer}>
                     <Ionicons name="checkmark-circle-outline" size={32} color={Colors.textTertiary} />
                     <Text style={styles.emptyActionsText}>
-                      {escrow.status === 'RELEASED' || escrow.status === 'REFUNDED' || escrow.status === 'CANCELLED'
+                      {escrow.status === 'RELEASED' || escrow.status === 'PAID_OUT' || escrow.status === 'REFUNDED' || escrow.status === 'CANCELLED' || escrow.status === 'CANCELED'
                         ? 'No actions available. This rift has been completed.'
                         : 'No actions available at this time.'}
                     </Text>
@@ -794,6 +866,65 @@ export default function EscrowDetailScreen() {
             })()}
           </View>
         </PremiumGlassCard>
+
+        {/* New Proof System Display */}
+        {escrow.proofs && escrow.proofs.length > 0 && (
+          <PremiumGlassCard variant="premium" style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Proof of Delivery</Text>
+            {escrow.proofs.map((proof: any) => (
+              <View key={proof.id} style={styles.proofCard}>
+                <View style={styles.proofHeader}>
+                  <Text style={styles.proofType}>
+                    {proof.proofType.replace(/_/g, ' ')}
+                  </Text>
+                  <Text style={[
+                    styles.proofStatus,
+                    { color: proof.status === 'VALID' ? '#4ade80' : proof.status === 'REJECTED' ? '#f87171' : '#fbbf24' }
+                  ]}>
+                    {proof.status}
+                  </Text>
+                </View>
+                {proof.rejectionReason && (
+                  <Text style={styles.proofRejection}>
+                    {proof.rejectionReason}
+                  </Text>
+                )}
+                {proof.uploadedFiles && proof.uploadedFiles.length > 0 && (
+                  <View style={styles.proofFiles}>
+                    {proof.uploadedFiles.map((file: string, idx: number) => (
+                      <TouchableOpacity key={idx} onPress={() => {/* Open file */}}>
+                        <Text style={styles.proofFileLink}>View File {idx + 1} →</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                <Text style={styles.proofDate}>
+                  Submitted: {new Date(proof.submittedAt).toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </PremiumGlassCard>
+        )}
+
+        {/* Legacy Shipment Proofs (for backward compatibility) */}
+        {escrow.itemType === 'PHYSICAL' && escrow.shipmentProofs && escrow.shipmentProofs.length > 0 && (
+          <PremiumGlassCard variant="premium" style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Shipment Proofs</Text>
+            {escrow.shipmentProofs.map((proof: any) => (
+              <View key={proof.id} style={styles.proofCard}>
+                {proof.trackingNumber && (
+                  <Text style={styles.detailValue}>Tracking: {proof.trackingNumber}</Text>
+                )}
+                {proof.shippingCarrier && (
+                  <Text style={styles.detailValue}>Carrier: {proof.shippingCarrier}</Text>
+                )}
+                <Text style={styles.proofDate}>
+                  {new Date(proof.createdAt).toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </PremiumGlassCard>
+        )}
 
         {/* Messaging Panel */}
         <MessagingPanel transactionId={escrow.id} />
@@ -1070,6 +1201,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 16,
+  },
+  proofCard: {
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 12,
+  },
+  proofHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  proofType: {
+    fontSize: 15,
+    color: '#ffffff',
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  proofStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  proofRejection: {
+    fontSize: 13,
+    color: '#f87171',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  proofFiles: {
+    marginTop: 12,
+    gap: 8,
+  },
+  proofFileLink: {
+    fontSize: 14,
+    color: '#60a5fa',
+    textDecorationLine: 'underline',
+  },
+  proofDate: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 8,
   },
 });
 

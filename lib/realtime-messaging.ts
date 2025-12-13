@@ -29,6 +29,15 @@ export function subscribeToMessages(
 ): () => void {
   const supabase = createClientClient()
 
+  // If Supabase is not configured, return a no-op unsubscribe function
+  if (!supabase) {
+    console.warn('Realtime messaging disabled: Supabase not configured')
+    if (onError) {
+      onError(new Error('Realtime messaging disabled: Supabase not configured'))
+    }
+    return () => {} // Return no-op unsubscribe function
+  }
+
   const channel = supabase
     .channel(`messages:${conversationId}`)
     .on(
@@ -83,6 +92,15 @@ export function subscribeToConversation(
 ): () => void {
   const supabase = createClientClient()
 
+  // If Supabase is not configured, return a no-op unsubscribe function
+  if (!supabase) {
+    console.warn('Realtime messaging disabled: Supabase not configured')
+    if (onError) {
+      onError(new Error('Realtime messaging disabled: Supabase not configured'))
+    }
+    return () => {} // Return no-op unsubscribe function
+  }
+
   const channel = supabase
     .channel(`conversation:${conversationId}`)
     .on(
@@ -134,6 +152,15 @@ export function subscribeToUserConversations(
   onError?: (error: Error) => void
 ): () => void {
   const supabase = createClientClient()
+
+  // If Supabase is not configured, return a no-op unsubscribe function
+  if (!supabase) {
+    console.warn('Realtime messaging disabled: Supabase not configured')
+    if (onError) {
+      onError(new Error('Realtime messaging disabled: Supabase not configured'))
+    }
+    return () => {} // Return no-op unsubscribe function
+  }
 
   const channel = supabase
     .channel(`user_conversations:${userId}`)

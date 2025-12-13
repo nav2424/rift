@@ -43,7 +43,7 @@
       "expo-font"
     ],
     "extra": {
-      "apiUrl": "http://192.168.1.126:3000",
+      "apiUrl": "https://www.joinrift.co",
       "supabaseUrl": "https://zosvdbzroydrwwlwlzvi.supabase.co",
       "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpvc3ZkYnpyb3lkcnd3bHdsenZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxMzMyNzYsImV4cCI6MjA4MDcwOTI3Nn0.CiVvNT8eQ305UcljlA3S69UmJ1V22-GkLkPbRqVdFRI",
       "stripePublishableKey": "pk_test_51ScBjNRofVCnv21124upMGmeXMYIQa23OAhzQIHAmTJCCaFro2lHlyPDBNc1wynZWtkOqdDWwm3kA7C4Jly5hbxF007R0rBeOy"

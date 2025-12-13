@@ -49,10 +49,10 @@ export default function Home() {
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       {/* Hero Section */}
-      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 lg:pt-40 lg:pb-32">
+      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:pt-28 lg:pb-16">
         <div className="relative z-10">
           {/* Trust Badge */}
-          <div className={`flex justify-center mb-16 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <div className={`flex justify-center mb-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/8 hover:border-white/15 transition-all duration-300 group">
               <svg className="w-3.5 h-3.5 text-green-400/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -62,7 +62,7 @@ export default function Home() {
           </div>
           
           {/* Main Heading */}
-          <div className={`text-center mb-12 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`text-center mb-8 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light mb-6 leading-[1.1] tracking-[-0.03em]">
               <span className="block text-white/95 mb-3 font-light">The Safest Way to</span>
               <span className="block text-white font-light">
@@ -72,7 +72,7 @@ export default function Home() {
           </div>
           
           {/* Subheading */}
-          <div className={`text-center mb-16 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`text-center mb-10 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <p className="text-2xl md:text-3xl text-white/90 font-light mb-4 max-w-2xl mx-auto leading-relaxed">
               Never get scammed again.
             </p>
@@ -82,26 +82,28 @@ export default function Home() {
           </div>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-3 justify-center items-center mb-20 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Link href="/auth/signup" className="group relative">
-              <PremiumButton size="lg" variant="outline" className="w-full sm:w-auto min-w-[180px] text-sm px-10 py-3.5 group-hover:bg-white/10 group-hover:border-white/20 transition-all duration-300">
+              <PremiumButton 
+                size="lg" 
+                variant="primary" 
+                className="w-full sm:w-auto min-w-[200px] text-base px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+              >
                 <span className="flex items-center justify-center gap-2">
                   <span>Start a Rift</span>
-                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </span>
               </PremiumButton>
             </Link>
             <Link href="#how-it-works" className="group">
-              <PremiumButton size="lg" variant="outline" className="w-full sm:w-auto min-w-[180px] text-sm px-10 py-3.5 group-hover:bg-white/10 group-hover:border-white/20 transition-all duration-300">
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>How Rift Works</span>
-                </span>
+              <PremiumButton 
+                size="lg" 
+                variant="primary" 
+                className="w-full sm:w-auto min-w-[200px] text-base px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+              >
+                How Rift Works
               </PremiumButton>
             </Link>
           </div>
@@ -140,99 +142,69 @@ export default function Home() {
       </section>
 
       {/* Why People Get Scammed Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-        <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
-            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="text-white/80 font-light text-sm">Protection</span>
-          </div>
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white mb-8 tracking-tight">
-            Why People Get Scammed
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+            The Problem We Solve
           </h2>
-          <p className="text-2xl text-white/70 max-w-2xl mx-auto font-light">
-            Real problems. Real solutions.
+          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+            Online transactions are vulnerable. Here's how we protect you.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {[
             {
               problem: 'Fake Sellers',
               problemDesc: 'Scammers create fake profiles and disappear after payment',
               solution: 'Rift verifies every seller\'s identity before they can receive funds',
-              icon: (
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              )
             },
             {
               problem: 'Fake Proof of Payment',
               problemDesc: 'Screenshots of fake transactions trick buyers',
               solution: 'Rift handles all payments directly — no screenshots needed',
-              icon: (
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              )
             },
             {
               problem: 'Lost Money, No Recourse',
               problemDesc: 'Once money is sent, it\'s gone forever',
               solution: 'Dispute system with admin review — get your money back',
-              icon: (
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )
             }
           ].map((item, index) => (
             <GlassCard 
               key={index} 
               variant="glass" 
-              hover
-              className={`p-10 relative transition-all duration-500 group flex flex-col h-full ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-              style={{ transitionDelay: `${index * 80}ms` }}
+              className="p-8 relative transition-all duration-300 group flex flex-col"
             >
-              <div className="relative z-10 flex flex-col h-full">
-                {/* Problem Section */}
-                <div className="flex-1 mb-8">
-                  <div className="flex items-start gap-4 mb-5">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                      {item.icon}
-                    </div>
-                    <div className="flex-1 pt-1">
-                      <h3 className="text-2xl font-light text-white mb-3">{item.problem}</h3>
-                      <p className="text-white/60 font-light text-base leading-relaxed">{item.problemDesc}</p>
-                    </div>
+              <div className="relative z-10 flex flex-col">
+                {/* Problem */}
+                <div className="mb-6 pb-6 border-b border-white/10">
+                  <div className="flex items-center gap-3 mb-3 h-7">
+                    <div className="w-2 h-2 rounded-full bg-red-400/60 flex-shrink-0" />
+                    <h3 className="text-lg font-light text-white leading-tight">{item.problem}</h3>
                   </div>
+                  <p className="text-sm text-white/50 font-light leading-relaxed pl-5 h-12">
+                    {item.problemDesc}
+                  </p>
                 </div>
 
-                {/* Solution Section - Fixed at bottom */}
-                <div className="pt-8 border-t border-white/10 mt-auto">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 pt-1">
-                      <p className="text-white/90 font-light text-base leading-relaxed">{item.solution}</p>
-                    </div>
+                {/* Solution */}
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-green-400/60 flex-shrink-0 mt-1.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-white/80 font-light leading-relaxed">
+                      {item.solution}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
             </GlassCard>
           ))}
         </div>
       </section>
 
       {/* Visual Transaction Flow */}
-      <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             How It Works
           </h2>
@@ -326,8 +298,8 @@ export default function Home() {
                 {
                   num: '5',
                   title: 'Funds Released',
-                  subtitle: 'Funds released to seller',
-                  desc: 'After confirmation or protection period ends. Total fee (8%) is automatically deducted.',
+                  subtitle: 'Funds released to seller wallet',
+                  desc: 'After confirmation or auto-release. Seller receives amount minus 5% platform fee. Funds instantly available in wallet. Bank payout scheduled based on risk tier (1-5 business days).',
                   icon: (
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -460,25 +432,25 @@ export default function Home() {
                 iconBg: 'from-yellow-500/20 to-amber-500/10',
                 iconBorder: 'border-yellow-500/30'
               },
-              {
-                num: '5',
-                title: 'Funds Released',
-                subtitle: 'Funds released to seller',
-                desc: 'After confirmation or protection period ends. Total fee (8%) is automatically deducted.',
-                icon: (
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                ),
-                badge: 'Complete',
-                badgeIcon: (
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ),
-                iconBg: 'from-emerald-500/20 to-teal-500/10',
-                iconBorder: 'border-emerald-500/30'
-              }
+                {
+                  num: '5',
+                  title: 'Funds Released',
+                  subtitle: 'Funds released to seller wallet',
+                  desc: 'After confirmation or auto-release. Seller receives amount minus 5% platform fee. Funds instantly available in wallet. Bank payout scheduled based on risk tier (1-5 business days).',
+                  icon: (
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  ),
+                  badge: 'Complete',
+                  badgeIcon: (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ),
+                  iconBg: 'from-emerald-500/20 to-teal-500/10',
+                  iconBorder: 'border-emerald-500/30'
+                }
             ].map((item, index) => (
               <div key={index}>
                 <GlassCard 
@@ -517,78 +489,93 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Payment Methods Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      {/* Platform Showcase */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
-            Multiple Payment Methods
+            Your Command Center
           </h2>
           <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
-            Secure payment processing with all the methods you trust
+            Everything you need to manage protected transactions, all in one place
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {[
-            {
-              method: 'Credit & Debit Cards',
-              description: 'Visa, Mastercard, American Express',
-              icon: (
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-              )
-            },
-            {
-              method: 'Apple Pay',
-              description: 'Quick and secure on iOS devices',
-              icon: (
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              )
-            },
-            {
-              method: 'Google Pay',
-              description: 'Fast checkout on Android',
-              icon: (
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              )
-            },
-            {
-              method: 'Secure Processing',
-              description: 'Bank-level encryption & fraud protection',
-              icon: (
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              )
-            }
-          ].map((item, index) => (
-            <GlassCard 
-              key={index} 
-              variant="glass" 
-              hover
-              className={`p-10 relative transition-all duration-500 group ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-              style={{ transitionDelay: `${index * 80}ms` }}
-            >
-              <div className="relative z-10 text-center">
-                <div className="flex justify-center mb-5 text-white/90 group-hover:scale-110 transition-transform duration-300">
-                  {item.icon}
-                </div>
-                <h3 className="text-lg font-light text-white mb-3">{item.method}</h3>
-                <p className="text-white/60 font-light text-sm leading-relaxed">{item.description}</p>
-              </div>
-            </GlassCard>
-          ))}
+        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto mb-12">
+          {/* Dashboard - Large Feature */}
+          <GlassCard variant="glass" className="p-6 overflow-hidden">
+            <div className="mb-4">
+              <h3 className="text-2xl font-light text-white mb-2">Complete Dashboard</h3>
+              <p className="text-sm text-white/60 font-light">
+                Track wallet balance, pending actions, recent activity, and all your rifts in one unified view
+              </p>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
+              <img 
+                src="/dashboard.png" 
+                alt="Rift Dashboard" 
+                className="w-full h-auto"
+              />
+            </div>
+          </GlassCard>
+
+          {/* Create Rift - Large Feature */}
+          <GlassCard variant="glass" className="p-6 overflow-hidden">
+            <div className="mb-4">
+              <h3 className="text-2xl font-light text-white mb-2">Create in Seconds</h3>
+              <p className="text-sm text-white/60 font-light">
+                Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly
+              </p>
+            </div>
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
+              <img 
+                src="/rift-created.png" 
+                alt="Create Rift" 
+                className="w-full h-auto"
+              />
+            </div>
+          </GlassCard>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {/* Rifts List */}
+          <GlassCard variant="glass" className="p-6 overflow-hidden">
+            <div className="mb-4">
+              <h3 className="text-xl font-light text-white mb-2">Manage All Rifts</h3>
+              <p className="text-sm text-white/60 font-light">
+                View and manage all your active and completed transactions
+              </p>
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5">
+              <img 
+                src="/rifts.png" 
+                alt="Rifts List" 
+                className="w-full h-auto"
+              />
+            </div>
+          </GlassCard>
+
+          {/* Activity */}
+          <GlassCard variant="glass" className="p-6 overflow-hidden">
+            <div className="mb-4">
+              <h3 className="text-xl font-light text-white mb-2">Activity Tracking</h3>
+              <p className="text-sm text-white/60 font-light">
+                Monitor all transaction activity and status updates in real-time
+              </p>
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10 bg-white/5">
+              <img 
+                src="/recent-activity.png" 
+                alt="Recent Activity" 
+                className="w-full h-auto"
+              />
+            </div>
+          </GlassCard>
         </div>
       </section>
 
       {/* Protection Features Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Protection Tailored to Every Item Type
           </h2>
@@ -675,8 +662,8 @@ export default function Home() {
       </section>
 
       {/* Security & Trust Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Bank-Level Security
           </h2>
@@ -734,9 +721,68 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Real Stories Section */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+            Real Stories
+          </h2>
+          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+            See how Rift changed the way people buy and sell online
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              quote: 'I used to get scammed on Facebook Marketplace. Rift changed everything.',
+              author: 'Alex M.',
+              role: 'Buyer & Seller',
+              avatar: 'A'
+            },
+            {
+              quote: 'I sold my first $1,000 camera with no fear.',
+              author: 'Jessica K.',
+              role: 'Photographer',
+              avatar: 'J'
+            },
+            {
+              quote: 'I no longer accept e-transfer. Rift only.',
+              author: 'David R.',
+              role: 'Small Business Owner',
+              avatar: 'D'
+            }
+          ].map((story, index) => (
+            <GlassCard 
+              key={index} 
+              variant="glass" 
+              hover
+              className={`p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <div className="relative z-10">
+                <div className="text-4xl mb-6 text-white/20 font-serif">"</div>
+                <p className="text-white/90 font-light leading-relaxed mb-8 text-base">
+                  {story.quote}
+                </p>
+                <div className="flex items-center gap-4 pt-6 border-t border-white/10">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/20 to-white/10 border border-white/20 flex items-center justify-center text-white/90 font-light text-lg">
+                    {story.avatar}
+                  </div>
+                  <div>
+                    <p className="text-white font-light text-sm">{story.author}</p>
+                    <p className="text-white/50 font-light text-xs mt-0.5">{story.role}</p>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
       {/* Use Cases Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Perfect For These Scenarios
           </h2>
@@ -805,8 +851,77 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Payment Methods Section */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+            Multiple Payment Methods
+          </h2>
+          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+            Secure payment processing with all the methods you trust
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            {
+              method: 'Credit & Debit Cards',
+              description: 'Visa, Mastercard, American Express',
+              icon: (
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              )
+            },
+            {
+              method: 'Apple Pay',
+              description: 'Quick and secure on iOS devices',
+              icon: (
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              )
+            },
+            {
+              method: 'Google Pay',
+              description: 'Fast checkout on Android',
+              icon: (
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              )
+            },
+            {
+              method: 'Secure Processing',
+              description: 'Bank-level encryption & fraud protection',
+              icon: (
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              )
+            }
+          ].map((item, index) => (
+            <GlassCard 
+              key={index} 
+              variant="glass" 
+              hover
+              className={`p-10 relative transition-all duration-500 group ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: `${index * 80}ms` }}
+            >
+              <div className="relative z-10 text-center">
+                <div className="flex justify-center mb-5 text-white/90 group-hover:scale-110 transition-transform duration-300">
+                  {item.icon}
+                </div>
+                <h3 className="text-lg font-light text-white mb-3">{item.method}</h3>
+                <p className="text-white/60 font-light text-sm leading-relaxed">{item.description}</p>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
       {/* Mobile App Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <GlassCard variant="glass" className="p-12 md:p-20 relative">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className={`transition-all duration-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
@@ -851,68 +966,9 @@ export default function Home() {
         </GlassCard>
       </section>
 
-      {/* Real Stories Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
-            Real Stories
-          </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
-            See how Rift changed the way people buy and sell online
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              quote: 'I used to get scammed on Facebook Marketplace. Rift changed everything.',
-              author: 'Alex M.',
-              role: 'Buyer & Seller',
-              avatar: 'A'
-            },
-            {
-              quote: 'I sold my first $1,000 camera with no fear.',
-              author: 'Jessica K.',
-              role: 'Photographer',
-              avatar: 'J'
-            },
-            {
-              quote: 'I no longer accept e-transfer. Rift only.',
-              author: 'David R.',
-              role: 'Small Business Owner',
-              avatar: 'D'
-            }
-          ].map((story, index) => (
-            <GlassCard 
-              key={index} 
-              variant="glass" 
-              hover
-              className={`p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <div className="relative z-10">
-                <div className="text-4xl mb-6 text-white/20 font-serif">"</div>
-                <p className="text-white/90 font-light leading-relaxed mb-8 text-base">
-                  {story.quote}
-                </p>
-                <div className="flex items-center gap-4 pt-6 border-t border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/20 to-white/10 border border-white/20 flex items-center justify-center text-white/90 font-light text-lg">
-                    {story.avatar}
-                  </div>
-                  <div>
-                    <p className="text-white font-light text-sm">{story.author}</p>
-                    <p className="text-white/50 font-light text-xs mt-0.5">{story.role}</p>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
-      </section>
-
       {/* FAQ */}
-      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-20">
+      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Frequently Asked Questions
           </h2>
@@ -945,8 +1001,8 @@ export default function Home() {
               answer: 'You can raise a dispute at any time before funds are released. Our admin team reviews all evidence (messages, photos, tracking info) and makes a fair decision. Disputes are typically resolved within 24-48 hours.'
             },
             {
-              question: 'Are there any hidden fees?',
-              answer: 'No hidden fees. Buyers pay 0% — exactly the listed price. Sellers pay 8% total (includes platform fee and payment processing). This is clearly displayed before any transaction.'
+              question: 'What are the fees?',
+              answer: 'Buyers pay a 3% payment processing fee (covers card network and processing costs). Sellers pay a 5% platform fee. All fees are clearly displayed before any transaction. No hidden charges.'
             },
             {
               question: 'Is my information secure?',
@@ -969,31 +1025,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <GlassCard variant="glass" className="p-16 md:p-24 text-center relative">
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-8 tracking-tight">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl text-white/80 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-              Start protecting your transactions today. Simple, secure, and built for trust.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/signup">
-                <PremiumButton size="lg" className="w-full sm:w-auto px-12 py-4" glow>
-                  Start a Protected Transaction
-                </PremiumButton>
-              </Link>
-              <Link href="/pricing">
-                <PremiumButton size="lg" variant="outline" className="w-full sm:w-auto px-12 py-4">
-                  View Pricing
-                </PremiumButton>
-              </Link>
-            </div>
-          </div>
-        </GlassCard>
-      </section>
     </div>
   )
 }

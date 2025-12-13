@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert, Platform, ScrollView, Animated } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/lib/auth';
@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
+import { subscribeToUserEscrows } from '@/lib/realtime-escrows';
 
 type TimeFilter = 'all' | '30days' | 'month';
 
@@ -42,6 +43,43 @@ export default function DashboardScreen() {
       loadEscrows();
     }, [loadEscrows])
   );
+
+  // Real-time sync for escrows
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const unsubscribe = subscribeToUserEscrows(
+      user.id,
+      (update) => {
+        // Update existing escrow or add new one
+        setEscrows((prev) => {
+          const existingIndex = prev.findIndex((e) => e.id === update.id);
+          if (existingIndex >= 0) {
+            // Update existing escrow
+            const updated = [...prev];
+            updated[existingIndex] = { ...updated[existingIndex], ...update };
+            return updated;
+          } else {
+            // New escrow - reload to get full data
+            loadEscrows();
+            return prev;
+          }
+        });
+      },
+      (newEscrow) => {
+        // New escrow created - reload to get full data with relations
+        loadEscrows();
+      },
+      (error) => {
+        console.error('Realtime escrow sync error:', error);
+        // Silently fail - don't disrupt user experience
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user?.id, loadEscrows]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -427,41 +465,41 @@ export default function DashboardScreen() {
               </View>
             </Animated.View>
 
-            {/* SECTION 2: Quick Overview - Simplified */}
-            {metrics.totalValue > 0 && (
-              <View style={styles.portfolioCard}>
-                <View style={styles.portfolioCardShadow} />
-                <LinearGradient
-                  colors={['rgba(79, 70, 229, 0.08)', 'rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)', 'rgba(79, 70, 229, 0.04)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View style={styles.portfolioContent}>
-                  <View style={styles.portfolioHeader}>
-                    <Text style={styles.portfolioLabel}>Your Balance</Text>
-                    <Text style={styles.portfolioValue}>{formatCurrency(metrics.totalValue, 'USD')}</Text>
-                    <Text style={styles.portfolioSubtext}>
-                      Total of active and completed transactions
-                    </Text>
+            {/* SECTION 2: Balance Card - Always Visible */}
+            <View style={styles.portfolioCard}>
+              <View style={styles.portfolioCardShadow} />
+              <LinearGradient
+                colors={['rgba(79, 70, 229, 0.08)', 'rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)', 'rgba(79, 70, 229, 0.04)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.portfolioContent}>
+                <View style={styles.portfolioHeader}>
+                  <Text style={styles.portfolioLabel}>Your Balance</Text>
+                  <Text style={styles.portfolioValue}>
+                    {metrics.totalValue > 0 ? formatCurrency(metrics.totalValue, 'USD') : formatCurrency(0, 'USD')}
+                  </Text>
+                  <Text style={styles.portfolioSubtext}>
+                    Total of active and completed transactions
+                  </Text>
+                </View>
+                <View style={styles.portfolioStats}>
+                  <View style={styles.portfolioStat}>
+                    <Ionicons name="time-outline" size={18} color={Colors.info} style={styles.statIcon} />
+                    <Text style={styles.portfolioStatValue}>{formatCurrency(metrics.activeValue, 'USD')}</Text>
+                    <Text style={styles.portfolioStatLabel}>In Rifts</Text>
                   </View>
-                  <View style={styles.portfolioStats}>
-                    <View style={styles.portfolioStat}>
-                      <Ionicons name="time-outline" size={18} color={Colors.info} style={styles.statIcon} />
-                      <Text style={styles.portfolioStatValue}>{formatCurrency(metrics.activeValue, 'USD')}</Text>
-                      <Text style={styles.portfolioStatLabel}>In Rifts</Text>
-                    </View>
-                    <View style={styles.portfolioStat}>
-                      <Ionicons name="checkmark-circle-outline" size={18} color={Colors.success} style={styles.statIcon} />
-                      <Text style={styles.portfolioStatValue}>{formatCurrency(metrics.completedValue, 'USD')}</Text>
-                      <Text style={styles.portfolioStatLabel}>Settled</Text>
-                    </View>
+                  <View style={styles.portfolioStat}>
+                    <Ionicons name="checkmark-circle-outline" size={18} color={Colors.success} style={styles.statIcon} />
+                    <Text style={styles.portfolioStatValue}>{formatCurrency(metrics.completedValue, 'USD')}</Text>
+                    <Text style={styles.portfolioStatLabel}>Settled</Text>
                   </View>
                 </View>
               </View>
-            )}
+            </View>
 
-            {/* SECTION 3: Actions Needed - More Prominent */}
+            {/* SECTION 3: Actions Needed - Only when there are actions */}
             {metrics.pendingActionsCount > 0 && (
               <View style={styles.actionRequiredCard}>
                 <LinearGradient
@@ -529,111 +567,90 @@ export default function DashboardScreen() {
               </View>
             )}
 
-            {/* Quick Action: Create Rift */}
-            {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
-              <TouchableOpacity
-                style={styles.quickActionCard}
-                onPress={() => router.push('/(tabs)/create')}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={['rgba(79, 70, 229, 0.15)', 'rgba(139, 92, 246, 0.12)', 'rgba(79, 70, 229, 0.1)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View style={styles.quickActionContent}>
-                  <View style={styles.quickActionIconWrapper}>
-                    <Ionicons name="add-circle" size={32} color={Colors.primary} />
+            {/* SECTION 4: Recent Activity - Always Visible */}
+            <View style={styles.activitySection}>
+              <View style={styles.activityCard}>
+                <View style={styles.activityCardContent}>
+                  <View style={styles.activityHeader}>
+                    <View style={styles.activityHeaderLeft}>
+                      <Ionicons name="time" size={20} color={Colors.textSecondary} />
+                      <Text style={styles.sectionTitle}>Recent Activity</Text>
+                    </View>
+                    {recentActivity.length > 0 && (
+                      <TouchableOpacity
+                        style={styles.viewAllButton}
+                        onPress={() => router.push('/activity/all')}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.viewAllButtonText}>View All</Text>
+                        <Ionicons 
+                          name="chevron-forward" 
+                          size={14} 
+                          color={Colors.textSecondary} 
+                          style={styles.viewAllIcon}
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
-                  <View style={styles.quickActionTextContainer}>
-                    <Text style={styles.quickActionTitle}>Create Your First Rift</Text>
-                    <Text style={styles.quickActionDescription}>
-                      Start a protected transaction with someone you trust
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={Colors.textTertiary} />
-                </View>
-              </TouchableOpacity>
-            )}
-
-            {/* SECTION 4: Recent Activity */}
-            {recentActivity.length > 0 && (
-              <View style={styles.activitySection}>
-                <View style={styles.activityCard}>
-                  <View style={styles.activityCardContent}>
-                    <View style={styles.activityHeader}>
-                      <View style={styles.activityHeaderLeft}>
-                        <Ionicons name="time" size={20} color={Colors.textSecondary} />
-                        <Text style={styles.sectionTitle}>Recent Activity</Text>
+                  {recentActivity.length > 0 ? (
+                    <>
+                      {/* Decorative Separator */}
+                      <View style={styles.activitySeparator}>
+                        <View style={styles.activitySeparatorLine} />
+                        <View style={styles.activitySeparatorDot} />
+                        <View style={styles.activitySeparatorLine} />
                       </View>
-                      {recentActivity.length > 0 && (
-                        <TouchableOpacity
-                          style={styles.viewAllButton}
-                          onPress={() => router.push('/activity/all')}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.viewAllButtonText}>View All</Text>
-                          <Ionicons 
-                            name="chevron-forward" 
-                            size={14} 
-                            color={Colors.textSecondary} 
-                            style={styles.viewAllIcon}
-                          />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    {/* Decorative Separator */}
-                    <View style={styles.activitySeparator}>
-                      <View style={styles.activitySeparatorLine} />
-                      <View style={styles.activitySeparatorDot} />
-                      <View style={styles.activitySeparatorLine} />
-                    </View>
-                    <View style={styles.activityList}>
-                      {displayedActivity.map((activity) => {
-                        const getActivityIcon = () => {
-                          if (activity.message.includes('completed') || activity.message.includes('released')) {
-                            return 'checkmark-circle';
-                          }
-                          if (activity.message.includes('transit')) {
-                            return 'cube';
-                          }
-                          if (activity.message.includes('payment')) {
-                            return 'card';
-                          }
-                          if (activity.message.includes('cancelled')) {
-                            return 'close';
-                          }
-                          return 'ellipse';
-                        };
+                      <View style={styles.activityList}>
+                        {displayedActivity.map((activity) => {
+                          const getActivityIcon = () => {
+                            if (activity.message.includes('completed') || activity.message.includes('released')) {
+                              return 'checkmark-circle';
+                            }
+                            if (activity.message.includes('transit')) {
+                              return 'cube';
+                            }
+                            if (activity.message.includes('payment')) {
+                              return 'card';
+                            }
+                            if (activity.message.includes('cancelled')) {
+                              return 'close';
+                            }
+                            return 'ellipse';
+                          };
 
-                        const getActivityColor = () => {
-                          if (activity.message.includes('completed') || activity.message.includes('released')) {
-                            return Colors.success;
-                          }
-                          if (activity.message.includes('transit')) {
-                            return Colors.info;
-                          }
-                          if (activity.message.includes('cancelled')) {
-                            return Colors.error;
-                          }
-                          return Colors.textTertiary;
-                        };
+                          const getActivityColor = () => {
+                            if (activity.message.includes('completed') || activity.message.includes('released')) {
+                              return Colors.success;
+                            }
+                            if (activity.message.includes('transit')) {
+                              return Colors.info;
+                            }
+                            if (activity.message.includes('cancelled')) {
+                              return Colors.error;
+                            }
+                            return Colors.textTertiary;
+                          };
 
-                        return (
-                          <View key={activity.id} style={styles.activityItem}>
-                            <View style={[styles.activityIcon, { backgroundColor: getActivityColor() + '18' }]}>
-                              <Ionicons name={getActivityIcon() as any} size={14} color={getActivityColor()} />
+                          return (
+                            <View key={activity.id} style={styles.activityItem}>
+                              <View style={[styles.activityIcon, { backgroundColor: getActivityColor() + '18' }]}>
+                                <Ionicons name={getActivityIcon() as any} size={14} color={getActivityColor()} />
+                              </View>
+                              <Text style={styles.activityText}>{activity.message}</Text>
                             </View>
-                            <Text style={styles.activityText}>{activity.message}</Text>
-                          </View>
-                        );
-                      })}
+                          );
+                        })}
+                      </View>
+                    </>
+                  ) : (
+                    <View style={styles.noActivityContainer}>
+                      <Text style={styles.noActivityText}>No recent activity</Text>
+                      <Text style={styles.noActivitySubtext}>Your transaction activity will appear here</Text>
                     </View>
-                  </View>
+                  )}
                 </View>
               </View>
-            )}
+            </View>
 
             {/* SECTION 5: Your Rifts */}
             <View style={styles.escrowsContainer}>
@@ -1222,6 +1239,24 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     fontWeight: '400',
     opacity: 0.7,
+  },
+  noActivityContainer: {
+    paddingVertical: Spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noActivityText: {
+    fontSize: 15,
+    color: Colors.textTertiary,
+    fontWeight: '300',
+    marginBottom: Spacing.xs,
+    opacity: 0.8,
+  },
+  noActivitySubtext: {
+    fontSize: 13,
+    color: Colors.textTertiary,
+    fontWeight: '300',
+    opacity: 0.6,
   },
   activitySection: {
     paddingHorizontal: Spacing.xl + 4,

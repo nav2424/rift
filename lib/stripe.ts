@@ -46,8 +46,7 @@ export async function createPaymentIntent(
       },
       receipt_email: buyerEmail,
       description: `Escrow payment for transaction ${escrowId}`,
-      // Explicitly specify only card payments (excludes Klarna, Afterpay, etc.)
-      // Apple Pay and Google Pay are enabled separately in the Payment Sheet client-side configuration
+      // Only allow card payments - this disables Link and all other payment methods
       payment_method_types: ['card'],
     })
 

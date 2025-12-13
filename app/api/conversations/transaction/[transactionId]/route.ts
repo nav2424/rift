@@ -11,8 +11,9 @@ async function getOrCreateConversationForTransaction(
   sellerId: string,
   adminId?: string
 ) {
-  // First, try to find existing conversation by looking for participants
-  const { data: existingParticipants, error: findError } = await supabase
+  // First, try to find existing conversation by looking for conversations with both buyer and seller
+  // Get all conversations where buyer is a participant
+  const { data: buyerParticipants, error: findError } = await supabase
     .from('conversation_participants')
     .select('conversation_id')
     .eq('user_id', buyerId)
@@ -23,25 +24,59 @@ async function getOrCreateConversationForTransaction(
   }
 
   // Check if any of these conversations also have the seller
-  if (existingParticipants && existingParticipants.length > 0) {
-    for (const participant of existingParticipants) {
+  if (buyerParticipants && buyerParticipants.length > 0) {
+    // Get unique conversation IDs
+    const conversationIds = [...new Set(buyerParticipants.map(p => p.conversation_id))]
+    
+    // Check which of these conversations have the seller
+    for (const conversationId of conversationIds) {
       const { data: sellerCheck } = await supabase
         .from('conversation_participants')
         .select('conversation_id')
-        .eq('conversation_id', participant.conversation_id)
+        .eq('conversation_id', conversationId)
         .eq('user_id', sellerId)
         .eq('role', 'seller')
         .maybeSingle()
 
       if (sellerCheck) {
-        // Found existing conversation
-        const { data: conversation } = await supabase
+        // Found existing conversation - verify it exists and return it
+        const { data: conversation, error: convError } = await supabase
           .from('conversations')
           .select('*')
-          .eq('id', participant.conversation_id)
+          .eq('id', conversationId)
           .single()
 
-        if (conversation) {
+        if (conversation && !convError) {
+          // Ensure all participants exist (in case admin was added later)
+          if (adminId) {
+            const { data: adminCheck } = await supabase
+              .from('conversation_participants')
+              .select('conversation_id')
+              .eq('conversation_id', conversation.id)
+              .eq('user_id', adminId)
+              .eq('role', 'admin')
+              .maybeSingle()
+
+            if (!adminCheck) {
+              // Add admin participant if missing (ignore duplicates)
+              try {
+                const { error: insertError } = await supabase
+                  .from('conversation_participants')
+                  .insert({
+                    conversation_id: conversation.id,
+                    user_id: adminId,
+                    role: 'admin',
+                  })
+                
+                // Ignore duplicate errors for admin
+                if (insertError && insertError.code !== '23505' && !insertError.message?.includes('duplicate')) {
+                  console.error('Error adding admin participant:', insertError)
+                }
+              } catch (error) {
+                // Ignore duplicate errors for admin
+              }
+            }
+          }
           return conversation
         }
       }
@@ -59,7 +94,7 @@ async function getOrCreateConversationForTransaction(
     throw new Error('Failed to create conversation')
   }
 
-  // Add participants
+  // Add participants, checking for existence first to avoid duplicates
   const participants = [
     { conversation_id: newConversation.id, user_id: buyerId, role: 'buyer' },
     { conversation_id: newConversation.id, user_id: sellerId, role: 'seller' },
@@ -73,15 +108,37 @@ async function getOrCreateConversationForTransaction(
     })
   }
 
-  const { error: participantsError } = await supabase
-    .from('conversation_participants')
-    .insert(participants)
+  // Insert participants one by one, handling duplicates gracefully
+  for (const participant of participants) {
+    // Check if participant already exists
+    const { data: existing } = await supabase
+      .from('conversation_participants')
+      .select('conversation_id')
+      .eq('conversation_id', participant.conversation_id)
+      .eq('user_id', participant.user_id)
+      .maybeSingle()
 
-  if (participantsError) {
-    console.error('Error creating participants:', participantsError)
-    // Clean up conversation if participants fail
-    await supabase.from('conversations').delete().eq('id', newConversation.id)
-    throw new Error('Failed to create conversation participants')
+    // Only insert if doesn't exist
+    if (!existing) {
+      const { error: participantError } = await supabase
+        .from('conversation_participants')
+        .insert(participant)
+
+      if (participantError) {
+        // Check if it's a duplicate key error (23505) - that's okay, participant already exists
+        const isDuplicate = participantError.code === '23505' || 
+                           participantError.message?.includes('duplicate') ||
+                           participantError.message?.includes('already exists')
+        
+        if (!isDuplicate) {
+          console.error('Error creating participant:', participantError)
+          // Clean up conversation if participants fail (non-duplicate error)
+          await supabase.from('conversations').delete().eq('id', newConversation.id)
+          throw new Error('Failed to create conversation participants')
+        }
+        // If it's a duplicate, that's fine - participant already exists (race condition)
+      }
+    }
   }
 
   return newConversation
@@ -121,7 +178,21 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (error: any) {
+      console.error('Supabase configuration error:', error)
+      return NextResponse.json(
+        { 
+          error: 'Internal server error',
+          details: error?.message?.includes('Supabase configuration missing')
+            ? error.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.'
+            : error.message || 'Supabase environment variables are missing'
+        },
+        { status: 500 }
+      )
+    }
 
     // Get or create conversation
     let conversation
@@ -136,7 +207,10 @@ export async function GET(
     } catch (error: any) {
       console.error('Error getting/creating conversation:', error)
       return NextResponse.json(
-        { error: 'Failed to get or create conversation' },
+        { 
+          error: 'Failed to get or create conversation',
+          details: error.message || 'Unknown error'
+        },
         { status: 500 }
       )
     }
@@ -151,7 +225,10 @@ export async function GET(
     if (messagesError) {
       console.error('Error fetching messages:', messagesError)
       return NextResponse.json(
-        { error: 'Failed to fetch messages' },
+        { 
+          error: 'Failed to fetch messages',
+          details: messagesError.message || 'Unknown error'
+        },
         { status: 500 }
       )
     }
@@ -170,10 +247,13 @@ export async function GET(
         readAt: msg.read_at,
       })),
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get conversation error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error?.message || 'Unknown error occurred',
+      },
       { status: 500 }
     )
   }
@@ -223,7 +303,21 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (error: any) {
+      console.error('Supabase configuration error:', error)
+      return NextResponse.json(
+        { 
+          error: 'Internal server error',
+          details: error?.message?.includes('Supabase configuration missing')
+            ? error.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.'
+            : error.message || 'Supabase environment variables are missing'
+        },
+        { status: 500 }
+      )
+    }
 
     // Get or create conversation
     let conversation
@@ -238,7 +332,10 @@ export async function POST(
     } catch (error: any) {
       console.error('Error getting/creating conversation:', error)
       return NextResponse.json(
-        { error: 'Failed to get or create conversation' },
+        { 
+          error: 'Failed to get or create conversation',
+          details: error.message || 'Unknown error'
+        },
         { status: 500 }
       )
     }
@@ -257,7 +354,10 @@ export async function POST(
     if (messageError) {
       console.error('Error creating message:', messageError)
       return NextResponse.json(
-        { error: 'Failed to create message' },
+        { 
+          error: 'Failed to create message',
+          details: messageError.message || 'Unknown error'
+        },
         { status: 500 }
       )
     }
@@ -269,10 +369,13 @@ export async function POST(
       createdAt: message.created_at,
       readAt: message.read_at,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Post message error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error?.message || 'Unknown error occurred',
+      },
       { status: 500 }
     )
   }

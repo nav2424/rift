@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import AdminDisputeList from '@/components/AdminDisputeList'
 import AdminUserList from '@/components/AdminUserList'
 import EscrowList from '@/components/EscrowList'
+import GlassCard from '@/components/ui/GlassCard'
 import Link from 'next/link'
 
 export default async function AdminPage() {
@@ -24,8 +25,6 @@ export default async function AdminPage() {
       numCompletedTransactions: true,
       averageRating: true,
       responseTimeMs: true,
-      level: true,
-      xp: true,
       idVerified: true,
       bankVerified: true,
       _count: {
@@ -42,7 +41,7 @@ export default async function AdminPage() {
     },
   })
 
-  // Get all escrows
+  // Get all escrows (no limit - show all data)
   const allEscrows = await prisma.escrowTransaction.findMany({
     include: {
       buyer: {
@@ -61,7 +60,6 @@ export default async function AdminPage() {
     orderBy: {
       createdAt: 'desc',
     },
-    take: 20, // Limit for performance
   })
 
   // Get all disputes
@@ -119,37 +117,45 @@ export default async function AdminPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <div className="text-sm text-slate-400 mb-1">Total Users</div>
-            <div className="text-3xl font-light text-white">{allUsers.length}</div>
-            <div className="text-xs text-slate-500 mt-2">
-              {allUsers.filter(u => u.role === 'ADMIN').length} admins
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          <GlassCard>
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Users</p>
+              <p className="text-4xl font-light text-white mb-2 tracking-tight">{allUsers.length}</p>
+              <p className="text-sm text-white/40 font-light">
+                {allUsers.filter(u => u.role === 'ADMIN').length} admins
+              </p>
             </div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <div className="text-sm text-slate-400 mb-1">Total Volume</div>
-            <div className="text-3xl font-light text-white">
-              ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </GlassCard>
+          <GlassCard>
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Volume</p>
+              <p className="text-4xl font-light text-white mb-2 tracking-tight">
+                ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+              </p>
+              <p className="text-sm text-white/40 font-light">
+                {allUsers.reduce((sum, u) => sum + u.numCompletedTransactions, 0)} transactions
+              </p>
             </div>
-            <div className="text-xs text-slate-500 mt-2">
-              {allUsers.reduce((sum, u) => sum + u.numCompletedTransactions, 0)} transactions
+          </GlassCard>
+          <GlassCard>
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
+              <p className="text-4xl font-light text-white mb-2 tracking-tight">{disputes.length}</p>
+              <p className="text-sm text-white/40 font-light">Requires attention</p>
             </div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <div className="text-sm text-slate-400 mb-1">Open Disputes</div>
-            <div className="text-3xl font-light text-white">{disputes.length}</div>
-            <div className="text-xs text-slate-500 mt-2">Requires attention</div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-            <div className="text-sm text-slate-400 mb-1">Verified Users</div>
-            <div className="text-3xl font-light text-white">
-              {allUsers.filter(u => u.idVerified && u.bankVerified).length}
+          </GlassCard>
+          <GlassCard>
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Verified Users</p>
+              <p className="text-4xl font-light text-white mb-2 tracking-tight">
+                {allUsers.filter(u => u.idVerified && u.bankVerified).length}
+              </p>
+              <p className="text-sm text-white/40 font-light">
+                {allUsers.filter(u => u.idVerified).length} ID verified
+              </p>
             </div>
-            <div className="text-xs text-slate-500 mt-2">
-              {allUsers.filter(u => u.idVerified).length} ID verified
-            </div>
-          </div>
+          </GlassCard>
         </div>
 
         <div className="mb-12">
@@ -163,7 +169,7 @@ export default async function AdminPage() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-light text-white mb-6">Recent Escrows</h2>
+          <h2 className="text-2xl font-light text-white mb-6">All Escrows ({allEscrows.length})</h2>
           <EscrowList escrows={allEscrows} title="All Escrows" />
         </div>
       </div>

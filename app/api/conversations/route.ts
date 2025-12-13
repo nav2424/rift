@@ -13,7 +13,23 @@ export async function GET(request: NextRequest) {
     const userId = auth.userId
 
     // Get Supabase client
-    const supabase = createServerClient()
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (supabaseError: any) {
+      console.error('Supabase configuration error:', supabaseError)
+      // Check if it's a configuration error
+      if (supabaseError?.message?.includes('Supabase configuration missing')) {
+        return NextResponse.json(
+          {
+            error: 'Internal server error',
+            details: supabaseError.message + '\n\nPlease ensure your Next.js dev server has been restarted after adding environment variables.',
+          },
+          { status: 500 }
+        )
+      }
+      throw supabaseError
+    }
 
     // Get all conversations where user is a participant
     const { data: participants, error: participantsError } = await supabase

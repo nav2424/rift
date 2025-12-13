@@ -31,14 +31,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Client-side Supabase client (uses anon key)
 // Note: This respects RLS policies
-export function createClientClient(): SupabaseClient {
+// Returns null if configuration is missing (instead of throwing) to prevent client-side crashes
+export function createClientClient(): SupabaseClient | null {
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Supabase configuration missing. Please set the following:\n' +
+    console.warn(
+      'Supabase configuration missing. Realtime messaging will be disabled. Please set:\n' +
       '- EXPO_PUBLIC_SUPABASE_URL (in app.json extra or environment)\n' +
       '- EXPO_PUBLIC_SUPABASE_ANON_KEY (in app.json extra or environment)\n' +
       'See MESSAGING_UPGRADE.md for setup instructions.'
     )
+    return null
   }
 
   return createClient(supabaseUrl, supabaseAnonKey)

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { sendEscrowCreatedEmail } from '@/lib/email'
 import { generateNextRiftNumber } from '@/lib/rift-number'
+import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, getFeeBreakdown } from '@/lib/fees'
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,8 +56,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Type-specific validation
-    if (itemType === 'PHYSICAL' && !shippingAddress) {
+    // Type-specific validation (only require shipping address if creator is buyer)
+    if (itemType === 'PHYSICAL' && creatorRole === 'BUYER' && !shippingAddress) {
       return NextResponse.json(
         { error: 'Shipping address is required for physical items' },
         { status: 400 }
@@ -93,6 +94,14 @@ export async function POST(request: NextRequest) {
       const targetSellerId = sellerId || partnerId
       const targetSellerEmail = sellerEmail || partnerEmail
       
+      // Validate that seller information is provided
+      if (!targetSellerId && !targetSellerEmail) {
+        return NextResponse.json(
+          { error: 'Seller information is required. Please select or enter a seller.' },
+          { status: 400 }
+        )
+      }
+      
       if (targetSellerId) {
         seller = await prisma.user.findUnique({ where: { id: targetSellerId } })
       } else if (targetSellerEmail) {
@@ -112,6 +121,14 @@ export async function POST(request: NextRequest) {
       // Support both old format (buyerId/buyerEmail) and new format (partnerId/partnerEmail)
       const targetBuyerId = buyerId || partnerId
       const targetBuyerEmail = buyerEmail || partnerEmail
+      
+      // Validate that buyer information is provided
+      if (!targetBuyerId && !targetBuyerEmail) {
+        return NextResponse.json(
+          { error: 'Buyer information is required. Please select or enter a buyer.' },
+          { status: 400 }
+        )
+      }
       
       if (targetBuyerId) {
         buyer = await prisma.user.findUnique({ where: { id: targetBuyerId } })
@@ -139,14 +156,23 @@ export async function POST(request: NextRequest) {
     // Generate next sequential rift number
     const riftNumber = await generateNextRiftNumber()
 
-    // Create escrow
+    // Calculate fees
+    const subtotal = parseFloat(amount)
+    const buyerFee = calculateBuyerFee(subtotal)
+    const sellerFee = calculateSellerFee(subtotal)
+    const sellerNet = calculateSellerNet(subtotal)
+
+    // Create rift (escrow) in AWAITING_PAYMENT status - buyer can pay or cancel
     const escrow = await prisma.escrowTransaction.create({
       data: {
         riftNumber,
         itemTitle,
         itemDescription,
         itemType: itemType || 'PHYSICAL',
-        amount: parseFloat(amount),
+        subtotal,
+        buyerFee,
+        sellerFee,
+        sellerNet,
         currency: currency || 'CAD',
         buyerId: buyer.id,
         sellerId: seller.id,
@@ -159,6 +185,10 @@ export async function POST(request: NextRequest) {
         licenseKey: licenseKey || null,
         serviceDate: serviceDate || null,
         status: 'AWAITING_PAYMENT',
+        // Legacy fields for backward compatibility
+        amount: subtotal,
+        platformFee: sellerFee,
+        sellerPayoutAmount: sellerNet,
       },
     })
 
@@ -193,10 +223,17 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ escrowId: escrow.id }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create escrow error:', error)
+    // Provide more detailed error message
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? error?.message || 'Internal server error'
+      : 'Internal server error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      },
       { status: 500 }
     )
   }

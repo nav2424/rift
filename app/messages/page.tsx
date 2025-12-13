@@ -71,18 +71,24 @@ export default function MessagesPage() {
     if (status === 'authenticated') {
       fetchConversations()
 
-      // Subscribe to new conversations
+      // Subscribe to new conversations (with error handling)
       if (session?.user?.id) {
-        unsubscribeRef.current = subscribeToUserConversations(
-          session.user.id,
-          () => {
-            // Refresh conversations when a new one is created
-            fetchConversations()
-          },
-          (err) => {
-            console.warn('Realtime subscription warning:', err.message || err)
-          }
-        )
+        try {
+          unsubscribeRef.current = subscribeToUserConversations(
+            session.user.id,
+            () => {
+              // Refresh conversations when a new one is created
+              fetchConversations()
+            },
+            (err) => {
+              // Log as warning since subscription errors are often transient
+              console.warn('Realtime subscription warning:', err.message || err)
+            }
+          )
+        } catch (err: any) {
+          // If subscription fails, log but don't crash the page
+          console.warn('Failed to subscribe to conversations:', err)
+        }
       }
     }
 
@@ -204,7 +210,7 @@ export default function MessagesPage() {
               </div>
               <h3 className="text-xl font-light text-white mb-2">No conversations yet</h3>
               <p className="text-white/60 font-light text-sm mb-6">
-                Start a conversation from any transaction detail page
+                Conversations will appear here when you start messaging with other users
               </p>
               <Link 
                 href="/rifts"
@@ -224,7 +230,7 @@ export default function MessagesPage() {
               return (
                 <Link
                   key={conv.id}
-                  href={conv.transactionId ? `/escrows/${conv.transactionId}` : '#'}
+                  href={`/messages/${conv.id}`}
                   className="block"
                 >
                   <GlassCard className="hover:bg-white/5 transition-all duration-200 cursor-pointer border border-transparent hover:border-white/10">

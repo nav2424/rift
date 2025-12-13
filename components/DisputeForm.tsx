@@ -13,6 +13,8 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
   const [loading, setLoading] = useState(false)
   const [reason, setReason] = useState('')
 
+  const [disputeType, setDisputeType] = useState<string>('ITEM_NOT_RECEIVED')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reason.trim()) {
@@ -23,23 +25,26 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/escrows/${escrowId}/raise-dispute`, {
+      const response = await fetch(`/api/escrows/${escrowId}/dispute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ 
+          reason,
+          type: disputeType,
+        }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to raise dispute')
+        alert(error.error || 'Failed to open dispute')
         return
       }
 
       router.refresh()
       setReason('')
     } catch (error) {
-      console.error('Error raising dispute:', error)
-      alert('Failed to raise dispute')
+      console.error('Error opening dispute:', error)
+      alert('Failed to open dispute')
     } finally {
       setLoading(false)
     }
@@ -47,6 +52,23 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-light text-white/80 mb-2">
+          Dispute Type *
+        </label>
+        <select
+          value={disputeType}
+          onChange={(e) => setDisputeType(e.target.value)}
+          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white/30"
+        >
+          <option value="ITEM_NOT_RECEIVED">Item Not Received</option>
+          <option value="ITEM_NOT_AS_DESCRIBED">Item Not As Described</option>
+          <option value="ITEM_DAMAGED">Item Damaged</option>
+          <option value="WRONG_ITEM">Wrong Item</option>
+          <option value="WRONG_ADDRESS">Wrong Address</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
       <div>
         <label className="block text-sm font-medium text-white/70 mb-2">
           Reason for Dispute

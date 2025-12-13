@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import EscrowStatusBadge from './EscrowStatusBadge'
+import GlassCard from './ui/GlassCard'
 
 type EscrowStatus = 
   | 'AWAITING_PAYMENT'
@@ -38,65 +39,71 @@ interface AdminDisputeListProps {
 export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
   if (disputes.length === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
-        <p className="text-slate-400">No disputes found.</p>
-      </div>
+      <GlassCard variant="strong" className="p-8">
+        <p className="text-white/60 font-light text-center">No disputes found.</p>
+      </GlassCard>
     )
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+    <GlassCard variant="strong" className="overflow-hidden">
       <table className="w-full">
-        <thead className="bg-slate-800">
+        <thead className="border-b border-white/10">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Rift #
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Buyer
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Seller
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Raised By
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+              Reason
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Created
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-white/5">
           {disputes.map((dispute) => (
-            <tr key={dispute.id} className="hover:bg-slate-800/50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+            <tr key={dispute.id} className="hover:bg-white/5 transition-colors">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-light">
                 #{dispute.escrow.riftNumber}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
                 {dispute.escrow.buyer.email}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
                 {dispute.escrow.seller.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <EscrowStatusBadge status={dispute.escrow.status} />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
                 {dispute.raisedBy.email}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+              <td className="px-6 py-4 text-sm text-white/70 font-light max-w-xs truncate">
+                {dispute.reason}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/60 font-light">
                 {new Date(dispute.createdAt).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <Link
                   href={`/escrows/${dispute.escrowId}`}
-                  className="text-blue-400 hover:text-blue-300"
+                  className="text-blue-400 hover:text-blue-300 font-light transition-colors"
                 >
                   View
                 </Link>
@@ -105,7 +112,7 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
           ))}
         </tbody>
       </table>
-    </div>
+    </GlassCard>
   )
 }
 

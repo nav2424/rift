@@ -15,33 +15,24 @@ export default function Pricing() {
   const calculateFee = (value: string) => {
     const num = parseFloat(value) || 0
     
-    // Buyer pays: listed price (0% fee)
-    const buyerPays = num
+    // Buyer fee: 3% of subtotal
+    const buyerFee = num * 0.03
+    const buyerPays = num + buyerFee
     
-    // Total fee: 8% (includes platform fee + Stripe fees)
-    const totalFee = num * 0.08
-    
-    // Payment processing fee (Stripe: 2.9% + $0.30) - part of the 8% total
-    const paymentProcessingPercentageFee = num * 0.029
-    const paymentProcessingFixedFee = 0.30
-    const paymentProcessingFee = paymentProcessingPercentageFee + paymentProcessingFixedFee
-    
-    // Platform fee = Total fee (8%) - Stripe fees
-    const platformFee = totalFee - paymentProcessingFee
-    
-    // Seller receives: original amount - total fee (8%)
-    const sellerReceives = num - totalFee
+    // Seller fee: 5% of subtotal
+    const sellerFee = num * 0.05
+    const sellerReceives = num - sellerFee
     
     return { 
+      subtotal: num,
+      buyerFee,
       buyerPays,
-      totalFee,
-      paymentProcessingFee, 
-      platformFee, 
+      sellerFee,
       sellerReceives
     }
   }
   
-  const { buyerPays, totalFee, paymentProcessingFee, platformFee, sellerReceives } = calculateFee(amount)
+  const { subtotal, buyerFee, buyerPays, sellerFee, sellerReceives } = calculateFee(amount)
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -81,7 +72,7 @@ export default function Pricing() {
             Simple, Fair Pricing
           </h1>
           <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto font-light leading-relaxed">
-            Buyers pay exactly what's listed. Sellers keep 92% of every transaction.
+            Buyers pay 3% processing fee. Sellers pay 5% platform fee. Transparent pricing for everyone.
           </p>
         </div>
 
@@ -93,9 +84,9 @@ export default function Pricing() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">Buyers Pay Zero Fees</h3>
+            <h3 className="text-2xl font-light text-white mb-4">Buyers Pay 3%</h3>
             <p className="text-white/70 font-light leading-relaxed">
-              What you see is what you pay. No surprise charges, no hidden costs. The listed price is exactly what you'll pay.
+              Small payment processing fee (3%) added to listed price. Covers card network and payment processing costs. Transparent and fair.
             </p>
           </GlassCard>
 
@@ -146,16 +137,19 @@ export default function Pricing() {
                     </svg>
                     <span className="text-green-400 font-light text-sm">For Buyers</span>
                   </div>
-                  <h3 className="text-5xl md:text-6xl font-light text-white mb-4">0%</h3>
+                  <div className="mb-4">
+                    <span className="text-5xl md:text-6xl font-light text-white">3%</span>
+                    <span className="text-white/60 font-light text-xl ml-2">processing fee</span>
+                  </div>
                   <p className="text-white/70 font-light text-lg mb-6">
-                    Pay exactly what's listed. Nothing more, ever.
+                    Small processing fee covers card network and payment processing costs.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-white/80 font-light">
                       <svg className="w-5 h-5 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>No transaction fees</span>
+                      <span>Transparent pricing</span>
                     </div>
                     <div className="flex items-center gap-3 text-white/80 font-light">
                       <svg className="w-5 h-5 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,11 +175,11 @@ export default function Pricing() {
                     <span className="text-blue-400 font-light text-sm">For Sellers</span>
                   </div>
                   <div className="mb-4">
-                    <span className="text-5xl md:text-6xl font-light text-white">92%</span>
-                    <span className="text-white/60 font-light text-xl ml-2">you keep</span>
+                    <span className="text-5xl md:text-6xl font-light text-white">5%</span>
+                    <span className="text-white/60 font-light text-xl ml-2">platform fee</span>
                   </div>
                   <p className="text-white/70 font-light text-lg mb-6">
-                    Keep the vast majority of every sale. Small fee, massive value.
+                    Keep 95% of every sale. Small platform fee for complete protection and support.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-white/80 font-light">
@@ -212,7 +206,7 @@ export default function Pricing() {
 
               <div className="pt-12 border-t border-white/10">
                 <p className="text-center text-white/60 font-light text-sm mb-8">
-                  The 8% fee includes payment processing and all platform services
+                  Buyer fee (3%) covers payment processing. Seller fee (5%) covers platform services and protection.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/signup" className="block">
@@ -345,11 +339,21 @@ export default function Pricing() {
                     </svg>
                     <h4 className="text-xl font-light text-white">Buyer Pays</h4>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/70 font-light">Exactly</span>
-                    <span className="text-green-400 font-light text-3xl">${buyerPays.toFixed(2)}</span>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/70 font-light">Listed Price</span>
+                      <span className="text-white font-light text-lg">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-white/60 font-light text-sm">Processing Fee (3%)</span>
+                      <span className="text-white/70 font-light">+${buyerFee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                      <span className="text-white font-light">Total You Pay</span>
+                      <span className="text-green-400 font-light text-3xl">${buyerPays.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <p className="text-white/50 font-light text-sm mt-3">No fees. No surprises. Just the listed price.</p>
+                  <p className="text-white/50 font-light text-sm mt-3">3% processing fee covers card network and payment processing costs.</p>
                 </div>
 
                 {/* Seller Section */}
@@ -364,21 +368,21 @@ export default function Pricing() {
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between items-center">
                       <span className="text-white/70 font-light">Transaction Amount</span>
-                      <span className="text-white font-light text-lg">${parseFloat(amount) || 0}.00</span>
+                      <span className="text-white font-light text-lg">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span className="text-white/60 font-light text-sm">All-inclusive fee (8%)</span>
-                      <span className="text-white/70 font-light">-${totalFee.toFixed(2)}</span>
+                      <span className="text-white/60 font-light text-sm">Platform Fee (5%)</span>
+                      <span className="text-white/70 font-light">-${sellerFee.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center pt-4 border-t border-white/10">
-                      <span className="text-white font-light text-lg">You Keep</span>
+                      <span className="text-white font-light text-lg">You Receive</span>
                       <span className="text-green-400 font-light text-3xl">${sellerReceives.toFixed(2)}</span>
                     </div>
                   </div>
                   
                   <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
                     <p className="text-green-400/90 font-light text-sm text-center">
-                      That's <strong className="font-normal">92%</strong> of the transaction amount
+                      That's <strong className="font-normal">95%</strong> of the transaction amount
                     </p>
                   </div>
                 </div>
