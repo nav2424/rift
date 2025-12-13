@@ -46,11 +46,12 @@ export async function processPayment(
   })
 
   // Send email notification
+  const amount = escrow.amount ?? escrow.subtotal
   await sendPaymentReceivedEmail(
     escrow.seller.email,
     transactionId,
     escrow.itemTitle,
-    escrow.amount,
+    amount,
     escrow.currency
   )
   
@@ -76,8 +77,9 @@ export async function createEscrowPaymentIntent(transactionId: string) {
     throw new Error('Buyer email is required for payment intent')
   }
 
+  const amount = escrow.amount ?? escrow.subtotal
   return await createPaymentIntent(
-    escrow.amount,
+    amount,
     escrow.currency,
     transactionId,
     escrow.buyer.email
