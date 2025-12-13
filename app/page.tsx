@@ -19,28 +19,28 @@ function ScreenshotGallery() {
   const screenshots = [
     {
       id: 'dashboard',
-      src: '/dashboard.png',
+      src: '/dashboard.png?v=2',
       title: 'Complete Dashboard',
       description: 'Track wallet balance, pending actions, recent activity, and all your rifts in one unified view',
       featured: true,
     },
     {
       id: 'create',
-      src: '/rift-created.png',
+      src: '/rift-created.png?v=2',
       title: 'Create in Seconds',
       description: 'Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly',
       featured: true,
     },
     {
       id: 'rifts',
-      src: '/rifts.png',
+      src: '/rifts.png?v=2',
       title: 'Manage All Rifts',
       description: 'View and manage all your active and completed transactions',
       featured: false,
     },
     {
       id: 'activity',
-      src: '/recent-activity.png',
+      src: '/recent-activity.png?v=2',
       title: 'Activity Tracking',
       description: 'Monitor all transaction activity and status updates in real-time',
       featured: false,
