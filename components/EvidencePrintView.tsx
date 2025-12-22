@@ -3,7 +3,7 @@
 import React from 'react'
 import { format } from 'date-fns'
 import GlassCard from '@/components/ui/GlassCard'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 import Link from 'next/link'
 
 interface EvidencePrintViewProps {
