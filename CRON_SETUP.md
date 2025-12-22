@@ -144,7 +144,7 @@ npm run test:hybrid-flow
 ```
 
 This will:
-- Create test escrow
+- Create test rift
 - Verify shipment proof
 - Set grace period
 - Check auto-release eligibility

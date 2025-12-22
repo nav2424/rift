@@ -13,8 +13,8 @@ The Hybrid Protection System **applies only to PHYSICAL products** and reduces s
 - **System verifies**: 
   - Tracking number format is validated against carrier patterns (UPS, FedEx, USPS, DHL)
   - Proof file is validated
-  - Address matches escrow shipping address
-- **Status**: Escrow marked as `shipmentVerifiedAt` and `trackingVerified: true`
+  - Address matches rift shipping address
+- **Status**: Rift marked as `shipmentVerifiedAt` and `trackingVerified: true`
 - **Note**: This verification is only required for PHYSICAL items
 
 ### 2. Delivery Confirmation
@@ -116,7 +116,7 @@ The Hybrid Protection System **applies only to PHYSICAL products** and reduces s
 
 ## Mobile UI Changes
 
-### Escrow Detail Screen
+### Rift Detail Screen
 - **Verification Status**: Shows green checkmarks for verified shipment and tracking
 - **Grace Period Timer**: Displays countdown timer showing when funds will auto-release
 - **Dispute Types**: Shows different dispute options based on verification status

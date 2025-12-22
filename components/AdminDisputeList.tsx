@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import EscrowStatusBadge from './EscrowStatusBadge'
+import RiftStatusBadge from './RiftStatusBadge'
 import GlassCard from './ui/GlassCard'
 import { EscrowStatus, DisputeStatus } from '@prisma/client'
 
@@ -13,7 +13,7 @@ interface Dispute {
   resolvedById: string | null
   createdAt: Date
   updatedAt: Date
-  escrow: {
+  EscrowTransaction: {
     id: string
     riftNumber: number
     status: EscrowStatus
@@ -71,16 +71,16 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
           {disputes.map((dispute) => (
             <tr key={dispute.id} className="hover:bg-white/5 transition-colors">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-light">
-                #{dispute.escrow.riftNumber}
+                #{dispute.EscrowTransaction.riftNumber}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
-                {dispute.escrow.buyer.email}
+                {dispute.EscrowTransaction.buyer.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
-                {dispute.escrow.seller.email}
+                {dispute.EscrowTransaction.seller.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <EscrowStatusBadge status={dispute.escrow.status} />
+                <RiftStatusBadge status={dispute.EscrowTransaction.status} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
                 {dispute.raisedBy.email}
@@ -93,7 +93,7 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <Link
-                  href={`/escrows/${dispute.escrowId}`}
+                  href={`/rifts/${dispute.escrowId}`}
                   className="text-blue-400 hover:text-blue-300 font-light transition-colors"
                 >
                   View

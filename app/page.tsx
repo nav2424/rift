@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import PremiumButton from '@/components/ui/PremiumButton'
 import GlassCard from '@/components/ui/GlassCard'
 
@@ -19,28 +20,28 @@ function ScreenshotGallery() {
   const screenshots = [
     {
       id: 'dashboard',
-      src: '/dashboard.png?v=2',
+      src: '/dashboard.png',
       title: 'Complete Dashboard',
       description: 'Track wallet balance, pending actions, recent activity, and all your rifts in one unified view',
       featured: true,
     },
     {
       id: 'create',
-      src: '/rift-created.png?v=2',
+      src: '/rift-created.png',
       title: 'Create in Seconds',
       description: 'Start a protected transaction with our simple, intuitive creation flow. Choose your item type and get started instantly',
       featured: true,
     },
     {
       id: 'rifts',
-      src: '/rifts.png?v=2',
+      src: '/rifts.png',
       title: 'Manage All Rifts',
       description: 'View and manage all your active and completed transactions',
       featured: false,
     },
     {
       id: 'activity',
-      src: '/recent-activity.png?v=2',
+      src: '/recent-activity.png',
       title: 'Activity Tracking',
       description: 'Monitor all transaction activity and status updates in real-time',
       featured: false,
@@ -96,11 +97,15 @@ function ScreenshotGallery() {
                 className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group/image"
                 onClick={() => setSelectedImage(screenshot.src)}
               >
-                <img 
+                <Image 
                   src={screenshot.src} 
                   alt={screenshot.title} 
+                  width={1200}
+                  height={800}
                   className="w-full h-auto object-contain transition-transform duration-500 group-hover/image:scale-[1.02]"
-                  style={{ maxHeight: '70vh', minHeight: '500px' }}
+                  style={{ maxHeight: '70vh', minHeight: 'clamp(300px, 50vh, 500px)' }}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                  priority={screenshot.featured}
                 />
               </div>
             </GlassCard>
@@ -127,11 +132,14 @@ function ScreenshotGallery() {
                 className="relative rounded-xl overflow-hidden shadow-xl cursor-pointer group/image"
                 onClick={() => setSelectedImage(screenshot.src)}
               >
-                <img 
+                <Image 
                   src={screenshot.src} 
                   alt={screenshot.title} 
+                  width={800}
+                  height={600}
                   className="w-full h-auto object-contain transition-transform duration-500 group-hover/image:scale-[1.02]"
-                  style={{ maxHeight: '50vh', minHeight: '400px' }}
+                  style={{ maxHeight: '50vh', minHeight: 'clamp(250px, 40vh, 400px)' }}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 800px"
                 />
               </div>
             </GlassCard>
@@ -155,12 +163,17 @@ function ScreenshotGallery() {
             </svg>
           </button>
           <div className="relative max-w-[95vw] max-h-[95vh] w-full h-full flex items-center justify-center">
-            <img 
-              src={selectedImage} 
-              alt="Full size screenshot"
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {selectedImage && (
+              <Image 
+                src={selectedImage} 
+                alt="Full size screenshot"
+                width={1920}
+                height={1080}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300"
+                onClick={(e) => e.stopPropagation()}
+                sizes="95vw"
+              />
+            )}
           </div>
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/60 text-sm">
             Press ESC or click outside to close
@@ -213,7 +226,7 @@ export default function Home() {
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       {/* Hero Section */}
-      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:pt-28 lg:pb-16">
+      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-8 sm:pb-12 lg:pt-28 lg:pb-16">
         <div className="relative z-10">
           {/* Trust Badge */}
           <div className={`flex justify-center mb-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
@@ -226,9 +239,9 @@ export default function Home() {
           </div>
           
           {/* Main Heading */}
-          <div className={`text-center mb-8 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-light mb-6 leading-[1.1] tracking-[-0.03em]">
-              <span className="block text-white/95 mb-3 font-light">The Safest Way to</span>
+          <div className={`text-center mb-6 sm:mb-8 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light mb-4 sm:mb-6 leading-[1.1] tracking-[-0.03em] px-2">
+              <span className="block text-white/95 mb-2 sm:mb-3 font-light">The Safest Way to</span>
               <span className="block text-white font-light">
                 Buy & Sell Online
               </span>
@@ -236,22 +249,22 @@ export default function Home() {
           </div>
           
           {/* Subheading */}
-          <div className={`text-center mb-10 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <p className="text-2xl md:text-3xl text-white/90 font-light mb-4 max-w-2xl mx-auto leading-relaxed">
+          <div className={`text-center mb-8 sm:mb-10 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <p className="text-xl sm:text-2xl md:text-3xl text-white/90 font-light mb-3 sm:mb-4 max-w-2xl mx-auto leading-relaxed px-4">
               Never get scammed again.
             </p>
-            <p className="text-base md:text-lg text-white/60 max-w-xl mx-auto leading-relaxed font-light">
+            <p className="text-sm sm:text-base md:text-lg text-white/60 max-w-xl mx-auto leading-relaxed font-light px-4">
               Rift protects your money until the job is done — and verifies every buyer & seller.
             </p>
           </div>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <Link href="/auth/signup" className="group relative">
+          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-12 px-4 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <Link href="/auth/signup" className="group relative w-full sm:w-auto">
               <PremiumButton 
                 size="lg" 
                 variant="primary" 
-                className="w-full sm:w-auto min-w-[200px] text-base px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+                className="w-full sm:w-auto min-w-[200px] text-base px-8 sm:px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
               >
                 <span className="flex items-center justify-center gap-2">
                   <span>Start a Rift</span>
@@ -261,11 +274,12 @@ export default function Home() {
                 </span>
               </PremiumButton>
             </Link>
-            <Link href="#how-it-works" className="group">
+            <Link href="#how-it-works" className="group w-full sm:w-auto">
               <PremiumButton 
                 size="lg" 
-                variant="primary" 
-                className="w-full sm:w-auto min-w-[200px] text-base px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+                variant="outline" 
+                className="w-full sm:w-auto min-w-[200px] text-base px-8 sm:px-10 py-4 font-medium bg-transparent !border !border-white text-white hover:bg-white/5 hover:!border-white transition-all duration-300 rounded-full"
+                style={{ borderColor: 'white' }}
               >
                 How Rift Works
               </PremiumButton>
@@ -278,7 +292,7 @@ export default function Home() {
               <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              <span>Secure Escrow</span>
+              <span>Secure Protection</span>
             </div>
             <div className="flex items-center gap-2 text-white/50 text-sm font-light">
               <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,17 +320,17 @@ export default function Home() {
       </section>
 
       {/* Why People Get Scammed Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight px-2">
             The Problem We Solve
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
             Online transactions are vulnerable. Here's how we protect you.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {[
             {
               problem: 'Fake Sellers',
@@ -337,16 +351,17 @@ export default function Home() {
             <GlassCard 
               key={index} 
               variant="glass" 
-              className="p-8 relative transition-all duration-300 group flex flex-col"
+              hover
+              className="p-6 sm:p-8 relative transition-all duration-300 group flex flex-col"
             >
               <div className="relative z-10 flex flex-col">
                 {/* Problem */}
-                <div className="mb-6 pb-6 border-b border-white/10">
-                  <div className="flex items-center gap-3 mb-3 h-7">
+                <div className="mb-6 sm:mb-8 pb-6 border-b border-white/10">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="w-2 h-2 rounded-full bg-red-400/60 flex-shrink-0" />
-                    <h3 className="text-lg font-light text-white leading-tight">{item.problem}</h3>
+                    <h3 className="text-base sm:text-lg font-light text-white leading-tight">{item.problem}</h3>
                   </div>
-                  <p className="text-sm text-white/50 font-light leading-relaxed pl-5 h-12">
+                  <p className="text-sm sm:text-base text-white/50 font-light leading-relaxed pl-5">
                     {item.problemDesc}
                   </p>
                 </div>
@@ -355,7 +370,7 @@ export default function Home() {
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-400/60 flex-shrink-0 mt-1.5" />
                   <div className="flex-1">
-                    <p className="text-sm text-white/80 font-light leading-relaxed">
+                    <p className="text-sm sm:text-base text-white/80 font-light leading-relaxed">
                       {item.solution}
                     </p>
                   </div>
@@ -367,12 +382,12 @@ export default function Home() {
       </section>
 
       {/* Visual Transaction Flow */}
-      <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight px-2">
             How It Works
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
             Simple, secure, and built for trust. Here's the complete flow.
           </p>
         </div>
@@ -387,7 +402,7 @@ export default function Home() {
                   num: '1',
                   title: 'Buyer Sends Payment',
                   subtitle: 'Buyer pays securely',
-                  desc: 'Using credit card, Apple Pay, or Google Pay. Payment is processed securely and funds are immediately held in escrow.',
+                  desc: 'Using credit card, Apple Pay, or Google Pay. Payment is processed securely and funds are immediately held by Rift until completion.',
                   icon: (
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -405,7 +420,7 @@ export default function Home() {
                 {
                   num: '2',
                   title: 'Rift Holds Funds',
-                  subtitle: 'Rift holds funds in escrow',
+                  subtitle: 'Rift holds funds until completion',
                   desc: 'Money is locked away safely. Seller sees the payment but cannot access funds yet.',
                   icon: (
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,7 +440,7 @@ export default function Home() {
                   num: '3',
                   title: 'Seller Delivers',
                   subtitle: 'Seller delivers item/service',
-                  desc: 'Physical items: upload shipment proof & tracking. Digital/Tickets/Services: mark as delivered.',
+                  desc: 'Sellers mark items as delivered. For digital items and tickets: provide access. For services: confirm completion.',
                   icon: (
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -444,7 +459,7 @@ export default function Home() {
                   num: '4',
                   title: 'Buyer Confirms',
                   subtitle: 'Buyer confirms receipt',
-                  desc: 'For digital items: instant payout. For physical items: 48-hour protection period starts.',
+                  desc: 'Buyer confirms receipt. For digital items, tickets, and services: instant payout after confirmation.',
                   icon: (
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -524,7 +539,7 @@ export default function Home() {
                 num: '1',
                 title: 'Buyer Sends Payment',
                 subtitle: 'Buyer pays securely',
-                desc: 'Using credit card, Apple Pay, or Google Pay. Payment is processed securely and funds are immediately held in escrow.',
+                desc: 'Using credit card, Apple Pay, or Google Pay. Payment is processed securely and funds are immediately held in rift.',
                 icon: (
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -542,7 +557,7 @@ export default function Home() {
               {
                 num: '2',
                 title: 'Rift Holds Funds',
-                subtitle: 'Rift holds funds in escrow',
+                subtitle: 'Rift holds funds in rift',
                 desc: 'Money is locked away safely. Seller sees the payment but cannot access funds yet.',
                 icon: (
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -562,7 +577,7 @@ export default function Home() {
                 num: '3',
                 title: 'Seller Delivers',
                 subtitle: 'Seller delivers item/service',
-                desc: 'Physical items: upload shipment proof & tracking. Digital/Tickets/Services: mark as delivered.',
+                desc: 'Sellers mark items as delivered. For digital items and tickets: provide access. For services: confirm completion.',
                 icon: (
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -581,7 +596,7 @@ export default function Home() {
                 num: '4',
                 title: 'Buyer Confirms',
                 subtitle: 'Buyer confirms receipt',
-                desc: 'For digital items: instant payout. For physical items: 48-hour protection period starts.',
+                desc: 'Buyer confirms receipt. For digital items, tickets, and services: instant payout after confirmation.',
                 icon: (
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -654,8 +669,8 @@ export default function Home() {
       </section>
 
       {/* Platform Showcase */}
-      <section className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-16">
+      <section className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
             Your Command Center
           </h2>
@@ -669,28 +684,18 @@ export default function Home() {
       </section>
 
       {/* Protection Features Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
             Protection Tailored to Every Item Type
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
             Different items need different protection. We've got you covered.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
           {[
-            {
-              type: 'Physical Items',
-              features: ['Shipment verification', 'Tracking number verification', '48-hour grace period', 'Auto-release after delivery'],
-              icon: (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              ),
-              highlight: 'Hybrid Protection'
-            },
             {
               type: 'Digital Products',
               features: ['Instant payouts', '24-hour buyer protection', 'Auto-release after seller confirms', 'Download verification'],
@@ -727,22 +732,22 @@ export default function Home() {
               key={index} 
               variant="glass" 
               hover
-              className={`p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`p-8 lg:p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center text-white/90 flex-shrink-0">
+                <div className="flex items-center gap-4 mb-6 lg:mb-8">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center text-white/90 flex-shrink-0">
                     {item.icon}
                   </div>
                   <div>
-                    <h3 className="text-lg font-light text-white">{item.type}</h3>
-                    <div className="text-xs text-green-400/80 font-light mt-1.5">{item.highlight}</div>
+                    <h3 className="text-base lg:text-lg font-light text-white">{item.type}</h3>
+                    <div className="text-xs text-green-400/80 font-light mt-1">{item.highlight}</div>
                   </div>
                 </div>
-                <ul className="space-y-3">
+                <ul className="space-y-2.5 lg:space-y-3">
                   {item.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-white/70 font-light text-sm">
+                    <li key={idx} className="flex items-start gap-3 text-white/70 font-light text-sm lg:text-base">
                       <svg className="w-4 h-4 text-green-400/80 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -757,12 +762,12 @@ export default function Home() {
       </section>
 
       {/* Security & Trust Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
             Bank-Level Security
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
             Your data and money are protected with enterprise-grade security
           </p>
         </div>
@@ -779,8 +784,8 @@ export default function Home() {
               )
             },
             {
-              title: 'Escrow Protection',
-              description: 'Funds are held securely in escrow until both parties confirm the transaction is complete.',
+              title: 'Buyer Protection',
+              description: 'Funds are held securely by Rift until both parties confirm the transaction is complete.',
               icon: (
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -817,9 +822,9 @@ export default function Home() {
       </section>
 
       {/* Real Stories Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
             Real Stories
           </h2>
           <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
@@ -836,9 +841,9 @@ export default function Home() {
               avatar: 'A'
             },
             {
-              quote: 'I sold my first $1,000 camera with no fear.',
+              quote: 'I sell digital products and services with complete confidence.',
               author: 'Jessica K.',
-              role: 'Photographer',
+              role: 'Freelancer',
               avatar: 'J'
             },
             {
@@ -852,20 +857,20 @@ export default function Home() {
               key={index} 
               variant="glass" 
               hover
-              className={`p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`p-6 sm:p-8 lg:p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="relative z-10">
-                <div className="text-4xl mb-6 text-white/20 font-serif">"</div>
-                <p className="text-white/90 font-light leading-relaxed mb-8 text-base">
+                <div className="text-3xl sm:text-4xl mb-4 sm:mb-6 text-white/20 font-serif">"</div>
+                <p className="text-white/90 font-light leading-relaxed mb-6 sm:mb-8 text-sm sm:text-base">
                   {story.quote}
                 </p>
-                <div className="flex items-center gap-4 pt-6 border-t border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/20 to-white/10 border border-white/20 flex items-center justify-center text-white/90 font-light text-lg">
+                <div className="flex items-center gap-4 pt-4 sm:pt-6 border-t border-white/10">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-white/20 to-white/10 border border-white/20 flex items-center justify-center text-white/90 font-light text-base sm:text-lg">
                     {story.avatar}
                   </div>
                   <div>
-                    <p className="text-white font-light text-sm">{story.author}</p>
+                    <p className="text-white font-light text-xs sm:text-sm">{story.author}</p>
                     <p className="text-white/50 font-light text-xs mt-0.5">{story.role}</p>
                   </div>
                 </div>
@@ -876,21 +881,21 @@ export default function Home() {
       </section>
 
       {/* Use Cases Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
             Perfect For These Scenarios
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
             Use Rift wherever you need secure, protected transactions
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {[
             {
               useCase: 'Facebook Marketplace & Social Media',
-              description: 'Selling items on Facebook Marketplace or Instagram? Protect yourself from fake payment screenshots and chargebacks. Rift ensures you get paid before shipping.',
+              description: 'Selling tickets, digital products, or services on Facebook Marketplace or Instagram? Protect yourself from fake payment screenshots and chargebacks. Rift ensures you get paid securely.',
               icon: (
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -914,32 +919,25 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               )
-            },
-            {
-              useCase: 'High-Value Item Sales',
-              description: 'Selling expensive electronics, cameras, or collectibles? Get shipment verification and tracking protection. No more "item not received" scams.',
-              icon: (
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              )
             }
           ].map((item, index) => (
             <GlassCard 
               key={index} 
               variant="glass" 
               hover
-              className={`p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              className={`p-6 sm:p-8 lg:p-10 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center text-white/90 flex-shrink-0">
+                <div className="flex items-start gap-4 mb-4 sm:mb-5">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center text-white/90 flex-shrink-0">
                     {item.icon}
                   </div>
-                  <h3 className="text-xl font-light text-white">{item.useCase}</h3>
+                  <div className="flex-1">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-light text-white mb-3">{item.useCase}</h3>
+                    <p className="text-white/70 font-light text-sm sm:text-base leading-relaxed">{item.description}</p>
+                  </div>
                 </div>
-                <p className="text-white/70 font-light text-sm leading-relaxed pl-[4.5rem]">{item.description}</p>
               </div>
             </GlassCard>
           ))}
@@ -1016,7 +1014,7 @@ export default function Home() {
       </section>
 
       {/* Mobile App Section */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
         <GlassCard variant="glass" className="p-12 md:p-20 relative">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className={`transition-all duration-500 ${mounted ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
@@ -1024,7 +1022,7 @@ export default function Home() {
                 Take Rift With You
               </h2>
               <p className="text-xl text-white/80 mb-8 font-light leading-relaxed">
-                Manage transactions on-the-go with our mobile app. Get instant notifications, track escrows in real-time, and complete transactions from anywhere.
+                Manage transactions on-the-go with our mobile app. Get instant notifications, track your transactions in real-time, and complete deals from anywhere.
               </p>
               <ul className="space-y-5 mb-10">
                 {[
@@ -1045,8 +1043,8 @@ export default function Home() {
                 ))}
               </ul>
               <Link href="/auth/signup">
-                <PremiumButton className="w-full sm:w-auto px-10 py-4" glow>
-                  Get Started on Mobile
+                <PremiumButton variant="outline" className="w-full sm:w-auto px-10 py-4 bg-white/5 border-white/20 text-white hover:bg-white/10">
+                  Coming Soon
                 </PremiumButton>
               </Link>
             </div>
@@ -1062,9 +1060,9 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-white mb-6 tracking-tight">
+      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
             Frequently Asked Questions
           </h2>
         </div>
@@ -1076,20 +1074,20 @@ export default function Home() {
               answer: 'We accept credit and debit cards (Visa, Mastercard, American Express), Apple Pay, and Google Pay. All payments are processed securely through encrypted channels.'
             },
             {
-              question: 'How does escrow protection work?',
-              answer: 'When a buyer pays, funds are held securely in escrow. The seller can see the payment but cannot access the money until you confirm receipt (or after a protection period). This protects both parties from scams.'
+              question: 'How does buyer protection work?',
+              answer: 'When a buyer pays, Rift holds the funds securely until completion. The seller can see the payment but cannot access the money until you confirm receipt (or after a protection period). This protects both parties from scams.'
             },
             {
-              question: 'How does protection differ for digital vs physical items?',
-              answer: 'Physical items use hybrid protection: sellers upload shipment proof and tracking, triggering a 48-hour grace period. Digital items, tickets, and services get instant payouts when the seller marks delivered, with a 24-hour buyer protection window.'
+              question: 'How does protection work for different item types?',
+              answer: 'Digital items, tickets, and services get instant payouts when the seller marks delivered, with a 24-hour buyer protection window. Buyers can raise disputes during this period if there are any issues.'
             },
             {
               question: 'What\'s the difference between Rift and PayPal/Venmo?',
-              answer: 'Unlike PayPal or Venmo, Rift holds funds in escrow until both parties confirm completion. This prevents chargebacks, fake payment screenshots, and "item not received" scams. Funds are only released when the transaction is verified complete.'
+              answer: 'Unlike PayPal or Venmo, Rift holds funds securely until both parties confirm completion. This prevents chargebacks, fake payment screenshots, and "item not received" scams. Funds are only released when the transaction is verified complete.'
             },
             {
               question: 'How long does it take to receive funds?',
-              answer: 'For digital items, tickets, and services: instant after seller confirms delivery (with 24-hour buyer protection). For physical items: after buyer confirms receipt, or automatically after a 48-hour grace period if delivery is verified.'
+              answer: 'For digital items, tickets, and services: instant payout after seller confirms delivery and buyer confirms receipt (with 24-hour buyer protection window for disputes).'
             },
             {
               question: 'What happens if I dispute a transaction?',
@@ -1108,12 +1106,12 @@ export default function Home() {
               key={index} 
               variant="glass" 
               hover 
-              className={`p-10 cursor-pointer relative transition-all duration-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              className={`p-6 sm:p-8 lg:p-10 cursor-pointer relative transition-all duration-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
               style={{ transitionDelay: `${index * 50}ms` }}
             >
               <div className="relative z-10">
-                <h3 className="text-xl font-light text-white mb-4">{faq.question}</h3>
-                <p className="text-white/70 font-light leading-relaxed text-base">{faq.answer}</p>
+                <h3 className="text-lg sm:text-xl font-light text-white mb-3 sm:mb-4">{faq.question}</h3>
+                <p className="text-white/70 font-light leading-relaxed text-sm sm:text-base">{faq.answer}</p>
               </div>
             </GlassCard>
           ))}

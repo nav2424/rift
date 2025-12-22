@@ -1,4 +1,4 @@
-# End-to-End Escrow Flow Test Guide
+# End-to-End Rift Flow Test Guide
 
 ## Prerequisites
 
@@ -18,14 +18,14 @@
 - Email: `seller@test.com`
 - Password: `password123`
 
-### 2. Complete Escrow Flow
+### 2. Complete Rift Flow
 
 #### Step 1: Sign In as Buyer (Mobile)
 1. Open mobile app
 2. Sign in with buyer credentials
 3. Should see empty dashboard
 
-#### Step 2: Create Escrow (Mobile)
+#### Step 2: Create Rift (Mobile)
 1. Tap "Create" tab
 2. Select item type (e.g., "Physical Item")
 3. Fill in wizard:
@@ -33,18 +33,18 @@
    - **Details**: Shipping address (for physical items)
    - **Seller**: Select seller from list or enter email
    - **Review**: Confirm all details
-4. Tap "Create Escrow"
-5. Should redirect to escrow detail page
+4. Tap "Create Rift"
+5. Should redirect to rift detail page
 
 #### Step 3: Mark as Paid (Mobile - Buyer)
-1. On escrow detail page
+1. On rift detail page
 2. Tap "Mark as Paid"
 3. Status should change to "AWAITING_SHIPMENT"
 4. Seller should receive email notification
 
 #### Step 4: Upload Shipment Proof (Mobile - Seller)
 1. Sign out and sign in as seller
-2. Navigate to the escrow
+2. Navigate to the rift
 3. Tap "Upload Shipment Proof"
 4. Enter tracking number (optional)
 5. Upload image (optional)
@@ -53,13 +53,13 @@
 
 #### Step 5: Confirm Receipt (Mobile - Buyer)
 1. Sign out and sign in as buyer
-2. Navigate to the escrow
+2. Navigate to the rift
 3. Tap "Confirm Item Received"
 4. Status should change to "DELIVERED_PENDING_RELEASE"
 5. Seller should receive email notification
 
 #### Step 6: Release Funds (Mobile - Buyer)
-1. On escrow detail page
+1. On rift detail page
 2. Tap "Release Funds to Seller"
 3. Status should change to "RELEASED"
 4. Seller should receive email notification
@@ -68,7 +68,7 @@
 ### 3. Dispute Flow Test
 
 #### Step 1: Raise Dispute (Mobile - Buyer)
-1. On an escrow in "IN_TRANSIT" or "DELIVERED_PENDING_RELEASE" status
+1. On an rift in "IN_TRANSIT" or "DELIVERED_PENDING_RELEASE" status
 2. Tap "Raise Dispute"
 3. Enter reason
 4. Status should change to "DISPUTED"
@@ -90,7 +90,7 @@
 4. Should see:
    - Open disputes list
    - All escrows list
-5. Tap any escrow to view details
+5. Tap any rift to view details
 6. Can resolve disputes from detail page
 
 ## Common Issues & Solutions
@@ -113,7 +113,7 @@
 ## Verification Checklist
 
 - [ ] User can sign in/up
-- [ ] User can create escrow
+- [ ] User can create rift
 - [ ] Buyer can mark as paid
 - [ ] Seller can upload proof
 - [ ] Buyer can confirm receipt

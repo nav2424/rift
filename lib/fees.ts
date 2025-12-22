@@ -67,7 +67,7 @@ export function calculateBuyerTotal(subtotal: number): number {
  * Note: Payment processing fees are automatically deducted from payments by Stripe
  * These fees are part of the 8% total fee paid by the seller
  * 
- * @param amount - The payment amount (original escrow amount)
+ * @param amount - The payment amount (original rift amount)
  * @returns Object with payment processing fee breakdown
  */
 export function calculatePaymentProcessingFees(amount: number): {

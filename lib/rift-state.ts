@@ -4,11 +4,12 @@
  */
 
 import { prisma } from './prisma'
-import { EscrowStatus } from '@prisma/client'
+import { EscrowStatus, RiftEventActorType } from '@prisma/client'
 import { validateTransition } from './state-machine'
 import { creditSellerOnRelease } from './wallet'
 import { schedulePayout } from './risk-tiers'
 import { calculateSellerNet } from './fees'
+import { logEvent } from './rift-events'
 
 /**
  * Transition rift to a new state with validation
@@ -22,7 +23,7 @@ export async function transitionRiftState(
     timestamp?: Date
   }
 ): Promise<void> {
-  const rift = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
   })
 
@@ -54,7 +55,7 @@ export async function transitionRiftState(
   }
 
   // Update state
-  await prisma.escrowTransaction.update({
+  await prisma.riftTransaction.update({
     where: {
       id: riftId,
       version: rift.version, // Optimistic locking
@@ -62,17 +63,98 @@ export async function transitionRiftState(
     data: updateData,
   })
 
+  // Log status transition event
+  let actorType: RiftEventActorType = 'SYSTEM'
+  if (metadata?.userId) {
+    // Determine if user is buyer or seller
+    if (rift.buyerId === metadata.userId) {
+      actorType = 'BUYER'
+    } else if (rift.sellerId === metadata.userId) {
+      actorType = 'SELLER'
+    } else {
+      // Could be admin - check user role
+      const user = await prisma.user.findUnique({
+        where: { id: metadata.userId },
+        select: { role: true },
+      })
+      actorType = user?.role === 'ADMIN' ? 'ADMIN' : 'SYSTEM'
+    }
+  }
+
+  await logEvent(
+    riftId,
+    actorType,
+    metadata?.userId || null,
+    'STATUS_TRANSITION',
+    {
+      fromStatus: rift.status,
+      toStatus: newStatus,
+      reason: metadata?.reason || null,
+    }
+  )
+
+  // Create timeline event for important status transitions
+  // Only create for meaningful transitions (not duplicates)
+  if (rift.status !== newStatus) {
+    const statusMessages: Partial<Record<EscrowStatus, string>> = {
+      FUNDED: 'Payment received',
+      PROOF_SUBMITTED: 'Proof of delivery submitted',
+      UNDER_REVIEW: 'Proof under review',
+      DISPUTED: 'Dispute raised',
+      RESOLVED: 'Dispute resolved',
+      CANCELED: 'Rift canceled',
+      RELEASED: 'Funds released',
+    }
+
+    const timelineMessage = statusMessages[newStatus]
+    
+    // Only create timeline event for important status changes
+    // Note: Some status changes already have specific timeline events (e.g., PROOF_SUBMITTED, FUNDED)
+    // So we only create STATUS_CHANGE events for transitions that don't have specific events
+    if (timelineMessage && !['PROOF_SUBMITTED', 'FUNDED'].includes(newStatus)) {
+      try {
+        // Check if a similar event was just created (within last 3 seconds) to avoid duplicates
+        const threeSecondsAgo = new Date(Date.now() - 3000)
+        const recentEvent = await prisma.timelineEvent.findFirst({
+          where: {
+            escrowId: riftId,
+            type: 'STATUS_CHANGE',
+            message: timelineMessage,
+            createdAt: {
+              gte: threeSecondsAgo,
+            },
+          },
+        })
+
+        if (!recentEvent) {
+          await prisma.timelineEvent.create({
+            data: {
+              escrowId: riftId,
+              type: 'STATUS_CHANGE',
+              message: timelineMessage,
+              createdById: metadata?.userId || null,
+            },
+          })
+          console.log(`✅ Created timeline event: ${timelineMessage} for rift ${riftId}`)
+        }
+      } catch (timelineError: any) {
+        // Log but don't fail the transition if timeline event creation fails
+        console.error('Timeline event creation error:', timelineError)
+      }
+    }
+  }
+
   // Handle side effects based on new state
   if (newStatus === 'RELEASED') {
-    await handleRelease(riftId)
+    await handleRelease(riftId, metadata?.userId)
   }
 }
 
 /**
  * Handle release state - credit seller wallet and schedule payout
  */
-async function handleRelease(riftId: string): Promise<void> {
-  const rift = await prisma.escrowTransaction.findUnique({
+async function handleRelease(riftId: string, userId?: string): Promise<void> {
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
     include: { seller: true },
   })
@@ -105,14 +187,39 @@ async function handleRelease(riftId: string): Promise<void> {
     },
   })
 
-  // Create timeline event
-  await prisma.timelineEvent.create({
-    data: {
+  // Create timeline event - check for duplicates first
+  // Only create if no FUNDS_RELEASED event exists for this rift
+  const existingEvent = await prisma.timelineEvent.findFirst({
+    where: {
       escrowId: riftId,
       type: 'FUNDS_RELEASED',
-      message: `Funds released. Seller receives ${rift.currency} ${rift.sellerNet.toFixed(2)} (${rift.currency} ${rift.sellerFee.toFixed(2)} platform fee deducted)`,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
   })
+
+  if (!existingEvent) {
+    // For sellers: Show only the rift value (what the item is worth)
+    // For buyers: Show the rift value (what they paid for the item)
+    const riftValue = rift.subtotal ?? 0
+    try {
+      await prisma.timelineEvent.create({
+        data: {
+          escrowId: riftId,
+          type: 'FUNDS_RELEASED',
+          message: `Funds released to seller. Amount: ${rift.currency} ${riftValue.toFixed(2)}`,
+          createdById: userId || null,
+        },
+      })
+      console.log(`✅ Created FUNDS_RELEASED timeline event for rift ${riftId}`)
+    } catch (error: any) {
+      console.error('Error creating FUNDS_RELEASED timeline event:', error)
+      // Don't throw - timeline event failure shouldn't block release
+    }
+  } else {
+    console.log(`⚠️ FUNDS_RELEASED event already exists for rift ${riftId}`)
+  }
 }
 
 /**

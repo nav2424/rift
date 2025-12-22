@@ -11,7 +11,7 @@ interface Dispute {
   status: string
   reason: string
   createdAt: string
-  escrow: {
+  rift: {
     id: string
     itemTitle: string
     status: string
@@ -153,16 +153,16 @@ export default function DisputesPage() {
         ) : (
           <div className="space-y-4">
             {disputes.map((dispute) => (
-              <Link key={dispute.id} href={`/escrows/${dispute.escrow.id}`}>
+              <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
                 <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-light text-white mb-2">
-                          {dispute.escrow.itemTitle}
+                          {dispute.rift.itemTitle}
                         </h3>
                         <p className="text-white/80 font-light text-sm mb-3">
-                          {formatCurrency(dispute.escrow.amount, dispute.escrow.currency)}
+                          {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
                         </p>
                         <p className="text-white/60 font-light text-sm">
                           Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}

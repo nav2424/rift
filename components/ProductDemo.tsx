@@ -87,7 +87,7 @@ export default function ProductDemo() {
   const demos = {
     dashboard: {
       title: 'Dashboard Overview',
-      description: 'Real-time tracking of all your escrow transactions with comprehensive analytics',
+      description: 'Real-time tracking of all your rift transactions with comprehensive analytics',
       features: [
         { icon: 'chart', text: 'Live transaction status' },
         { icon: 'bell', text: 'Instant notifications' },
@@ -160,7 +160,7 @@ export default function ProductDemo() {
     },
     transaction: {
       title: 'Transaction Flow',
-      description: 'Seamless escrow creation and management with step-by-step guidance',
+      description: 'Seamless rift creation and management with step-by-step guidance',
       features: [
         { icon: 'zap', text: 'One-click creation' },
         { icon: 'lock', text: 'Secure payment processing' },
@@ -310,7 +310,7 @@ export default function ProductDemo() {
           See It In Action
         </h2>
         <p className="text-lg text-white/60 max-w-2xl mx-auto font-light">
-          Experience enterprise-grade escrow protection
+          Experience enterprise-grade rift protection
         </p>
       </div>
 

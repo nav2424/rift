@@ -74,7 +74,7 @@ export default function SignInScreen() {
         <View style={styles.content}>
           <View style={styles.logoContainer}>
             <RiftLogo size={80} />
-            <Text style={styles.tagline}>Secure escrow for marketplace deals.</Text>
+            <Text style={styles.tagline}>Secure rift for marketplace deals.</Text>
           </View>
 
           <PremiumGlassCard variant="premium" style={styles.formCard}>

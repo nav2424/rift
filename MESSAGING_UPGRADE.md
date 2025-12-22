@@ -149,7 +149,7 @@ Same API as web version.
 
 1. **`mobile/components/MessagingPanel.tsx`**
    - Same functionality as web version
-   - Used in escrow detail screens
+   - Used in rift detail screens
 
 2. **`mobile/app/messages/[id].tsx`**
    - Full-screen conversation view
@@ -224,7 +224,7 @@ Or use the SQL commands in the migration (they're wrapped in a DO block to handl
 ```tsx
 import MessagingPanel from '@/components/MessagingPanel'
 
-<MessagingPanel transactionId={escrow.id} />
+<MessagingPanel transactionId={rift.id} />
 ```
 
 ### Mobile - Using MessagingPanel
@@ -232,7 +232,7 @@ import MessagingPanel from '@/components/MessagingPanel'
 ```tsx
 import MessagingPanel from '@/components/MessagingPanel'
 
-<MessagingPanel transactionId={escrow.id} />
+<MessagingPanel transactionId={rift.id} />
 ```
 
 ### Web - Using Realtime Hooks Directly

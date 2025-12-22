@@ -35,7 +35,7 @@ export default function SupportScreen() {
   const faqItems = [
     {
       question: 'How does RIFT protect my transactions?',
-      answer: 'RIFT holds funds in escrow until both parties confirm the transaction is complete. This ensures buyers receive what they paid for and sellers get paid.',
+      answer: 'RIFT holds funds in rift until both parties confirm the transaction is complete. This ensures buyers receive what they paid for and sellers get paid.',
     },
     {
       question: 'How long does it take to receive funds?',

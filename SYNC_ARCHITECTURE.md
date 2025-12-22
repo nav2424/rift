@@ -42,12 +42,12 @@ All data is stored in a **single PostgreSQL database** accessed via Prisma:
 
 ### Escrows/Rifts
 ✅ **Now implemented** using Supabase Realtime
-- Both platforms subscribe to escrow updates via `subscribeToUserEscrows()`
+- Both platforms subscribe to rift updates via `subscribeToUserEscrows()`
 - Real-time updates when:
-  - Escrow status changes
+  - Rift status changes
   - New escrows are created
-  - Escrow details are updated
-- Mobile detail pages also subscribe to individual escrow updates
+  - Rift details are updated
+- Mobile detail pages also subscribe to individual rift updates
 
 ### User Profiles
 - User data is fetched from the same API endpoints
@@ -60,8 +60,8 @@ All API endpoints support both authentication methods:
 
 ### Shared Endpoints
 - `/api/escrows/list` - List user's escrows (works for both)
-- `/api/escrows/[id]` - Get escrow details (works for both)
-- `/api/escrows/create` - Create new escrow (works for both)
+- `/api/escrows/[id]` - Get rift details (works for both)
+- `/api/escrows/create` - Create new rift (works for both)
 - `/api/conversations` - List conversations (works for both)
 - `/api/conversations/[id]` - Get/send messages (works for both)
 - `/api/auth/me` - Get current user (works for both)
@@ -76,7 +76,7 @@ All API endpoints support both authentication methods:
 
 ## Real-Time Sync Implementation
 
-### Escrow Sync
+### Rift Sync
 ```typescript
 // Both platforms use the same function
 import { subscribeToUserEscrows } from '@/lib/realtime-escrows'
@@ -84,10 +84,10 @@ import { subscribeToUserEscrows } from '@/lib/realtime-escrows'
 subscribeToUserEscrows(
   userId,
   (update) => {
-    // Update escrow in UI
+    // Update rift in UI
   },
   (newEscrow) => {
-    // Add new escrow to list
+    // Add new rift to list
   }
 )
 ```
@@ -146,9 +146,9 @@ subscribeToMessages(
 
 ## Testing Sync
 
-1. **Sign in on website** - Create an escrow
-2. **Open mobile app** - Escrow should appear automatically (via realtime)
-3. **Update escrow on mobile** - Website should update automatically
+1. **Sign in on website** - Create an rift
+2. **Open mobile app** - Rift should appear automatically (via realtime)
+3. **Update rift on mobile** - Website should update automatically
 4. **Send message on website** - Mobile should receive it in real-time
 5. **Update profile on mobile** - Website should reflect changes on next page load
 

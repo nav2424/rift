@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import GlassCard from './ui/GlassCard'
+import { useToast } from './ui/Toast'
 
 interface Activity {
   id: string
@@ -12,6 +13,7 @@ interface Activity {
 }
 
 export default function SocialFeed() {
+  const { showToast } = useToast()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -26,6 +28,7 @@ export default function SocialFeed() {
       }
     } catch (error) {
       console.error('Error fetching activities:', error)
+      // Silent failure for activity feed - not critical
     } finally {
       setLoading(false)
     }

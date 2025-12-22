@@ -24,7 +24,7 @@ export async function processAutoReleases() {
   // 2. Auto-release deadline has passed
   // 3. No open disputes
   // 4. Still in PROOF_SUBMITTED or UNDER_REVIEW status
-  const riftsToAutoRelease = await prisma.escrowTransaction.findMany({
+  const riftsToAutoRelease = await prisma.riftTransaction.findMany({
     where: {
       autoReleaseAt: { lte: now },
       status: {
@@ -59,9 +59,10 @@ export async function processAutoReleases() {
         continue
       }
 
-      // Verify proof is valid
-      if (rift.proofs.length === 0) {
-        console.log(`Skipping auto-release for ${rift.id}: no valid proof`)
+      // Verify proof is valid (must be VALID status, not just PENDING)
+      const validProofs = rift.proofs.filter(p => p.status === 'VALID')
+      if (validProofs.length === 0) {
+        console.log(`Skipping auto-release for ${rift.id}: no valid proof (proofs are PENDING or REJECTED)`)
         continue
       }
 
@@ -75,11 +76,14 @@ export async function processAutoReleases() {
       await transitionRiftState(rift.id, 'RELEASED')
 
       // Create timeline event
+      // For sellers: Show only the rift value (what the item is worth)
+      // For buyers: Show the rift value (what they paid for the item)
+      const riftValue = rift.subtotal ?? 0
       await prisma.timelineEvent.create({
         data: {
           escrowId: rift.id,
           type: 'FUNDS_AUTO_RELEASED',
-          message: `Funds automatically released after review period. Seller receives ${rift.currency} ${rift.sellerNet?.toFixed(2) || '0.00'} (${rift.currency} ${rift.sellerFee.toFixed(2)} platform fee deducted)`,
+          message: `Funds automatically released. Amount: ${rift.currency} ${riftValue.toFixed(2)}`,
         },
       })
 
@@ -155,11 +159,11 @@ export async function processAutoReleases() {
 }
 
 /**
- * Update delivery status for escrows with tracking numbers
+ * Update delivery status for rifts with tracking numbers
  * Should be called periodically to check delivery status
  */
 export async function updateDeliveryStatus() {
-  const escrows = await prisma.escrowTransaction.findMany({
+  const rifts = await prisma.riftTransaction.findMany({
     where: {
       itemType: 'PHYSICAL',
       shipmentVerifiedAt: { not: null },
@@ -182,8 +186,8 @@ export async function updateDeliveryStatus() {
 
   const results = []
 
-  for (const escrow of escrows) {
-    const latestProof = escrow.shipmentProofs[0]
+  for (const rift of rifts) {
+    const latestProof = rift.shipmentProofs[0]
     if (!latestProof || !latestProof.trackingNumber) continue
 
     try {
@@ -204,8 +208,8 @@ export async function updateDeliveryStatus() {
       //   const gracePeriodHours = 48
       //   const gracePeriodEndsAt = new Date(deliveryDate.getTime() + gracePeriodHours * 60 * 60 * 1000)
       //
-      //   await prisma.escrowTransaction.update({
-      //     where: { id: escrow.id },
+      //   await prisma.riftTransaction.update({
+      //     where: { id: rift.id },
       //     data: {
       //       deliveryVerifiedAt: deliveryDate,
       //       gracePeriodEndsAt: gracePeriodEndsAt,
@@ -223,10 +227,10 @@ export async function updateDeliveryStatus() {
       //   })
       // }
 
-      results.push({ escrowId: escrow.id, checked: true })
+      results.push({ escrowId: rift.id, checked: true })
     } catch (error) {
-      console.error(`Error checking delivery for escrow ${escrow.id}:`, error)
-      results.push({ escrowId: escrow.id, checked: false, error: (error as Error).message })
+      console.error(`Error checking delivery for rift ${rift.id}:`, error)
+      results.push({ escrowId: rift.id, checked: false, error: (error as Error).message })
     }
   }
 

@@ -49,12 +49,12 @@ export default function DisputesScreen() {
 
   const renderDispute = ({ item }: { item: any }) => {
     const statusColor = getStatusColor(item.status);
-    const escrow = item.escrow;
+    const rift = item.rift;
 
     return (
       <TouchableOpacity
         style={styles.disputeCard}
-        onPress={() => router.push(`/escrows/${escrow?.id}`)}
+        onPress={() => router.push(`/rifts/${rift?.id}`)}
         activeOpacity={0.92}
       >
         <View style={styles.disputeCardShadow} />
@@ -77,13 +77,13 @@ export default function DisputesScreen() {
             </Text>
           </View>
 
-          {escrow && (
+          {rift && (
             <>
-              <Text style={styles.disputeTitle}>{escrow.itemTitle}</Text>
+              <Text style={styles.disputeTitle}>{rift.itemTitle}</Text>
               <Text style={styles.disputeReason}>{item.reason}</Text>
               <View style={styles.disputeFooter}>
                 <Text style={styles.disputeAmount}>
-                  {formatCurrency(escrow.amount, escrow.currency)}
+                  {formatCurrency(rift.amount, rift.currency)}
                 </Text>
                 <Text style={styles.disputeRaisedBy}>
                   Raised by: {item.raisedBy?.name || item.raisedBy?.email || 'Unknown'}

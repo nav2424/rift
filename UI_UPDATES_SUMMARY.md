@@ -32,14 +32,14 @@
   - Complete transaction ledger
   - Links to related rifts
 
-### 5. Escrow Detail Page (`app/escrows/[id]/page.tsx`)
+### 5. Rift Detail Page (`app/escrows/[id]/page.tsx`)
 - ✅ Shows fee breakdown component
 - ✅ Displays new proof system (Proof table)
 - ✅ Updated actions for new states
 - ✅ Shows buyer fee and seller net amounts
 - ✅ Updated dispute form location (FUNDED, PROOF_SUBMITTED, UNDER_REVIEW)
 
-### 6. Escrow Actions (`components/EscrowActions.tsx`)
+### 6. Rift Actions (`components/EscrowActions.tsx`)
 - ✅ Updated for new state machine:
   - DRAFT → Fund action
   - FUNDED → Dispute action (buyer) / Submit proof (seller)
@@ -47,7 +47,7 @@
   - UNDER_REVIEW → Release or Dispute (buyer)
 - ✅ Updated admin dispute resolution (FULL_RELEASE, PARTIAL_REFUND, FULL_REFUND)
 
-### 7. Create Escrow Form (`components/CreateEscrowForm.tsx`)
+### 7. Create Rift Form (`components/CreateEscrowForm.tsx`)
 - ✅ Added fee breakdown display
 - ✅ Shows buyer total (subtotal + 3% fee) for buyers
 - ✅ Shows seller net (subtotal - 5% fee) for sellers
@@ -71,7 +71,7 @@
 - ✅ Shows buyer pays (subtotal + 3% fee)
 - ✅ Shows seller receives (subtotal - 5% fee)
 - ✅ Can show buyer view, seller view, or both
-- ✅ Used in escrow detail page
+- ✅ Used in rift detail page
 
 ### 12. Submit Proof Page (`app/escrows/[id]/submit-proof/page.tsx`) - NEW
 - ✅ Dedicated page for proof submission

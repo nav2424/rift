@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { getWalletBalance } from '@/lib/wallet'
+import { parsePaginationParams, createPaginatedResponse } from '@/lib/pagination'
+import { prisma } from '@/lib/prisma'
 
 /**
  * Get wallet balance and ledger
@@ -12,11 +14,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const wallet = await getWalletBalance(auth.userId)
+    const { page, limit, skip } = parsePaginationParams(request)
+    const walletData = await getWalletBalance(auth.userId)
+
+    // Get paginated ledger entries
+    const walletAccount = await prisma.walletAccount.findUnique({
+      where: { userId: auth.userId },
+    })
+
+    if (!walletAccount) {
+      return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+    }
+
+    const total = await prisma.walletLedgerEntry.count({
+      where: { walletAccountId: walletAccount.id },
+    })
+
+    const ledgerEntries = await prisma.walletLedgerEntry.findMany({
+      where: { walletAccountId: walletAccount.id },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    })
 
     return NextResponse.json({
-      wallet: wallet.wallet,
-      ledgerEntries: wallet.ledgerEntries,
+      wallet: walletData.wallet,
+      ledgerEntries: ledgerEntries,
+      pagination: createPaginatedResponse(ledgerEntries, page, limit, total).pagination,
     })
   } catch (error: any) {
     console.error('Get wallet error:', error)

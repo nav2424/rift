@@ -5,8 +5,9 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
+import { useToast } from '@/components/ui/Toast'
 
-interface EscrowTransaction {
+interface RiftTransaction {
   id: string
   riftNumber: number | null
   itemTitle: string
@@ -34,7 +35,8 @@ type ActivityFilter = 'all' | 'active' | 'completed' | 'pending' | 'cancelled'
 export default function ActivityPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([])
+  const { showToast } = useToast()
+  const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<ActivityFilter>('all')
@@ -52,22 +54,26 @@ export default function ActivityPage() {
 
   const loadEscrows = async () => {
     try {
-      const response = await fetch('/api/escrows/list', {
+      const response = await fetch('/api/rifts/list?limit=100', {
         credentials: 'include',
       })
       if (response.ok) {
         const data = await response.json()
-        setEscrows(data.escrows || [])
+        // Handle both old format (rifts) and new paginated format (data)
+        setRifts(data.data || data.rifts || [])
+      } else {
+        showToast('Failed to load activity. Please try again.', 'error')
       }
     } catch (error) {
-      console.error('Error loading escrows:', error)
+      console.error('Error loading rifts:', error)
+      showToast('Failed to load activity. Please check your connection.', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const getAllActivity = useMemo(() => {
-    let filtered = [...escrows]
+    let filtered = [...rifts]
 
     // Apply status filter
     if (filter === 'active') {
@@ -91,11 +97,11 @@ export default function ActivityPage() {
     // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(escrow => {
-        const riftNumber = escrow.riftNumber?.toString() || escrow.id.slice(-4)
-        const itemTitle = escrow.itemTitle?.toLowerCase() || ''
-        const buyerName = (escrow.buyer.name || escrow.buyer.email || '').toLowerCase()
-        const sellerName = (escrow.seller.name || escrow.seller.email || '').toLowerCase()
+      filtered = filtered.filter(rift => {
+        const riftNumber = rift.riftNumber?.toString() || rift.id.slice(-4)
+        const itemTitle = rift.itemTitle?.toLowerCase() || ''
+        const buyerName = (rift.buyer.name || rift.buyer.email || '').toLowerCase()
+        const sellerName = (rift.seller.name || rift.seller.email || '').toLowerCase()
         
         return (
           riftNumber.includes(query) ||
@@ -112,14 +118,14 @@ export default function ActivityPage() {
     )
 
     // Map to activity format
-    return sorted.map(escrow => {
-      const isBuyer = escrow.buyerId === session?.user?.id
-      const otherParty = isBuyer ? escrow.seller : escrow.buyer
+    return sorted.map(rift => {
+      const isBuyer = rift.buyerId === session?.user?.id
+      const otherParty = isBuyer ? rift.seller : rift.buyer
       const name = otherParty.name || otherParty.email.split('@')[0]
 
-      const riftNumber = escrow.riftNumber ?? escrow.id.slice(-4)
+      const riftNumber = rift.riftNumber ?? rift.id.slice(-4)
       let message = ''
-      switch (escrow.status) {
+      switch (rift.status) {
         case 'AWAITING_PAYMENT':
           message = isBuyer 
             ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
@@ -141,13 +147,18 @@ export default function ActivityPage() {
         case 'RELEASED':
           message = `Rift #${riftNumber} — Funds released — transaction completed`
           break
+        case 'FUNDED':
+          message = isBuyer
+            ? `Rift #${riftNumber} — Paid — waiting for seller proof`
+            : `Rift #${riftNumber} — Paid — submit proof of delivery`
+          break
         default:
-          message = `Rift #${riftNumber} — ${escrow.status.replace(/_/g, ' ').toLowerCase()}`
+          message = `Rift #${riftNumber} — ${rift.status.replace(/_/g, ' ').toLowerCase()}`
       }
 
-      return { ...escrow, message, name }
+      return { ...rift, message, name }
     })
-  }, [escrows, filter, searchQuery, session?.user?.id])
+  }, [rifts, filter, searchQuery, session?.user?.id])
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -257,7 +268,7 @@ export default function ActivityPage() {
         ) : (
           <div className="space-y-3">
             {getAllActivity.map((activity) => (
-              <Link key={activity.id} href={`/escrows/${activity.id}`}>
+              <Link key={activity.id} href={`/rifts/${activity.id}`}>
                 <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -265,7 +276,7 @@ export default function ActivityPage() {
                         <p className="text-white font-light mb-2">{activity.message}</p>
                         <div className="flex items-center gap-4 mt-2">
                           <span className={`text-sm font-light ${getStatusColor(activity.status)}`}>
-                            {activity.status.replace(/_/g, ' ')}
+                            {activity.status === 'FUNDED' ? 'Paid' : activity.status.replace(/_/g, ' ')}
                           </span>
                           <span className="text-white/40 font-light text-sm">
                             {formatCurrency(activity.amount, activity.currency)}

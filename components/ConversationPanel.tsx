@@ -53,6 +53,20 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
       const data = await response.json()
       setMessages(data.messages || [])
       setError(null)
+
+      // Mark all messages in this conversation as read when user views them
+      try {
+        await fetch(`/api/conversations/${conversationId}/mark-read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        })
+      } catch (markReadError) {
+        // Silently fail - marking as read is not critical
+        console.debug('Failed to mark messages as read:', markReadError)
+      }
     } catch (err: any) {
       console.error('Error fetching messages:', err)
       setError(err.message || 'Failed to load messages. Please try again.')
@@ -94,7 +108,10 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
         })
       },
       (err) => {
-        console.error('Realtime subscription error:', err)
+        // Realtime subscription failed - this is non-critical
+        // Messages will still work via polling/refresh, just without real-time updates
+        console.warn('Realtime subscription unavailable:', err.message)
+        // Don't set error state - messaging still works without realtime
       }
     )
 
@@ -204,7 +221,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
   }
 
   return (
-    <GlassCard>
+    <GlassCard className="p-8">
       <h2 className="text-xl font-light text-white mb-6">Messages</h2>
 
       {error && (
@@ -213,7 +230,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
         </div>
       )}
 
-      <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+      <div className="space-y-4 mb-6 max-h-[600px] min-h-[400px] overflow-y-auto">
         {messages.length === 0 ? (
           <div className="text-center py-8 text-white/60 font-light">
             Start the conversation.

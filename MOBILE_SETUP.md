@@ -89,9 +89,9 @@ JWT_SECRET=your-secret-key-here-change-in-production
 
 ✅ Full feature parity with web app:
 - Authentication
-- Dashboard with escrow list
-- Create escrow (all item types)
-- View escrow details
+- Dashboard with rift list
+- Create rift (all item types)
+- View rift details
 - Mark payments
 - Upload shipment proof
 - Confirm receipt

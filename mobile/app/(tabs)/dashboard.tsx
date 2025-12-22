@@ -2,18 +2,18 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert, Platform, ScrollView, Animated } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/lib/auth';
-import { api, EscrowTransaction } from '@/lib/api';
+import { api, RiftTransaction } from '@/lib/api';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
-import { subscribeToUserEscrows } from '@/lib/realtime-escrows';
+import { subscribeToUserEscrows } from '@/lib/realtime-rifts';
 
 type TimeFilter = 'all' | '30days' | 'month';
 
 export default function DashboardScreen() {
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([]);
+  const [rifts, setRifts] = useState<RiftTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
@@ -24,7 +24,7 @@ export default function DashboardScreen() {
   const loadEscrows = useCallback(async () => {
     try {
       const data = await api.getEscrows();
-      setEscrows(data);
+      setRifts(data);
     } catch (error: any) {
       // Silently handle errors - don't show alerts or log
     } finally {
@@ -37,41 +37,41 @@ export default function DashboardScreen() {
     loadEscrows();
   }, [loadEscrows]);
 
-  // Reload escrows when screen comes into focus (instant updates after actions)
+  // Reload rifts when screen comes into focus (instant updates after actions)
   useFocusEffect(
     useCallback(() => {
       loadEscrows();
     }, [loadEscrows])
   );
 
-  // Real-time sync for escrows
+  // Real-time sync for rifts
   useEffect(() => {
     if (!user?.id) return;
 
     const unsubscribe = subscribeToUserEscrows(
       user.id,
       (update) => {
-        // Update existing escrow or add new one
-        setEscrows((prev) => {
+        // Update existing rift or add new one
+        setRifts((prev) => {
           const existingIndex = prev.findIndex((e) => e.id === update.id);
           if (existingIndex >= 0) {
-            // Update existing escrow
+            // Update existing rift
             const updated = [...prev];
             updated[existingIndex] = { ...updated[existingIndex], ...update };
             return updated;
           } else {
-            // New escrow - reload to get full data
+            // New rift - reload to get full data
             loadEscrows();
             return prev;
           }
         });
       },
       (newEscrow) => {
-        // New escrow created - reload to get full data with relations
+        // New rift created - reload to get full data with relations
         loadEscrows();
       },
       (error) => {
-        console.error('Realtime escrow sync error:', error);
+        console.error('Realtime rift sync error:', error);
         // Silently fail - don't disrupt user experience
       }
     );
@@ -87,7 +87,7 @@ export default function DashboardScreen() {
   };
 
   const filteredEscrows = useMemo(() => {
-    if (timeFilter === 'all') return escrows;
+    if (timeFilter === 'all') return rifts;
     
     const now = new Date();
     const filterDate = new Date();
@@ -98,11 +98,11 @@ export default function DashboardScreen() {
       filterDate.setMonth(now.getMonth() - 1);
     }
     
-    return escrows.filter(e => new Date(e.createdAt) >= filterDate);
-  }, [escrows, timeFilter]);
+    return rifts.filter(e => new Date(e.createdAt) >= filterDate);
+  }, [rifts, timeFilter]);
 
   const metrics = useMemo(() => {
-    // Exclude cancelled escrows from all metrics
+    // Exclude cancelled rifts from all metrics
     const validEscrows = filteredEscrows.filter(e => e.status !== 'CANCELLED');
     
     const active = validEscrows.filter(e => 
@@ -131,7 +131,7 @@ export default function DashboardScreen() {
     });
 
     // Calculate trends (compare with previous period)
-    const previousPeriodEscrows = escrows.filter(e => {
+    const previousPeriodEscrows = rifts.filter(e => {
       if (timeFilter === 'all') return false;
       const now = new Date();
       const filterDate = new Date();
@@ -175,7 +175,7 @@ export default function DashboardScreen() {
       valueTrend,
       successTrend,
     };
-  }, [filteredEscrows, escrows, user?.id, timeFilter]);
+  }, [filteredEscrows, rifts, user?.id, timeFilter]);
 
   const activeEscrows = useMemo(() => {
     return filteredEscrows.filter(e => 
@@ -212,14 +212,14 @@ export default function DashboardScreen() {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     ).slice(0, 6);
 
-    return sorted.map(escrow => {
-      const isBuyer = escrow.buyerId === user?.id;
-      const otherParty = isBuyer ? escrow.seller : escrow.buyer;
+    return sorted.map(rift => {
+      const isBuyer = rift.buyerId === user?.id;
+      const otherParty = isBuyer ? rift.seller : rift.buyer;
       const name = otherParty.name || otherParty.email.split('@')[0];
 
-      const riftNumber = escrow.riftNumber ?? escrow.id.slice(-4);
+      const riftNumber = rift.riftNumber ?? rift.id.slice(-4);
       let message = '';
-      switch (escrow.status) {
+      switch (rift.status) {
         case 'AWAITING_PAYMENT':
           message = isBuyer 
             ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
@@ -242,10 +242,10 @@ export default function DashboardScreen() {
           message = `Rift #${riftNumber} — Funds released — transaction completed`;
           break;
         default:
-          message = `Rift #${riftNumber} — ${escrow.status.replace(/_/g, ' ').toLowerCase()}`;
+          message = `Rift #${riftNumber} — ${rift.status.replace(/_/g, ' ').toLowerCase()}`;
       }
 
-      return { ...escrow, message, name };
+      return { ...rift, message, name };
     });
   };
 
@@ -258,7 +258,7 @@ export default function DashboardScreen() {
     }).format(amount);
   };
 
-  const getStatusColor = (status: EscrowTransaction['status']) => {
+  const getStatusColor = (status: RiftTransaction['status']) => {
     switch (status) {
       case 'RELEASED': return '#10b981';
       case 'REFUNDED': return '#ef4444';
@@ -272,7 +272,7 @@ export default function DashboardScreen() {
     }
   };
 
-  const getStatusIcon = (status: EscrowTransaction['status']) => {
+  const getStatusIcon = (status: RiftTransaction['status']) => {
     switch (status) {
       case 'RELEASED': return 'checkmark-circle';
       case 'REFUNDED': return 'arrow-back-circle';
@@ -286,7 +286,7 @@ export default function DashboardScreen() {
     }
   };
 
-  const renderEscrow = ({ item }: { item: EscrowTransaction }) => {
+  const renderEscrow = ({ item }: { item: RiftTransaction }) => {
     const isBuyer = item.buyerId === user?.id;
     const role = isBuyer ? 'Buyer' : 'Seller';
     const otherParty = isBuyer ? item.seller : item.buyer;
@@ -296,7 +296,7 @@ export default function DashboardScreen() {
     return (
       <TouchableOpacity
         activeOpacity={0.92}
-        onPress={() => router.push(`/escrows/${item.id}`)}
+        onPress={() => router.push(`/rifts/${item.id}`)}
         style={styles.escrowCard}
       >
         <View style={styles.escrowCardShadow} />
@@ -546,7 +546,7 @@ export default function DashboardScreen() {
                         <TouchableOpacity
                           key={action.id}
                           style={styles.actionItem}
-                          onPress={() => router.push(`/escrows/${action.id}`)}
+                          onPress={() => router.push(`/rifts/${action.id}`)}
                           activeOpacity={0.7}
                         >
                           <View style={styles.actionItemLeft}>
@@ -653,10 +653,10 @@ export default function DashboardScreen() {
             </View>
 
             {/* SECTION 5: Your Rifts */}
-            <View style={styles.escrowsContainer}>
-              <View style={styles.escrowsHeader}>
+            <View style={styles.riftsContainer}>
+              <View style={styles.riftsHeader}>
                 <Text style={styles.sectionTitle}>Your Rifts</Text>
-                {escrows.length > 0 && (
+                {rifts.length > 0 && (
                   <TouchableOpacity
                     style={styles.viewAllButton}
                     onPress={() => router.push('/rifts/all')}
@@ -1202,12 +1202,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.lg + 2,
-    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg + 4,
+    paddingHorizontal: Spacing.lg + 2,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(59, 130, 246, 0.15)',
   },
   actionItemLeft: {
     flexDirection: 'row',
@@ -1223,11 +1223,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionItemText: {
-    fontSize: 15,
-    color: Colors.text,
-    fontWeight: '300',
+  actionItemTextContainer: {
     flex: 1,
+    gap: 4,
+  },
+  actionItemText: {
+    fontSize: 16,
+    color: Colors.text,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  actionItemDescription: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '400',
+    opacity: 0.85,
+    letterSpacing: -0.2,
   },
   noActionsContainer: {
     paddingVertical: Spacing.lg + 4,
@@ -1325,12 +1337,12 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     opacity: 0.85,
   },
-  escrowsContainer: {
+  riftsContainer: {
     paddingHorizontal: Spacing.xl + 4,
     marginTop: Spacing.xl + 8,
     marginBottom: Spacing.lg,
   },
-  escrowsHeader: {
+  riftsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

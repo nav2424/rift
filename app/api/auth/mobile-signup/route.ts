@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { generateNextRiftUserId } from '@/lib/rift-user-id'
+import { capturePolicyAcceptance } from '@/lib/policy-acceptance'
+import { extractRequestMetadata } from '@/lib/rift-events'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production-make-sure-to-change-this'
 
@@ -39,6 +42,9 @@ export async function POST(request: NextRequest) {
     // Hash password - same method as website
     const passwordHash = await bcrypt.hash(password, 10)
 
+    // Generate Rift user ID
+    const riftUserId = await generateNextRiftUserId()
+
     // Create user - same as website
     const user = await prisma.user.create({
       data: {
@@ -46,8 +52,18 @@ export async function POST(request: NextRequest) {
         name: name || null,
         passwordHash,
         role: 'USER', // Explicitly set role like website does
+        riftUserId,
       },
     })
+
+    // Capture policy acceptance at signup
+    try {
+      const requestMeta = extractRequestMetadata(request)
+      await capturePolicyAcceptance(user.id, 'signup', requestMeta)
+    } catch (error) {
+      console.error('Error capturing policy acceptance:', error)
+      // Don't fail signup if policy acceptance fails
+    }
 
     // Generate JWT token
     const token = jwt.sign(

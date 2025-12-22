@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
+import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 
+/**
+ * GET /api/admin/disputes
+ * Get dispute queue for admin review
+ */
 export async function GET(request: NextRequest) {
   try {
     const auth = await getAuthenticatedUser(request)
@@ -9,13 +14,66 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const disputes = await prisma.dispute.findMany({
-      where: {
-        status: 'OPEN',
-      },
-      include: {
-        escrow: {
-          include: {
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status')
+    const category = searchParams.get('category')
+    const reason = searchParams.get('reason')
+
+    const supabase = createServerClient()
+
+    // Build query
+    let query = supabase
+      .from('disputes')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    // Filter by status
+    if (status) {
+      if (status === 'active') {
+        query = query.in('status', ['submitted', 'needs_info', 'under_review'])
+      } else {
+        query = query.eq('status', status)
+      }
+    } else {
+      // Default: show active disputes
+      query = query.in('status', ['submitted', 'needs_info', 'under_review'])
+    }
+
+    // Filter by category
+    if (category) {
+      query = query.eq('category_snapshot', category)
+    }
+
+    // Filter by reason
+    if (reason) {
+      query = query.eq('reason', reason)
+    }
+
+    const { data: disputes, error: disputesError } = await query
+
+    if (disputesError) {
+      console.error('Get disputes error:', disputesError)
+      return NextResponse.json(
+        { error: 'Failed to fetch disputes', details: disputesError.message },
+        { status: 500 }
+      )
+    }
+
+    // Enrich with rift and user data
+    const enrichedDisputes = await Promise.all(
+      (disputes || []).map(async (dispute) => {
+        const rift = await prisma.riftTransaction.findUnique({
+          where: { id: dispute.rift_id },
+          select: {
+            id: true,
+            riftNumber: true,
+            itemTitle: true,
+            subtotal: true,
+            currency: true,
+            itemType: true,
+            eventDateTz: true,
+            buyerId: true,
+            sellerId: true,
             buyer: {
               select: {
                 id: true,
@@ -31,27 +89,31 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-        },
-        raisedBy: {
+        })
+
+        const openedBy = await prisma.user.findUnique({
+          where: { id: dispute.opened_by },
           select: {
             id: true,
             name: true,
             email: true,
           },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        })
 
-    return NextResponse.json({ disputes })
-  } catch (error) {
-    console.error('Get disputes error:', error)
+        return {
+          ...dispute,
+          rift,
+          openedByUser: openedBy,
+        }
+      })
+    )
+
+    return NextResponse.json({ disputes: enrichedDisputes })
+  } catch (error: any) {
+    console.error('Get admin disputes error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', message: error.message },
       { status: 500 }
     )
   }
 }
-

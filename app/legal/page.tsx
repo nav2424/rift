@@ -67,7 +67,7 @@ export default function Legal() {
             <h2 className="text-3xl font-light text-white mb-8">Disclaimer</h2>
             <div className="prose prose-invert max-w-none space-y-6">
               <p className="text-white/80 leading-relaxed font-light">
-                Rift provides escrow services to facilitate secure transactions between buyers and sellers. 
+                Rift provides buyer protection services by holding funds securely until transaction completion, facilitating secure transactions between buyers and sellers. 
                 While we take measures to protect users, we are not responsible for the quality, condition, or 
                 delivery of goods or services transacted through our platform.
               </p>

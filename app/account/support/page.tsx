@@ -90,7 +90,7 @@ function SupportContent() {
                 <div>
                   <h3 className="text-white font-light text-lg mb-3">How does Rift protect my transactions?</h3>
                   <p className="text-white/60 font-light text-sm leading-relaxed">
-                    Rift holds funds in escrow until both parties confirm the transaction is complete. 
+                    Rift holds funds securely until both parties confirm the transaction is complete. 
                     For physical items, we verify tracking and provide a grace period. For digital items 
                     and services, we use instant release systems with buyer protection.
                   </p>

@@ -18,7 +18,7 @@
 - Covers:
   - Platform margin (~5%)
   - Stripe processing (~3%)
-  - Fraud protection, dispute resolution, escrow
+  - Fraud protection, dispute resolution, rift
 
 ### 3. Payment Processing Fees (Stripe)
 - **Automatically handled** by Stripe (2.9% + $0.30 per transaction)
@@ -48,7 +48,7 @@
 
 ## Fee Flow Example
 
-**Escrow Amount: $100.00**
+**Rift Amount: $100.00**
 
 1. **Buyer pays**: $100.00 (exactly the listed price, 0% fee)
 2. **Stripe processing fees**: ~$3.20 (2.9% + $0.30) [AUTOMATIC - passed to seller]

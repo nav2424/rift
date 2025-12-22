@@ -77,7 +77,7 @@ export default async function ConversationDetail({
   let transaction = null
 
   if (buyerParticipant && sellerParticipant) {
-    transaction = await prisma.escrowTransaction.findFirst({
+    transaction = await prisma.riftTransaction.findFirst({
       where: {
         buyerId: buyerParticipant.user_id,
         sellerId: sellerParticipant.user_id,
@@ -136,7 +136,7 @@ export default async function ConversationDetail({
               </h1>
               {transaction && (
                 <Link 
-                  href={`/escrows/${transaction.id}`}
+                  href={`/rifts/${transaction.id}`}
                   className="text-white/60 hover:text-white/80 font-light text-sm transition-colors"
                 >
                   View Transaction: {transaction.itemTitle}

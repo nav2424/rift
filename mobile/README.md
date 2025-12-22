@@ -1,13 +1,13 @@
 # TrustHold Mobile App
 
-iOS mobile application for TrustHold escrow platform built with React Native and Expo.
+iOS mobile application for TrustHold rift platform built with React Native and Expo.
 
 ## Features
 
 - 🔐 Authentication (Sign In / Sign Up)
-- 📊 Dashboard with escrow list
-- 📝 Create escrow transactions (Physical, Tickets, Digital, Services)
-- 📱 View escrow details
+- 📊 Dashboard with rift list
+- 📝 Create rift transactions (Physical, Tickets, Digital, Services)
+- 📱 View rift details
 - ✅ Mark payments, confirm receipt, release funds
 - 📦 Upload shipment proof
 - ⚠️ Raise disputes
@@ -87,7 +87,7 @@ mobile/
 ├── app/                    # Expo Router pages
 │   ├── (auth)/            # Authentication screens
 │   ├── (tabs)/            # Tab navigation screens
-│   └── escrows/           # Escrow detail screens
+│   └── escrows/           # Rift detail screens
 ├── components/            # Reusable components
 ├── lib/                   # Utilities and API client
 │   ├── api.ts            # API client
@@ -110,7 +110,7 @@ The mobile app connects to the Next.js backend API. Make sure:
 - Uses Expo Router for file-based routing
 - Secure storage for authentication tokens
 - Image picker for shipment proof uploads
-- Pull-to-refresh on dashboard and escrow details
+- Pull-to-refresh on dashboard and rift details
 - Dark theme matching web app design
 
 ## Troubleshooting

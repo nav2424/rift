@@ -15,7 +15,7 @@ export const stripe = process.env.STRIPE_SECRET_KEY
   : null
 
 /**
- * Create a payment intent for an escrow transaction
+ * Create a payment intent for an rift transaction
  */
 export async function createPaymentIntent(
   amount: number,
@@ -42,10 +42,10 @@ export async function createPaymentIntent(
       currency: currency.toLowerCase(),
       metadata: {
         escrowId,
-        type: 'escrow',
+        type: 'rift',
       },
       receipt_email: buyerEmail,
-      description: `Escrow payment for transaction ${escrowId}`,
+      description: `Rift payment for transaction ${escrowId}`,
       // Only allow card payments - this disables Link and all other payment methods
       payment_method_types: ['card'],
     })
@@ -137,14 +137,14 @@ export async function confirmPaymentIntent(
  * - Payment processing fees (2.9% + $0.30) are automatically deducted from the payment
  * - The platform receives the net amount after payment processing fees
  * - When transferring to a connected account, there are no additional fees on transfers
- * - We transfer the seller amount (escrow amount - 8% total fee) directly
+ * - We transfer the seller amount (rift amount - 8% total fee) directly
  * 
  * @param sellerPayoutAmount - Amount to pay seller (already calculated with platform fee deducted)
- * @param escrowAmount - Original escrow amount (for reference in metadata)
+ * @param escrowAmount - Original rift amount (for reference in metadata)
  * @param platformFee - Platform fee amount (for reference in metadata)
  * @param currency - Currency code
  * @param sellerStripeAccountId - Seller's payment account ID
- * @param escrowId - Escrow transaction ID
+ * @param escrowId - Rift transaction ID
  */
 export async function createPayout(
   sellerPayoutAmount: number,
@@ -207,6 +207,262 @@ export async function refundPayment(
   } catch (error) {
     console.error('Stripe refund error:', error)
     return null
+  }
+}
+
+/**
+ * Create or retrieve a Stripe Connect account for a user
+ * Returns the account ID
+ */
+export async function createOrGetConnectAccount(
+  userId: string,
+  email: string,
+  userName?: string | null
+): Promise<string> {
+  if (!stripe) {
+    // In development, return a mock account ID
+    return 'acct_mock_' + userId.slice(0, 8)
+  }
+
+  try {
+    // Get a valid URL for business_profile
+    // Stripe requires a valid URL format - use production URL or default
+    let businessUrl = process.env.NEXTAUTH_URL || 'https://rift.app'
+    
+    // Ensure URL has proper protocol and is not localhost (Stripe may reject localhost)
+    if (businessUrl.includes('localhost') || businessUrl.includes('127.0.0.1')) {
+      // Use a default production URL for localhost
+      businessUrl = 'https://rift.app'
+    }
+    
+    // Ensure URL starts with http:// or https://
+    if (!businessUrl.startsWith('http://') && !businessUrl.startsWith('https://')) {
+      businessUrl = `https://${businessUrl}`
+    }
+
+    // Create a new Connect account for individuals (not businesses)
+    // Note: Stripe requires card_payments capability when requesting transfers
+    const account = await stripe.accounts.create({
+      type: 'express', // Express accounts are the simplest for onboarding
+      country: 'CA', // Default to Canada, can be made configurable
+      email: email,
+      business_type: 'individual', // Explicitly set to individual for personal transactions
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      business_profile: {
+        // Pre-fill all business profile fields to skip business details page in onboarding
+        // MCC code for general merchandise (appropriate for individual marketplace)
+        mcc: '5971', // Art Dealers and Galleries / General Merchandise (covers personal marketplace)
+        // Pre-fill website URL - using platform URL since individuals don't have websites
+        url: businessUrl,
+        product_description: 'Personal transactions between individuals',
+        // Pre-fill business name with individual's name
+        name: userName || 'Individual',
+      },
+      individual: {
+        // Pre-fill individual information to avoid asking for job title/occupation
+        email: email,
+        // Set a generic occupation to avoid the field appearing
+        // Users can update this later if needed, but it won't be required during onboarding
+      },
+      metadata: {
+        userId: userId,
+        accountType: 'individual',
+        platform: 'rift',
+      },
+    })
+
+    // Pre-fill individual and business fields to minimize questions during onboarding
+    // This helps reduce business-related questions for individual accounts
+    // Note: Pre-filling business_profile.mcc and business_profile.url will skip the business details page
+    try {
+      await stripe.accounts.update(account.id, {
+        individual: {
+          occupation: 'Individual', // Pre-fill to avoid job title field appearing
+        },
+        business_profile: {
+          // Pre-fill all business profile fields to skip business details page
+          // When MCC and URL are pre-filled, Stripe skips the "Business details" page
+          mcc: '5971', // General Merchandise (for individual marketplace)
+          // Use same validated URL as account creation
+          url: (() => {
+            let url = process.env.NEXTAUTH_URL || 'https://rift.app'
+            if (url.includes('localhost') || url.includes('127.0.0.1')) {
+              url = 'https://rift.app'
+            }
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              url = `https://${url}`
+            }
+            return url
+          })(),
+          name: userName || 'Individual',
+          product_description: 'Personal transactions between individuals',
+        },
+      })
+    } catch (updateError: any) {
+      // If update fails (field might not be available yet), continue anyway
+      // The account is still created and onboarding will proceed
+      console.warn('Could not pre-fill account fields (this is normal):', updateError?.message)
+    }
+
+    return account.id
+  } catch (error: any) {
+    console.error('Stripe Connect account creation error:', error)
+    
+    // Check for specific Stripe Connect setup errors
+    if (error.message?.includes('review the responsibilities') || 
+        error.message?.includes('platform-profile') ||
+        error.code === 'account_invalid') {
+      throw new Error(
+        'Stripe Connect is not fully configured. Please complete the Connect profile setup in your Stripe Dashboard: https://dashboard.stripe.com/settings/connect/platform-profile'
+      )
+    }
+    
+    // Check for capability approval errors
+    if (error.message?.includes('transfers') && error.message?.includes('card_payments')) {
+      throw new Error(
+        'Stripe requires approval for transfers capability. Please contact Stripe support or ensure your platform has the necessary approvals.'
+      )
+    }
+    
+    throw new Error(`Failed to create Stripe account: ${error.message || 'Unknown error'}`)
+  }
+}
+
+/**
+ * Create an account link for Stripe Connect onboarding
+ * Returns the onboarding URL
+ */
+export async function createAccountLink(
+  accountId: string,
+  returnUrl: string,
+  refreshUrl: string
+): Promise<string> {
+  if (!stripe) {
+    // In development, return a mock URL
+    return `${returnUrl}?mock=true&account_id=mock_${accountId}`
+  }
+
+  try {
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
+      type: 'account_onboarding',
+    })
+
+    return accountLink.url
+  } catch (error: any) {
+    console.error('Stripe account link creation error:', error)
+    throw new Error(`Failed to create account link: ${error.message}`)
+  }
+}
+
+/**
+ * Get Stripe Connect account status
+ * Returns account details and onboarding status with detailed verification information
+ */
+export async function getConnectAccountStatus(
+  accountId: string
+): Promise<{
+  accountId: string
+  chargesEnabled: boolean
+  payoutsEnabled: boolean
+  detailsSubmitted: boolean
+  email?: string
+  status: 'approved' | 'pending' | 'restricted' | 'rejected' | 'under_review'
+  statusMessage?: string
+  requirements?: {
+    currentlyDue: string[]
+    eventuallyDue: string[]
+    pastDue: string[]
+    pendingVerification: string[]
+  }
+  disabledReason?: string
+}> {
+  if (!stripe) {
+    // In development, return mock status
+    return {
+      accountId,
+      chargesEnabled: true,
+      payoutsEnabled: true,
+      detailsSubmitted: true,
+      email: 'mock@example.com',
+      status: 'approved',
+      statusMessage: 'Account approved (mock mode)',
+    }
+  }
+
+  try {
+    const account = await stripe.accounts.retrieve(accountId)
+
+    // Determine account status
+    let status: 'approved' | 'pending' | 'restricted' | 'rejected' | 'under_review' = 'pending'
+    let statusMessage: string | undefined
+    let disabledReason: string | undefined
+
+    // Check if account is disabled and why
+    if (account.charges_enabled === false || account.payouts_enabled === false) {
+      if (account.requirements?.currently_due && account.requirements.currently_due.length > 0) {
+        status = 'restricted'
+        statusMessage = 'Additional information required to enable payouts'
+      } else if (account.requirements?.past_due && account.requirements.past_due.length > 0) {
+        status = 'restricted'
+        statusMessage = 'Verification information is past due'
+      } else if (!account.details_submitted) {
+        status = 'pending'
+        statusMessage = 'Complete account setup to enable payouts'
+      } else {
+        status = 'under_review'
+        statusMessage = 'Account is under review by Stripe'
+      }
+    } else if (account.charges_enabled && account.payouts_enabled && account.details_submitted) {
+      status = 'approved'
+      statusMessage = 'Account approved and ready for payouts'
+    } else {
+      status = 'pending'
+      statusMessage = 'Account setup in progress'
+    }
+
+    // Check for disabled reason
+    if ((account as any).disabled_reason) {
+      disabledReason = (account as any).disabled_reason
+      if (disabledReason.includes('rejected')) {
+        status = 'rejected'
+        if (disabledReason.includes('fraud')) {
+          statusMessage = 'Account rejected due to fraud concerns'
+        } else if (disabledReason.includes('terms')) {
+          statusMessage = 'Account rejected for terms of service violation'
+        } else {
+          statusMessage = 'Account rejected by Stripe'
+        }
+      }
+    }
+
+    // Extract requirements
+    const requirements = account.requirements ? {
+      currentlyDue: account.requirements.currently_due || [],
+      eventuallyDue: account.requirements.eventually_due || [],
+      pastDue: account.requirements.past_due || [],
+      pendingVerification: account.requirements.pending_verification || [],
+    } : undefined
+
+    return {
+      accountId: account.id,
+      chargesEnabled: account.charges_enabled || false,
+      payoutsEnabled: account.payouts_enabled || false,
+      detailsSubmitted: account.details_submitted || false,
+      email: account.email || undefined,
+      status,
+      statusMessage,
+      requirements,
+      disabledReason,
+    }
+  } catch (error: any) {
+    console.error('Stripe account retrieval error:', error)
+    throw new Error(`Failed to retrieve account status: ${error.message}`)
   }
 }
 

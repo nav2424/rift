@@ -11,24 +11,24 @@ import type { EscrowStatus } from '@prisma/client'
  * Called when transaction status changes to AWAITING_SHIPMENT
  */
 export async function updateBalanceOnPayment(transactionId: string) {
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
     include: { seller: true },
   })
 
-  if (!escrow) {
+  if (!rift) {
     throw new Error('Transaction not found')
   }
 
   // Update seller's available balance
   await prisma.user.update({
-    where: { id: escrow.sellerId },
+    where: { id: rift.sellerId },
     data: {
       availableBalance: {
-        increment: escrow.amount ?? 0,
+        increment: rift.amount ?? 0,
       },
       pendingBalance: {
-        increment: escrow.amount ?? 0,
+        increment: rift.amount ?? 0,
       },
     },
   })
@@ -39,24 +39,24 @@ export async function updateBalanceOnPayment(transactionId: string) {
  * Called when transaction status changes to RELEASED
  */
 export async function updateBalanceOnRelease(transactionId: string) {
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
     include: { seller: true },
   })
 
-  if (!escrow) {
+  if (!rift) {
     throw new Error('Transaction not found')
   }
 
   // Move from pending to processed
   await prisma.user.update({
-    where: { id: escrow.sellerId },
+    where: { id: rift.sellerId },
     data: {
       pendingBalance: {
-        decrement: escrow.amount ?? 0,
+        decrement: rift.amount ?? 0,
       },
       totalProcessedAmount: {
-        increment: escrow.amount ?? 0,
+        increment: rift.amount ?? 0,
       },
       numCompletedTransactions: {
         increment: 1,
@@ -69,37 +69,37 @@ export async function updateBalanceOnRelease(transactionId: string) {
  * Rollback balance on refund/cancel
  */
 export async function rollbackBalance(transactionId: string) {
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
     include: { seller: true },
   })
 
-  if (!escrow) {
+  if (!rift) {
     throw new Error('Transaction not found')
   }
 
   // Rollback available balance if it was added
-  if (escrow.status === 'AWAITING_SHIPMENT' || escrow.status === 'IN_TRANSIT') {
+  if (rift.status === 'AWAITING_SHIPMENT' || rift.status === 'IN_TRANSIT') {
     await prisma.user.update({
-      where: { id: escrow.sellerId },
+      where: { id: rift.sellerId },
       data: {
         availableBalance: {
-          decrement: escrow.amount ?? 0,
+          decrement: rift.amount ?? 0,
         },
         pendingBalance: {
-          decrement: escrow.amount ?? 0,
+          decrement: rift.amount ?? 0,
         },
       },
     })
   }
 
   // If it was already released, rollback processed amount
-  if (escrow.status === 'RELEASED') {
+  if (rift.status === 'RELEASED') {
     await prisma.user.update({
-      where: { id: escrow.sellerId },
+      where: { id: rift.sellerId },
       data: {
         totalProcessedAmount: {
-          decrement: escrow.amount ?? 0,
+          decrement: rift.amount ?? 0,
         },
         numCompletedTransactions: {
           decrement: 1,
@@ -115,7 +115,7 @@ export async function rollbackBalance(transactionId: string) {
  */
 export async function recalculateUserStats(userId: string) {
   // Get all completed transactions as seller
-  const completedTransactions = await prisma.escrowTransaction.findMany({
+  const completedTransactions = await prisma.riftTransaction.findMany({
     where: {
       sellerId: userId,
       status: 'RELEASED',
@@ -129,7 +129,7 @@ export async function recalculateUserStats(userId: string) {
   const numCompletedTransactions = completedTransactions.length
 
   // Get all pending transactions
-  const pendingTransactions = await prisma.escrowTransaction.findMany({
+  const pendingTransactions = await prisma.riftTransaction.findMany({
     where: {
       sellerId: userId,
       status: {

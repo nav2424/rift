@@ -16,36 +16,36 @@ export async function POST(request: NextRequest) {
 
     if (!escrowId) {
       return NextResponse.json(
-        { error: 'Escrow ID is required' },
+        { error: 'Rift ID is required' },
         { status: 400 }
       )
     }
 
-    // Verify the escrow exists and user is the buyer
-    const escrow = await prisma.escrowTransaction.findUnique({
+    // Verify the rift exists and user is the buyer
+    const rift = await prisma.riftTransaction.findUnique({
       where: { id: escrowId },
       include: {
         buyer: true,
       },
     })
 
-    if (!escrow) {
+    if (!rift) {
       return NextResponse.json(
-        { error: 'Escrow not found' },
+        { error: 'Rift not found' },
         { status: 404 }
       )
     }
 
-    if (escrow.buyerId !== session.user.id) {
+    if (rift.buyerId !== session.user.id) {
       return NextResponse.json(
         { error: 'Only the buyer can create a payment intent' },
         { status: 403 }
       )
     }
 
-    if (escrow.status !== 'AWAITING_PAYMENT') {
+    if (rift.status !== 'AWAITING_PAYMENT') {
       return NextResponse.json(
-        { error: 'Escrow is not in AWAITING_PAYMENT status' },
+        { error: 'Rift is not in AWAITING_PAYMENT status' },
         { status: 400 }
       )
     }

@@ -2,7 +2,7 @@ import { requireAdmin } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
 import AdminDisputeList from '@/components/AdminDisputeList'
 import AdminUserList from '@/components/AdminUserList'
-import EscrowList from '@/components/EscrowList'
+import RiftList from '@/components/RiftList'
 import GlassCard from '@/components/ui/GlassCard'
 import Link from 'next/link'
 
@@ -13,6 +13,7 @@ export default async function AdminPage() {
   const allUsers = await prisma.user.findMany({
     select: {
       id: true,
+      riftUserId: true,
       name: true,
       email: true,
       phone: true,
@@ -41,8 +42,8 @@ export default async function AdminPage() {
     },
   })
 
-  // Get all escrows (no limit - show all data)
-  const allEscrows = await prisma.escrowTransaction.findMany({
+  // Get all rifts (no limit - show all data)
+  const allRifts = await prisma.riftTransaction.findMany({
     include: {
       buyer: {
         select: {
@@ -62,6 +63,13 @@ export default async function AdminPage() {
     },
   })
 
+  // Get pending proofs count
+  const pendingProofsCount = await prisma.proof.count({
+    where: {
+      status: 'PENDING',
+    },
+  })
+
   // Get all disputes
   const disputes = await prisma.dispute.findMany({
     where: {
@@ -77,7 +85,7 @@ export default async function AdminPage() {
       resolvedById: true,
       createdAt: true,
       updatedAt: true,
-      escrow: {
+      EscrowTransaction: {
         select: {
           id: true,
           riftNumber: true,
@@ -126,7 +134,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-12">
           <GlassCard>
             <div className="p-6">
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Users</p>
@@ -154,6 +162,15 @@ export default async function AdminPage() {
               <p className="text-sm text-white/40 font-light">Requires attention</p>
             </div>
           </GlassCard>
+          <Link href="/admin/proofs">
+            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="p-6">
+                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Pending Proofs</p>
+                <p className="text-4xl font-light text-white mb-2 tracking-tight">{pendingProofsCount}</p>
+                <p className="text-sm text-white/40 font-light">Awaiting review</p>
+              </div>
+            </GlassCard>
+          </Link>
           <GlassCard>
             <div className="p-6">
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Verified Users</p>
@@ -178,8 +195,8 @@ export default async function AdminPage() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-light text-white mb-6">All Escrows ({allEscrows.length})</h2>
-          <EscrowList escrows={allEscrows} title="All Escrows" />
+          <h2 className="text-2xl font-light text-white mb-6">All Transactions ({allRifts.length})</h2>
+          <RiftList rifts={allRifts} title="All Transactions" />
         </div>
       </div>
     </div>

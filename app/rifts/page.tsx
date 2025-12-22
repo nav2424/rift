@@ -5,8 +5,9 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
+import { useToast } from '@/components/ui/Toast'
 
-interface EscrowTransaction {
+interface RiftTransaction {
   id: string
   riftNumber: number | null
   itemTitle: string
@@ -34,7 +35,7 @@ type RiftFilter = 'all' | 'active' | 'completed' | 'cancelled'
 export default function AllRiftsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([])
+  const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<RiftFilter>('all')
 
@@ -51,35 +52,39 @@ export default function AllRiftsPage() {
 
   const loadEscrows = async () => {
     try {
-      const response = await fetch('/api/escrows/list', {
+      const response = await fetch('/api/rifts/list?limit=100', {
         credentials: 'include',
       })
       if (response.ok) {
         const data = await response.json()
-        setEscrows(data.escrows || [])
+        // Handle both old format (rifts) and new paginated format (data)
+        setRifts(data.data || data.rifts || [])
+      } else {
+        showToast('Failed to load rifts. Please try again.', 'error')
       }
     } catch (error) {
-      console.error('Error loading escrows:', error)
+      console.error('Error loading rifts:', error)
+      showToast('Failed to load rifts. Please check your connection.', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const filteredEscrows = useMemo(() => {
-    if (filter === 'all') return escrows
+    if (filter === 'all') return rifts
     if (filter === 'active') {
-      return escrows.filter(e => 
+      return rifts.filter(e => 
         ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
       )
     }
     if (filter === 'completed') {
-      return escrows.filter(e => e.status === 'RELEASED')
+      return rifts.filter(e => e.status === 'RELEASED')
     }
     if (filter === 'cancelled') {
-      return escrows.filter(e => e.status === 'CANCELLED')
+      return rifts.filter(e => e.status === 'CANCELLED')
     }
-    return escrows
-  }, [escrows, filter])
+    return rifts
+  }, [rifts, filter])
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -106,6 +111,7 @@ export default function AllRiftsPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case 'FUNDED': return 'Paid'
       case 'AWAITING_PAYMENT': return 'Awaiting Payment'
       case 'AWAITING_SHIPMENT': return 'Awaiting Shipment'
       case 'IN_TRANSIT': return 'In Transit'
@@ -145,18 +151,29 @@ export default function AllRiftsPage() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center border border-purple-500/20">
-              <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
+                  Your Rifts
+                </h1>
+                <p className="text-white/60 font-light">All your rift transactions</p>
+              </div>
+            </div>
+            <Link 
+              href="/rifts/new"
+              className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light flex items-center gap-2 group"
+            >
+              <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-            </div>
-            <div>
-              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
-                Your Rifts
-              </h1>
-              <p className="text-white/60 font-light">All your escrow transactions</p>
-            </div>
+              <span>Create Rift</span>
+            </Link>
           </div>
         </div>
 
@@ -194,7 +211,7 @@ export default function AllRiftsPage() {
               </p>
               {filter === 'all' && (
                 <Link 
-                  href="/escrows/new"
+                  href="/rifts/new"
                   className="inline-block px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-colors border border-white/20 text-white font-light"
                 >
                   Create Rift
@@ -204,29 +221,29 @@ export default function AllRiftsPage() {
           </GlassCard>
         ) : (
           <div className="space-y-4">
-            {filteredEscrows.map((escrow) => {
-              const isBuyer = escrow.buyerId === session?.user?.id
+            {filteredEscrows.map((rift) => {
+              const isBuyer = rift.buyerId === session?.user?.id
               const role = isBuyer ? 'Buyer' : 'Seller'
-              const otherParty = isBuyer ? escrow.seller : escrow.buyer
+              const otherParty = isBuyer ? rift.seller : rift.buyer
 
               return (
-                <Link key={escrow.id} href={`/escrows/${escrow.id}`}>
+                <Link key={rift.id} href={`/rifts/${rift.id}`}>
                   <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
                     <div className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-white font-light text-lg">
-                              Rift #{escrow.riftNumber ?? escrow.id.slice(-4)}
+                              Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                             </h3>
-                            <span className={`px-3 py-1 rounded-full text-xs font-light border ${getStatusColor(escrow.status)}`}>
-                              {getStatusLabel(escrow.status)}
+                            <span className={`px-3 py-1 rounded-full text-xs font-light border ${getStatusColor(rift.status)}`}>
+                              {getStatusLabel(rift.status)}
                             </span>
                           </div>
-                          <p className="text-white/80 font-light mb-2">{escrow.itemTitle}</p>
+                          <p className="text-white/80 font-light mb-2">{rift.itemTitle}</p>
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-white/60 font-light">
-                              {escrow.itemType.replace(/_/g, ' ')}
+                              {rift.itemType.replace(/_/g, ' ')}
                             </span>
                             <span className="text-white/40">•</span>
                             <span className="text-white/60 font-light">{role}</span>
@@ -238,10 +255,10 @@ export default function AllRiftsPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-white font-light text-lg mb-1">
-                            {formatCurrency(escrow.amount, escrow.currency)}
+                            {formatCurrency(rift.amount, rift.currency)}
                           </p>
                           <p className="text-white/40 font-light text-xs">
-                            {new Date(escrow.createdAt).toLocaleDateString()}
+                            {new Date(rift.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

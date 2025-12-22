@@ -200,8 +200,10 @@ export async function getWalletBalance(userId: string) {
 
 /**
  * Check if user can withdraw (has sufficient balance and is verified)
+ * @param userId - User ID
+ * @param isMobile - Whether the request is from mobile (email verification required) or web (email verification not required)
  */
-export async function canUserWithdraw(userId: string): Promise<{
+export async function canUserWithdraw(userId: string, isMobile: boolean = false): Promise<{
   canWithdraw: boolean
   reason?: string
 }> {
@@ -219,8 +221,14 @@ export async function canUserWithdraw(userId: string): Promise<{
     return { canWithdraw: false, reason: 'User not found' }
   }
 
-  if (!user.emailVerified || !user.phoneVerified) {
-    return { canWithdraw: false, reason: 'Email and phone must be verified' }
+  // Email verification only required for mobile
+  if (isMobile && !user.emailVerified) {
+    return { canWithdraw: false, reason: 'Email must be verified' }
+  }
+
+  // Phone verification always required
+  if (!user.phoneVerified) {
+    return { canWithdraw: false, reason: 'Phone must be verified' }
   }
 
   if (!user.stripeConnectAccountId) {

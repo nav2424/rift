@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Platform } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/lib/auth';
-import { api, EscrowTransaction } from '@/lib/api';
+import { api, RiftTransaction } from '@/lib/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AllRiftsScreen() {
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([]);
+  const [rifts, setRifts] = useState<RiftTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
@@ -19,7 +19,7 @@ export default function AllRiftsScreen() {
   const loadEscrows = useCallback(async () => {
     try {
       const data = await api.getEscrows();
-      setEscrows(data);
+      setRifts(data);
     } catch (error: any) {
       // Silently handle errors
     } finally {
@@ -43,7 +43,7 @@ export default function AllRiftsScreen() {
     loadEscrows();
   };
 
-  const filteredEscrows = escrows.filter(e => {
+  const filteredEscrows = rifts.filter(e => {
     if (filter === 'all') return true;
     if (filter === 'active') {
       return ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status);
@@ -66,7 +66,7 @@ export default function AllRiftsScreen() {
     }).format(amount);
   };
 
-  const getStatusColor = (status: EscrowTransaction['status']) => {
+  const getStatusColor = (status: RiftTransaction['status']) => {
     switch (status) {
       case 'RELEASED': return '#10b981';
       case 'REFUNDED': return '#ef4444';
@@ -80,7 +80,7 @@ export default function AllRiftsScreen() {
     }
   };
 
-  const getStatusIcon = (status: EscrowTransaction['status']) => {
+  const getStatusIcon = (status: RiftTransaction['status']) => {
     switch (status) {
       case 'RELEASED': return 'checkmark-circle';
       case 'REFUNDED': return 'arrow-back-circle';
@@ -94,7 +94,7 @@ export default function AllRiftsScreen() {
     }
   };
 
-  const renderEscrow = ({ item }: { item: EscrowTransaction }) => {
+  const renderEscrow = ({ item }: { item: RiftTransaction }) => {
     const isBuyer = item.buyerId === user?.id;
     const role = isBuyer ? 'Buyer' : 'Seller';
     const otherParty = isBuyer ? item.seller : item.buyer;
@@ -104,7 +104,7 @@ export default function AllRiftsScreen() {
     return (
       <TouchableOpacity
         activeOpacity={0.92}
-        onPress={() => router.push(`/escrows/${item.id}`)}
+        onPress={() => router.push(`/rifts/${item.id}`)}
         style={styles.escrowCard}
       >
         <LinearGradient

@@ -1,6 +1,6 @@
 # Messaging System Setup Guide
 
-This guide will help you set up the in-app messaging system for your escrow marketplace.
+This guide will help you set up the in-app messaging system for your rift marketplace.
 
 ## Prerequisites
 
@@ -78,7 +78,7 @@ You can check in Supabase Dashboard > Table Editor.
 
 **messages**
 - All messages in a conversation
-- Supports system messages (for escrow events)
+- Supports system messages (for rift events)
 - Indexed for fast retrieval
 
 ### API Routes
@@ -98,7 +98,7 @@ You can check in Supabase Dashboard > Table Editor.
 ✅ One conversation per transaction  
 ✅ Text-only messages  
 ✅ Real-time polling (every 8 seconds)  
-✅ System message support (for escrow events)  
+✅ System message support (for rift events)  
 ✅ Optimistic UI updates  
 ✅ Error handling  
 

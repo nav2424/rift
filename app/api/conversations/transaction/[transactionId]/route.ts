@@ -158,7 +158,7 @@ export async function GET(
     const userId = auth.userId
 
     // Validate that the user is either buyer or seller on this transaction
-    const transaction = await prisma.escrowTransaction.findUnique({
+    const transaction = await prisma.riftTransaction.findUnique({
       where: { id: transactionId },
       select: {
         id: true,
@@ -283,7 +283,7 @@ export async function POST(
     }
 
     // Validate that the user is either buyer or seller on this transaction
-    const transaction = await prisma.escrowTransaction.findUnique({
+    const transaction = await prisma.riftTransaction.findUnique({
       where: { id: transactionId },
       select: {
         id: true,

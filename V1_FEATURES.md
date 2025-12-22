@@ -8,7 +8,7 @@
 - ✅ NextAuth for web
 - ✅ Role-based access (USER/ADMIN)
 
-### 2. Create Escrow
+### 2. Create Rift
 - ✅ Step-by-step wizard (Mobile)
 - ✅ Form-based creation (Web)
 - ✅ Support for 4 item types: Physical, Tickets, Digital, Services
@@ -55,7 +55,7 @@
 
 ### 9. Notification Emails
 - ✅ Email system (`lib/email.ts`)
-- ✅ Escrow created notifications
+- ✅ Rift created notifications
 - ✅ Payment received notifications
 - ✅ Shipment proof uploaded notifications
 - ✅ Item received notifications
@@ -65,7 +65,7 @@
 
 ### 10. Transaction Timeline
 - ✅ Timeline events for all actions
-- ✅ Display in escrow detail pages
+- ✅ Display in rift detail pages
 - ✅ Chronological ordering
 - ✅ User attribution
 
@@ -98,9 +98,9 @@ JWT_SECRET=...
 
 All V1 features are available in the mobile app:
 - ✅ User authentication
-- ✅ Create escrow (with premium wizard)
+- ✅ Create rift (with premium wizard)
 - ✅ View dashboard
-- ✅ View escrow details
+- ✅ View rift details
 - ✅ Mark as paid
 - ✅ Upload shipment proof
 - ✅ Confirm receipt
@@ -124,7 +124,7 @@ All V1 features are available in the mobile app:
    - Implement admin dashboard in mobile
 
 4. **Testing**:
-   - End-to-end escrow flow testing
+   - End-to-end rift flow testing
    - Payment processing testing
    - Email delivery testing
 
@@ -134,12 +134,12 @@ All V1 features are available in the mobile app:
 - `POST /api/escrows/[id]/payment-intent` - Create Stripe payment intent
 - `POST /api/escrows/[id]/mark-paid` - Mark payment as received
 
-### Escrow Actions
+### Rift Actions
 - `POST /api/escrows/[id]/upload-shipment-proof` - Upload proof
 - `POST /api/escrows/[id]/confirm-received` - Confirm receipt
 - `POST /api/escrows/[id]/release-funds` - Release funds to seller
 - `POST /api/escrows/[id]/raise-dispute` - Raise dispute
-- `POST /api/escrows/[id]/cancel` - Cancel escrow
+- `POST /api/escrows/[id]/cancel` - Cancel rift
 
 ### Admin
 - `POST /api/admin/escrows/[id]/resolve-dispute` - Resolve dispute

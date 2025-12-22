@@ -10,22 +10,22 @@ type EscrowStatus =
   | 'DISPUTED'
   | 'CANCELLED'
 
-interface EscrowTransaction {
+interface RiftTransaction {
   status: EscrowStatus
 }
 
 interface DashboardStatsProps {
-  escrows: EscrowTransaction[]
+  rifts: RiftTransaction[]
 }
 
-export default function DashboardStats({ escrows }: DashboardStatsProps) {
-  const open = escrows.filter(
+export default function DashboardStats({ rifts }: DashboardStatsProps) {
+  const open = rifts.filter(
     (e) => !['RELEASED', 'REFUNDED', 'CANCELLED'].includes(e.status)
   ).length
 
-  const disputed = escrows.filter((e) => e.status === 'DISPUTED').length
+  const disputed = rifts.filter((e) => e.status === 'DISPUTED').length
 
-  const released = escrows.filter((e) => e.status === 'RELEASED').length
+  const released = rifts.filter((e) => e.status === 'RELEASED').length
 
   return (
     <div className="space-y-4">

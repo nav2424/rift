@@ -63,12 +63,24 @@ export function subscribeToMessages(
       if (status === 'SUBSCRIBED') {
         console.log(`Subscribed to messages for conversation ${conversationId}`)
       } else if (status === 'CHANNEL_ERROR') {
-        const error = new Error('Failed to subscribe to messages')
+        // Realtime subscription failed - this is non-critical
+        // Messages will still work via polling/refresh, just without real-time updates
+        const error = new Error('Realtime subscription unavailable. Messages will still work, but updates may be delayed.')
+        console.warn(`Realtime subscription failed for conversation ${conversationId}:`, error.message)
+        console.warn('This is usually because:')
+        console.warn('1. Realtime is not enabled in Supabase Dashboard (Database → Replication)')
+        console.warn('2. The messages table is not added to the supabase_realtime publication')
+        console.warn('3. Or Supabase Realtime service is temporarily unavailable')
         if (onError) {
           onError(error)
-        } else {
-          console.error('Realtime subscription error:', error)
         }
+      } else if (status === 'TIMED_OUT') {
+        console.warn(`Realtime subscription timed out for conversation ${conversationId}`)
+        if (onError) {
+          onError(new Error('Realtime subscription timed out'))
+        }
+      } else if (status === 'CLOSED') {
+        console.log(`Realtime subscription closed for conversation ${conversationId}`)
       }
     })
 
@@ -124,11 +136,14 @@ export function subscribeToConversation(
       if (status === 'SUBSCRIBED') {
         console.log(`Subscribed to conversation ${conversationId}`)
       } else if (status === 'CHANNEL_ERROR') {
-        const error = new Error('Failed to subscribe to conversation')
+        console.warn(`Realtime subscription failed for conversation ${conversationId}`)
         if (onError) {
-          onError(error)
-        } else {
-          console.error('Realtime subscription error:', error)
+          onError(new Error('Realtime subscription unavailable'))
+        }
+      } else if (status === 'TIMED_OUT') {
+        console.warn(`Realtime subscription timed out for conversation ${conversationId}`)
+        if (onError) {
+          onError(new Error('Realtime subscription timed out'))
         }
       }
     })
@@ -180,11 +195,14 @@ export function subscribeToUserConversations(
       if (status === 'SUBSCRIBED') {
         console.log(`Subscribed to conversations for user ${userId}`)
       } else if (status === 'CHANNEL_ERROR') {
-        const error = new Error('Failed to subscribe to user conversations')
+        console.warn(`Realtime subscription failed for user conversations ${userId}`)
         if (onError) {
-          onError(error)
-        } else {
-          console.error('Realtime subscription error:', error)
+          onError(new Error('Realtime subscription unavailable'))
+        }
+      } else if (status === 'TIMED_OUT') {
+        console.warn(`Realtime subscription timed out for user conversations ${userId}`)
+        if (onError) {
+          onError(new Error('Realtime subscription timed out'))
         }
       }
     })

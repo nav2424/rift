@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import GlassCard from './ui/GlassCard'
 import PremiumButton from './ui/PremiumButton'
 import Link from 'next/link'
+import { useToast } from './ui/Toast'
 
 interface WalletData {
   wallet: {
@@ -23,6 +24,7 @@ interface WalletData {
 }
 
 export default function WalletCard() {
+  const { showToast } = useToast()
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [canWithdraw, setCanWithdraw] = useState(false)
@@ -50,6 +52,7 @@ export default function WalletCard() {
       }
     } catch (error) {
       console.error('Error loading wallet:', error)
+      // Silent failure for wallet card - not critical, will retry
     } finally {
       setLoading(false)
     }

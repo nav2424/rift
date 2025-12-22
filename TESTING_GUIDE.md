@@ -18,7 +18,7 @@ npm run test:hybrid-flow
 
 This will:
 - ✅ Create test buyer and seller accounts
-- ✅ Create an escrow transaction
+- ✅ Create an rift transaction
 - ✅ Mark it as paid
 - ✅ Upload verified shipment proof
 - ✅ Confirm receipt and set grace period
@@ -38,27 +38,27 @@ Or run:
 npm run seed:demo
 ```
 
-### Step 2: Create Escrow (As Buyer)
+### Step 2: Create Rift (As Buyer)
 
 1. Log in as buyer
-2. Create new escrow:
+2. Create new rift:
    - Item Type: **Physical**
    - Title: "Test Item"
    - Amount: $100
    - Shipping Address: "123 Test St"
    - Seller: `seller@test.com`
 
-### Step 3: Pay Escrow (As Buyer)
+### Step 3: Pay Rift (As Buyer)
 
-1. View the escrow details
+1. View the rift details
 2. Click **"Pay $100 CAD"**
 3. Complete Stripe payment with test card: `4242 4242 4242 4242`
-4. ✅ Escrow status should change to `AWAITING_SHIPMENT`
+4. ✅ Rift status should change to `AWAITING_SHIPMENT`
 
 ### Step 4: Upload Shipment Proof (As Seller)
 
 1. Log in as seller
-2. View the escrow
+2. View the rift
 3. Click **"Upload Shipment Proof"**
 4. Enter tracking number (valid format):
    - **UPS**: `1Z999AA10123456784`
@@ -72,7 +72,7 @@ npm run seed:demo
 ### Step 5: Confirm Receipt (As Buyer)
 
 1. Log in as buyer
-2. View the escrow
+2. View the rift
 3. Click **"Confirm Item Received"**
 4. ✅ Status should change to `DELIVERED_PENDING_RELEASE`
 5. ✅ Grace period timer should appear (48 hours)
@@ -99,7 +99,7 @@ npm run seed:demo
 ```bash
 # Set grace period to past date in database
 npx prisma studio
-# Edit escrow: Set gracePeriodEndsAt to yesterday
+# Edit rift: Set gracePeriodEndsAt to yesterday
 
 # Then run auto-release
 npm run cron:auto-release
@@ -164,7 +164,7 @@ npm run cron:auto-release
 
 ## Database Verification
 
-### Check Escrow Status
+### Check Rift Status
 
 ```bash
 npx prisma studio
@@ -234,7 +234,7 @@ curl -X POST \
 **Check:**
 1. Is grace period past? Check `gracePeriodEndsAt`
 2. Are there open disputes? Check `Dispute` table
-3. Is escrow in correct status? Should be `DELIVERED_PENDING_RELEASE`
+3. Is rift in correct status? Should be `DELIVERED_PENDING_RELEASE`
 4. Is `autoReleaseScheduled` set to `true`?
 
 ### Issue: Dispute Types Not Showing Correctly
@@ -249,12 +249,12 @@ curl -X POST \
 **Check:**
 1. Did buyer confirm receipt? Check `deliveryVerifiedAt`
 2. Is shipment verified? Check `trackingVerified`
-3. Check mobile app refresh - might need to reload escrow
+3. Check mobile app refresh - might need to reload rift
 
 ## Test Checklist
 
-- [ ] Create escrow
-- [ ] Pay escrow (Stripe test card)
+- [ ] Create rift
+- [ ] Pay rift (Stripe test card)
 - [ ] Upload shipment proof with valid tracking
 - [ ] Verify tracking format validation works
 - [ ] Confirm receipt as buyer

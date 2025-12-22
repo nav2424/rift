@@ -52,7 +52,7 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
   const accountAgeDays = Math.floor(accountAgeMs / (1000 * 60 * 60 * 24))
 
   // Get completed transactions
-  const completedRifts = await prisma.escrowTransaction.count({
+  const completedRifts = await prisma.riftTransaction.count({
     where: {
       sellerId: userId,
       status: {
@@ -74,7 +74,7 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
 
   const recentDisputes = await prisma.dispute.count({
     where: {
-      escrow: { sellerId: userId },
+      rift: { sellerId: userId },
       createdAt: { gte: sixtyDaysAgo },
       status: 'OPEN',
     },
@@ -200,7 +200,7 @@ export async function schedulePayout(
   currency: string = 'CAD'
 ): Promise<string> {
   const tier = await calculateRiskTier(sellerId)
-  const rift = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
     select: { itemType: true, releasedAt: true },
   })

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateNextRiftUserId } from '@/lib/rift-user-id'
+import { capturePolicyAcceptance } from '@/lib/policy-acceptance'
+import { extractRequestMetadata } from '@/lib/rift-events'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,15 +47,28 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Create user
+    // Generate Rift user ID
+    const riftUserId = await generateNextRiftUserId()
+
+    // Create user with Rift user ID
     const user = await prisma.user.create({
       data: {
         name: name || null,
         email,
         passwordHash,
         role: 'USER',
+        riftUserId,
       },
     })
+
+    // Capture policy acceptance at signup
+    try {
+      const requestMeta = extractRequestMetadata(request)
+      await capturePolicyAcceptance(user.id, 'signup', requestMeta)
+    } catch (error) {
+      console.error('Error capturing policy acceptance:', error)
+      // Don't fail signup if policy acceptance fails
+    }
 
     return NextResponse.json(
       { message: 'User created successfully', userId: user.id },

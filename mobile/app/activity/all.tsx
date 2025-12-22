@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Platform, TextInput, ScrollView } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/lib/auth';
-import { api, EscrowTransaction } from '@/lib/api';
+import { api, RiftTransaction } from '@/lib/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/DesignSystem';
@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 type ActivityFilter = 'all' | 'active' | 'completed' | 'pending' | 'cancelled';
 
 export default function AllActivityScreen() {
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([]);
+  const [rifts, setRifts] = useState<RiftTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,7 +22,7 @@ export default function AllActivityScreen() {
   const loadEscrows = useCallback(async () => {
     try {
       const data = await api.getEscrows();
-      setEscrows(data);
+      setRifts(data);
     } catch (error: any) {
       // Silently handle errors
     } finally {
@@ -47,7 +47,7 @@ export default function AllActivityScreen() {
   };
 
   const getAllActivity = useMemo(() => {
-    let filtered = [...escrows];
+    let filtered = [...rifts];
 
     // Apply status filter
     if (filter === 'active') {
@@ -71,11 +71,11 @@ export default function AllActivityScreen() {
     // Apply search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(escrow => {
-        const riftNumber = escrow.riftNumber?.toString() || escrow.id.slice(-4);
-        const itemTitle = escrow.itemTitle?.toLowerCase() || '';
-        const buyerName = (escrow.buyer.name || escrow.buyer.email || '').toLowerCase();
-        const sellerName = (escrow.seller.name || escrow.seller.email || '').toLowerCase();
+      filtered = filtered.filter(rift => {
+        const riftNumber = rift.riftNumber?.toString() || rift.id.slice(-4);
+        const itemTitle = rift.itemTitle?.toLowerCase() || '';
+        const buyerName = (rift.buyer.name || rift.buyer.email || '').toLowerCase();
+        const sellerName = (rift.seller.name || rift.seller.email || '').toLowerCase();
         
         return (
           riftNumber.includes(query) ||
@@ -92,14 +92,14 @@ export default function AllActivityScreen() {
     );
 
     // Map to activity format
-    return sorted.map(escrow => {
-      const isBuyer = escrow.buyerId === user?.id;
-      const otherParty = isBuyer ? escrow.seller : escrow.buyer;
+    return sorted.map(rift => {
+      const isBuyer = rift.buyerId === user?.id;
+      const otherParty = isBuyer ? rift.seller : rift.buyer;
       const name = otherParty.name || otherParty.email.split('@')[0];
 
-      const riftNumber = escrow.riftNumber ?? escrow.id.slice(-4);
+      const riftNumber = rift.riftNumber ?? rift.id.slice(-4);
       let message = '';
-      switch (escrow.status) {
+      switch (rift.status) {
         case 'AWAITING_PAYMENT':
           message = isBuyer 
             ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
@@ -131,12 +131,12 @@ export default function AllActivityScreen() {
           message = `Rift #${riftNumber} — Transaction cancelled`;
           break;
         default:
-          message = `Rift #${riftNumber} — ${escrow.status.replace(/_/g, ' ').toLowerCase()}`;
+          message = `Rift #${riftNumber} — ${rift.status.replace(/_/g, ' ').toLowerCase()}`;
       }
 
-      return { ...escrow, message, name };
+      return { ...rift, message, name };
     });
-  }, [escrows, user?.id, filter, searchQuery]);
+  }, [rifts, user?.id, filter, searchQuery]);
 
   const getActivityIcon = (message: string) => {
     if (message.includes('completed') || message.includes('released')) {
@@ -173,14 +173,14 @@ export default function AllActivityScreen() {
     return Colors.textTertiary;
   };
 
-  const renderActivity = ({ item }: { item: EscrowTransaction & { message: string; name: string } }) => {
+  const renderActivity = ({ item }: { item: RiftTransaction & { message: string; name: string } }) => {
     const icon = getActivityIcon(item.message);
     const color = getActivityColor(item.message);
 
     return (
       <TouchableOpacity
         style={styles.activityItem}
-        onPress={() => router.push(`/escrows/${item.id}`)}
+        onPress={() => router.push(`/rifts/${item.id}`)}
         activeOpacity={0.7}
       >
         <View style={[styles.activityIcon, { backgroundColor: color + '18' }]}>

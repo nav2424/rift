@@ -5,6 +5,7 @@ import GlassCard from './ui/GlassCard'
 
 interface User {
   id: string
+  riftUserId: string | null
   name: string | null
   email: string
   phone: string | null
@@ -42,7 +43,8 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
     const matchesSearch =
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.phone && user.phone.includes(searchTerm))
+      (user.phone && user.phone.includes(searchTerm)) ||
+      (user.riftUserId && user.riftUserId.toLowerCase().includes(searchTerm.toUpperCase()))
     
     const matchesRole = filterRole === 'all' || user.role === filterRole
 
@@ -106,7 +108,7 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
           <div className="flex-1">
             <input
               type="text"
-              placeholder="Search by email, name, or phone..."
+              placeholder="Search by email, name, phone, or Rift User ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-5 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light"
@@ -184,6 +186,9 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
                         {user.name || 'No name'}
                       </div>
                       <div className="text-sm text-white/60 font-light">{user.email}</div>
+                      {user.riftUserId && (
+                        <div className="text-xs text-white/40 font-light font-mono">{user.riftUserId}</div>
+                      )}
                       {user.phone && (
                         <div className="text-xs text-white/40 font-light">{user.phone}</div>
                       )}

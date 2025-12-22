@@ -5,6 +5,7 @@ import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import GlassCard from './ui/GlassCard'
 import PremiumButton from './ui/PremiumButton'
+import { useToast } from './ui/Toast'
 
 // Initialize Stripe - use publishable key from environment
 const stripePromise = loadStripe(
@@ -24,6 +25,7 @@ interface PaymentModalProps {
 function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClose, clientSecret, paymentIntentId }: Omit<PaymentModalProps, 'isOpen'> & { clientSecret: string; paymentIntentId: string }) {
   const stripe = useStripe()
   const elements = useElements()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,43 +44,104 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
       const { error: submitError } = await elements.submit()
       
       if (submitError) {
-        setError(submitError.message || 'Please check your payment details')
+        const errorMessage = submitError.message || 'Please check your payment details'
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
         setLoading(false)
         return
       }
 
       // Then confirm payment
-      const { error: confirmError } = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/escrows/${escrowId}`,
-        },
-        redirect: 'if_required',
-      })
-
-      if (confirmError) {
-        setError(confirmError.message || 'Payment failed')
+      let confirmResult
+      try {
+        confirmResult = await stripe.confirmPayment({
+          elements,
+          clientSecret,
+          confirmParams: {
+            return_url: `${window.location.origin}/rifts/${escrowId}`,
+          },
+          redirect: 'if_required',
+        })
+      } catch (stripeError: any) {
+        console.error('Stripe confirmPayment error:', stripeError)
+        const errorMessage = stripeError.message || 'Payment confirmation failed. Please try again.'
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
         setLoading(false)
         return
       }
 
-      // Payment succeeded - confirm payment and transition to FUNDED
-      const confirmResponse = await fetch(`/api/escrows/${escrowId}/fund`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ paymentIntentId }),
-      })
-
-      if (!confirmResponse.ok) {
-        const error = await confirmResponse.json()
-        throw new Error(error.error || 'Failed to confirm payment')
+      if (confirmResult.error) {
+        const errorMessage = confirmResult.error.message || 'Payment failed'
+        console.error('Stripe payment error:', confirmResult.error)
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
+        setLoading(false)
+        return
       }
 
+      // Wait a moment for Stripe to update the payment intent status
+      // Sometimes the status takes a moment to update from 'processing' to 'succeeded'
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Payment succeeded - confirm payment and transition to FUNDED
+      let confirmResponse
+      try {
+        confirmResponse = await fetch(`/api/rifts/${escrowId}/fund`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ paymentIntentId }),
+        })
+      } catch (fetchError: any) {
+        console.error('Network error confirming payment:', fetchError)
+        const errorMessage = 'Network error. Please check your connection and try again.'
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
+        setLoading(false)
+        return
+      }
+
+      if (!confirmResponse.ok) {
+        let errorData: any = {}
+        try {
+          errorData = await confirmResponse.json()
+        } catch (parseError) {
+          errorData = { error: `HTTP ${confirmResponse.status}: ${confirmResponse.statusText}` }
+        }
+        
+        const errorMessage = errorData.error || errorData.message || errorData.details || 'Failed to confirm payment'
+        console.error('Payment confirmation error:', {
+          status: confirmResponse.status,
+          statusText: confirmResponse.statusText,
+          error: errorMessage,
+          details: errorData.details,
+          fullError: errorData
+        })
+        
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
+        setLoading(false)
+        return
+      }
+
+      let confirmData
+      try {
+        confirmData = await confirmResponse.json()
+        console.log('Payment confirmed successfully:', confirmData)
+      } catch (parseError) {
+        console.error('Failed to parse confirmation response:', parseError)
+        // Even if we can't parse, the status was 200, so assume success
+        console.log('Payment confirmed (unable to parse response)')
+      }
+      
+      showToast('Payment successful!', 'success')
       onSuccess()
     } catch (err: any) {
-      setError(err.message || 'Payment failed')
+      console.error('Payment processing error:', err)
+      const errorMessage = err.message || err.toString() || 'Payment processing failed. Please try again.'
+      setError(errorMessage)
+      showToast(errorMessage, 'error')
     } finally {
       setLoading(false)
     }
@@ -149,6 +212,7 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
 }
 
 export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerTotal, currency, onSuccess }: PaymentModalProps) {
+  const { showToast } = useToast()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
 
@@ -159,10 +223,10 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
       return
     }
 
-    // Fund rift and create payment intent when modal opens
+    // Pay for rift and create payment intent when modal opens
     const fundRift = async () => {
       try {
-        const response = await fetch(`/api/escrows/${escrowId}/fund`, {
+        const response = await fetch(`/api/rifts/${escrowId}/fund`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -170,14 +234,16 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
 
         if (!response.ok) {
           const error = await response.json()
-          throw new Error(error.error || 'Failed to fund rift')
+          throw new Error(error.error || 'Failed to pay for rift')
         }
 
         const data = await response.json()
         setClientSecret(data.clientSecret)
         setPaymentIntentId(data.paymentIntentId)
       } catch (err: any) {
-        console.error('Fund rift error:', err)
+        console.error('Pay for rift error:', err)
+        showToast(err.message || 'Failed to initialize payment. Please try again.', 'error')
+        onClose()
       }
     }
 

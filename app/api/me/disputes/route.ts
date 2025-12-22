@@ -11,24 +11,24 @@ export async function GET(request: NextRequest) {
 
     const userId = auth.userId;
 
-    // Get disputes for escrows where user is buyer or seller
+    // Get disputes for rifts where user is buyer or seller
     const disputes = await prisma.dispute.findMany({
       where: {
         OR: [
           {
-            escrow: {
+            rift: {
               buyerId: userId,
             },
           },
           {
-            escrow: {
+            rift: {
               sellerId: userId,
             },
           },
         ],
       },
       include: {
-        escrow: {
+        rift: {
           select: {
             id: true,
             itemTitle: true,

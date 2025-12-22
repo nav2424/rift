@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PremiumButton from './ui/PremiumButton'
+import { useToast } from './ui/Toast'
 
 interface ShipmentProofFormProps {
   escrowId: string
@@ -10,6 +11,7 @@ interface ShipmentProofFormProps {
 
 export default function ShipmentProofForm({ escrowId }: ShipmentProofFormProps) {
   const router = useRouter()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     trackingNumber: '',
@@ -31,23 +33,24 @@ export default function ShipmentProofForm({ escrowId }: ShipmentProofFormProps) 
         formDataToSend.append('file', file)
       }
 
-      const response = await fetch(`/api/escrows/${escrowId}/upload-shipment-proof`, {
+      const response = await fetch(`/api/rifts/${escrowId}/upload-shipment-proof`, {
         method: 'POST',
         body: formDataToSend,
       })
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to upload proof')
+        showToast(error.error || 'Failed to upload proof', 'error')
         return
       }
 
+      showToast('Shipment proof uploaded successfully', 'success')
       router.refresh()
       setFormData({ trackingNumber: '', shippingCarrier: '', notes: '' })
       setFile(null)
     } catch (error) {
       console.error('Error uploading proof:', error)
-      alert('Failed to upload proof')
+      showToast('Failed to upload proof. Please try again.', 'error')
     } finally {
       setLoading(false)
     }

@@ -17,6 +17,11 @@ export async function GET(request: NextRequest) {
         name: true,
         phone: true,
         role: true,
+        emailVerified: true,
+        phoneVerified: true,
+        idVerified: true,
+        bankVerified: true,
+        riftUserId: true,
       },
     })
 
@@ -24,7 +29,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    return NextResponse.json(user)
   } catch (error) {
     console.error('Get user error:', error)
     return NextResponse.json(

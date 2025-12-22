@@ -109,6 +109,23 @@ export async function GET(request: NextRequest) {
             console.error('Error fetching message for conversation', conv.id, messageError)
           }
 
+          // Calculate unread count: messages where read_at is null, sender is not current user, and not system messages
+          // System messages (sender_id is null) should not count as unread
+          // Get all unread messages and filter system messages in code (more reliable than complex Supabase query)
+          const { data: unreadMessages, error: unreadError } = await supabase
+            .from('messages')
+            .select('sender_id')
+            .eq('conversation_id', conv.id)
+            .is('read_at', null)
+            .neq('sender_id', userId)
+          
+          // Filter out system messages (sender_id is null) and count
+          const unreadCount = unreadError 
+            ? 0 
+            : (unreadMessages || []).filter(msg => msg.sender_id !== null).length
+
+          // unreadCount is now calculated above with system message filtering
+
           // Get transaction info from the first participant's role or find via transaction lookup
           // Since we don't store transaction_id directly, we'll need to find it via participants
           // For now, we'll use a placeholder - you may want to add a transaction_id field to conversations
@@ -123,7 +140,7 @@ export async function GET(request: NextRequest) {
 
           if (buyerParticipant && sellerParticipant) {
             // Try to find transaction by buyer and seller
-            transaction = await prisma.escrowTransaction.findFirst({
+            transaction = await prisma.riftTransaction.findFirst({
               where: {
                 buyerId: buyerParticipant.user_id,
                 sellerId: sellerParticipant.user_id,
@@ -179,7 +196,7 @@ export async function GET(request: NextRequest) {
                 }
               : null,
             updatedAt: conv.last_message_at || conv.created_at,
-            unreadCount: 0, // TODO: Implement unread count based on read_at
+            unreadCount: unreadCount,
           }
         } catch (error: any) {
           console.error('Error processing conversation', conv.id, error)
@@ -191,7 +208,7 @@ export async function GET(request: NextRequest) {
             otherParticipant: null,
             lastMessage: null,
             updatedAt: conv.last_message_at || conv.created_at,
-            unreadCount: 0,
+            unreadCount: 0, // Error case - default to 0
           }
         }
       })

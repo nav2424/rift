@@ -5,6 +5,31 @@ import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
 
 /**
+ * Check if user can withdraw (GET/HEAD)
+ * Returns withdrawal eligibility status
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const auth = await getAuthenticatedUser(request)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const canWithdraw = await canUserWithdraw(auth.userId, auth.isMobile)
+    return NextResponse.json({
+      canWithdraw: canWithdraw.canWithdraw,
+      reason: canWithdraw.reason,
+    })
+  } catch (error: any) {
+    console.error('Check withdrawal eligibility error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * Request withdrawal (seller action)
  * Creates payout record and processes via Stripe Connect
  */
@@ -25,8 +50,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user can withdraw
-    const canWithdraw = await canUserWithdraw(auth.userId)
+    // Check if user can withdraw (pass isMobile flag - email verification only required for mobile)
+    const canWithdraw = await canUserWithdraw(auth.userId, auth.isMobile)
     if (!canWithdraw.canWithdraw) {
       return NextResponse.json(
         { error: canWithdraw.reason || 'Cannot withdraw' },

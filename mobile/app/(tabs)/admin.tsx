@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/auth';
-import { api, EscrowTransaction } from '@/lib/api';
+import { api, RiftTransaction } from '@/lib/api';
 import PremiumGlassCard from '@/components/PremiumGlassCard';
 import { BlurView } from 'expo-blur';
 import { Colors } from '@/constants/Colors';
@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 
 export default function AdminDashboardScreen() {
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([]);
+  const [rifts, setRifts] = useState<RiftTransaction[]>([]);
   const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,12 +46,12 @@ export default function AdminDashboardScreen() {
     setLoading(true);
     try {
       console.log('Loading admin data...', { userId: user?.id, role: user?.role });
-      const [escrowsData, disputesData] = await Promise.all([
+      const [riftsData, disputesData] = await Promise.all([
         api.getAdminEscrows(),
         api.getDisputes(),
       ]);
-      console.log('Admin data loaded:', { escrows: escrowsData.length, disputes: disputesData.length });
-      setEscrows(escrowsData);
+      console.log('Admin data loaded:', { rifts: riftsData.length, disputes: disputesData.length });
+      setRifts(riftsData);
       setDisputes(disputesData);
     } catch (error: any) {
       console.error('Admin data load error:', error);
@@ -72,7 +72,7 @@ export default function AdminDashboardScreen() {
     loadData();
   };
 
-  const getStatusColor = (status: EscrowTransaction['status']) => {
+  const getStatusColor = (status: RiftTransaction['status']) => {
     switch (status) {
       case 'RELEASED':
         return Colors.success;
@@ -87,14 +87,14 @@ export default function AdminDashboardScreen() {
     }
   };
 
-  const renderEscrow = ({ item }: { item: EscrowTransaction }) => {
+  const renderEscrow = ({ item }: { item: RiftTransaction }) => {
     const statusColor = getStatusColor(item.status);
 
     return (
       <PremiumGlassCard
         variant="premium"
         gradient
-        onPress={() => router.push(`/escrows/${item.id}`)}
+        onPress={() => router.push(`/rifts/${item.id}`)}
         style={styles.escrowCard}
       >
         <View style={styles.escrowHeader}>
@@ -146,7 +146,7 @@ export default function AdminDashboardScreen() {
       <PremiumGlassCard
         variant="premium"
         gradient
-        onPress={() => router.push(`/escrows/${item.escrowId}`)}
+        onPress={() => router.push(`/rifts/${item.escrowId}`)}
         style={styles.disputeCard}
       >
         <View style={styles.disputeHeader}>
@@ -195,12 +195,12 @@ export default function AdminDashboardScreen() {
         </PremiumGlassCard>
         <PremiumGlassCard variant="default" style={styles.statCard}>
           <Ionicons name="time" size={24} color={Colors.info} />
-          <Text style={styles.statValue}>{escrows.filter(e => e.status === 'AWAITING_PAYMENT' || e.status === 'AWAITING_SHIPMENT' || e.status === 'IN_TRANSIT').length}</Text>
+          <Text style={styles.statValue}>{rifts.filter(e => e.status === 'AWAITING_PAYMENT' || e.status === 'AWAITING_SHIPMENT' || e.status === 'IN_TRANSIT').length}</Text>
           <Text style={styles.statLabel}>Pending verifications</Text>
         </PremiumGlassCard>
         <PremiumGlassCard variant="default" style={styles.statCard}>
           <Ionicons name="alert-circle" size={24} color={Colors.error} />
-          <Text style={styles.statValue}>{escrows.filter(e => e.status === 'DISPUTED').length}</Text>
+          <Text style={styles.statValue}>{rifts.filter(e => e.status === 'DISPUTED').length}</Text>
           <Text style={styles.statLabel}>High-risk transactions</Text>
         </PremiumGlassCard>
       </View>
@@ -235,7 +235,7 @@ export default function AdminDashboardScreen() {
         }
         ListFooterComponent={
           <FlatList
-            data={escrows}
+            data={rifts}
             renderItem={renderEscrow}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}

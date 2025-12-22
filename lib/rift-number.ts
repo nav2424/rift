@@ -6,7 +6,7 @@ import { prisma } from './prisma'
  */
 export async function generateNextRiftNumber(): Promise<number> {
   // Find the highest existing rift number
-  const lastEscrow = await prisma.escrowTransaction.findFirst({
+  const lastEscrow = await prisma.riftTransaction.findFirst({
     orderBy: {
       riftNumber: 'desc',
     },

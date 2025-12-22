@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import { subscribeToUserConversations } from '@/lib/realtime-messaging'
+import { useToast } from '@/components/ui/Toast'
 
 interface Conversation {
   id: string
@@ -31,11 +32,16 @@ interface Conversation {
 export default function MessagesPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { showToast } = useToast()
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [allConversations, setAllConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
 
   const fetchConversations = async () => {
     try {
@@ -51,14 +57,17 @@ export default function MessagesPage() {
       }
 
       const data = await response.json()
-      setConversations(data.conversations || [])
+      const conversationsList = data.conversations || []
+      setConversations(conversationsList)
+      setAllConversations(conversationsList) // Fix: Set allConversations for search functionality
       setError(null)
     } catch (err: any) {
       console.error('Error fetching conversations:', err)
-      setError('Failed to load conversations. Please try again.')
+      const errorMessage = 'Failed to load conversations. Please try again.'
+      setError(errorMessage)
+      showToast(errorMessage, 'error')
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
   }
 
@@ -97,13 +106,11 @@ export default function MessagesPage() {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
     }
   }, [status, session, router])
-
-  const handleRefresh = () => {
-    setRefreshing(true)
-    fetchConversations()
-  }
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -140,7 +147,114 @@ export default function MessagesPage() {
 
   const getStatusLabel = (status: string | null) => {
     if (!status) return 'Unknown'
+    if (status === 'FUNDED') return 'Paid'
     return status.replace(/_/g, ' ')
+  }
+
+  // Debounce timer for search
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Search for users
+  const searchUsers = async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to search users')
+      }
+
+      const data = await response.json()
+      // Filter out current user and users we already have conversations with
+      const existingUserIds = new Set(allConversations.map(c => c.otherParticipant?.id).filter(Boolean))
+      const filteredUsers = (data.users || []).filter(
+        (user: any) => user.id !== session?.user?.id && !existingUserIds.has(user.id)
+      )
+      setSearchResults(filteredUsers)
+    } catch (err: any) {
+      console.error('Error searching users:', err)
+      setSearchResults([])
+      showToast('Failed to search users. Please try again.', 'error')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  // Handle search input change with debouncing
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value
+    setSearchQuery(query)
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    // Filter existing conversations immediately
+    if (query.trim()) {
+      const filtered = allConversations.filter(conv => {
+        const displayName = conv.otherParticipant?.name || conv.otherParticipant?.email || ''
+        const email = conv.otherParticipant?.email || ''
+        const searchLower = query.toLowerCase()
+        return (
+          displayName.toLowerCase().includes(searchLower) ||
+          email.toLowerCase().includes(searchLower) ||
+          conv.transactionTitle.toLowerCase().includes(searchLower)
+        )
+      })
+      setConversations(filtered)
+      
+      // Debounce user search (wait 300ms after user stops typing)
+      if (query.length >= 2) {
+        searchTimeoutRef.current = setTimeout(() => {
+          searchUsers(query)
+        }, 300)
+      } else {
+        setSearchResults([])
+      }
+    } else {
+      setConversations(allConversations)
+      setSearchResults([])
+    }
+  }
+
+  // Create new conversation with a user
+  const createConversationWithUser = async (userId: string, userName: string) => {
+    try {
+      // Check if there's an existing conversation with this user
+      const existingConv = allConversations.find(
+        conv => conv.otherParticipant?.id === userId
+      )
+
+      if (existingConv) {
+        // Navigate to existing conversation
+        router.push(`/messages/${existingConv.id}`)
+      } else {
+        // For now, show a message that they need to create a transaction first
+        // In the future, you could create a direct message conversation
+        const errorMessage = `To message ${userName}, you need to create a Rift transaction with them first.`
+        setError(errorMessage)
+        showToast(errorMessage, 'info')
+        setSearchQuery('')
+        setSearchResults([])
+      }
+    } catch (err: any) {
+      console.error('Error creating conversation:', err)
+      const errorMessage = 'Failed to start conversation. Please try again.'
+      setError(errorMessage)
+      showToast(errorMessage, 'error')
+    }
   }
 
   if (status === 'loading' || loading) {
@@ -170,9 +284,9 @@ export default function MessagesPage() {
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20 mt-3">
                 <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
@@ -184,13 +298,58 @@ export default function MessagesPage() {
                 <p className="text-white/60 font-light">Your conversations</p>
               </div>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10 text-white/60 hover:text-white font-light text-sm disabled:opacity-50"
-            >
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative mt-6" ref={searchRef}>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search for a user or conversation..."
+                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+              />
+              {isSearching && (
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                  <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Search Results Dropdown */}
+            {searchQuery.trim() && searchResults.length > 0 && (
+              <div className="absolute z-10 w-full mt-2 bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden">
+                <div className="p-2">
+                  <p className="text-xs text-white/60 font-light px-3 py-2 uppercase tracking-wider">New Conversations</p>
+                  {searchResults.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => createConversationWithUser(user.id, user.name || user.email)}
+                      className="w-full px-3 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+                        <span className="text-blue-400 text-sm font-light">
+                          {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-light truncate">{user.name || 'No name'}</p>
+                        <p className="text-white/60 text-sm font-light truncate">{user.email}</p>
+                      </div>
+                      <svg className="w-5 h-5 text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -249,14 +408,9 @@ export default function MessagesPage() {
                           )}
                         </div>
                         <div className="text-right ml-4 flex-shrink-0">
-                          <p className="text-white/40 font-light text-xs mb-2">
+                          <p className="text-white/40 font-light text-xs">
                             {formatTime(conv.updatedAt)}
                           </p>
-                          {conv.unreadCount > 0 && (
-                            <span className="inline-block bg-blue-500/30 text-blue-300 text-xs px-2 py-1 rounded-full font-light">
-                              {conv.unreadCount}
-                            </span>
-                          )}
                         </div>
                       </div>
 

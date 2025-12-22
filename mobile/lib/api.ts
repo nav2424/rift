@@ -63,9 +63,10 @@ export interface User {
   email: string;
   phone?: string | null;
   role?: 'USER' | 'ADMIN';
+  riftUserId?: string | null;
 }
 
-export interface EscrowTransaction {
+export interface RiftTransaction {
   id: string;
   riftNumber: number | null; // Sequential rift number for tracking
   itemTitle: string;
@@ -297,13 +298,13 @@ class ApiClient {
     });
   }
 
-  async getEscrows(): Promise<EscrowTransaction[]> {
-    const response = await this.request<{ escrows: EscrowTransaction[] }>('/api/escrows/list');
-    return response.escrows || [];
+  async getEscrows(): Promise<RiftTransaction[]> {
+    const response = await this.request<{ rifts: RiftTransaction[] }>('/api/rifts/list');
+    return response.rifts || [];
   }
 
-  async getEscrow(id: string): Promise<EscrowTransaction> {
-    return this.request<EscrowTransaction>(`/api/escrows/${id}`);
+  async getEscrow(id: string): Promise<RiftTransaction> {
+    return this.request<RiftTransaction>(`/api/rifts/${id}`);
   }
 
   async createEscrow(data: {
@@ -328,7 +329,7 @@ class ApiClient {
     licenseKey?: string;
     serviceDate?: string;
   }): Promise<{ escrowId: string }> {
-    return this.request<{ escrowId: string }>('/api/escrows/create', {
+    return this.request<{ escrowId: string }>('/api/rifts/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -336,13 +337,13 @@ class ApiClient {
 
   // New payment flow: fund endpoint (POST to create payment intent, PUT to confirm)
   async fundEscrow(escrowId: string): Promise<{ clientSecret: string; paymentIntentId: string; buyerTotal: number; subtotal: number; buyerFee: number }> {
-    return this.request(`/api/escrows/${escrowId}/fund`, {
+    return this.request(`/api/rifts/${escrowId}/fund`, {
       method: 'POST',
     });
   }
 
   async confirmPayment(escrowId: string, paymentIntentId: string): Promise<{ success: boolean; status: string }> {
-    return this.request(`/api/escrows/${escrowId}/fund`, {
+    return this.request(`/api/rifts/${escrowId}/fund`, {
       method: 'PUT',
       body: JSON.stringify({ paymentIntentId }),
     });
@@ -363,20 +364,20 @@ class ApiClient {
   }
 
   async cancelEscrow(escrowId: string): Promise<{ success: boolean }> {
-    return this.request(`/api/escrows/${escrowId}/cancel`, {
+    return this.request(`/api/rifts/${escrowId}/cancel`, {
       method: 'POST',
     });
   }
 
   async confirmReceived(escrowId: string): Promise<{ success: boolean; newStatus?: string; payoutId?: string }> {
-    return this.request(`/api/escrows/${escrowId}/confirm-received`, {
+    return this.request(`/api/rifts/${escrowId}/confirm-received`, {
       method: 'POST',
     });
   }
 
   async releaseFunds(escrowId: string): Promise<{ success: boolean; status: string }> {
     // Use new /release endpoint (matches website)
-    return this.request(`/api/escrows/${escrowId}/release`, {
+    return this.request(`/api/rifts/${escrowId}/release`, {
       method: 'POST',
     });
   }
@@ -389,7 +390,7 @@ class ApiClient {
       uploadedFiles?: string[]; // Array of file URLs
     }
   ): Promise<{ success: boolean; proofId: string; status: string; autoReleaseAt?: string; validation: any }> {
-    return this.request(`/api/escrows/${escrowId}/proof`, {
+    return this.request(`/api/rifts/${escrowId}/proof`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -443,7 +444,7 @@ class ApiClient {
   }
 
   async raiseDispute(escrowId: string, reason: string, type: string, evidence?: any): Promise<{ success: boolean; disputeId: string; status: string }> {
-    return this.request(`/api/escrows/${escrowId}/dispute`, {
+    return this.request(`/api/rifts/${escrowId}/dispute`, {
       method: 'POST',
       body: JSON.stringify({ reason, type, evidence }),
     });
@@ -454,47 +455,47 @@ class ApiClient {
     return response.disputes || [];
   }
 
-  async getUserDisputes(): Promise<Array<Dispute & { escrow?: EscrowTransaction }>> {
-    const response = await this.request<{ disputes: Array<Dispute & { escrow?: EscrowTransaction }> }>('/api/me/disputes');
+  async getUserDisputes(): Promise<Array<Dispute & { rift?: RiftTransaction }>> {
+    const response = await this.request<{ disputes: Array<Dispute & { rift?: RiftTransaction }> }>('/api/me/disputes');
     return response.disputes || [];
   }
 
-  async getAdminEscrows(): Promise<EscrowTransaction[]> {
-    const response = await this.request<{ escrows: EscrowTransaction[] }>('/api/admin/escrows');
-    return response.escrows || [];
+  async getAdminEscrows(): Promise<RiftTransaction[]> {
+    const response = await this.request<{ rifts: RiftTransaction[] }>('/api/admin/rifts');
+    return response.rifts || [];
   }
 
   async getLeaderboard(): Promise<Array<{ user: User; transactionCount: number }>> {
-    // Try to get all escrows (admin endpoint first, fallback to user escrows)
-    let escrows: EscrowTransaction[];
+    // Try to get all rifts (admin endpoint first, fallback to user rifts)
+    let rifts: RiftTransaction[];
     try {
-      escrows = await this.getAdminEscrows();
+      rifts = await this.getAdminEscrows();
     } catch {
-      // If not admin or endpoint fails, use user's escrows
-      escrows = await this.getEscrows();
+      // If not admin or endpoint fails, use user's rifts
+      rifts = await this.getEscrows();
     }
     
     // Count transactions per user (as buyer or seller)
     const userCounts = new Map<string, { user: User; count: number }>();
     
-    escrows.forEach((escrow) => {
+    rifts.forEach((rift) => {
       // Count buyer
-      if (escrow.buyer) {
-        const existing = userCounts.get(escrow.buyerId);
+      if (rift.buyer) {
+        const existing = userCounts.get(rift.buyerId);
         if (existing) {
           existing.count++;
         } else {
-          userCounts.set(escrow.buyerId, { user: escrow.buyer, count: 1 });
+          userCounts.set(rift.buyerId, { user: rift.buyer, count: 1 });
         }
       }
       
       // Count seller
-      if (escrow.seller) {
-        const existing = userCounts.get(escrow.sellerId);
+      if (rift.seller) {
+        const existing = userCounts.get(rift.sellerId);
         if (existing) {
           existing.count++;
         } else {
-          userCounts.set(escrow.sellerId, { user: escrow.seller, count: 1 });
+          userCounts.set(rift.sellerId, { user: rift.seller, count: 1 });
         }
       }
     });

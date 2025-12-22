@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import WalletCard from '@/components/WalletCard'
-import { subscribeToUserEscrows } from '@/lib/realtime-escrows'
+import { subscribeToUserRifts } from '@/lib/realtime-rifts'
+import { useToast } from '@/components/ui/Toast'
 
-interface EscrowTransaction {
+interface RiftTransaction {
   id: string
   riftNumber: number | null
   itemTitle: string
@@ -34,21 +35,26 @@ interface EscrowTransaction {
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [escrows, setEscrows] = useState<EscrowTransaction[]>([])
+  const { showToast } = useToast()
+  const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAllActions, setShowAllActions] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const loadEscrows = async () => {
     try {
-      const response = await fetch('/api/escrows/list', {
+      const response = await fetch('/api/rifts/list?limit=50', {
         credentials: 'include',
       })
       if (response.ok) {
         const data = await response.json()
-        setEscrows(data.escrows || [])
+        // Handle both old format (rifts) and new paginated format (data)
+        setRifts(data.data || data.rifts || [])
       }
     } catch (error) {
-      console.error('Error loading escrows:', error)
+      console.error('Error loading rifts:', error)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -63,38 +69,73 @@ export default function Dashboard() {
 
     if (status === 'authenticated') {
       loadEscrows()
+      loadNotifications()
+      
+      // Auto-refresh notifications every 60 seconds
+      const notificationInterval = setInterval(() => {
+        loadNotifications()
+      }, 60000)
+      
+      return () => clearInterval(notificationInterval)
     }
   }, [status, router])
 
-  // Real-time sync for escrows
+  const loadNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications?limit=5', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error)
+      // Silent failure for notifications - not critical
+    }
+  }
+
+  // Real-time sync for rifts
   useEffect(() => {
     if (status !== 'authenticated' || !session?.user?.id) return
 
-    const unsubscribe = subscribeToUserEscrows(
+    const unsubscribe = subscribeToUserRifts(
       session.user.id,
       (update) => {
-        // Update existing escrow or add new one
-        setEscrows((prev) => {
+        // Optimistically update existing rift in local state
+        setRifts((prev) => {
           const existingIndex = prev.findIndex((e) => e.id === update.id)
           if (existingIndex >= 0) {
-            // Update existing escrow
+            // Update existing rift with new data
             const updated = [...prev]
             updated[existingIndex] = { ...updated[existingIndex], ...update }
             return updated
           } else {
-            // New escrow - reload to get full data
-            loadEscrows()
+            // New rift - only reload if we have space in current view (optimization)
+            // For now, still reload to ensure we have full data with relations
+            // TODO: Consider adding new rift optimistically
+            if (prev.length < 20) {
+              loadEscrows()
+            }
             return prev
           }
         })
       },
       (newEscrow) => {
-        // New escrow created - reload to get full data with relations
-        loadEscrows()
+        // New rift created - only reload if list is small enough
+        // Otherwise user can refresh to see it
+        setRifts((prev) => {
+          if (prev.length < 20) {
+            loadEscrows()
+          }
+          return prev
+        })
       },
       (error) => {
-        console.error('Realtime escrow sync error:', error)
-        // Silently fail - don't disrupt user experience
+        // Silently handle realtime errors - these are non-critical
+        // Data will sync on next page refresh or manual reload
+        console.debug('Realtime rift sync unavailable:', error.message)
       }
     )
 
@@ -109,8 +150,8 @@ export default function Dashboard() {
   }
 
   const metrics = useMemo(() => {
-    // Exclude cancelled escrows from all metrics
-    const validEscrows = escrows.filter(e => e.status !== 'CANCELLED')
+    // Exclude cancelled rifts from all metrics
+    const validEscrows = rifts.filter(e => e.status !== 'CANCELLED')
     
     const active = validEscrows.filter(e => 
       ['FUNDED', 'PROOF_SUBMITTED', 'UNDER_REVIEW', 'AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
@@ -152,27 +193,27 @@ export default function Dashboard() {
       totalTransactions,
       successRate,
     }
-  }, [escrows, session?.user?.id])
+  }, [rifts, session?.user?.id])
 
   const activeEscrows = useMemo(() => {
-    return escrows.filter(e => 
+    return rifts.filter(e => 
       ['FUNDED', 'PROOF_SUBMITTED', 'UNDER_REVIEW', 'AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
     )
-  }, [escrows])
+  }, [rifts])
 
   const getRecentActivity = () => {
-    const sorted = [...escrows].sort((a, b) => 
+    const sorted = [...rifts].sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     ).slice(0, 6)
 
-    return sorted.map(escrow => {
-      const isBuyer = escrow.buyerId === session?.user?.id
-      const otherParty = isBuyer ? escrow.seller : escrow.buyer
+    return sorted.map(rift => {
+      const isBuyer = rift.buyerId === session?.user?.id
+      const otherParty = isBuyer ? rift.seller : rift.buyer
       const name = otherParty.name || otherParty.email.split('@')[0]
 
-      const riftNumber = escrow.riftNumber ?? escrow.id.slice(-4)
+      const riftNumber = rift.riftNumber ?? rift.id.slice(-4)
       let message = ''
-      switch (escrow.status) {
+      switch (rift.status) {
         case 'FUNDED':
           message = isBuyer
             ? `Rift #${riftNumber} — Payment received — waiting for seller proof`
@@ -221,10 +262,10 @@ export default function Dashboard() {
             : `Rift #${riftNumber} — Shipment delivered — waiting for buyer confirmation`
           break
         default:
-          message = `Rift #${riftNumber} — ${escrow.status.replace(/_/g, ' ').toLowerCase()}`
+          message = `Rift #${riftNumber} — ${rift.status.replace(/_/g, ' ').toLowerCase()}`
       }
 
-      return { ...escrow, message, name }
+      return { ...rift, message, name }
     })
   }
 
@@ -235,6 +276,12 @@ export default function Dashboard() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)
+  }
+
+  const getStatusLabel = (status: string) => {
+    // Map status values to display labels
+    if (status === 'FUNDED') return 'Paid'
+    return status.replace(/_/g, ' ')
   }
 
   const getStatusColor = (status: string) => {
@@ -306,18 +353,104 @@ export default function Dashboard() {
                 </p>
               )}
             </div>
-            <Link href="/escrows/new" className="group">
-              <button className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20 text-white font-light text-sm">
-                <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Create Rift
-                </span>
-              </button>
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Notifications Badge */}
+              {unreadCount > 0 && (
+                <Link href="/wallet" className="relative">
+                  <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20 text-white/60 hover:text-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs font-medium flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </Link>
+              )}
+              <Link href="/rifts/new" className="group">
+                <button className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-300 border border-white/20 text-white font-light text-sm">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create Rift
+                  </span>
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
+
+        {/* Notifications Banner - Stripe Status Updates */}
+        {notifications.filter(n => n.isStripeStatusChange).length > 0 && (
+          <div className="mb-4">
+            {notifications
+              .filter(n => n.isStripeStatusChange)
+              .slice(0, 1)
+              .map((notification) => {
+                const stripeStatus = notification.stripeStatus
+                const isApproved = stripeStatus === 'approved'
+                const isRejected = stripeStatus === 'rejected'
+                const isRestricted = stripeStatus === 'restricted'
+                
+                return (
+                  <Link key={notification.id} href="/wallet">
+                    <GlassCard className={`cursor-pointer hover:bg-white/10 transition-all ${
+                      isApproved ? 'border-green-500/30 bg-green-500/5' :
+                      isRejected ? 'border-red-500/30 bg-red-500/5' :
+                      isRestricted ? 'border-yellow-500/30 bg-yellow-500/5' :
+                      'border-blue-500/30 bg-blue-500/5'
+                    }`}>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              isApproved ? 'bg-green-500/20' :
+                              isRejected ? 'bg-red-500/20' :
+                              isRestricted ? 'bg-yellow-500/20' :
+                              'bg-blue-500/20'
+                            }`}>
+                              {isApproved ? (
+                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              ) : isRejected ? (
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <p className={`text-sm font-light ${
+                                isApproved ? 'text-green-400' :
+                                isRejected ? 'text-red-400' :
+                                isRestricted ? 'text-yellow-400' :
+                                'text-blue-400'
+                              }`}>
+                                {notification.summary}
+                              </p>
+                              <p className="text-xs text-white/40 font-light mt-1">
+                                {new Date(notification.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </Link>
+                )
+              })}
+          </div>
+        )}
 
         {/* Top Row: Wallet + Portfolio Side by Side */}
         <div className="grid lg:grid-cols-2 gap-4 mb-4">
@@ -378,7 +511,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  {metrics.pendingActions.slice(0, 2).map((action) => {
+                  {(showAllActions ? metrics.pendingActions : metrics.pendingActions.slice(0, 2)).map((action) => {
                   const isBuyer = action.buyerId === session?.user?.id
                   let actionText = ''
                   let actionDescription = ''
@@ -414,7 +547,7 @@ export default function Dashboard() {
                   return (
                     <Link
                       key={action.id}
-                      href={`/escrows/${action.id}`}
+                      href={`/rifts/${action.id}`}
                       className="block p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
                     >
                       <div className="flex items-center justify-between">
@@ -430,12 +563,14 @@ export default function Dashboard() {
                   )
                 })}
                 {metrics.pendingActionsCount > 2 && (
-                  <Link
-                    href="/dashboard"
-                    className="block p-2 text-center text-xs text-white/60 hover:text-white font-light"
+                  <button
+                    onClick={() => setShowAllActions(!showAllActions)}
+                    className="block w-full p-2 text-center text-xs text-white/60 hover:text-white font-light transition-colors"
                   >
-                    View {metrics.pendingActionsCount - 2} more...
-                  </Link>
+                    {showAllActions 
+                      ? 'Show less' 
+                      : `View ${metrics.pendingActionsCount - 2} more...`}
+                  </button>
                 )}
               </div>
             </div>
@@ -468,7 +603,7 @@ export default function Dashboard() {
                   {recentActivity.slice(0, 3).map((activity) => (
                     <Link
                       key={activity.id}
-                      href={`/escrows/${activity.id}`}
+                      href={`/rifts/${activity.id}`}
                       className="block p-2 rounded-lg hover:bg-white/5 transition-colors"
                     >
                       <p className="text-xs text-white/80 font-light line-clamp-1">{activity.message}</p>
@@ -485,10 +620,10 @@ export default function Dashboard() {
         </div>
 
         {/* Your Rifts - Compact */}
-        <div className="mb-4">
+        <div className="mt-8 mb-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl font-light text-white">Your Rifts</h2>
-            {escrows.length > 0 && (
+            {rifts.length > 0 && (
               <Link href="/rifts" className="text-xs text-white/60 hover:text-white font-light flex items-center gap-1">
                 View All
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -511,7 +646,7 @@ export default function Dashboard() {
                   Create your first rift to get started
                 </p>
                 <Link 
-                  href="/escrows/new"
+                  href="/rifts/new"
                   className="inline-block px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors border border-purple-500/30 text-white font-light text-sm"
                 >
                   Create Rift
@@ -520,36 +655,36 @@ export default function Dashboard() {
             </GlassCard>
           ) : (
             <div className="space-y-2">
-              {activeEscrows.slice(0, 3).map((escrow) => {
-                const isBuyer = escrow.buyerId === session?.user?.id
-                const otherParty = isBuyer ? escrow.seller : escrow.buyer
+              {activeEscrows.slice(0, 3).map((rift) => {
+                const isBuyer = rift.buyerId === session?.user?.id
+                const otherParty = isBuyer ? rift.seller : rift.buyer
 
                 return (
-                  <Link key={escrow.id} href={`/escrows/${escrow.id}`}>
+                  <Link key={rift.id} href={`/rifts/${rift.id}`}>
                     <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="text-base font-light text-white truncate">
-                                Rift #{escrow.riftNumber ?? escrow.id.slice(-4)}
+                                Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                               </h3>
-                              <span className={`text-xs px-1.5 py-0.5 rounded border ${getStatusColor(escrow.status)} border-current/30 bg-current/10 flex-shrink-0`}>
-                                {escrow.status.replace(/_/g, ' ')}
+                              <span className={`text-xs px-1.5 py-0.5 rounded border ${getStatusColor(rift.status)} border-current/30 bg-current/10 flex-shrink-0`}>
+                                {getStatusLabel(rift.status)}
                               </span>
                             </div>
-                            <p className="text-sm text-white/80 font-light truncate mb-1">{escrow.itemTitle}</p>
+                            <p className="text-sm text-white/80 font-light truncate mb-1">{rift.itemTitle}</p>
                             <p className="text-xs text-white/60 font-light truncate">
-                              {otherParty.name || otherParty.email.split('@')[0]} • {escrow.itemType.replace(/_/g, ' ')}
+                              {otherParty.name || otherParty.email.split('@')[0]} • {rift.itemType.replace(/_/g, ' ')}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-base font-light text-white">
-                              {formatCurrency((escrow as any).subtotal || escrow.amount || 0, escrow.currency)}
+                              {formatCurrency((rift as any).subtotal || rift.amount || 0, rift.currency)}
                             </p>
-                            {(escrow as any).buyerFee && (escrow as any).buyerFee > 0 && (
+                            {(rift as any).buyerFee && (rift as any).buyerFee > 0 && isBuyer && (
                               <p className="text-xs text-white/40 font-light">
-                                + {formatCurrency((escrow as any).buyerFee, escrow.currency)} fee
+                                + {formatCurrency((rift as any).buyerFee, rift.currency)} fee
                               </p>
                             )}
                           </div>

@@ -1,18 +1,18 @@
-# Rift - Escrow Platform
+# Rift - Rift Platform
 
 ## Overview
 
-Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kijiji, Facebook Marketplace) that provides secure transaction handling between buyers and sellers.
+Rift is a complete rift platform for marketplace/classified sellers (e.g., Kijiji, Facebook Marketplace) that provides secure transaction handling between buyers and sellers.
 
 ## Features
 
 - **User Authentication**: Email/password authentication with role-based access (USER/ADMIN)
-- **Escrow Management**: Create, track, and manage escrow transactions
-- **Payment Processing**: Secure payment handling for escrow transactions
+- **Rift Management**: Create, track, and manage rift transactions
+- **Payment Processing**: Secure payment handling for rift transactions
 - **Shipment Proof**: Sellers can upload tracking and proof of shipment
 - **Dispute Resolution**: Buyers can raise disputes, admins can resolve them
 - **Admin Panel**: Full admin interface for managing disputes and transactions
-- **Timeline Tracking**: Complete audit trail of all escrow actions
+- **Timeline Tracking**: Complete audit trail of all rift actions
 
 ## Tech Stack
 
@@ -97,10 +97,10 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
    # Then run: UPDATE User SET role = 'ADMIN' WHERE email = 'admin@test.com';
    ```
 
-### 2. Create an Escrow Transaction
+### 2. Create an Rift Transaction
 
 1. **Sign in as Buyer** (`buyer@test.com`)
-2. Go to **Dashboard** → **Create New Escrow**
+2. Go to **Dashboard** → **Create New Rift**
 3. Fill in the form:
    - Item Title: "iPhone 13 Pro"
    - Description: "Brand new, unopened"
@@ -108,18 +108,18 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
    - Currency: `CAD`
    - Seller: Select `seller@test.com` from dropdown (or enter email)
    - Shipping Address: "123 Main St, Toronto, ON"
-4. Click **Create Escrow**
+4. Click **Create Rift**
 
 ### 3. Process Payment
 
-1. On the escrow detail page, click **"Mark as Paid"**
+1. On the rift detail page, click **"Mark as Paid"**
 2. Status changes to `AWAITING_SHIPMENT`
 3. A payment reference is generated
 
 ### 4. Upload Shipment Proof
 
 1. **Sign out and sign in as Seller** (`seller@test.com`)
-2. Go to **Dashboard** → Find the escrow → Click to view details
+2. Go to **Dashboard** → Find the rift → Click to view details
 3. In the **"Upload Shipment Proof"** section:
    - Tracking Number: `TRACK123456`
    - Shipping Carrier: `Canada Post`
@@ -131,7 +131,7 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
 ### 5. Confirm Receipt
 
 1. **Sign out and sign in as Buyer** (`buyer@test.com`)
-2. Go to the escrow detail page
+2. Go to the rift detail page
 3. Click **"Confirm Item Received"**
 4. Status changes to `DELIVERED_PENDING_RELEASE`
 5. Click **"Release Funds to Seller"**
@@ -139,7 +139,7 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
 
 ### 6. Raise and Resolve a Dispute
 
-1. **As Buyer**, on an `IN_TRANSIT` or `DELIVERED_PENDING_RELEASE` escrow:
+1. **As Buyer**, on an `IN_TRANSIT` or `DELIVERED_PENDING_RELEASE` rift:
    - Click **"Raise Dispute"** in the sidebar
    - Enter reason: "Item not received"
    - Submit
@@ -148,7 +148,7 @@ Rift is a complete escrow platform for marketplace/classified sellers (e.g., Kij
 2. **Sign in as Admin**:
    - Go to `/admin`
    - View the dispute in the list
-   - Click **View** to see escrow details
+   - Click **View** to see rift details
    - In the Actions sidebar:
      - Click **"Release Funds to Seller"** (if seller is in the right)
      - OR **"Refund Buyer"** (if buyer is in the right)
@@ -163,7 +163,7 @@ trusthold/
 │   ├── api/              # API routes
 │   ├── auth/             # Authentication pages
 │   ├── dashboard/        # User dashboard
-│   ├── escrows/          # Escrow management
+│   ├── escrows/          # Rift management
 │   ├── admin/            # Admin panel
 │   ├── pricing/          # Marketing pages
 │   └── legal/            # Legal pages
@@ -177,14 +177,14 @@ trusthold/
 
 - `prisma/schema.prisma` - Database schema
 - `lib/auth.ts` - NextAuth configuration
-- `lib/rules.ts` - Escrow state machine logic
+- `lib/rules.ts` - Rift state machine logic
 - `lib/payments.ts` - Payment processing
-- `app/api/escrows/` - Escrow API routes
+- `app/api/escrows/` - Rift API routes
 - `app/api/admin/` - Admin API routes
 
-## Escrow State Machine
+## Rift State Machine
 
-The escrow follows a strict state machine:
+The rift follows a strict state machine:
 
 1. **AWAITING_PAYMENT** → Buyer marks as paid → **AWAITING_SHIPMENT**
 2. **AWAITING_SHIPMENT** → Seller uploads proof → **IN_TRANSIT**

@@ -8,7 +8,7 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-medium text-white mb-3">Rift</h3>
             <p className="text-white/50 text-sm leading-relaxed font-light">
-              Enterprise escrow protection for secure transactions.
+              Secure buyer protection for marketplace transactions.
             </p>
           </div>
           <div>

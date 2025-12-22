@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ users: [] }, { status: 200 })
     }
 
-    // Search by email or name (username)
+    // Search by name, email, or Rift user ID (partial match for name/email, exact for Rift ID)
+    const searchLower = query.toLowerCase()
+    
     const users = await prisma.user.findMany({
       where: {
         AND: [
@@ -28,16 +30,24 @@ export async function GET(request: NextRequest) {
           },
           {
             OR: [
+              // Search by name (case-insensitive partial match)
+              {
+                name: {
+                  contains: query,
+                  mode: 'insensitive',
+                },
+              },
+              // Search by email (case-insensitive partial match)
               {
                 email: {
                   contains: query,
                   mode: 'insensitive',
                 },
               },
+              // Search by Rift user ID (exact match, case-sensitive)
               {
-                name: {
-                  contains: query,
-                  mode: 'insensitive',
+                riftUserId: {
+                  equals: query,
                 },
               },
             ],
@@ -47,12 +57,19 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        riftUserId: true,
         email: true,
       },
-      take: 10, // Limit results
-      orderBy: {
-        email: 'asc',
-      },
+      take: 10, // Limit results to 10
+      orderBy: [
+        // Prioritize exact matches
+        {
+          name: {
+            sort: 'asc',
+            nulls: 'last',
+          },
+        },
+      ],
     })
 
     return NextResponse.json({ users }, { status: 200 })

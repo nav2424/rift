@@ -5,12 +5,13 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
+import { useToast } from '@/components/ui/Toast'
 
 interface Dispute {
   id: string
   status: string
   reason: string
-  escrow: {
+  rift: {
     id: string
     itemTitle: string
     status: string
@@ -24,11 +25,14 @@ interface UserProfile {
   name: string | null
   email: string
   phone: string | null
+  emailVerified?: boolean
+  phoneVerified?: boolean
 }
 
 export default function AccountPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { showToast } = useToast()
   const [disputes, setDisputes] = useState<Dispute[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,6 +60,7 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error('Error loading disputes:', error)
+      // Silent failure for disputes - not critical
     }
   }
 
@@ -70,22 +75,35 @@ export default function AccountPage() {
       })
       if (response.ok) {
         const data = await response.json()
-        setProfile(data.user)
+        // Handle both { user: {...} } and direct user object formats
+        const userData = data.user || data
+        setProfile({
+          name: userData.name || null,
+          email: userData.email || '',
+          phone: userData.phone || null,
+          emailVerified: userData.emailVerified || false,
+          phoneVerified: userData.phoneVerified || false,
+        })
       } else {
         // Fallback to session data if API fails
         setProfile({
           name: session?.user?.name || null,
           email: session?.user?.email || '',
           phone: null,
+          emailVerified: false,
+          phoneVerified: false,
         })
       }
     } catch (error) {
       console.error('Error loading profile:', error)
+      showToast('Failed to load profile. Some information may be missing.', 'warning')
       // Fallback to session data on error
       setProfile({
         name: session?.user?.name || null,
         email: session?.user?.email || '',
         phone: null,
+        emailVerified: false,
+        phoneVerified: false,
       })
     } finally {
       setLoading(false)
@@ -115,6 +133,8 @@ export default function AccountPage() {
     name: session?.user?.name || null,
     email: session?.user?.email || '',
     phone: null,
+    emailVerified: false,
+    phoneVerified: false,
   }
 
   return (
@@ -185,12 +205,60 @@ export default function AccountPage() {
               </div>
             </div>
             
-            <Link 
-              href="/account/edit-profile"
-              className="block w-full text-center py-3 px-6 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light hover:border-white/30"
-            >
-              Edit Profile
-            </Link>
+            <div className="space-y-3">
+              <Link 
+                href="/account/edit-profile"
+                className="block w-full text-center py-3 px-6 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light hover:border-white/30"
+              >
+                Edit Profile
+              </Link>
+              <Link 
+                href="/settings/verification"
+                className="block w-full text-center py-3 px-6 rounded-xl bg-blue-500/10 hover:bg-blue-500/15 transition-all duration-200 border border-blue-500/20 text-blue-400 font-light hover:border-blue-500/30"
+              >
+                Verify Email & Phone
+              </Link>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Verification Status Card */}
+        <GlassCard className="mb-6">
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10 flex items-center justify-center border border-green-500/20">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-xl font-light text-white">Verification Status</h2>
+                <p className="text-white/40 font-light text-sm">Phone verification required for withdrawals</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                <span className="text-white/70 font-light">Email Verified</span>
+                <span className={userProfile.emailVerified ? 'text-green-400' : 'text-yellow-400'}>
+                  {userProfile.emailVerified ? '✓ Verified' : '⚠ Optional (required for mobile)'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                <span className="text-white/70 font-light">Phone Verified</span>
+                <span className={userProfile.phoneVerified ? 'text-green-400' : 'text-red-400'}>
+                  {userProfile.phoneVerified ? '✓ Verified' : '✗ Required'}
+                </span>
+              </div>
+              {!userProfile.phoneVerified && (
+                <Link 
+                  href="/settings/verification"
+                  className="block w-full text-center py-3 px-6 rounded-xl bg-blue-500/10 hover:bg-blue-500/15 transition-all duration-200 border border-blue-500/20 text-blue-400 font-light hover:border-blue-500/30 mt-4"
+                >
+                  Verify Phone →
+                </Link>
+              )}
+            </div>
           </div>
         </GlassCard>
 

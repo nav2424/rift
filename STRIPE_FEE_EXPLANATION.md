@@ -8,7 +8,7 @@
 
 ### Seller Fee: 8% Flat
 - Platform fee deducted from seller payout
-- Calculated as 8% of original escrow amount
+- Calculated as 8% of original rift amount
 
 ### Stripe Processing Fees: Passed to Seller
 - Standard Stripe fees: 2.9% + $0.30 per transaction
@@ -28,16 +28,16 @@ When a buyer makes a payment:
 When transferring money to a seller's payment account:
 - **No additional fees** are charged on transfers
 - Transfers are free (the fee was already taken from the original payment)
-- We transfer the seller amount (escrow amount - 8% platform fee - Stripe fees) directly
+- We transfer the seller amount (rift amount - 8% platform fee - Stripe fees) directly
 
 ## Platform Fee Implementation
 
 ### Fee Calculation
-1. **Platform Fee**: 8% of original escrow amount (paid by seller)
-2. **Seller Payout**: Escrow amount - Platform fee (8%) - Stripe fees (2.9% + $0.30)
+1. **Platform Fee**: 8% of original rift amount (paid by seller)
+2. **Seller Payout**: Rift amount - Platform fee (8%) - Stripe fees (2.9% + $0.30)
 
 ### Example Calculation
-- Escrow amount: $100.00
+- Rift amount: $100.00
 - Buyer pays: $100.00 (0% fee - exactly the listed price)
 - Stripe processing fees: ~$3.20 (2.9% + $0.30) [AUTOMATIC - passed to seller]
 - Platform fee (8%): $8.00 [DEDUCTED from seller]

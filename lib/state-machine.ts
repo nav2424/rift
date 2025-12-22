@@ -9,7 +9,7 @@ const VALID_TRANSITIONS: Record<EscrowStatus, EscrowStatus[]> = {
   DRAFT: ['FUNDED', 'CANCELED'],
   FUNDED: ['PROOF_SUBMITTED', 'DISPUTED', 'CANCELED'],
   PROOF_SUBMITTED: ['UNDER_REVIEW', 'RELEASED', 'DISPUTED'],
-  UNDER_REVIEW: ['RELEASED', 'DISPUTED'],
+  UNDER_REVIEW: ['PROOF_SUBMITTED', 'RELEASED', 'DISPUTED'],
   RELEASED: ['PAYOUT_SCHEDULED'],
   DISPUTED: ['RESOLVED'],
   RESOLVED: ['RELEASED', 'PAYOUT_SCHEDULED', 'CANCELED'],
@@ -66,9 +66,12 @@ export function canBuyerDispute(status: EscrowStatus): boolean {
 
 /**
  * Check if seller can submit proof in current state
+ * Allows submission when:
+ * - Status is FUNDED (initial proof submission)
+ * - Status is UNDER_REVIEW (resubmission after rejection)
  */
 export function canSellerSubmitProof(status: EscrowStatus): boolean {
-  return status === 'FUNDED'
+  return status === 'FUNDED' || status === 'UNDER_REVIEW'
 }
 
 /**

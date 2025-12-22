@@ -1,7 +1,7 @@
 /**
  * Payment processing
  * 
- * Handles payment processing for escrow transactions.
+ * Handles payment processing for rift transactions.
  * Integrates with Stripe for payment processing.
  */
 
@@ -13,7 +13,7 @@ export async function processPayment(
   transactionId: string,
   paymentIntentId?: string
 ): Promise<string> {
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
     include: {
       buyer: true,
@@ -21,8 +21,8 @@ export async function processPayment(
     },
   })
 
-  if (!escrow) {
-    throw new Error('Escrow not found')
+  if (!rift) {
+    throw new Error('Rift not found')
   }
 
   // If payment intent ID is provided, confirm it
@@ -36,53 +36,54 @@ export async function processPayment(
   // Generate a payment reference
   const paymentReference = paymentIntentId || `PAY-${transactionId.slice(0, 8).toUpperCase()}`
   
-  // Update the transaction with the payment reference
-  await prisma.escrowTransaction.update({
+  // Update the transaction with the payment reference and set to FUNDED
+  await prisma.riftTransaction.update({
     where: { id: transactionId },
     data: {
       paymentReference,
-      status: 'AWAITING_SHIPMENT',
+      status: 'FUNDED',
+      fundedAt: new Date(),
     },
   })
 
   // Send email notification
-  const amount = escrow.amount ?? escrow.subtotal
+  const amount = rift.subtotal
   await sendPaymentReceivedEmail(
-    escrow.seller.email,
+    rift.seller.email,
     transactionId,
-    escrow.itemTitle,
+    rift.itemTitle,
     amount,
-    escrow.currency
+    rift.currency
   )
   
   return paymentReference
 }
 
 /**
- * Create a payment intent for an escrow
+ * Create a payment intent for an rift
  */
 export async function createEscrowPaymentIntent(transactionId: string) {
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
     include: {
       buyer: true,
     },
   })
 
-  if (!escrow) {
-    throw new Error('Escrow not found')
+  if (!rift) {
+    throw new Error('Rift not found')
   }
 
-  if (!escrow.buyer || !escrow.buyer.email) {
+  if (!rift.buyer || !rift.buyer.email) {
     throw new Error('Buyer email is required for payment intent')
   }
 
-  const amount = escrow.amount ?? escrow.subtotal
+  const amount = rift.subtotal
   return await createPaymentIntent(
     amount,
-    escrow.currency,
+    rift.currency,
     transactionId,
-    escrow.buyer.email
+    rift.buyer.email
   )
 }
 

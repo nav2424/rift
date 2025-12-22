@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PremiumButton from './ui/PremiumButton'
+import { useToast } from './ui/Toast'
 
 interface DeliveryProofFormProps {
   escrowId: string
@@ -11,6 +12,7 @@ interface DeliveryProofFormProps {
 
 export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofFormProps) {
   const router = useRouter()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [notes, setNotes] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -43,24 +45,24 @@ export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofF
         formDataToSend.append('notes', notes)
       }
 
-      const response = await fetch(`/api/escrows/${escrowId}/mark-delivered`, {
+      const response = await fetch(`/api/rifts/${escrowId}/mark-delivered`, {
         method: 'POST',
         body: formDataToSend,
       })
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to upload proof')
+        showToast(error.error || 'Failed to upload proof', 'error')
         return
       }
 
+      showToast('Proof uploaded successfully. Buyer has 24 hours to review.', 'success')
       router.refresh()
       setNotes('')
       setFile(null)
-      alert('Proof uploaded successfully. Buyer has 24 hours to review.')
     } catch (error) {
       console.error('Error uploading proof:', error)
-      alert('Failed to upload proof')
+      showToast('Failed to upload proof. Please try again.', 'error')
     } finally {
       setLoading(false)
     }

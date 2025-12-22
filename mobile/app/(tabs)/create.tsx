@@ -53,12 +53,6 @@ export default function CreateEscrowScreen() {
           <View style={styles.typeCardsContainer}>
             {[
               { 
-                type: 'PHYSICAL', 
-                label: 'Physical Item', 
-                description: 'Electronics, products, collectibles',
-                icon: 'cube' as const, 
-              },
-              { 
                 type: 'TICKETS', 
                 label: 'Tickets', 
                 description: 'PDF, QR, mobile tickets',

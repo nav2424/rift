@@ -244,7 +244,7 @@ export default function ConversationDetailScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Messages</Text>
         <TouchableOpacity
-          onPress={() => router.push(`/escrows/${transactionId}`)}
+          onPress={() => router.push(`/rifts/${transactionId}`)}
           style={styles.transactionButton}
         >
           <Ionicons name="document-text-outline" size={24} color={Colors.text} />

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PremiumButton from './ui/PremiumButton'
+import { useToast } from './ui/Toast'
 
 interface DisputeFormProps {
   escrowId: string
@@ -18,14 +19,14 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reason.trim()) {
-      alert('Please provide a reason for the dispute')
+      showToast('Please provide a reason for the dispute', 'error')
       return
     }
 
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/escrows/${escrowId}/dispute`, {
+      const response = await fetch(`/api/rifts/${escrowId}/dispute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -36,15 +37,16 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to open dispute')
+        showToast(error.error || 'Failed to open dispute', 'error')
         return
       }
 
+      showToast('Dispute raised successfully', 'success')
       router.refresh()
       setReason('')
     } catch (error) {
       console.error('Error opening dispute:', error)
-      alert('Failed to open dispute')
+      showToast('Failed to open dispute. Please try again.', 'error')
     } finally {
       setLoading(false)
     }

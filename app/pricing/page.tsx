@@ -98,7 +98,7 @@ export default function Pricing() {
             </div>
             <h3 className="text-2xl font-light text-white mb-4">Complete Protection</h3>
             <p className="text-white/70 font-light leading-relaxed">
-              Full escrow protection, dispute resolution, fraud prevention, and transaction tracking. All included.
+              Complete buyer protection, dispute resolution, fraud prevention, and transaction tracking. All included.
             </p>
           </GlassCard>
 
@@ -110,7 +110,7 @@ export default function Pricing() {
             </div>
             <h3 className="text-2xl font-light text-white mb-4">Keep More Money</h3>
             <p className="text-white/70 font-light leading-relaxed">
-              Sellers keep 92% of every transaction. No monthly fees, no setup costs, no hidden charges.
+              Sellers keep 95% of every transaction. No monthly fees, no setup costs, no hidden charges.
             </p>
           </GlassCard>
         </div>
@@ -234,8 +234,8 @@ export default function Pricing() {
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
-                title: 'Escrow Protection',
-                description: 'Funds held securely until both parties are satisfied',
+                title: 'Buyer Protection',
+                description: 'Funds held securely by Rift until both parties are satisfied',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -426,7 +426,7 @@ export default function Pricing() {
                 <h4 className="text-xl font-light text-white mb-6">With Rift</h4>
                 <div className="space-y-3">
                   {[
-                    'Complete escrow protection included',
+                    'Complete buyer protection included',
                     'Fraud prevention and identity verification',
                     'Expert dispute resolution service',
                     'No chargebacks or payment reversals',

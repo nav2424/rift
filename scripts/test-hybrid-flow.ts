@@ -3,8 +3,8 @@
  * End-to-end test script for Hybrid Protection System
  * 
  * This script tests the complete flow:
- * 1. Create escrow
- * 2. Pay escrow
+ * 1. Create rift
+ * 2. Pay rift
  * 3. Upload verified shipment proof
  * 4. Confirm receipt
  * 5. Verify grace period
@@ -60,11 +60,11 @@ async function main() {
       console.log('✅ Found seller:', seller.email)
     }
 
-    // Step 2: Create escrow
-    console.log('\n📦 Step 2: Creating escrow transaction...')
+    // Step 2: Create rift
+    console.log('\n📦 Step 2: Creating rift transaction...')
     
     // Generate rift number
-    const lastEscrow = await prisma.escrowTransaction.findFirst({
+    const lastEscrow = await prisma.riftTransaction.findFirst({
       orderBy: { riftNumber: 'desc' },
       select: { riftNumber: true },
     })
@@ -74,7 +74,7 @@ async function main() {
     const buyerFee = subtotal * 0.03 // 3%
     const sellerFee = subtotal * 0.05 // 5%
     
-    const escrow = await prisma.escrowTransaction.create({
+    const rift = await prisma.riftTransaction.create({
       data: {
         riftNumber,
         itemTitle: 'Test Item - Hybrid Protection',
@@ -94,17 +94,17 @@ async function main() {
         seller: true,
       },
     })
-    console.log('✅ Created escrow:', escrow.id)
-    console.log('   Amount:', escrow.subtotal, escrow.currency)
-    console.log('   Status:', escrow.status)
+    console.log('✅ Created rift:', rift.id)
+    console.log('   Amount:', rift.subtotal, rift.currency)
+    console.log('   Status:', rift.status)
 
     // Step 3: Simulate payment (mark as paid)
-    console.log('\n💰 Step 3: Marking escrow as paid...')
-    const paidEscrow = await prisma.escrowTransaction.update({
-      where: { id: escrow.id },
+    console.log('\n💰 Step 3: Marking rift as paid...')
+    const paidEscrow = await prisma.riftTransaction.update({
+      where: { id: rift.id },
       data: { status: 'AWAITING_SHIPMENT' },
     })
-    console.log('✅ Escrow marked as paid')
+    console.log('✅ Rift marked as paid')
     console.log('   Status:', paidEscrow.status)
 
     // Step 4: Upload shipment proof with tracking
@@ -112,7 +112,7 @@ async function main() {
     const trackingNumber = '1Z999AA10123456784' // Valid UPS format
     const shipmentProof = await prisma.shipmentProof.create({
       data: {
-        escrowId: escrow.id,
+        escrowId: rift.id,
         trackingNumber,
         shippingCarrier: 'UPS',
         verified: true,
@@ -121,8 +121,8 @@ async function main() {
       },
     })
     
-    const verifiedEscrow = await prisma.escrowTransaction.update({
-      where: { id: escrow.id },
+    const verifiedEscrow = await prisma.riftTransaction.update({
+      where: { id: rift.id },
       data: {
         status: 'IN_TRANSIT',
         shipmentVerifiedAt: new Date(),
@@ -139,8 +139,8 @@ async function main() {
     const gracePeriodHours = 48
     const gracePeriodEndsAt = new Date(Date.now() + gracePeriodHours * 60 * 60 * 1000)
     
-    const deliveredEscrow = await prisma.escrowTransaction.update({
-      where: { id: escrow.id },
+    const deliveredEscrow = await prisma.riftTransaction.update({
+      where: { id: rift.id },
       data: {
         status: 'DELIVERED_PENDING_RELEASE',
         deliveryVerifiedAt: new Date(),
@@ -181,10 +181,10 @@ async function main() {
       deliveredEscrow.status === 'DELIVERED_PENDING_RELEASE'
 
     if (eligibleForAutoRelease) {
-      console.log('✅ Escrow is eligible for auto-release')
+      console.log('✅ Rift is eligible for auto-release')
       console.log('   Run: npm run cron:auto-release to process')
     } else {
-      console.log('⏳ Escrow is in grace period')
+      console.log('⏳ Rift is in grace period')
       console.log('   Time until auto-release:', deliveredEscrow.gracePeriodEndsAt 
         ? `${Math.round((deliveredEscrow.gracePeriodEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60))} hours`
         : 'N/A')
@@ -193,7 +193,7 @@ async function main() {
     // Step 8: Summary
     console.log('\n📊 Test Summary:')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('Escrow ID:', escrow.id)
+    console.log('Rift ID:', rift.id)
     console.log('Current Status:', deliveredEscrow.status)
     console.log('Shipment Verified:', deliveredEscrow.trackingVerified ? 'Yes' : 'No')
     console.log('Delivery Verified:', deliveredEscrow.deliveryVerifiedAt ? 'Yes' : 'No')

@@ -167,8 +167,8 @@ export async function checkDeliveryStatusForAll() {
     },
   })
 
-  for (const escrow of escrows) {
-    const proof = escrow.shipmentProofs[0]
+  for (const rift of escrows) {
+    const proof = rift.shipmentProofs[0]
     if (!proof?.trackingNumber) continue
 
     try {
@@ -178,14 +178,14 @@ export async function checkDeliveryStatusForAll() {
       )
 
       if (isDelivered && deliveryDate) {
-        // Update escrow with delivery confirmation
+        // Update rift with delivery confirmation
         const gracePeriodHours = 48
         const gracePeriodEndsAt = new Date(
           deliveryDate.getTime() + gracePeriodHours * 60 * 60 * 1000
         )
 
         await prisma.escrowTransaction.update({
-          where: { id: escrow.id },
+          where: { id: rift.id },
           data: {
             deliveryVerifiedAt: deliveryDate,
             gracePeriodEndsAt,
@@ -207,7 +207,7 @@ export async function checkDeliveryStatusForAll() {
         // ... send email/push notification
       }
     } catch (error) {
-      console.error(`Error checking delivery for escrow ${escrow.id}:`, error)
+      console.error(`Error checking delivery for rift ${rift.id}:`, error)
     }
   }
 }

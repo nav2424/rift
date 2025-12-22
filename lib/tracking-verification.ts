@@ -259,7 +259,7 @@ export async function checkDeliveryStatus(
 
 /**
  * Verify shipment proof is valid
- * Checks that proof file exists and matches escrow details
+ * Checks that proof file exists and matches rift details
  */
 export async function verifyShipmentProof(
   trackingNumber: string,
@@ -289,7 +289,7 @@ export async function verifyShipmentProof(
 
   // Note: In production, you might want to verify:
   // - File exists and is valid image/document
-  // - Shipping address in proof matches escrow shipping address
+  // - Shipping address in proof matches rift shipping address
   // - Tracking number format matches carrier
 
   return {
