@@ -74,7 +74,7 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
 
   const recentDisputes = await prisma.dispute.count({
     where: {
-      rift: { sellerId: userId },
+      EscrowTransaction: { sellerId: userId },
       createdAt: { gte: sixtyDaysAgo },
       status: 'OPEN',
     },
