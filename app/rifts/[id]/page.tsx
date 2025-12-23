@@ -30,6 +30,7 @@ interface RiftTransaction {
   sellerId: string
   shippingAddress?: string | null
   notes?: string | null
+  eventDateTz?: string | null
   createdAt: string
   buyer: {
     id: string
