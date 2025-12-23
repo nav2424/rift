@@ -108,7 +108,6 @@ export async function PATCH(
 
       // Skip event logging for risk overrides - they don't have a specific rift
       // Risk overrides are tracked in the user's risk tier and restrictions fields
-      )
     }
 
     return NextResponse.json({ success: true })
