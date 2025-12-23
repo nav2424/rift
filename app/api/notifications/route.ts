@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
           // Invalid JSON, ignore
         }
 
-        const isStripeStatusChange = metadata.type === 'stripe_status_change'
+        const isStripeStatusChange = (metadata as any)?.type === 'stripe_status_change'
         
         return {
           id: activity.id,
