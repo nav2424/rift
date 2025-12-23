@@ -35,6 +35,7 @@ type RiftFilter = 'all' | 'active' | 'completed' | 'cancelled'
 export default function AllRiftsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { showToast } = useToast()
   const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<RiftFilter>('all')
