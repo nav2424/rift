@@ -226,7 +226,7 @@ export default function Home() {
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       {/* Hero Section */}
-      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-8 sm:pb-12 lg:pt-28 lg:pb-16">
+      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-2 pb-8 sm:pb-12 lg:pt-4 lg:pb-16">
         <div className="relative z-10">
           {/* Trust Badge */}
           <div className={`flex justify-center mb-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>

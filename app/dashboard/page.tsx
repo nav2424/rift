@@ -335,9 +335,9 @@ export default function Dashboard() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-6">
         {/* Header - Compact */}
-        <div className="mb-4">
+        <div className="mb-4 mt-0">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-1">{greeting}</p>

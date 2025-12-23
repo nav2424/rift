@@ -69,7 +69,7 @@ export default function RootLayout({
         <Providers>
           <ScrollToTop />
           <Navbar />
-          <main className="flex-1 pt-16 sm:pt-20">{children}</main>
+          <main className="flex-1 pt-4 sm:pt-8">{children}</main>
           <Footer />
         </Providers>
         <Analytics />

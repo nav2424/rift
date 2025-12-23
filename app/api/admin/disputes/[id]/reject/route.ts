@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { postSystemMessage } from '@/lib/rift-messaging'
-import { RiftEventActorType } from '@prisma/client'
+import { RiftEventActorType, EscrowStatus } from '@prisma/client'
 
 /**
  * POST /api/admin/disputes/[id]/reject
@@ -81,9 +81,9 @@ export async function POST(
     })
 
     // Restore rift to eligible state
-    let newRiftStatus = 'DELIVERED_PENDING_RELEASE'
+    let newRiftStatus: EscrowStatus = EscrowStatus.DELIVERED_PENDING_RELEASE
     if (rift.itemType === 'DIGITAL' || rift.itemType === 'SERVICES' || rift.itemType === 'TICKETS') {
-      newRiftStatus = 'DELIVERED_PENDING_RELEASE'
+      newRiftStatus = EscrowStatus.DELIVERED_PENDING_RELEASE
     }
 
     await prisma.riftTransaction.update({

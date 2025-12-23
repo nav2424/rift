@@ -281,7 +281,7 @@ export default function MessagesPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
@@ -292,7 +292,7 @@ export default function MessagesPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-light text-white mb-2 tracking-tight">
                   Messages
                 </h1>
                 <p className="text-white/60 font-light">Your conversations</p>

@@ -34,7 +34,7 @@ export default function DisputeQueue() {
   const [disputes, setDisputes] = useState<Dispute[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
-    status: 'active',
+    status: 'all',
     category: '',
     reason: '',
   })
@@ -102,10 +102,14 @@ export default function DisputeQueue() {
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
               className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:border-white/30"
             >
+              <option value="all">All Disputes</option>
               <option value="active">Active</option>
               <option value="submitted">Submitted</option>
               <option value="needs_info">Needs Info</option>
               <option value="under_review">Under Review</option>
+              <option value="resolved_buyer">Resolved (Buyer)</option>
+              <option value="resolved_seller">Resolved (Seller)</option>
+              <option value="rejected">Rejected</option>
               <option value="auto_rejected">Auto Rejected</option>
             </select>
           </div>

@@ -302,25 +302,25 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
                   <PremiumButton
                     onClick={() => handleAdminAction('resolve-seller', 'resolve-seller', 'note')}
                     disabled={actionLoading !== null}
-                    className="w-full"
+                    className="w-full bg-green-500/20 hover:bg-green-500/30 border-green-500/30 text-green-400"
                   >
-                    {actionLoading === 'resolve-seller' ? 'Processing...' : 'Resolve (Seller)'}
+                    {actionLoading === 'resolve-seller' ? 'Processing...' : 'Resolve in Favor of Seller'}
                   </PremiumButton>
                   
                   <PremiumButton
                     onClick={() => handleAdminAction('resolve-buyer', 'resolve-buyer', 'note')}
                     disabled={actionLoading !== null}
                     variant="outline"
-                    className="w-full"
+                    className="w-full bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/30 text-blue-400"
                   >
-                    {actionLoading === 'resolve-buyer' ? 'Processing...' : 'Resolve (Buyer)'}
+                    {actionLoading === 'resolve-buyer' ? 'Processing...' : 'Resolve in Favor of Buyer (Refund)'}
                   </PremiumButton>
                   
                   <PremiumButton
                     onClick={() => handleAdminAction('reject', 'reject', 'note')}
                     disabled={actionLoading !== null}
                     variant="outline"
-                    className="w-full"
+                    className="w-full bg-red-500/20 hover:bg-red-500/30 border-red-500/30 text-red-400"
                   >
                     {actionLoading === 'reject' ? 'Processing...' : 'Reject Dispute'}
                   </PremiumButton>
@@ -328,8 +328,28 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
               )}
               
               {!['submitted', 'needs_info', 'under_review'].includes(dispute.status) && (
-                <div className="text-white/60 text-sm font-light">
-                  Dispute is {dispute.status.replace(/_/g, ' ')}. No actions available.
+                <div className="space-y-2">
+                  <div className="text-white/60 text-sm font-light mb-3">
+                    Dispute Status: <span className="text-white/90 font-medium">{dispute.status.replace(/_/g, ' ')}</span>
+                  </div>
+                  {dispute.status === 'resolved_buyer' && (
+                    <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm">
+                      ✓ Resolved in favor of buyer. Refund has been processed.
+                    </div>
+                  )}
+                  {dispute.status === 'resolved_seller' && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+                      ✓ Resolved in favor of seller. Funds are eligible for release.
+                    </div>
+                  )}
+                  {dispute.status === 'rejected' && (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                      ✗ Dispute rejected. Funds are eligible for release.
+                    </div>
+                  )}
+                  <div className="text-white/50 text-xs font-light mt-3">
+                    This dispute has been resolved. View actions history below for details.
+                  </div>
                 </div>
               )}
             </div>

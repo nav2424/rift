@@ -207,7 +207,7 @@ export default function ActivityPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-baseline gap-4 mb-2">
@@ -216,7 +216,7 @@ export default function ActivityPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="text-5xl md:text-6xl font-light text-white tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
               Recent Activity
             </h1>
           </div>

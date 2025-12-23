@@ -31,12 +31,14 @@ export async function GET(request: NextRequest) {
     if (status) {
       if (status === 'active') {
         query = query.in('status', ['submitted', 'needs_info', 'under_review'])
+      } else if (status === 'all') {
+        // Show all disputes - no status filter
       } else {
         query = query.eq('status', status)
       }
     } else {
-      // Default: show active disputes
-      query = query.in('status', ['submitted', 'needs_info', 'under_review'])
+      // Default: show ALL disputes (admin should see everything)
+      // No status filter applied
     }
 
     // Filter by category

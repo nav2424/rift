@@ -125,7 +125,7 @@ export default async function AdminPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-12">
         <div className="mb-12">
           <h1 className="text-5xl md:text-6xl font-light text-white mb-3 tracking-tight">
             Admin Panel
@@ -155,13 +155,15 @@ export default async function AdminPage() {
               </p>
             </div>
           </GlassCard>
-          <GlassCard>
-            <div className="p-6">
-              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
-              <p className="text-4xl font-light text-white mb-2 tracking-tight">{disputes.length}</p>
-              <p className="text-sm text-white/40 font-light">Requires attention</p>
-            </div>
-          </GlassCard>
+          <Link href="/admin/disputes">
+            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="p-6">
+                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
+                <p className="text-4xl font-light text-white mb-2 tracking-tight">{disputes.length}</p>
+                <p className="text-sm text-white/40 font-light">Click to review →</p>
+              </div>
+            </GlassCard>
+          </Link>
           <Link href="/admin/proofs">
             <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
               <div className="p-6">
@@ -190,7 +192,18 @@ export default async function AdminPage() {
         </div>
 
         <div className="mb-12">
-          <h2 className="text-2xl font-light text-white mb-6">Open Disputes</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-light text-white">Open Disputes</h2>
+            <Link 
+              href="/admin/disputes"
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light text-sm flex items-center gap-2"
+            >
+              View All Disputes
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
           <AdminDisputeList disputes={disputes} />
         </div>
 

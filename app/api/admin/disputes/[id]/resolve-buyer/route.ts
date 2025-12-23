@@ -52,6 +52,7 @@ export async function POST(
         subtotal: true,
         buyerFee: true,
         currency: true,
+        buyerId: true,
         sellerId: true,
       },
     })
