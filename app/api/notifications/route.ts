@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           metadata,
           createdAt: activity.createdAt,
           isStripeStatusChange,
-          stripeStatus: metadata.status,
+          stripeStatus: (metadata as any)?.status,
         }
       })
       .filter(n => n.isStripeStatusChange) // Only return Stripe status notifications
