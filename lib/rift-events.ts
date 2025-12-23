@@ -120,7 +120,7 @@ export function extractRequestMetadata(request: {
 
   // Device fingerprint should be passed from client
   const deviceFingerprint = Array.isArray(headers['x-device-fingerprint'])
-    ? headers['device-fingerprint'][0]
+    ? headers['x-device-fingerprint'][0]
     : typeof headers['x-device-fingerprint'] === 'string'
     ? headers['x-device-fingerprint']
     : undefined
