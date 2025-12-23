@@ -106,17 +106,8 @@ export async function PATCH(
         onConflict: 'user_id',
       })
 
-      // Log event
-      await logEvent(
-        null, // No specific rift
-        RiftEventActorType.ADMIN,
-        auth.userId,
-        'ADMIN_RISK_OVERRIDE',
-        {
-          userId,
-          updates,
-        },
-        undefined
+      // Skip event logging for risk overrides - they don't have a specific rift
+      // Risk overrides are tracked in the user's risk tier and restrictions fields
       )
     }
 
