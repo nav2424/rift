@@ -56,7 +56,7 @@ async function main() {
     
     console.log('\n📊 Event counts by type:')
     eventCounts.forEach(({ eventType, _count }) => {
-      console.log(`   ${eventType}: ${_count.count}`)
+      console.log(`   ${eventType}: ${_count}`)
     })
     
   } catch (error: any) {
