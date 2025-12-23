@@ -16,24 +16,24 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           {
-            rift: {
+            EscrowTransaction: {
               buyerId: userId,
             },
           },
           {
-            rift: {
+            EscrowTransaction: {
               sellerId: userId,
             },
           },
         ],
       },
       include: {
-        rift: {
+        EscrowTransaction: {
           select: {
             id: true,
             itemTitle: true,
             status: true,
-            amount: true,
+            subtotal: true,
             currency: true,
             buyer: {
               select: {
