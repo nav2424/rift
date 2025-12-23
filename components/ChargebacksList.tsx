@@ -71,7 +71,7 @@ export default function ChargebacksList({ initialDisputes }: ChargebacksListProp
           <SelectTrigger className="w-[180px] bg-zinc-800 border-zinc-700 text-white">
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+          <SelectContent>
             <SelectItem value="">All Statuses</SelectItem>
             <SelectItem value="needs_response">Needs Response</SelectItem>
             <SelectItem value="warning_needs_response">Warning Needs Response</SelectItem>
