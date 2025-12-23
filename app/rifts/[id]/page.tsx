@@ -276,7 +276,7 @@ export default function RiftDetailPage() {
   const isBuyer = rift.buyerId === session?.user?.id
   const isSeller = rift.sellerId === session?.user?.id
   const isAdmin = session?.user?.role === 'ADMIN'
-  const currentUserRole = isBuyer ? 'BUYER' : isSeller ? 'SELLER' : isAdmin ? 'ADMIN' : 'USER'
+  const currentUserRole: 'BUYER' | 'SELLER' | 'ADMIN' = isBuyer ? 'BUYER' : isSeller ? 'SELLER' : 'ADMIN'
   const otherParty = isBuyer ? rift.seller : rift.buyer
 
   return (
