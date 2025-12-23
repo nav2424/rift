@@ -372,7 +372,7 @@ export async function applyRiskPolicy(riftId: string): Promise<RiskPolicy> {
       buyerRisk: buyerProfile?.buyer_risk_score || 0,
       sellerRisk: sellerProfile?.seller_risk_score || 0,
       policy: {
-        hold_until: policy.hold_until.toISOString(),
+        hold_until: policy.hold_until?.toISOString() || null,
         requires_buyer_confirmation: policy.requires_buyer_confirmation,
         requires_manual_review: policy.requires_manual_review,
       },
