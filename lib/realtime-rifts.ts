@@ -50,13 +50,13 @@ export function subscribeToUserRifts(
           return
         }
         try {
-          const update: EscrowUpdate = {
+          const update: RiftUpdate = {
             id: payload.new.id,
             status: payload.new.status,
             updatedAt: payload.new.updatedAt || payload.new.updated_at,
             ...payload.new,
           }
-          onEscrowUpdate(update)
+          onRiftUpdate(update)
         } catch (error) {
           console.error('Error processing rift update:', error, payload)
         }
