@@ -403,8 +403,7 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
     }
 
     // Legacy status: DELIVERED_PENDING_RELEASE
-    // Don't show if already RELEASED
-    if (rift.status === 'DELIVERED_PENDING_RELEASE' && rift.status !== 'RELEASED') {
+    if (rift.status === 'DELIVERED_PENDING_RELEASE') {
       actions.push(
         <PremiumButton
           key="release-funds"
