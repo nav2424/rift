@@ -36,7 +36,7 @@ interface RiftTransaction {
   riftNumber: number | null
   itemTitle: string
   itemDescription: string
-  itemType: string
+  itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
   subtotal: number
   amount?: number
   buyerFee: number
