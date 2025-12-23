@@ -279,9 +279,6 @@ export async function createOrGetConnectAccount(
     // Note: Pre-filling business_profile.mcc and business_profile.url will skip the business details page
     try {
       await stripe.accounts.update(account.id, {
-        individual: {
-          occupation: 'Individual', // Pre-fill to avoid job title field appearing
-        },
         business_profile: {
           // Pre-fill all business profile fields to skip business details page
           // When MCC and URL are pre-filled, Stripe skips the "Business details" page
