@@ -188,11 +188,11 @@ export default function UserRiskView({
           )}
           <div className="space-y-2">
             <Label htmlFor="category" className="text-white/80">Category</Label>
-            <Select value={categoryToBlock} onValueChange={setCategoryToBlock}>
+            <Select value={categoryToBlock} onChange={(e) => setCategoryToBlock(e.target.value)}>
               <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+              <SelectContent>
                 <SelectItem value="TICKETS">Tickets</SelectItem>
                 <SelectItem value="DIGITAL">Digital</SelectItem>
                 <SelectItem value="SERVICES">Services</SelectItem>
