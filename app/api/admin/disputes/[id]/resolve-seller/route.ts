@@ -84,16 +84,10 @@ export async function POST(
     })
 
     // Restore rift to eligible state (based on category)
-    let newRiftStatus = 'DELIVERED_PENDING_RELEASE'
-    if (rift.itemType === 'DIGITAL' || rift.itemType === 'SERVICES' || rift.itemType === 'TICKETS') {
-      // Keep as delivered if delivery exists, otherwise in_progress
-      newRiftStatus = 'DELIVERED_PENDING_RELEASE'
-    }
-
     await prisma.riftTransaction.update({
       where: { id: dispute.rift_id },
       data: {
-        status: newRiftStatus,
+        status: 'DELIVERED_PENDING_RELEASE',
         releaseEligibleAt: new Date(), // Mark eligible for release
       },
     })
