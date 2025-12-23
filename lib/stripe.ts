@@ -426,7 +426,7 @@ export async function getConnectAccountStatus(
     // Check for disabled reason
     if ((account as any).disabled_reason) {
       disabledReason = (account as any).disabled_reason
-      if (disabledReason.includes('rejected')) {
+      if (disabledReason && disabledReason.includes('rejected')) {
         status = 'rejected'
         if (disabledReason.includes('fraud')) {
           statusMessage = 'Account rejected due to fraud concerns'
