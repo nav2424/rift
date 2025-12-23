@@ -39,6 +39,7 @@ export async function computeReleaseEligibility(
       releaseEligibleAt: true,
       eventDate: true,
       eventDateTz: true,
+      sellerId: true,
     },
   })
 
