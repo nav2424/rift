@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      // Legacy handler (keep for backward compatibility)
-      case 'charge.dispute.created.legacy': {
+      // Legacy handler (keep for backward compatibility) - use as any to bypass type checking
+      case 'charge.dispute.created.legacy' as any: {
         const dispute = event.data.object as any
         await handleChargebackCreated(dispute)
         break
