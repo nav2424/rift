@@ -11,6 +11,7 @@ interface DisputeFormProps {
 
 export default function DisputeForm({ escrowId }: DisputeFormProps) {
   const router = useRouter()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [reason, setReason] = useState('')
 
