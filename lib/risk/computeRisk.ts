@@ -291,6 +291,8 @@ export async function applyRiskPolicy(riftId: string): Promise<RiskPolicy> {
       itemType: true,
       subtotal: true,
       riskScore: true,
+      buyerId: true,
+      sellerId: true,
     },
   })
 
