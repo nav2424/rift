@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createServerClient } from '@/lib/supabase'
-import { logEvent } from '@/lib/rift-events'
-import { RiftEventActorType } from '@prisma/client'
 
 /**
  * PATCH /api/admin/risk/users/[userId]/restrictions
