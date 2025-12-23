@@ -67,7 +67,7 @@ export default function ChargebacksList({ initialDisputes }: ChargebacksListProp
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-center">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <SelectTrigger className="w-[180px] bg-zinc-800 border-zinc-700 text-white">
             <SelectValue placeholder="Filter by Status" />
           </SelectTrigger>
