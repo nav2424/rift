@@ -292,14 +292,9 @@ export async function handleStripeDisputeClosed(
 
     if (rift) {
       // Restore to appropriate status based on item type
-      let newStatus = 'DELIVERED_PENDING_RELEASE'
-      if (rift.itemType === 'DIGITAL' || rift.itemType === 'SERVICES' || rift.itemType === 'TICKETS') {
-        newStatus = 'DELIVERED_PENDING_RELEASE'
-      }
-
       await prisma.riftTransaction.update({
         where: { id: existing.rift_id },
-        data: { status: newStatus },
+        data: { status: 'DELIVERED_PENDING_RELEASE' },
       })
     }
 
