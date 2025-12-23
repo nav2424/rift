@@ -13,6 +13,24 @@ import DisputeHelpButton from '@/components/DisputeHelpButton'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 
+type EscrowStatus = 
+  | 'DRAFT'
+  | 'FUNDED'
+  | 'PROOF_SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'RELEASED'
+  | 'DISPUTED'
+  | 'RESOLVED'
+  | 'PAYOUT_SCHEDULED'
+  | 'PAID_OUT'
+  | 'CANCELED'
+  | 'AWAITING_PAYMENT'
+  | 'AWAITING_SHIPMENT'
+  | 'IN_TRANSIT'
+  | 'DELIVERED_PENDING_RELEASE'
+  | 'REFUNDED'
+  | 'CANCELLED'
+
 interface RiftTransaction {
   id: string
   riftNumber: number | null
@@ -25,7 +43,7 @@ interface RiftTransaction {
   sellerFee: number
   sellerNet?: number
   currency: string
-  status: string
+  status: EscrowStatus
   buyerId: string
   sellerId: string
   shippingAddress?: string | null
