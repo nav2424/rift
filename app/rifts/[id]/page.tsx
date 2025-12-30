@@ -7,15 +7,18 @@ import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import RiftActions from '@/components/RiftActions'
 import Timeline from '@/components/Timeline'
-import MessagingPanel from '@/components/MessagingPanel'
+import MessagingPreview from '@/components/MessagingPreview'
 import DeliveryStatus from '@/components/DeliveryStatus'
-import DisputeHelpButton from '@/components/DisputeHelpButton'
+import MilestoneCard from '@/components/MilestoneCard'
+import RiskScoreBadge from '@/components/RiskScoreBadge'
+import DisputeWizard from '@/components/DisputeWizard'
+import DisputeCaseView from '@/components/DisputeCaseView'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 
 type EscrowStatus = 
   | 'DRAFT'
-  | 'FUNDED'
+  | 'PAID'
   | 'PROOF_SUBMITTED'
   | 'UNDER_REVIEW'
   | 'RELEASED'
@@ -49,6 +52,7 @@ interface RiftTransaction {
   shippingAddress?: string | null
   notes?: string | null
   eventDateTz?: string | null
+  allowsPartialRelease?: boolean
   createdAt: string
   buyer: {
     id: string
@@ -62,7 +66,7 @@ interface RiftTransaction {
   }
   timelineEvents: Array<{
     id: string
-    escrowId: string
+    riftId: string
     type: string
     message: string
     createdById: string | null
@@ -77,7 +81,9 @@ interface RiftTransaction {
     type: string
     status: string
     reason: string
+    summary?: string
     raisedBy: {
+      id: string
       name: string | null
       email: string
     }
@@ -91,6 +97,9 @@ export default function RiftDetailPage() {
   const { showToast } = useToast()
   const [rift, setRift] = useState<RiftTransaction | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null)
+  const [showDisputeWizard, setShowDisputeWizard] = useState(false)
+  const [showDisputeCaseView, setShowDisputeCaseView] = useState(false)
 
   const riftId = params?.id as string
 
@@ -148,6 +157,23 @@ export default function RiftDetailPage() {
     }
   }, [status, riftId, router])
 
+  // Scroll to actions section when hash is present
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#actions') {
+      // Wait for rift to load and component to render
+      if (rift) {
+        setTimeout(() => {
+          const actionsElement = document.getElementById('rift-actions')
+          if (actionsElement) {
+            actionsElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            // Remove hash from URL after scrolling
+            window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          }
+        }, 100)
+      }
+    }
+  }, [rift])
+
   const loadRift = async () => {
     try {
       const response = await fetch(`/api/rifts/${riftId}`, {
@@ -177,13 +203,19 @@ export default function RiftDetailPage() {
         }
         
         // Log error details
-        console.error('API error:', {
+        const errorLogData: any = {
           status: response.status,
           statusText: response.statusText,
           error: errorMessage,
-          errorData: Object.keys(errorData).length > 0 ? errorData : undefined,
           url: `/api/rifts/${riftId}`,
-        })
+        }
+        
+        // Only include errorData if it has meaningful content
+        if (errorData && Object.keys(errorData).length > 0) {
+          errorLogData.errorData = errorData
+        }
+        
+        console.error('API error:', errorLogData)
         
         if (response.status === 404) {
           showToast('Rift not found', 'error')
@@ -237,11 +269,13 @@ export default function RiftDetailPage() {
       case 'REFUNDED': return 'text-red-400 border-red-500/30 bg-red-500/10'
       case 'DISPUTED': return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'
       case 'CANCELLED': return 'text-gray-400 border-gray-500/30 bg-gray-500/10'
-      case 'FUNDED': return 'text-blue-400 border-blue-500/30 bg-blue-500/10'
+      case 'FUNDED': return 'text-blue-400 border-blue-500/30 bg-blue-500/10' // Paid
       case 'AWAITING_PAYMENT': return 'text-blue-400 border-blue-500/30 bg-blue-500/10'
       case 'AWAITING_SHIPMENT': return 'text-purple-400 border-purple-500/30 bg-purple-500/10'
       case 'IN_TRANSIT': return 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10'
       case 'DELIVERED_PENDING_RELEASE': return 'text-teal-400 border-teal-500/30 bg-teal-500/10'
+      case 'PROOF_SUBMITTED': return 'text-purple-400 border-purple-500/30 bg-purple-500/10'
+      case 'UNDER_REVIEW': return 'text-purple-400 border-purple-500/30 bg-purple-500/10'
       default: return 'text-white/60 border-white/20 bg-white/5'
     }
   }
@@ -291,58 +325,51 @@ export default function RiftDetailPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
+        <div className="mb-16">
+          <div className="flex items-center gap-4 mb-8">
+            <Link 
+              href="/rifts"
+              className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center group"
+            >
+              <svg className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Link 
-                  href="/rifts"
-                  className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center group"
-                >
-                  <svg className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-                <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight">
-                  Rift #{rift.riftNumber ?? rift.id.slice(-4)}
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
+                  {rift.itemTitle}
                 </h1>
                 <span className={`px-4 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm ${getStatusColor(rift.status)}`}>
                   {getStatusLabel(rift.status)}
                 </span>
               </div>
-              <div className="flex items-center justify-between mb-3 ml-11">
-                <p className="text-white/90 font-light text-xl">{rift.itemTitle}</p>
-                {isBuyer && (
-                  <DisputeHelpButton
-                    riftId={rift.id}
-                    itemType={rift.itemType}
-                    eventDateTz={rift.eventDateTz ? new Date(rift.eventDateTz) : null}
-                    hasActiveDispute={rift.disputes?.some((d: any) => ['OPEN', 'UNDER_REVIEW'].includes(d.status))}
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-3 text-sm text-white/50 font-light ml-11">
+              <div className="flex items-center gap-4 text-sm text-white/50 font-light">
+                <span className="text-white/60">
+                  Rift #{rift.riftNumber ?? rift.id.slice(-4)}
+                </span>
+                <span className="text-white/20">•</span>
                 <span className="text-white/60">
                   {rift.itemType.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </span>
-                <span className="text-white/30">•</span>
+                <span className="text-white/20">•</span>
                 <span className="text-white/60">{isBuyer ? 'Buyer' : 'Seller'}</span>
-                <span className="text-white/30">•</span>
+                <span className="text-white/20">•</span>
                 <span className="text-white/60">
                   {(otherParty.name || otherParty.email.split('@')[0]).split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </span>
               </div>
             </div>
-            <div className="text-right md:text-right">
-              <div className="inline-block p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                <p className="text-white/50 font-light text-xs mb-1 uppercase tracking-wider">Rift Value</p>
-                <p className="text-white font-light text-3xl mb-2">
+            <div className="hidden md:block">
+              <div className="text-right p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+                <p className="text-white/50 font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
+                <p className="text-white font-light text-4xl mb-1">
                   {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
                 </p>
                 <p className="text-white/40 font-light text-xs">
-                  Created {new Date(rift.createdAt).toLocaleDateString()}
+                  Created {new Date(rift.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
             </div>
@@ -350,102 +377,141 @@ export default function RiftDetailPage() {
         </div>
 
         {/* Main content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left column - Details */}
-          <div className="lg:col-span-2 space-y-10">
+          <div className="lg:col-span-7 space-y-8">
+            {/* Payment Milestones - Only for service rifts with partial release */}
+            {rift.itemType === 'SERVICES' && rift.allowsPartialRelease && (
+              <MilestoneCard
+                riftId={rift.id}
+                currency={rift.currency}
+                isBuyer={isBuyer}
+                riftStatus={rift.status}
+              />
+            )}
+
+            {/* Messaging Preview */}
+            <GlassCard>
+              <MessagingPreview transactionId={rift.id} />
+            </GlassCard>
+
             {/* Description */}
-            <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl pointer-events-none" />
-              <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
-                <h2 className="text-lg font-light text-white/90 mb-4 tracking-wide uppercase text-xs">Description</h2>
-                <p className="text-white/80 font-light leading-relaxed text-base">{rift.itemDescription}</p>
-              </div>
-            </section>
+            <GlassCard className="p-8">
+              <h2 className="text-sm font-light text-white/60 mb-5 tracking-wider uppercase">Description</h2>
+              <p className="text-white/80 font-light leading-relaxed text-lg">{rift.itemDescription}</p>
+            </GlassCard>
 
             {/* Timeline */}
             {rift.timelineEvents && rift.timelineEvents.length > 0 && (
-              <section className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl pointer-events-none" />
-                <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
-                  <Timeline 
-                    events={rift.timelineEvents.map(e => ({
-                      ...e,
-                      createdAt: new Date(e.createdAt)
-                    }))}
-                    isBuyer={isBuyer}
-                    isSeller={isSeller}
-                    riftValue={rift.subtotal || rift.amount}
-                    currency={rift.currency}
-                  />
-                </div>
-              </section>
+              <GlassCard className="p-8">
+                <Timeline 
+                  events={rift.timelineEvents.map(e => ({
+                    ...e,
+                    createdAt: new Date(e.createdAt)
+                  }))}
+                  isBuyer={isBuyer}
+                  isSeller={isSeller}
+                  riftValue={rift.subtotal || rift.amount}
+                  currency={rift.currency}
+                />
+              </GlassCard>
             )}
 
             {/* Disputes */}
             {rift.disputes && rift.disputes.length > 0 && (
-              <section className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl pointer-events-none" />
-                <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
-                  <h2 className="text-lg font-light text-white/90 mb-5 tracking-wide uppercase text-xs">Disputes</h2>
-                  <div className="space-y-3">
-                    {rift.disputes.map((dispute) => (
-                      <div key={dispute.id} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/[0.07] transition-colors">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-white/90">{dispute.type.replace(/_/g, ' ')}</span>
+              <GlassCard className="p-8">
+                <h2 className="text-sm font-light text-white/60 mb-6 tracking-wider uppercase">Disputes</h2>
+                <div className="space-y-4">
+                  {rift.disputes.map((dispute) => {
+                    const isDraft = dispute.status === 'draft' || dispute.status === 'needs_info'
+                    // Check if current user raised the dispute (by email or ID)
+                    const userRaisedDispute = dispute.raisedBy?.id === session?.user?.id || 
+                                            dispute.raisedBy?.email === session?.user?.email
+                    const canEdit = isDraft && userRaisedDispute
+                    
+                    return (
+                      <button
+                        key={dispute.id}
+                        onClick={() => {
+                          setSelectedDisputeId(dispute.id)
+                          if (isDraft && canEdit) {
+                            setShowDisputeWizard(true)
+                          } else {
+                            setShowDisputeCaseView(true)
+                          }
+                        }}
+                        className="w-full text-left p-5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-medium text-white/90">
+                            {dispute.type ? dispute.type.replace(/_/g, ' ') : dispute.reason || 'Dispute'}
+                          </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
-                            dispute.status === 'OPEN' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                            dispute.status === 'RESOLVED' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                            'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            dispute.status === 'OPEN' || dispute.status === 'open' || dispute.status === 'submitted' || dispute.status === 'under_review' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            dispute.status === 'RESOLVED' || dispute.status === 'resolved' || dispute.status === 'resolved_buyer' || dispute.status === 'resolved_seller' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                            dispute.status === 'draft' || dispute.status === 'needs_info' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                            'bg-gray-500/20 text-gray-400 border border-gray-500/30'
                           }`}>
-                            {dispute.status}
+                            {dispute.status || 'Unknown'}
                           </span>
                         </div>
-                        <p className="text-sm text-white/70 font-light leading-relaxed">{dispute.reason}</p>
-                        <p className="text-xs text-white/50 font-light mt-3 pt-3 border-t border-white/5">
-                          Raised by {dispute.raisedBy.name || dispute.raisedBy.email}
+                        <p className="text-sm text-white/70 font-light leading-relaxed mb-3">{dispute.reason || dispute.summary || 'No reason provided'}</p>
+                        <p className="text-xs text-white/50 font-light pt-3 border-t border-white/5">
+                          Raised by {dispute.raisedBy?.name || dispute.raisedBy?.email || 'Unknown user'}
+                          {isDraft && canEdit && (
+                            <span className="ml-2 text-blue-400 text-xs">(Click to edit)</span>
+                          )}
+                          {!isDraft && (
+                            <span className="ml-2 text-white/40 text-xs">(Click to view)</span>
+                          )}
+                          {isDraft && !canEdit && (
+                            <span className="ml-2 text-white/40 text-xs">(Click to view)</span>
+                          )}
                         </p>
-                      </div>
-                    ))}
-                  </div>
+                      </button>
+                    )
+                  })}
                 </div>
-              </section>
+              </GlassCard>
             )}
-
-            {/* Messaging */}
-            <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl pointer-events-none" />
-              <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm overflow-hidden">
-                <MessagingPanel transactionId={rift.id} />
-              </div>
-            </section>
           </div>
 
           {/* Right column - Actions & Info */}
-          <div className="space-y-8">
-            {/* Delivery Status */}
-            {(rift.itemType === 'DIGITAL' || rift.itemType === 'TICKETS' || rift.itemType === 'SERVICES') && (
-              <DeliveryStatus
-                riftId={rift.id}
-                itemType={rift.itemType}
-                status={rift.status}
-              />
-            )}
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-6 space-y-6">
+              {/* Actions - Always at the top and sticky */}
+              <div id="rift-actions">
+                <RiftActions 
+                  rift={rift}
+                  currentUserRole={currentUserRole}
+                  userId={session?.user?.id || ''}
+                  isBuyer={isBuyer}
+                  isSeller={isSeller}
+                />
+              </div>
 
-            {/* Actions - Only shows card wrapper when actions are available */}
-            <RiftActions 
-              rift={rift}
-              currentUserRole={currentUserRole}
-              userId={session?.user?.id || ''}
-              isBuyer={isBuyer}
-              isSeller={isSeller}
-            />
+              {/* Risk Score Badge - Show for admins or high-risk rifts */}
+              {(isAdmin || (rift as any).riskScore > 50) && (
+                <RiskScoreBadge riftId={rift.id} />
+              )}
 
-            {/* Transaction Info */}
-            <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl pointer-events-none" />
-              <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
-                <h2 className="text-lg font-light text-white/90 mb-5 tracking-wide uppercase text-xs">Transaction Details</h2>
-                <div className="space-y-4">
+              {/* Mobile: Rift Value */}
+              <div className="md:hidden">
+                <GlassCard className="p-6">
+                  <p className="text-white/50 font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
+                  <p className="text-white font-light text-3xl mb-1">
+                    {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
+                  </p>
+                  <p className="text-white/40 font-light text-xs">
+                    Created {new Date(rift.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </GlassCard>
+              </div>
+
+              {/* Transaction Info */}
+              <GlassCard className="p-6">
+              <h2 className="text-sm font-light text-white/60 mb-6 tracking-wider uppercase">Transaction Details</h2>
+              <div className="space-y-4">
                   {isBuyer ? (
                     // Buyer View: Show processing fee
                     <>
@@ -514,11 +580,98 @@ export default function RiftDetailPage() {
                     </span>
                   </div>
                 </div>
-              </div>
-            </section>
+              </GlassCard>
+
+              {/* Delivery Status */}
+              {(rift.itemType === 'DIGITAL' || rift.itemType === 'TICKETS' || rift.itemType === 'SERVICES') && (
+                <DeliveryStatus
+                  riftId={rift.id}
+                  itemType={rift.itemType}
+                  status={rift.status}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Dispute Wizard Modal */}
+      {showDisputeWizard && selectedDisputeId && rift && (
+        <div className="fixed inset-0 z-[9999] isolate">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => {
+              setShowDisputeWizard(false)
+              setSelectedDisputeId(null)
+            }}
+          />
+          {/* Modal */}
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <div className="relative w-[min(980px,92vw)] max-h-[86vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl">
+              <button
+                onClick={() => {
+                  setShowDisputeWizard(false)
+                  setSelectedDisputeId(null)
+                }}
+                className="absolute top-4 right-4 z-20 text-white/60 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="overflow-y-auto max-h-[86vh]">
+                <DisputeWizard
+                  riftId={rift.id}
+                  itemType={rift.itemType}
+                  eventDateTz={rift.eventDateTz ? (typeof rift.eventDateTz === 'string' ? new Date(rift.eventDateTz) : rift.eventDateTz) : null}
+                  onClose={() => {
+                    setShowDisputeWizard(false)
+                    setSelectedDisputeId(null)
+                    // Reload rift data to refresh disputes
+                    if (riftId) {
+                      loadRift()
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Case View Modal */}
+      {showDisputeCaseView && selectedDisputeId && (
+        <div className="fixed inset-0 z-[9999] isolate">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => {
+              setShowDisputeCaseView(false)
+              setSelectedDisputeId(null)
+            }}
+          />
+          {/* Modal */}
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <div className="relative w-[min(1200px,95vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl">
+              <button
+                onClick={() => {
+                  setShowDisputeCaseView(false)
+                  setSelectedDisputeId(null)
+                }}
+                className="absolute top-4 right-4 z-20 text-white/60 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="overflow-y-auto max-h-[90vh] p-6">
+                <DisputeCaseView disputeId={selectedDisputeId} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

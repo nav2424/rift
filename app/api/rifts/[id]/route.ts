@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
+import { createServerClient } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
@@ -49,10 +50,9 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch timeline events and disputes separately to avoid schema mismatch
+    // Fetch timeline events and disputes separately
     // Get ALL timeline events - no filters, no limits
-    const [timelineEvents, disputes] = await Promise.all([
-      prisma.timelineEvent.findMany({
+    const timelineEvents = await prisma.timelineEvent.findMany({
         where: { escrowId: id },
         include: {
           createdBy: {
@@ -64,24 +64,55 @@ export async function GET(
         },
         orderBy: { createdAt: 'asc' }, // Chronological order
         // No limit - get all events
-      }),
-      prisma.dispute.findMany({
-        where: { escrowId: id },
-        include: {
-          raisedBy: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ])
+    })
+
+    // Fetch disputes from Supabase
+    let disputes: any[] = []
+    try {
+      const supabase = createServerClient()
+      const { data: supabaseDisputes, error: disputesError } = await supabase
+        .from('disputes')
+        .select('*')
+        .eq('rift_id', id)
+        .order('created_at', { ascending: false })
+
+      if (!disputesError && supabaseDisputes) {
+        // Enrich disputes with user information
+        disputes = await Promise.all(
+          supabaseDisputes.map(async (dispute) => {
+            let raisedBy = null
+            if (dispute.opened_by) {
+              const user = await prisma.user.findUnique({
+                where: { id: dispute.opened_by },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              })
+              raisedBy = user
+            }
+            return {
+              ...dispute,
+              raisedBy: raisedBy || {
+                id: dispute.opened_by || '',
+                name: null,
+                email: '',
+              },
+              createdAt: dispute.created_at,
+              riftId: dispute.rift_id,
+            }
+          })
+        )
+      }
+    } catch (supabaseError: any) {
+      // If Supabase is not configured, just return empty disputes array
+      console.warn('Supabase not configured or error fetching disputes:', supabaseError?.message)
+      disputes = []
+    }
 
     return NextResponse.json({
       ...rift,
-      eventDateTz: rift.eventDateTz?.toISOString() || null,
       timelineEvents,
       disputes,
     })
