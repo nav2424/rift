@@ -116,7 +116,7 @@ export async function logVaultEvent(input: VaultEventInput): Promise<string> {
       assetHash: input.assetHash,
       prevLogHash,
       logHash,
-      metadata: input.metadata || null,
+      metadata: input.metadata || undefined,
     },
   })
 

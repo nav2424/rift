@@ -124,10 +124,7 @@ async function performIntegrityChecks(
       return { passed: false, scanStatus: 'FAIL', issues }
     }
 
-    // Size check (prevent empty/junk files)
-    if (asset.sizeBytes !== undefined && asset.sizeBytes < 100) {
-      issues.push('File too small (likely empty or junk)')
-    }
+    // Size check removed (sizeBytes field doesn't exist in VaultAsset model)
 
     // MIME type verification (exact matching, not prefix)
     if (asset.mimeDetected) {
