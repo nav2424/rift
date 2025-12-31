@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await prisma.user.update({
-      where: { id: auth.userId },
-      data: { onboardingCompleted: true },
-    })
+    // Onboarding completed - no field to update (field removed from schema)
 
     return NextResponse.json({ success: true })
   } catch (error) {

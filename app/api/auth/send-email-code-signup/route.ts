@@ -18,11 +18,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if email is already in use (only for completed signups)
+    // Check if email is already in use
     const existingUser = await prisma.user.findFirst({
       where: { 
         email,
-        onboardingCompleted: true,
       },
     })
 

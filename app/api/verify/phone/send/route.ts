@@ -67,11 +67,10 @@ export async function POST(request: NextRequest) {
 
           // Update user's phone number if different (store in E.164 format)
           if (user.phone !== formattedPhone) {
-            // Check if phone number is already in use by another user (only for completed signups)
+            // Check if phone number is already in use by another user
             const existingUserByPhone = await prisma.user.findFirst({
               where: {
                 phone: formattedPhone,
-                onboardingCompleted: true,
                 id: { not: auth.userId }, // Exclude current user
               },
             })

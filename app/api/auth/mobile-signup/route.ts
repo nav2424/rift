@@ -94,11 +94,10 @@ async function handlePOST(request: NextRequest) {
       )
     }
 
-    // Check if user exists by email (only for completed signups)
+    // Check if user exists by email
     const existingUserByEmail = await prisma.user.findFirst({
       where: { 
         email,
-        onboardingCompleted: true,
       },
     })
 
@@ -109,11 +108,10 @@ async function handlePOST(request: NextRequest) {
       )
     }
 
-    // Check if phone number is already in use (only for completed signups)
+    // Check if phone number is already in use
     const existingUserByPhone = await prisma.user.findFirst({
       where: {
         phone: formattedPhone,
-        onboardingCompleted: true,
       },
     })
 
@@ -142,9 +140,6 @@ async function handlePOST(request: NextRequest) {
       user = await prisma.user.create({
         data: {
           name: fullName,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          birthday: new Date(birthday),
           email,
           phone: formattedPhone,
           passwordHash,
@@ -152,7 +147,6 @@ async function handlePOST(request: NextRequest) {
           riftUserId,
           emailVerified: false, // Must verify before accessing platform
           phoneVerified: false, // Must verify before accessing platform
-          onboardingCompleted: true, // Mobile signup completes immediately
         },
       })
     } catch (createError: any) {

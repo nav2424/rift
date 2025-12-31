@@ -30,12 +30,11 @@ export async function POST(request: NextRequest) {
     // Hash new password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Update user's password and mark signup as completed
+    // Update user's password
     await prisma.user.update({
       where: { id: userId },
       data: { 
         passwordHash,
-        onboardingCompleted: true, // Mark signup as completed
       },
     })
 

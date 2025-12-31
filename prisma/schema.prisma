@@ -145,77 +145,77 @@ model User {
 }
 
 model RiftTransaction {
-  id                    String          @id @default(cuid())
-  riftNumber            Int             @unique // Sequential rift number for easy tracking
-  itemTitle             String
-  itemDescription       String
-  itemType              ItemType        @default(PHYSICAL)
-  subtotal              Float // Original transaction amount
-  buyerFee              Float // 3% buyer fee
-  sellerFee             Float // 5% seller fee
-  sellerNet             Float? // Subtotal - sellerFee (amount seller receives)
-  currency              String          @default("CAD")
-  status                EscrowStatus    @default(DRAFT)
-  buyerId               String
-  sellerId              String
-  shippingAddress       String?
-  notes                 String?
-  paymentReference      String?
-  stripePaymentIntentId String?
-  stripeChargeId        String?
-  stripeCustomerId      String? // Optional: Stripe customer ID
-  paidAt                DateTime? // When payment was captured
-  shipmentVerifiedAt    DateTime?
-  trackingVerified      Boolean         @default(false)
-  deliveryVerifiedAt    DateTime?
-  gracePeriodEndsAt     DateTime?
-  autoReleaseScheduled  Boolean         @default(false)
-  autoReleaseAt         DateTime? // When auto-release should trigger
-  proofSubmittedAt      DateTime? // When proof was submitted
-  fundedAt              DateTime? // When payment was captured
-  releasedAt            DateTime? // When funds were released
-  eventDate             String? // For tickets: event date (ISO string)
-  eventDateTz           DateTime? // For tickets: event date as timestamptz (for queries)
-  venue                 String?
-  seatDetails           String? // For tickets: seat details (section, row, seats)
-  transferMethod        String?
-  quantity              Int? // For tickets: number of tickets
-  downloadLink          String?
-  fileStorageType       String? // For digital: storage type (EXTERNAL_LINK, VAULT, etc.)
-  licenseKey            String?
-  licenseKeyType        String? // For digital: license key type
-  licensePlatform       String? // For digital: license platform
-  licenseKeyRevealed    Boolean @default(false) // For digital: whether license key has been revealed
-  serviceDate           String?
-  serviceScope          String? // For services: scope of work
-  holdUntil             DateTime? // Hold funds until this date (risk-based)
-  riskScore             Int             @default(0) // Risk score (0-100, higher = riskier)
-  requiresBuyerConfirmation Boolean    @default(false) // Require buyer confirmation before release (risk-based)
-  requiresManualReview  Boolean         @default(false) // Require admin manual review before release (risk-based)
-  releaseEligibleAt     DateTime? // When funds become eligible for release
-  allowsPartialRelease  Boolean         @default(false) // Allow milestone-based partial releases
-  milestones            Json? // JSON array of milestone definitions
-  serviceDeliverables   String? // For services: what will be delivered
-  completionCriteria    String? // For services: completion criteria
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  id                        String             @id @default(cuid())
+  riftNumber                Int                @unique // Sequential rift number for easy tracking
+  itemTitle                 String
+  itemDescription           String
+  itemType                  ItemType           @default(PHYSICAL)
+  subtotal                  Float // Original transaction amount
+  buyerFee                  Float // 3% buyer fee
+  sellerFee                 Float // 5% seller fee
+  sellerNet                 Float? // Subtotal - sellerFee (amount seller receives)
+  currency                  String             @default("CAD")
+  status                    EscrowStatus       @default(DRAFT)
+  buyerId                   String
+  sellerId                  String
+  shippingAddress           String?
+  notes                     String?
+  paymentReference          String?
+  stripePaymentIntentId     String?
+  stripeChargeId            String?
+  stripeCustomerId          String? // Optional: Stripe customer ID
+  paidAt                    DateTime? // When payment was captured
+  shipmentVerifiedAt        DateTime?
+  trackingVerified          Boolean            @default(false)
+  deliveryVerifiedAt        DateTime?
+  gracePeriodEndsAt         DateTime?
+  autoReleaseScheduled      Boolean            @default(false)
+  autoReleaseAt             DateTime? // When auto-release should trigger
+  proofSubmittedAt          DateTime? // When proof was submitted
+  fundedAt                  DateTime? // When payment was captured
+  releasedAt                DateTime? // When funds were released
+  eventDate                 String? // For tickets: event date (ISO string)
+  eventDateTz               DateTime? // For tickets: event date as timestamptz (for queries)
+  venue                     String?
+  seatDetails               String? // For tickets: seat details (section, row, seats)
+  transferMethod            String?
+  quantity                  Int? // For tickets: number of tickets
+  downloadLink              String?
+  fileStorageType           String? // For digital: storage type (EXTERNAL_LINK, VAULT, etc.)
+  licenseKey                String?
+  licenseKeyType            String? // For digital: license key type
+  licensePlatform           String? // For digital: license platform
+  licenseKeyRevealed        Boolean            @default(false) // For digital: whether license key has been revealed
+  serviceDate               String?
+  serviceScope              String? // For services: scope of work
+  holdUntil                 DateTime? // Hold funds until this date (risk-based)
+  riskScore                 Int                @default(0) // Risk score (0-100, higher = riskier)
+  requiresBuyerConfirmation Boolean            @default(false) // Require buyer confirmation before release (risk-based)
+  requiresManualReview      Boolean            @default(false) // Require admin manual review before release (risk-based)
+  releaseEligibleAt         DateTime? // When funds become eligible for release
+  allowsPartialRelease      Boolean            @default(false) // Allow milestone-based partial releases
+  milestones                Json? // JSON array of milestone definitions
+  serviceDeliverables       String? // For services: what will be delivered
+  completionCriteria        String? // For services: completion criteria
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
   // Legacy fields for backward compatibility
-  amount                Float? // Use subtotal instead
-  platformFee           Float? // Use sellerFee instead
-  sellerPayoutAmount    Float? // Use sellerNet instead
-  proofs                Proof[]
-  seller                User            @relation("SellerTransactions", fields: [sellerId], references: [id])
-  buyer                 User            @relation("BuyerTransactions", fields: [buyerId], references: [id])
-  shipmentProofs        ShipmentProof[]
-  timelineEvents        TimelineEvent[]
-  disputes              Dispute[]
-  payouts               Payout[]
-  version               Int             @default(0) // For optimistic locking
-  riftEvents            RiftEvent[]
-  vaultAssets           VaultAsset[]
-  vaultEvents           VaultEvent[]
-  adminReviews          AdminReview[]
-  milestoneReleases     MilestoneRelease[]
+  amount                    Float? // Use subtotal instead
+  platformFee               Float? // Use sellerFee instead
+  sellerPayoutAmount        Float? // Use sellerNet instead
+  proofs                    Proof[]
+  seller                    User               @relation("SellerTransactions", fields: [sellerId], references: [id])
+  buyer                     User               @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  shipmentProofs            ShipmentProof[]
+  timelineEvents            TimelineEvent[]
+  disputes                  Dispute[]
+  payouts                   Payout[]
+  version                   Int                @default(0) // For optimistic locking
+  riftEvents                RiftEvent[]
+  vaultAssets               VaultAsset[]
+  vaultEvents               VaultEvent[]
+  adminReviews              AdminReview[]
+  milestoneReleases         MilestoneRelease[]
 
   @@map("EscrowTransaction")
 }
@@ -419,7 +419,7 @@ model MilestoneRelease {
   status          String          @default("RELEASED")
   payoutId        String?
   notes           String?
-  rift            RiftTransaction  @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  rift            RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([riftId])
   @@index([releasedBy])
@@ -692,19 +692,20 @@ model AdminReview {
 }
 
 model AdminAuditLog {
-  id          String           @id @default(cuid())
-  adminUserId String
-  action      AdminAuditAction
-  objectType  String?
-  objectId    String?
-  beforeState Json?
-  afterState  Json?
-  reasonCode  String?
-  notes       String?
-  ipHash      String?
-  sessionId   String?
+  id            String           @id @default(cuid())
+  adminUserId   String
+  action        AdminAuditAction
+  objectType    String?
+  objectId      String?
+  beforeState   Json?
+  afterState    Json?
+  reasonCode    String?
+  notes         String?
+  ipHash        String?
+  sessionId     String?
   userAgentHash String?
-  timestampUtc DateTime         @default(now())
+  timestampUtc  DateTime         @default(now())
+  adminUser     AdminUser        @relation(fields: [adminUserId], references: [id], onDelete: Restrict)
 
   @@index([adminUserId])
   @@index([action])
@@ -719,15 +720,97 @@ model AdminSession {
   sessionToken      String
   ipHash            String?
   userAgentHash     String?
-  deviceFingerprint  String?
+  deviceFingerprint String?
   isActive          Boolean   @default(true)
   expiresAt         DateTime
   lastActivityAt    DateTime  @default(now())
   createdAt         DateTime  @default(now())
+  adminUser         AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   @@unique([sessionToken])
   @@index([adminUserId])
   @@index([isActive])
   @@index([expiresAt])
   @@map("admin_sessions")
+}
+
+model AdminUser {
+  id                   String          @id @default(cuid())
+  email                String          @unique
+  name                 String
+  passwordHash         String
+  mfaSecret            String?
+  mfaEnabled           Boolean         @default(false)
+  isBreakGlass         Boolean         @default(false)
+  isActive             Boolean         @default(true)
+  lastLoginAt          DateTime?
+  lastLoginIp          String?
+  failedLoginAttempts  Int             @default(0)
+  lockedUntil          DateTime?
+  ssoProvider          String?
+  ssoId                String?
+  deviceTrustTokens    String[]
+  ipAllowlist          String[]
+  sessionDurationHours Int             @default(8)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  roles                AdminUserRole[]
+  auditLogs            AdminAuditLog[]
+  sessions             AdminSession[]
+
+  @@index([email])
+  @@index([isActive])
+  @@map("admin_users")
+}
+
+model AdminRoleModel {
+  id          String                @id @default(cuid())
+  name        AdminRole             @unique
+  description String
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  permissions AdminRolePermission[]
+  userRoles   AdminUserRole[]
+
+  @@map("admin_roles")
+}
+
+model AdminPermissionModel {
+  id              String                @id @default(cuid())
+  name            AdminPermission       @unique
+  description     String
+  createdAt       DateTime              @default(now())
+  rolePermissions AdminRolePermission[]
+
+  @@map("admin_permissions")
+}
+
+model AdminRolePermission {
+  id           String               @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime             @default(now())
+  role         AdminRoleModel       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   AdminPermissionModel @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("admin_role_permissions")
+}
+
+model AdminUserRole {
+  id        String         @id @default(cuid())
+  userId    String
+  roleId    String
+  grantedBy String?
+  grantedAt DateTime       @default(now())
+  expiresAt DateTime?
+  adminUser AdminUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      AdminRoleModel @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("admin_user_roles")
 }

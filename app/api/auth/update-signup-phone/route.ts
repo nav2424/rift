@@ -35,11 +35,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if phone number is already in use (only for completed signups)
+    // Check if phone number is already in use
     const existingUserByPhone = await prisma.user.findFirst({
       where: {
         phone: formattedPhone,
-        onboardingCompleted: true, // Only check completed signups
         NOT: { id: userId },
       },
     })
