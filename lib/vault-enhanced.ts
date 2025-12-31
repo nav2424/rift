@@ -190,7 +190,7 @@ export async function uploadVaultAsset(
       const maxTicketFileSize = 50 * 1024 * 1024 // 50MB
       const ticketFileSize = input.file instanceof Buffer 
         ? input.file.length 
-        : input.file.size
+        : (input.file as File).size || 0
       
       if (ticketFileSize > maxTicketFileSize) {
         throw new Error(`File size exceeds maximum allowed (50MB). File size: ${(ticketFileSize / 1024 / 1024).toFixed(2)}MB`)
@@ -240,7 +240,7 @@ export async function uploadVaultAsset(
         
         fileName = input.fileName || uniqueName
         mimeDetected = input.mimeType || 'application/octet-stream'
-      } else {
+      } else if (input.file instanceof File) {
         const ticketMetadata = await uploadToVault(input.file, riftId, uploaderId)
         sha256 = ticketMetadata.fileHash
         storagePath = ticketMetadata.storagePath
