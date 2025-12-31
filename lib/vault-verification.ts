@@ -400,8 +400,6 @@ async function performQualityChecks(
           fullRift ? {
             subtotal: fullRift.subtotal,
             currency: fullRift.currency,
-            shippingAddress: fullRift.shippingAddress,
-            trackingNumber: null, // Could fetch from assets if needed
           } : undefined
         )
         
