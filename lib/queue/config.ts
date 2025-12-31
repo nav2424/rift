@@ -16,7 +16,8 @@ const redisConfig = {
 }
 
 // Create Redis connection
-export const redisConnection = new Redis(redisConfig, {
+export const redisConnection = new Redis({
+  ...redisConfig,
   maxRetriesPerRequest: null,
 })
 

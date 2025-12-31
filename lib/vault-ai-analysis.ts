@@ -370,7 +370,7 @@ async function analyzeSellerHistory(
     }
     
     // Fallback for non-image assets
-    const previousAssets = await prisma.vault_assets.findMany({
+    const previousAssets = await prisma.vaultAsset.findMany({
       where: {
         uploaderId,
         id: { not: currentAsset.id },
@@ -415,7 +415,7 @@ async function analyzeMultiImageConsistency(
   issues: string[]
 }> {
   try {
-    const allAssets = await prisma.vault_assets.findMany({
+    const allAssets = await prisma.vaultAsset.findMany({
       where: {
         riftId,
         assetType: { in: ['FILE', 'TICKET_PROOF'] },

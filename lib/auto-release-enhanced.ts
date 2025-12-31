@@ -157,7 +157,7 @@ export async function checkAutoReleaseEligibility(riftId: string): Promise<{
   const firstAccess = await getFirstBuyerAccess(riftId)
   const config = PROOF_DEADLINE_CONFIGS[rift.itemType as ItemType]
   
-  if (firstAccess && config.autoReleaseAfterAccessHours) {
+  if (firstAccess && config && config.autoReleaseAfterAccessHours) {
     const accessBasedDeadline = new Date(
       firstAccess.getTime() + config.autoReleaseAfterAccessHours * 60 * 60 * 1000
     )

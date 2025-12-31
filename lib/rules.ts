@@ -7,7 +7,7 @@ import { EscrowStatus } from '@prisma/client'
 export function canTransition(
   currentStatus: EscrowStatus,
   newStatus: EscrowStatus,
-  actorRole: 'BUYER' | 'SELLER' | 'ADMIN'
+  actorRole: 'BUYER' | 'SELLER' | 'ADMIN' | 'SYSTEM'
 ): boolean {
   // Admin can resolve disputes
   if (actorRole === 'ADMIN' && currentStatus === 'DISPUTED') {

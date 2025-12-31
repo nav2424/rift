@@ -280,7 +280,7 @@ async function performQualityChecks(
   // License key quality
   if (asset.assetType === 'LICENSE_KEY') {
     // Check for duplicates across platform
-    const duplicateCount = await prisma.vault_assets.count({
+    const duplicateCount = await prisma.vaultAsset.count({
       where: {
         sha256: asset.sha256,
         id: { not: asset.id },
@@ -497,7 +497,7 @@ async function performQualityChecks(
  * Main verification pipeline
  */
 export async function verifyVaultAsset(assetId: string): Promise<VerificationResult> {
-  const asset = await prisma.vault_assets.findUnique({
+  const asset = await prisma.vaultAsset.findUnique({
     where: { id: assetId },
     include: { rift: true },
   })
@@ -542,7 +542,7 @@ export async function verifyVaultAsset(assetId: string): Promise<VerificationRes
   }
 
   // Update asset with results
-  await prisma.vault_assets.update({
+  await prisma.vaultAsset.update({
     where: { id: assetId },
     data: {
       scanStatus,
@@ -582,7 +582,7 @@ export async function verifyRiftProofs(riftId: string): Promise<{
   shouldRouteToReview: boolean
   results: VerificationResult[]
 }> {
-  const assets = await prisma.vault_assets.findMany({
+  const assets = await prisma.vaultAsset.findMany({
     where: { riftId },
   })
 
@@ -618,7 +618,7 @@ export async function checkDuplicateContent(sha256: string, uploaderId: string):
   count: number
   riftIds: string[]
 }> {
-  const duplicates = await prisma.vault_assets.findMany({
+  const duplicates = await prisma.vaultAsset.findMany({
     where: {
       sha256,
       uploaderId,

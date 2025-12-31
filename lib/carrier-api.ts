@@ -77,7 +77,7 @@ async function verifyWithAfterShip(trackingNumber: string, carrier?: string): Pr
     const isDelivered = tag === 'delivered' || tag === 'exception' || tag === 'info_received'
     const deliveryDate = isDelivered && tracking.expected_delivery
       ? new Date(tracking.expected_delivery)
-      : events.find(e => e.status.toLowerCase() === 'delivered')?.timestamp
+      : events.find((e: any) => e.status.toLowerCase() === 'delivered')?.timestamp
     
     return {
       isValid: true,

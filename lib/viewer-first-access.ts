@@ -30,7 +30,7 @@ export async function getViewerOnlyAssetUrl(
   rawUrl?: never // Never return raw URL if forceViewer is true
   requiresViewer: boolean
 }> {
-  const asset = await prisma.vault_assets.findUnique({
+  const asset = await prisma.vaultAsset.findUnique({
     where: { id: assetId },
     include: {
       rift: {
@@ -160,7 +160,7 @@ export async function revealLicenseKeyOneTime(
   }
   
   // Get asset
-  const asset = await prisma.vault_assets.findUnique({
+  const asset = await prisma.vaultAsset.findUnique({
     where: { id: assetId },
   })
   

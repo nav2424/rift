@@ -53,7 +53,12 @@ export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
  * Get configuration for an item type
  */
 export function getItemTypeConfig(itemType: ItemType): ItemTypeConfig {
-  return ITEM_TYPE_CONFIGS[itemType]
+  const config = ITEM_TYPE_CONFIGS[itemType]
+  if (!config) {
+    // Fallback to DIGITAL config for LICENSE_KEYS if not defined
+    return ITEM_TYPE_CONFIGS[itemType === 'LICENSE_KEYS' ? 'DIGITAL' : 'PHYSICAL'] || ITEM_TYPE_CONFIGS.PHYSICAL!
+  }
+  return config
 }
 
 /**
@@ -68,27 +73,27 @@ export function usesHybridProtection(itemType: ItemType): boolean {
  * Check if item type requires shipment proof
  */
 export function requiresShipmentProof(itemType: ItemType): boolean {
-  return ITEM_TYPE_CONFIGS[itemType].requiresShipmentProof
+  return getItemTypeConfig(itemType).requiresShipmentProof
 }
 
 /**
  * Check if item type requires tracking number
  */
 export function requiresTracking(itemType: ItemType): boolean {
-  return ITEM_TYPE_CONFIGS[itemType].requiresTracking
+  return getItemTypeConfig(itemType).requiresTracking
 }
 
 /**
  * Get grace period hours for item type
  */
 export function getGracePeriodHours(itemType: ItemType): number {
-  return ITEM_TYPE_CONFIGS[itemType].gracePeriodHours
+  return getItemTypeConfig(itemType).gracePeriodHours
 }
 
 /**
  * Check if auto-release is allowed for this item type
  */
 export function allowsAutoRelease(itemType: ItemType): boolean {
-  return ITEM_TYPE_CONFIGS[itemType].allowsAutoRelease
+  return getItemTypeConfig(itemType).allowsAutoRelease
 }
 

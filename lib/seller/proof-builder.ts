@@ -63,7 +63,8 @@ export async function scoreProofQuality(
   const warnings: string[] = []
   for (const asset of assets) {
     try {
-      const classification = await classifyProof(asset.id, rift.itemType)
+      const itemTypeForClassification = rift.itemType === 'LICENSE_KEYS' ? 'DIGITAL' : rift.itemType
+      const classification = await classifyProof(asset.id, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
       if (!classification.itemTypeMatch) {
         relevance -= 20
         warnings.push(`${asset.fileName}: Type mismatch detected`)
@@ -81,10 +82,7 @@ export async function scoreProofQuality(
   // Quality score (file sizes, formats, etc.)
   let quality = 100
   for (const asset of assets) {
-    if (asset.fileSize && asset.fileSize < 10000) {
-      quality -= 15
-      warnings.push(`${asset.fileName}: File size very small`)
-    }
+    // File size check removed (fileSize field doesn't exist in VaultAsset model)
     if (!asset.fileName) {
       quality -= 10
     }

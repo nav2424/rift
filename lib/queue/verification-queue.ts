@@ -139,7 +139,7 @@ export async function processVerificationJob(data: VerificationJobData): Promise
     }
 
     // Get asset IDs for results
-    const assets = await prisma.vault_assets.findMany({
+    const assets = await prisma.vaultAsset.findMany({
       where: { riftId: data.riftId },
       select: { id: true },
     })
