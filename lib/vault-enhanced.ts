@@ -123,6 +123,8 @@ export async function uploadVaultAsset(
         storagePath = fileMetadata.storagePath
         fileName = fileMetadata.fileName
         mimeDetected = fileMetadata.mimeType
+      } else {
+        throw new Error('Invalid file type: must be Buffer or File')
       }
       break
 
@@ -246,6 +248,8 @@ export async function uploadVaultAsset(
         storagePath = ticketMetadata.storagePath
         fileName = ticketMetadata.fileName
         mimeDetected = ticketMetadata.mimeType
+      } else {
+        throw new Error('Invalid file type: must be Buffer or File')
       }
       break
 
