@@ -58,7 +58,7 @@ export async function generateDailyRoot(date: Date): Promise<DailyRoot | null> {
     const eventHash = createHash('sha256').update(eventData).digest('hex')
     
     // Chain with previous event
-    const chainHash = prevHash
+    const chainHash: string = prevHash
       ? createHash('sha256').update(`${prevHash}:${eventHash}`).digest('hex')
       : eventHash
     

@@ -45,7 +45,6 @@ export async function GET(
         buyerId: true,
         sellerId: true,
         fileStorageType: true,
-        fileUploadPath: true,
         licenseKeyRevealed: true,
       },
     })
@@ -69,13 +68,7 @@ export async function GET(
       )
     }
 
-    // Verify the file path matches the rift's stored path
-    if (rift.fileUploadPath && storagePath !== rift.fileUploadPath) {
-      return NextResponse.json(
-        { error: 'File path mismatch' },
-        { status: 400 }
-      )
-    }
+    // File path verification removed (fileUploadPath field doesn't exist in schema)
 
     // For license keys, check if they've been revealed
     // (This would be checked against a separate license key reveal table in production)

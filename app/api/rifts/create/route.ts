@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
         serviceDeliverables: serviceDeliverables || null,
         completionCriteria: completionCriteria || null,
         allowsPartialRelease: allowsPartialRelease || false,
-        milestones: milestones && Array.isArray(milestones) && milestones.length > 0 ? milestones : null,
+        milestones: milestones && Array.isArray(milestones) && milestones.length > 0 ? milestones : undefined,
         status: 'AWAITING_PAYMENT',
         riskScore: initialRiskScore,
         // Legacy fields for backward compatibility

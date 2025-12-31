@@ -113,5 +113,5 @@ async function handlePOST(request: NextRequest) {
   }
 }
 
-export const POST = withRateLimit(handlePOST, { rateLimit: 'auth' })
+export const POST = withRateLimit<any>(handlePOST, { rateLimit: 'auth' })
 

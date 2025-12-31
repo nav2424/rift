@@ -127,7 +127,7 @@ Generate tags and metadata in JSON:
  * Update asset metadata with tags (stores in metadataJson field)
  */
 export async function updateAssetTags(assetId: string): Promise<void> {
-  const asset = await prisma.vault_assets.findUnique({
+  const asset = await prisma.vaultAsset.findUnique({
     where: { id: assetId },
     include: {
       rift: {
@@ -146,7 +146,7 @@ export async function updateAssetTags(assetId: string): Promise<void> {
   const currentMetadata = (asset.metadataJson || {}) as any
   currentMetadata.aiTags = tags
 
-  await prisma.vault_assets.update({
+  await prisma.vaultAsset.update({
     where: { id: assetId },
     data: {
       metadataJson: currentMetadata,
@@ -162,7 +162,7 @@ export async function searchAssetsByTags(
   riftId?: string
 ): Promise<string[]> {
   // Search in metadataJson for matching tags
-  const assets = await prisma.vault_assets.findMany({
+  const assets = await prisma.vaultAsset.findMany({
     where: riftId ? { riftId } : undefined,
     select: {
       id: true,

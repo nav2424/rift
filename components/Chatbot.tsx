@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 
 interface Message {
@@ -11,6 +12,7 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const { data: session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {

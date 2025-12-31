@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import EscrowStatusBadge from './EscrowStatusBadge'
+import EscrowStatusBadge from './RiftStatusBadge'
 import GlassCard from './ui/GlassCard'
 import { EscrowStatus, DisputeStatus } from '@prisma/client'
 

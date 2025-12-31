@@ -262,13 +262,13 @@ export async function POST(
       try {
         const { classifyProof } = await import('@/lib/ai/proof-classifier')
         for (const asset of assets) {
-          const classification = await classifyProof(asset.id, currentRift.itemType)
+          const classification = await classifyProof(asset.id, rift.itemType === 'LICENSE_KEYS' ? 'DIGITAL' : rift.itemType as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
           if (!classification.itemTypeMatch) {
             return NextResponse.json(
               {
                 error: 'Proof type mismatch',
                 details: [
-                  `Asset "${asset.id}" does not match expected type ${currentRift.itemType}`,
+                  `Asset "${asset.id}" does not match expected type ${rift.itemType}`,
                   ...classification.warnings,
                 ],
                 classification,
@@ -399,7 +399,7 @@ export async function POST(
           uploadedFiles: uploadedFiles || [],
           status: proofStatus, // VALID if auto-approved, PENDING otherwise
           submittedAt: new Date(),
-          validatedAt: proofStatus === 'VALID' ? new Date() : null, // Set validatedAt if auto-approved
+          validatedAt: (proofStatus as 'PENDING' | 'VALID') === 'VALID' ? new Date() : null, // Set validatedAt if auto-approved
           updatedAt: new Date(),
         },
       })
@@ -460,7 +460,7 @@ export async function POST(
     if (rift.itemType === 'TICKETS') {
       try {
         const supabase = createServerClient()
-        const { data: buyer } = await prisma.user.findUnique({
+        const buyer = await prisma.user.findUnique({
           where: { id: rift.buyerId },
           select: { email: true },
         })

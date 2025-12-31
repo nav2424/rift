@@ -66,7 +66,7 @@ export async function extractAndSummarizeEvidence(
     },
   })
 
-  const vaultAssets = await prisma.vault_assets.findMany({
+  const vaultAssets = await prisma.vaultAsset.findMany({
     where: { riftId },
     select: {
       assetType: true,

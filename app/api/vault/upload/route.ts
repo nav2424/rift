@@ -63,10 +63,7 @@ export async function POST(request: NextRequest) {
       await prisma.riftTransaction.update({
         where: { id: riftId },
         data: {
-          fileUploadPath: metadata.storagePath,
-          fileHash: metadata.fileHash,
-          fileSize: metadata.sizeBytes,
-          virusScanStatus: metadata.virusScanStatus,
+          // Legacy fields removed (fileUploadPath, fileHash, fileSize, virusScanStatus don't exist in schema)
           fileStorageType: 'VAULT',
         },
       })

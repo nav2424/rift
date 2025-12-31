@@ -14,7 +14,7 @@ import { EscrowStatus } from '@prisma/client'
 interface RiftTransaction {
   id: string
   status: EscrowStatus
-  itemType?: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  itemType?: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'LICENSE_KEYS'
   subtotal?: number
   amount?: number
   buyerFee?: number

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { apiRateLimit, strictApiRateLimit, authRateLimit, type RateLimitOptions } from './rate-limit'
+import { apiRateLimit, strictApiRateLimit, authRateLimit, RateLimitOptions } from './rate-limit'
 
 /**
  * Apply rate limiting to an API route handler

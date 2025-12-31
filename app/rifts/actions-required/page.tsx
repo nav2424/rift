@@ -70,7 +70,7 @@ export default function ActionsRequiredPage() {
         console.log('Loading actions required:', {
           userId,
           totalRifts: allRifts.length,
-          riftsWithStatus: allRifts.map(r => ({ id: r.id, status: r.status, buyerId: r.buyerId, sellerId: r.sellerId }))
+          riftsWithStatus: allRifts.map((r: any) => ({ id: r.id, status: r.status, buyerId: r.buyerId, sellerId: r.sellerId }))
         })
         
         // Filter for rifts that require action from the current user
@@ -107,7 +107,7 @@ export default function ActionsRequiredPage() {
           totalRifts: allRifts.length,
           pendingActions: pendingActions.length,
           userId: userId,
-          filteredRifts: pendingActions.map(r => ({ 
+          filteredRifts: pendingActions.map((r: RiftTransaction) => ({ 
             id: r.id, 
             status: r.status, 
             isBuyer: r.buyerId === userId, 

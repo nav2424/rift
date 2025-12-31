@@ -35,11 +35,10 @@ export async function classifyProof(
       id: true,
       assetType: true,
       fileName: true,
-      fileSize: true,
-      mimeType: true,
+      mimeDetected: true,
       sha256: true,
       textContent: true,
-      metadata: true,
+      metadataJson: true,
     },
   })
 

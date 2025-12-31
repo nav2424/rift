@@ -242,12 +242,13 @@ async function calculateOptimalHoldHours(
   // Base hold times by item type
   const baseHolds: Record<ItemType, number> = {
     DIGITAL: 48,
+    LICENSE_KEYS: 48, // Same as DIGITAL
     TICKETS: 72,
     SERVICES: 96,
     PHYSICAL: 120,
   }
 
-  let baseHours = baseHolds[rift.itemType] || 72
+  let baseHours = baseHolds[rift.itemType as ItemType] || 72
 
   // Adjust based on factors
   // High seller reputation: reduce by up to 30%

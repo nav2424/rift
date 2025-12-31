@@ -250,7 +250,7 @@ export async function POST(
     const moderationResult = await moderateAndAction(messageBody.trim(), {
       conversationId,
       senderId: userId,
-      riftId: null, // Will be determined from conversation if needed
+      riftId: undefined, // Will be determined from conversation if needed
     })
 
     if (!moderationResult.allowed) {

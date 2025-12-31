@@ -18,7 +18,7 @@ import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuy
 
 type EscrowStatus = 
   | 'DRAFT'
-  | 'PAID'
+  | 'FUNDED'
   | 'PROOF_SUBMITTED'
   | 'UNDER_REVIEW'
   | 'RELEASED'
@@ -66,7 +66,7 @@ interface RiftTransaction {
   }
   timelineEvents: Array<{
     id: string
-    riftId: string
+    escrowId: string
     type: string
     message: string
     createdById: string | null

@@ -12,7 +12,7 @@ interface RateLimitStore {
 
 const store: RateLimitStore = {}
 
-interface RateLimitOptions {
+export interface RateLimitOptions {
   windowMs: number // Time window in milliseconds
   maxRequests: number // Max requests per window
   keyGenerator?: (request: Request) => string // Custom key generator

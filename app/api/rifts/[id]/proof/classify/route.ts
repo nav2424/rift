@@ -48,9 +48,11 @@ export async function POST(
     }
 
     // Classify each asset
+    // Map LICENSE_KEYS to DIGITAL for classifyProof function
+    const itemTypeForClassification = rift.itemType === 'LICENSE_KEYS' ? 'DIGITAL' : rift.itemType
     const classifications = await Promise.all(
       assetIds.map((assetId: string) =>
-        classifyProof(assetId, rift.itemType).catch((error) => ({
+        classifyProof(assetId, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES').catch((error) => ({
           assetId,
           error: error.message,
         }))

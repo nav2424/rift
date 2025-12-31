@@ -53,7 +53,7 @@ export async function triageDispute(
   const accessLogs = await prisma.vaultEvent.findMany({
     where: {
       riftId,
-      eventType: 'ASSET_OPENED',
+      eventType: 'BUYER_OPENED_ASSET',
       actorRole: 'BUYER',
     },
   })
@@ -133,7 +133,7 @@ async function gatherEvidence(
     where: {
       riftId,
       actorRole: 'BUYER',
-      eventType: 'ASSET_OPENED',
+      eventType: 'BUYER_OPENED_ASSET',
     },
   })
 

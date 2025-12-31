@@ -59,25 +59,6 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       },
     })
-      // Generate Rift user ID for new user
-      const riftUserId = await generateNextRiftUserId()
-
-      // Create new user with temporary password (signup not completed yet)
-      user = await prisma.user.create({
-        data: {
-          id: randomUUID(),
-          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-          email,
-          phone: '', // Will be set later
-          passwordHash,
-          role: 'USER',
-          riftUserId,
-          emailVerified: false,
-          phoneVerified: false,
-          updatedAt: new Date(),
-        },
-      })
-    }
 
     // Generate and send email verification code
     const emailCode = await generateVerificationCode(user.id, 'EMAIL', email)
@@ -119,23 +100,8 @@ export async function POST(request: NextRequest) {
     
     // Handle Prisma unique constraint violation (email already exists)
     if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-      // Check if user exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-        select: { id: true },
-      })
-      
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'Email is already registered' },
-          { status: 400 }
-        )
-      }
-      
-      // If it's an incomplete signup, try to update it instead
-      // This shouldn't happen since we handle it above, but just in case of race conditions
       return NextResponse.json(
-        { error: 'An account with this email is already being created. Please try again.' },
+        { error: 'Email is already registered' },
         { status: 400 }
       )
     }

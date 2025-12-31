@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
         const accountStatus = await getConnectAccountStatus(accountId)
         // If account is connected but payouts are not enabled due to verification requirements,
         // use account_update to complete identity verification
-        if (accountStatus.connected && !accountStatus.payoutsEnabled && 
-            accountStatus.requirements?.currentlyDue?.length > 0) {
+        if (accountStatus.detailsSubmitted && !accountStatus.payoutsEnabled && 
+            accountStatus.requirements?.currentlyDue && accountStatus.requirements.currentlyDue.length > 0) {
           forIdentityVerification = true
         }
       } catch (statusError) {
