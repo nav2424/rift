@@ -12,6 +12,7 @@ enum ItemType {
   DIGITAL
   TICKETS
   SERVICES
+  LICENSE_KEYS
 }
 
 enum EscrowStatus {
@@ -137,6 +138,8 @@ model User {
   blockedBy                UserBlock[]        @relation("BlockedByUser")
   payouts                  Payout[]
   verificationCodes        VerificationCode[]
+  vaultAssets              VaultAsset[]
+  adminReviews             AdminReview[]
 
   @@index([riftUserId])
 }
@@ -174,15 +177,26 @@ model RiftTransaction {
   eventDate             String? // For tickets: event date (ISO string)
   eventDateTz           DateTime? // For tickets: event date as timestamptz (for queries)
   venue                 String?
+  seatDetails           String? // For tickets: seat details (section, row, seats)
   transferMethod        String?
+  quantity              Int? // For tickets: number of tickets
   downloadLink          String?
+  fileStorageType       String? // For digital: storage type (EXTERNAL_LINK, VAULT, etc.)
   licenseKey            String?
+  licenseKeyType        String? // For digital: license key type
+  licensePlatform       String? // For digital: license platform
+  licenseKeyRevealed    Boolean @default(false) // For digital: whether license key has been revealed
   serviceDate           String?
+  serviceScope          String? // For services: scope of work
   holdUntil             DateTime? // Hold funds until this date (risk-based)
   riskScore             Int             @default(0) // Risk score (0-100, higher = riskier)
   requiresBuyerConfirmation Boolean    @default(false) // Require buyer confirmation before release (risk-based)
   requiresManualReview  Boolean         @default(false) // Require admin manual review before release (risk-based)
   releaseEligibleAt     DateTime? // When funds become eligible for release
+  allowsPartialRelease  Boolean         @default(false) // Allow milestone-based partial releases
+  milestones            Json? // JSON array of milestone definitions
+  serviceDeliverables   String? // For services: what will be delivered
+  completionCriteria    String? // For services: completion criteria
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   // Legacy fields for backward compatibility
@@ -198,6 +212,10 @@ model RiftTransaction {
   payouts               Payout[]
   version               Int             @default(0) // For optimistic locking
   riftEvents            RiftEvent[]
+  vaultAssets           VaultAsset[]
+  vaultEvents           VaultEvent[]
+  adminReviews          AdminReview[]
+  milestoneReleases     MilestoneRelease[]
 
   @@map("EscrowTransaction")
 }
@@ -387,6 +405,28 @@ model Payout {
   @@index([status, scheduledAt])
 }
 
+model MilestoneRelease {
+  id              String          @id @default(cuid())
+  riftId          String
+  milestoneIndex  Int
+  milestoneTitle  String
+  milestoneAmount Float
+  releasedAmount  Float
+  sellerFee       Float
+  sellerNet       Float
+  releasedBy      String
+  releasedAt      DateTime        @default(now())
+  status          String          @default("RELEASED")
+  payoutId        String?
+  notes           String?
+  rift            RiftTransaction  @relation(fields: [riftId], references: [id], onDelete: Cascade)
+
+  @@index([riftId])
+  @@index([releasedBy])
+  @@index([releasedAt])
+  @@map("MilestoneRelease")
+}
+
 model UserRiskProfile {
   id                    String    @id @default(cuid())
   userId                String    @unique
@@ -436,4 +476,134 @@ model VerificationCode {
 
   @@index([userId, type])
   @@index([expiresAt])
+}
+
+enum VaultAssetType {
+  FILE
+  LICENSE_KEY
+  TRACKING
+  TICKET_PROOF
+  URL
+  TEXT_INSTRUCTIONS
+}
+
+enum VaultScanStatus {
+  PENDING
+  PASS
+  FAIL
+}
+
+enum VaultEventType {
+  BUYER_OPENED_ASSET
+  BUYER_DOWNLOADED_FILE
+  BUYER_REVEALED_LICENSE_KEY
+  BUYER_VIEWED_QR
+  BUYER_VIEWED_TRACKING
+  BUYER_CLICKED_EXTERNAL_LINK
+  BUYER_TIME_IN_VIEW
+  BUYER_SCROLL_DEPTH
+  SELLER_UPLOADED_ASSET
+  SELLER_SUBMITTED_PROOF
+  ADMIN_VIEWED_ASSET
+  ADMIN_DOWNLOADED_RAW
+  ADMIN_APPROVED_PROOF
+  ADMIN_REJECTED_PROOF
+  SYSTEM_SCAN_COMPLETED
+  SYSTEM_QUALITY_CHECK_COMPLETED
+}
+
+enum VaultActorRole {
+  BUYER
+  SELLER
+  ADMIN
+  SYSTEM
+}
+
+enum AdminReviewStatus {
+  OPEN
+  APPROVED
+  REJECTED
+  ESCALATED
+}
+
+model VaultAsset {
+  id                String          @id @default(cuid())
+  riftId            String
+  uploaderId        String
+  assetType         VaultAssetType
+  storagePath       String?
+  fileName          String?
+  sha256            String
+  canonicalSha256   String?
+  perceptualHash    String?
+  averageHash       String?
+  mimeDetected      String?
+  scanStatus        VaultScanStatus @default(PENDING)
+  qualityScore      Int?
+  metadataJson      Json?
+  supersedesAssetId String?
+  encryptedData     String?
+  url               String?
+  trackingNumber    String?
+  textContent       String?
+  createdAt         DateTime        @default(now())
+  rift              RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  uploader          User            @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+  supersedesAsset   VaultAsset?     @relation("SupersedesAsset", fields: [supersedesAssetId], references: [id], onDelete: SetNull)
+  supersededBy      VaultAsset[]    @relation("SupersedesAsset")
+  events            VaultEvent[]
+
+  @@index([riftId])
+  @@index([sha256])
+  @@index([canonicalSha256])
+  @@index([perceptualHash])
+  @@index([averageHash])
+  @@index([uploaderId])
+  @@index([scanStatus])
+  @@map("vault_assets")
+}
+
+model VaultEvent {
+  id                String          @id @default(cuid())
+  riftId            String
+  assetId           String?
+  actorId           String?
+  actorRole         VaultActorRole
+  eventType         VaultEventType
+  timestampUtc      DateTime        @default(now())
+  ipHash            String?
+  userAgentHash     String?
+  sessionId         String?
+  deviceFingerprint String?
+  assetHash         String?
+  prevLogHash       String?
+  logHash           String
+  metadata          Json?
+  rift              RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  asset             VaultAsset?     @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@index([riftId, timestampUtc])
+  @@index([assetId])
+  @@index([actorId, actorRole])
+  @@index([eventType])
+  @@index([logHash])
+  @@map("vault_events")
+}
+
+model AdminReview {
+  id          String            @id @default(cuid())
+  riftId      String
+  reviewerId  String?
+  status      AdminReviewStatus @default(OPEN)
+  reasonsJson Json?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  resolvedAt  DateTime?
+  rift        RiftTransaction   @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  reviewer    User?             @relation(fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([riftId])
+  @@index([status])
+  @@index([reviewerId])
+  @@map("admin_reviews")
 }
