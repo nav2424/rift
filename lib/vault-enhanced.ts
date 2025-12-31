@@ -117,7 +117,7 @@ export async function uploadVaultAsset(
         
         fileName = input.fileName || uniqueName
         mimeDetected = input.mimeType || 'application/octet-stream'
-      } else {
+      } else if (input.file instanceof File) {
         const fileMetadata = await uploadToVault(input.file, riftId, uploaderId)
         sha256 = fileMetadata.fileHash
         storagePath = fileMetadata.storagePath
