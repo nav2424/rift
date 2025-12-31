@@ -724,7 +724,7 @@ Be VERY strict - images that are blurry, irrelevant, suspicious, or have data mi
     }
     
     // Penalize EXIF stripping (might indicate manipulation)
-    if (exifData.wasStripped) {
+    if (exifData && exifData.wasStripped) {
       qualityScore -= 5
     }
     
