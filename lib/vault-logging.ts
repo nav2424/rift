@@ -96,7 +96,7 @@ export async function logVaultEvent(input: VaultEventInput): Promise<string> {
     deviceFingerprint: input.deviceFingerprint || null,
     assetHash: input.assetHash || null,
     prevLogHash,
-    metadata: input.metadata || null,
+      metadata: input.metadata || undefined,
   })
 
   // Create the event with computed hash
