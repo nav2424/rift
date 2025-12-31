@@ -529,7 +529,7 @@ export async function verifyVaultAsset(assetId: string): Promise<VerificationRes
     
     // Add tags to metadata
     if (qualityResult.metadata && aiTags) {
-      qualityResult.metadata.aiTags = aiTags
+      (qualityResult.metadata as any).aiTags = aiTags
     }
   } catch (error) {
     console.error('AI vault tagging failed:', error)
