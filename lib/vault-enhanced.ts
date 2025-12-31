@@ -38,9 +38,9 @@ export async function uploadVaultAsset(
     throw new Error('Rift not found')
   }
 
-  // Verify seller can upload (must be in PAID/FUNDED or PROOF_SUBMITTED state)
-  if (rift.status !== 'PAID' && rift.status !== 'FUNDED' && rift.status !== 'PROOF_SUBMITTED') {
-    throw new Error(`Cannot upload proof in ${rift.status} state. Rift must be in PAID, FUNDED, or PROOF_SUBMITTED state.`)
+  // Verify seller can upload (must be in FUNDED or PROOF_SUBMITTED state)
+  if (rift.status !== 'FUNDED' && rift.status !== 'PROOF_SUBMITTED') {
+    throw new Error(`Cannot upload proof in ${rift.status} state. Rift must be in FUNDED or PROOF_SUBMITTED state.`)
   }
 
   // Verify uploader is the seller
