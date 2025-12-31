@@ -228,7 +228,7 @@ async function validateExtractedData(
           return null
         }
       })
-      .filter((d): d is { date: Date; type?: "receipt_date" | "transfer_date" | "ship_date" | "delivery_date" | "event_date"; confidence: number } => d !== null)
+      .filter((d) => d !== null) as Array<{ date: Date; type?: "receipt_date" | "transfer_date" | "ship_date" | "delivery_date" | "event_date"; confidence: number }>
     
     const extractedDates = parsedDates.map(d => d.date)
     const isRecent = extractedDates.some(d => d >= thirtyDaysAgo)
