@@ -95,7 +95,7 @@ export async function decryptSensitiveData(encryptedData: string): Promise<strin
   decipher.setAuthTag(authTag)
   
   // Decrypt
-  let decrypted = decipher.update(encrypted, null, 'utf8')
+  let decrypted = decipher.update(encrypted, undefined, 'utf8')
   decrypted += decipher.final('utf8')
   
   return decrypted
