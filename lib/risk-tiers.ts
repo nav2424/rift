@@ -4,6 +4,7 @@
 
 import { prisma } from './prisma'
 import { RiskTier } from '@prisma/client'
+import { createServerClient } from './supabase'
 
 /**
  * Calculate risk tier for a seller
@@ -72,13 +73,38 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
     },
   })
 
-  const recentDisputes = await prisma.dispute.count({
+  // Get all rifts where seller is the sellerId
+  const sellerRifts = await prisma.riftTransaction.findMany({
     where: {
-      EscrowTransaction: { sellerId: userId },
-      createdAt: { gte: sixtyDaysAgo },
-      status: 'OPEN',
+      sellerId: userId,
+    },
+    select: {
+      id: true,
     },
   })
+
+  const sellerRiftIds = sellerRifts.map(r => r.id)
+  
+  // Query disputes from Supabase
+  let recentDisputes = 0
+  try {
+    const supabase = createServerClient()
+    if (sellerRiftIds.length > 0) {
+      const { data: disputes, error } = await supabase
+        .from('disputes')
+        .select('id, created_at, status')
+        .in('rift_id', sellerRiftIds)
+        .gte('created_at', sixtyDaysAgo.toISOString())
+        .in('status', ['submitted', 'needs_info', 'under_review']) // Active dispute statuses in Supabase
+      
+      if (!error && disputes) {
+        recentDisputes = disputes.length
+      }
+    }
+  } catch (supabaseError) {
+    // If Supabase is not configured, skip dispute count
+    console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+  }
 
   // Update risk profile
   await prisma.userRiskProfile.update({

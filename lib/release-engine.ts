@@ -9,6 +9,7 @@ import { prisma } from './prisma'
 import { createServerClient } from './supabase'
 import { logEvent, extractRequestMetadata } from './rift-events'
 import { RiftEventActorType } from '@prisma/client'
+import { predictReleaseTiming } from './ai/release-timing'
 
 export interface ReleaseEligibilityResult {
   eligible: boolean

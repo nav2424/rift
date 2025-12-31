@@ -127,7 +127,7 @@ export async function POST(
     // Create shipment proof with verification status
     const shipmentProof = await prisma.shipmentProof.create({
       data: {
-        escrowId: id,
+        riftId: id,
         trackingNumber: trackingNumber || null,
         shippingCarrier: shippingCarrier || null,
         filePath,

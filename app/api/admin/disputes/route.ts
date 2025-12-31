@@ -19,7 +19,24 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const reason = searchParams.get('reason')
 
-    const supabase = createServerClient()
+    // Get Supabase client
+    let supabase
+    try {
+      supabase = createServerClient()
+    } catch (supabaseError: any) {
+      console.error('Supabase configuration error:', supabaseError)
+      // Check if it's a configuration error
+      if (supabaseError?.message?.includes('Supabase configuration missing')) {
+        return NextResponse.json(
+          {
+            error: 'Supabase configuration missing',
+            details: supabaseError.message + '\n\nPlease configure SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL in .env.local',
+          },
+          { status: 500 }
+        )
+      }
+      throw supabaseError
+    }
 
     // Build query
     let query = supabase
@@ -81,6 +98,10 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 email: true,
+                emailVerified: true,
+                phoneVerified: true,
+                idVerified: true,
+                bankVerified: true,
               },
             },
             seller: {
@@ -88,6 +109,10 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 email: true,
+                emailVerified: true,
+                phoneVerified: true,
+                idVerified: true,
+                bankVerified: true,
               },
             },
           },
@@ -99,6 +124,10 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             email: true,
+            emailVerified: true,
+            phoneVerified: true,
+            idVerified: true,
+            bankVerified: true,
           },
         })
 

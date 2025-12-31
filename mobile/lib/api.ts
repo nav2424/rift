@@ -242,8 +242,15 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Invalid credentials' }));
-        throw new Error(error.error || 'Invalid credentials');
+        const errorData = await response.json().catch(() => ({ error: 'Invalid credentials' }));
+        // Use message field if available (for verification errors), otherwise use error field
+        const errorMessage = errorData.message || errorData.error || 'Invalid credentials';
+        const error = new Error(errorMessage);
+        // Preserve error code for verification errors
+        if (errorData.error && ['VERIFICATION_REQUIRED', 'EMAIL_NOT_VERIFIED', 'PHONE_NOT_VERIFIED'].includes(errorData.error)) {
+          (error as any).code = errorData.error;
+        }
+        throw error;
       }
 
       const data = await response.json();
@@ -260,11 +267,11 @@ class ApiClient {
     }
   }
 
-  async signUp(name: string, email: string, password: string): Promise<{ user: User; token: string }> {
+  async signUp(firstName: string, lastName: string, birthday: string, email: string, password: string): Promise<{ user: User; token: string }> {
     const response = await fetch(`${API_URL}/api/auth/mobile-signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ firstName, lastName, birthday, email, password }),
     });
 
     if (!response.ok) {
@@ -287,8 +294,9 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await this.request<{ user: User }>('/api/auth/me');
-    return response.user;
+    // API returns user directly, not wrapped in { user: ... }
+    const user = await this.request<User>('/api/auth/me');
+    return user;
   }
 
   async updateProfile(data: { name?: string | null; phone?: string | null }): Promise<{ user: User }> {

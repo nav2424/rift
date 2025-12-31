@@ -3,8 +3,9 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { createServerClient } from '@/lib/supabase'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType } from '@prisma/client'
+import { releaseFunds } from '@/lib/release-engine'
+import { transitionRiftState } from '@/lib/rift-state'
 
 /**
  * POST /api/rifts/[id]/tickets/confirm-receipt
@@ -102,21 +103,35 @@ export async function POST(
       requestMeta
     )
 
-    // Mark as eligible for release
-    await prisma.riftTransaction.update({
-      where: { id: riftId },
-      data: {
-        releaseEligibleAt: new Date(),
-      },
+    // Automatically release funds when buyer confirms receipt
+    const releaseResult = await releaseFunds(riftId, requestMeta)
+
+    if (!releaseResult.success) {
+      // If release fails, still mark as eligible but log the error
+      console.error('Auto-release failed after confirm receipt:', releaseResult.error)
+      await prisma.riftTransaction.update({
+        where: { id: riftId },
+        data: {
+          releaseEligibleAt: new Date(),
+        },
+      })
+      // Return success anyway - the confirmation was recorded, release will happen via auto-release
+      return NextResponse.json({ 
+        success: true,
+        warning: releaseResult.error || 'Funds will be released automatically',
+      })
+    }
+
+    // Transition to RELEASED (handles wallet credit, payout scheduling)
+    await transitionRiftState(riftId, 'RELEASED', { userId })
+
+    // Don't post system messages - status updates are visible in the platform and sent via email
+
+    return NextResponse.json({ 
+      success: true,
+      status: 'RELEASED',
+      message: 'Ticket receipt confirmed and funds released to seller',
     })
-
-    // Post system message
-    await postSystemMessage(
-      riftId,
-      'Buyer confirmed ticket receipt.'
-    )
-
-    return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Confirm ticket receipt error:', error)
     return NextResponse.json(

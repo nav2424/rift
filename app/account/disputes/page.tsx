@@ -72,19 +72,36 @@ export default function DisputesPage() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount)
   }
 
   const getStatusBadge = (status: string) => {
-    const colors = {
-      OPEN: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      RESOLVED: 'bg-green-500/20 text-green-400 border-green-500/30',
-      CLOSED: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    const statusMap: Record<string, string> = {
+      'submitted': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      'needs_info': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      'under_review': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      'resolved_buyer': 'bg-green-500/20 text-green-400 border-green-500/30',
+      'resolved_seller': 'bg-green-500/20 text-green-400 border-green-500/30',
+      'closed': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+      'OPEN': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      'RESOLVED': 'bg-green-500/20 text-green-400 border-green-500/30',
+      'CLOSED': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
     }
-    return colors[status as keyof typeof colors] || colors.OPEN
+    return statusMap[status] || statusMap['submitted']
   }
+
+  const formatStatus = (status: string) => {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  const activeDisputes = disputes.filter(d => 
+    ['submitted', 'needs_info', 'under_review'].includes(d.status)
+  )
+  const resolvedDisputes = disputes.filter(d => 
+    ['resolved_buyer', 'resolved_seller', 'closed'].includes(d.status)
+  )
 
   if (status === 'loading' || loading) {
     return (
@@ -110,29 +127,31 @@ export default function DisputesPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
-          <Link 
-            href="/account"
-            className="text-white/60 hover:text-white/90 font-light mb-6 transition-colors flex items-center gap-2 inline-block"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Account
-          </Link>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-              <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 flex items-center justify-center border border-yellow-500/20 flex-shrink-0 mt-1">
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                  Your Disputes
+                </h1>
+                <p className="text-white/60 font-light">View and manage your disputes</p>
+              </div>
+            </div>
+            <Link 
+              href="/account"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-            </div>
-            <div>
-              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
-                Your Disputes
-              </h1>
-              <p className="text-white/60 font-light">View and manage your disputes</p>
-            </div>
+              Back to Account
+            </Link>
           </div>
         </div>
 
@@ -151,52 +170,124 @@ export default function DisputesPage() {
             </div>
           </GlassCard>
         ) : (
-          <div className="space-y-4">
-            {disputes.map((dispute) => (
-              <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
-                <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-light text-white mb-2">
-                          {dispute.rift.itemTitle}
-                        </h3>
-                        <p className="text-white/80 font-light text-sm mb-3">
-                          {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
-                        </p>
-                        <p className="text-white/60 font-light text-sm">
-                          Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}
-                        </p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-light border ${getStatusBadge(dispute.status)}`}>
-                        {dispute.status}
-                      </span>
-                    </div>
-                    
-                    {dispute.reason && (
-                      <div className="pt-4 border-t border-white/10">
-                        <p className="text-white/60 font-light text-sm">
-                          <span className="text-white/40">Reason: </span>
-                          {dispute.reason}
-                        </p>
-                      </div>
-                    )}
+          <div className="space-y-8">
+            {/* Active Disputes */}
+            {activeDisputes.length > 0 && (
+              <div>
+                <h2 className="text-xl font-light text-white mb-4 pb-2 border-b border-white/10">
+                  Active Disputes ({activeDisputes.length})
+                </h2>
+                <div className="space-y-4">
+                  {activeDisputes.map((dispute) => (
+                    <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
+                      <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
+                        <div className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-light text-white mb-2">
+                                {dispute.rift.itemTitle}
+                              </h3>
+                              <p className="text-white/80 font-light text-sm mb-3">
+                                {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
+                              </p>
+                              <p className="text-white/60 font-light text-sm">
+                                Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}
+                                {dispute.raisedBy.id === session?.user?.id && (
+                                  <span className="ml-2 text-blue-400">(You)</span>
+                                )}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-light border ${getStatusBadge(dispute.status)}`}>
+                              {formatStatus(dispute.status)}
+                            </span>
+                          </div>
+                          
+                          {dispute.reason && (
+                            <div className="pt-4 border-t border-white/10">
+                              <p className="text-white/60 font-light text-sm">
+                                <span className="text-white/40">Reason: </span>
+                                {dispute.reason.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                          )}
 
-                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                      <span className="text-white/40 font-light text-xs">
-                        {new Date(dispute.createdAt).toLocaleDateString()}
-                      </span>
-                      <span className="text-white/60 font-light text-sm flex items-center gap-2">
-                        View Transaction
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </GlassCard>
-              </Link>
-            ))}
+                          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-white/40 font-light text-xs">
+                              {new Date(dispute.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="text-white/60 font-light text-sm flex items-center gap-2">
+                              View Transaction
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          </div>
+                        </div>
+                      </GlassCard>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Resolved Disputes */}
+            {resolvedDisputes.length > 0 && (
+              <div>
+                <h2 className="text-xl font-light text-white mb-4 pb-2 border-b border-white/10">
+                  Resolved Disputes ({resolvedDisputes.length})
+                </h2>
+                <div className="space-y-4">
+                  {resolvedDisputes.map((dispute) => (
+                    <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
+                      <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer opacity-75">
+                        <div className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-light text-white mb-2">
+                                {dispute.rift.itemTitle}
+                              </h3>
+                              <p className="text-white/80 font-light text-sm mb-3">
+                                {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
+                              </p>
+                              <p className="text-white/60 font-light text-sm">
+                                Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}
+                                {dispute.raisedBy.id === session?.user?.id && (
+                                  <span className="ml-2 text-blue-400">(You)</span>
+                                )}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-light border ${getStatusBadge(dispute.status)}`}>
+                              {formatStatus(dispute.status)}
+                            </span>
+                          </div>
+                          
+                          {dispute.reason && (
+                            <div className="pt-4 border-t border-white/10">
+                              <p className="text-white/60 font-light text-sm">
+                                <span className="text-white/40">Reason: </span>
+                                {dispute.reason.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-white/40 font-light text-xs">
+                              {new Date(dispute.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="text-white/60 font-light text-sm flex items-center gap-2">
+                              View Transaction
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          </div>
+                        </div>
+                      </GlassCard>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

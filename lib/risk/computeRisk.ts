@@ -263,8 +263,23 @@ export async function computeRiftRisk(riftId: string): Promise<number> {
     amountWeight = 5
   }
 
-  // Compute final risk
-  const risk = categoryWeight + amountWeight + (buyerRisk * 0.4) + (sellerRisk * 0.4)
+  // Compute base risk
+  let risk = categoryWeight + amountWeight + (buyerRisk * 0.4) + (sellerRisk * 0.4)
+
+  // Enhanced AI Fraud Detection
+  try {
+    const { computeEnhancedRiskScore } = await import('@/lib/ai/fraud-detection')
+    const enhanced = await computeEnhancedRiskScore(
+      rift.buyerId,
+      riftId,
+      risk,
+      undefined // Will compute fraud signals internally
+    )
+    risk = enhanced.enhancedRiskScore
+  } catch (error) {
+    console.error('AI fraud detection failed:', error)
+    // Continue with base risk if AI fails
+  }
 
   // Clamp to 0-100
   return Math.max(0, Math.min(100, Math.round(risk)))

@@ -526,6 +526,89 @@ enum AdminReviewStatus {
   ESCALATED
 }
 
+enum AdminAuditAction {
+  USER_VIEWED
+  USER_FROZEN
+  USER_UNFROZEN
+  USER_BANNED
+  USER_UNBANNED
+  USER_RESTRICTED
+  USER_VERIFIED
+  RIFT_VIEWED
+  RIFT_FORCE_UNDER_REVIEW
+  RIFT_APPROVED
+  RIFT_REJECTED
+  RIFT_ESCALATED
+  RIFT_CANCELED
+  VAULT_VIEWED
+  VAULT_DOWNLOADED_RAW
+  VAULT_PROOF_APPROVED
+  VAULT_PROOF_REJECTED
+  DISPUTE_VIEWED
+  DISPUTE_RESOLVED_SELLER
+  DISPUTE_RESOLVED_BUYER
+  DISPUTE_REQUESTED_INFO
+  PAYOUT_VIEWED
+  PAYOUT_PAUSED
+  PAYOUT_RESUMED
+  PAYOUT_SCHEDULED
+  PAYOUT_HELD
+  RISK_SCORE_UPDATED
+  RISK_AUTO_HOLD_SET
+  FEATURE_FLAG_UPDATED
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  MFA_ENABLED
+  MFA_DISABLED
+  SESSION_EXPIRED
+  BREAK_GLASS_ACCESSED
+  ROLE_GRANTED
+  ROLE_REVOKED
+  PERMISSION_GRANTED
+  PERMISSION_REVOKED
+}
+
+enum AdminPermission {
+  VAULT_READ
+  VAULT_DOWNLOAD_RAW
+  VAULT_REJECT_PROOF
+  VAULT_APPROVE_PROOF
+  VAULT_VIEW_METADATA
+  RIFT_READ
+  RIFT_FORCE_UNDER_REVIEW
+  RIFT_APPROVE
+  RIFT_REJECT
+  RIFT_ESCALATE
+  RIFT_CANCEL
+  USER_READ
+  USER_RESTRICT
+  USER_FREEZE
+  USER_BAN
+  USER_VERIFY
+  PAYOUT_READ
+  PAYOUT_PAUSE
+  PAYOUT_SCHEDULE
+  PAYOUT_HOLD
+  DISPUTE_READ
+  DISPUTE_RESOLVE
+  DISPUTE_REQUEST_INFO
+  RISK_READ
+  RISK_UPDATE_SCORE
+  RISK_AUTO_HOLD
+  FEATURE_FLAG_READ
+  FEATURE_FLAG_UPDATE
+  AUDIT_READ
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  RISK_ADMIN
+  SUPPORT_ADMIN
+  OPS_ADMIN
+  DEV_ADMIN
+}
+
 model VaultAsset {
   id                String          @id @default(cuid())
   riftId            String
@@ -606,4 +689,45 @@ model AdminReview {
   @@index([status])
   @@index([reviewerId])
   @@map("admin_reviews")
+}
+
+model AdminAuditLog {
+  id          String           @id @default(cuid())
+  adminUserId String
+  action      AdminAuditAction
+  objectType  String?
+  objectId    String?
+  beforeState Json?
+  afterState  Json?
+  reasonCode  String?
+  notes       String?
+  ipHash      String?
+  sessionId   String?
+  userAgentHash String?
+  timestampUtc DateTime         @default(now())
+
+  @@index([adminUserId])
+  @@index([action])
+  @@index([objectType, objectId])
+  @@index([timestampUtc])
+  @@map("admin_audit_logs")
+}
+
+model AdminSession {
+  id                String    @id @default(cuid())
+  adminUserId       String
+  sessionToken      String
+  ipHash            String?
+  userAgentHash     String?
+  deviceFingerprint  String?
+  isActive          Boolean   @default(true)
+  expiresAt         DateTime
+  lastActivityAt    DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+
+  @@unique([sessionToken])
+  @@index([adminUserId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("admin_sessions")
 }

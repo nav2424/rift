@@ -1,234 +1,181 @@
-# Cron Job Setup for Auto-Release
+# Cron Job Setup for Auto-Release and Payout Processing
 
-The Hybrid Protection System includes an auto-release feature that automatically releases funds after the grace period expires. This requires a scheduled job (cron) to call the auto-release endpoint periodically.
+This document describes the cron jobs required for Rift to function properly.
 
-## Quick Setup
+## Required Cron Jobs
 
-### Option 1: Vercel Cron (Recommended for Vercel Deployments)
+### 1. Auto-Release Cron (`/api/rifts/auto-release`)
+Automatically releases funds for rifts that have passed their auto-release deadline.
 
-If you're deploying to Vercel, cron jobs are automatically configured via `vercel.json`:
+**Schedule**: Every hour (`0 * * * *`)
+**Endpoint**: `/api/rifts/auto-release`
+**Method**: POST
+
+### 2. Payout Processing Cron (`/api/payouts/process`)
+Processes scheduled payouts that are ready to be sent to sellers.
+
+**Schedule**: Daily at 9 AM UTC (`0 9 * * *`)
+**Endpoint**: `/api/payouts/process`
+**Method**: POST
+**Authentication**: Requires `CRON_SECRET` environment variable
+
+## Option 1: Vercel Cron (Recommended for Vercel deployments)
+
+Add to your `vercel.json`:
 
 ```json
 {
   "crons": [
     {
-      "path": "/api/escrows/auto-release",
+      "path": "/api/rifts/auto-release",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/payouts/process",
+      "schedule": "0 9 * * *"
     }
   ]
 }
 ```
 
-**Schedule**: Runs every hour (`0 * * * *`)
+**Schedules Explained**:
+- `"0 * * * *"` - Every hour at minute 0
+- `"0 9 * * *"` - Daily at 9:00 AM UTC
 
-**Security**: Add `CRON_SECRET` environment variable in Vercel:
-1. Go to Project Settings → Environment Variables
-2. Add: `CRON_SECRET` = `your-secure-random-string`
-3. The endpoint will verify this secret before processing
+### Steps:
+1. Add the cron configuration to `vercel.json`
+2. Set `CRON_SECRET` environment variable in Vercel (for payout processing)
+3. Deploy to Vercel
+4. Vercel will automatically set up the cron jobs
 
-### Option 2: External Cron Service
+## Option 2: External Cron Service
 
-For other hosting platforms, use an external cron service:
+Use a service like:
+- **cron-job.org** (free)
+- **EasyCron** (free tier available)
+- **UptimeRobot** (free tier)
+- **GitHub Actions** (for free tier)
 
-#### Using cron-job.org (Free)
+### Example using cron-job.org:
+
+#### Auto-Release Cron:
 1. Sign up at https://cron-job.org
-2. Create a new cron job:
-   - **URL**: `https://your-domain.com/api/escrows/auto-release`
-   - **Schedule**: Every hour
-   - **Method**: POST
-   - **Headers**: 
-     - `Authorization: Bearer YOUR_CRON_SECRET`
-     - `Content-Type: application/json`
+2. Create a new cron job
+3. Set URL: `https://your-domain.com/api/rifts/auto-release`
+4. Set method: `POST`
+5. Set schedule: Every hour
+6. Save and activate
 
-#### Using EasyCron
-1. Sign up at https://www.easycron.com
-2. Configure similar to above
+#### Payout Processing Cron:
+1. Create another cron job
+2. Set URL: `https://your-domain.com/api/payouts/process`
+3. Set method: `POST`
+4. Add header: `Authorization: Bearer YOUR_CRON_SECRET`
+5. Set schedule: Daily at 9 AM UTC
+6. Save and activate
 
-#### Using GitHub Actions (Free for public repos)
-Create `.github/workflows/auto-release.yml`:
+### Example using GitHub Actions:
+
+Create `.github/workflows/cron-jobs.yml`:
 
 ```yaml
-name: Auto-Release Cron
+name: Rift Cron Jobs
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 * * * *'  # Auto-release: Every hour
+    - cron: '0 9 * * *'  # Payout processing: Daily at 9 AM UTC
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   auto-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Call Auto-Release API
+      - name: Trigger Auto-Release
         run: |
-          curl -X POST \
+          curl -X POST https://your-domain.com/api/rifts/auto-release \
+            -H "Content-Type: application/json"
+
+  payout-processing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process Payouts
+        run: |
+          curl -X POST https://your-domain.com/api/payouts/process \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            https://your-domain.com/api/escrows/auto-release
+            -H "Content-Type: application/json"
 ```
 
-Add `CRON_SECRET` to GitHub Secrets (Settings → Secrets and variables → Actions)
+## Environment Variables
 
-### Option 3: Server Cron (Self-Hosted)
+### Required:
+- `CRON_SECRET` - Secret token for authenticating payout processing cron (recommended)
 
-If you're running your own server, add to crontab:
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add this line (runs every hour)
-0 * * * * curl -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" https://your-domain.com/api/escrows/auto-release
-```
-
-Or create a script file (`/usr/local/bin/auto-release.sh`):
-
-```bash
-#!/bin/bash
-curl -X POST \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  -H "Content-Type: application/json" \
-  https://your-domain.com/api/escrows/auto-release
-```
-
-Make executable: `chmod +x /usr/local/bin/auto-release.sh`
-
-Then add to crontab:
-```
-0 * * * * /usr/local/bin/auto-release.sh
-```
-
-## Security
-
-### Setting CRON_SECRET
-
-1. **Generate a secure secret**:
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   ```
-
-2. **Set in environment variables**:
-   - Development: Add to `.env` file
-   - Production: Set in hosting platform (Vercel, Railway, etc.)
-
-3. **The endpoint verifies**:
-   ```typescript
-   // If CRON_SECRET is set, the endpoint requires:
-   Authorization: Bearer YOUR_CRON_SECRET
-   ```
+The auto-release endpoint doesn't require authentication (handles public webhook-style calls), but payout processing should be protected.
 
 ## Testing
 
-### Test Locally
-
-1. **Start your dev server**:
-   ```bash
-   npm run dev
-   ```
-
-2. **Run auto-release manually**:
-   ```bash
-   npm run cron:auto-release
-   ```
-
-   Or with curl:
-   ```bash
-   curl -X POST http://localhost:3000/api/escrows/auto-release
-   ```
-
-### Test End-to-End Flow
-
-Run the test script:
+### Test Auto-Release:
 ```bash
-npm run test:hybrid-flow
+curl -X POST https://your-domain.com/api/rifts/auto-release
 ```
 
-This will:
-- Create test rift
-- Verify shipment proof
-- Set grace period
-- Check auto-release eligibility
+### Test Payout Processing:
+```bash
+curl -X POST https://your-domain.com/api/payouts/process \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+### Local Testing:
+```bash
+# Auto-release
+curl -X POST http://localhost:3000/api/rifts/auto-release
+
+# Payout processing
+curl -X POST http://localhost:3000/api/payouts/process \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
 
 ## Monitoring
 
-### Check Logs
+Both endpoints return JSON responses with:
+- Success status
+- Number of items processed
+- Any errors that occurred
+- Summary of actions taken
 
-The auto-release endpoint returns results:
+### Auto-Release Response:
 ```json
 {
   "success": true,
-  "processed": 2,
-  "results": [
-    { "escrowId": "...", "success": true },
-    { "escrowId": "...", "success": false, "error": "..." }
-  ]
+  "processed": 5,
+  "results": [...]
 }
 ```
 
-### Set Up Alerts
-
-Monitor the cron job to ensure it's running:
-- Vercel: Check Function Logs in dashboard
-- External services: Use their monitoring features
-- Server: Check cron logs (`/var/log/cron`)
-
-## Schedule Options
-
-Current schedule: Every hour (`0 * * * *`)
-
-Other options:
-- Every 30 minutes: `*/30 * * * *`
-- Every 15 minutes: `*/15 * * * *`
-- Every day at midnight: `0 0 * * *`
-- Every 6 hours: `0 */6 * * *`
-
-**Recommendation**: Hourly is sufficient for most use cases. The grace period is 48 hours, so hourly checks provide plenty of precision.
+### Payout Processing Response:
+```json
+{
+  "success": true,
+  "processed": 3,
+  "results": [...]
+}
+```
 
 ## Troubleshooting
 
-### Cron Not Running
+### Cron jobs not running:
+1. Verify `vercel.json` is deployed
+2. Check Vercel dashboard for cron job status
+3. Verify environment variables are set
+4. Check endpoint logs for errors
 
-1. **Check endpoint is accessible**:
-   ```bash
-   curl https://your-domain.com/api/escrows/auto-release
-   ```
+### Authentication errors (payout processing):
+1. Verify `CRON_SECRET` is set in environment variables
+2. Check that Authorization header matches exactly: `Bearer YOUR_SECRET`
+3. Verify the secret is correctly configured in your cron service
 
-2. **Check logs**:
-   - Vercel: Function Logs
-   - Server: `/var/log/cron` or cron service logs
-
-3. **Test manually**:
-   ```bash
-   curl -X POST https://your-domain.com/api/escrows/auto-release
-   ```
-
-### 401 Unauthorized
-
-- Verify `CRON_SECRET` is set in environment variables
-- Check Authorization header format: `Bearer YOUR_SECRET`
-- Restart server after setting environment variable
-
-### No Escrows Processed
-
-This is normal if:
-- No escrows are past grace period
-- All escrows have open disputes
-- All escrows are already released
-
-Check the response for details.
-
-## Manual Override
-
-If needed, you can manually trigger auto-release:
-
-```bash
-curl -X POST \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  https://your-domain.com/api/escrows/auto-release
-```
-
-Or use the GET endpoint (no auth required in development):
-```bash
-curl https://your-domain.com/api/escrows/auto-release
-```
-
+### No items processed:
+- This is normal if there are no eligible rifts/payouts
+- Check database to verify there are items that should be processed
+- Verify schedule times are correct (UTC)

@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, Fragment } from 'react'
+
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import PremiumButton from './ui/PremiumButton'
 import GlassCard from './ui/GlassCard'
+import DatePicker from './ui/DatePicker'
 import { ItemType } from './ItemTypeSelection'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 import { useToast } from './ui/Toast'
@@ -22,6 +25,15 @@ interface CreateEscrowFormProps {
   creatorRole: 'BUYER' | 'SELLER'
 }
 
+// Get today's date in YYYY-MM-DD format
+const getTodayDateString = () => {
+  const today = new Date()
+  const y = today.getFullYear()
+  const m = today.getMonth() + 1
+  const d = today.getDate()
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
 export default function CreateEscrowForm({ users, itemType, creatorRole }: CreateEscrowFormProps) {
   const router = useRouter()
   const { data: session } = useSession()
@@ -34,7 +46,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   
-  const [formData, setFormData] = useState({
+  // Default form data to ensure all fields are always defined
+  const defaultFormData = {
     itemTitle: '',
     itemDescription: '',
     amount: '',
@@ -44,15 +57,27 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     buyerId: '',
     buyerEmail: '',
     notes: '',
-    // Type-specific fields
-    eventDate: '',
+    // Ticket-specific fields
+    eventDate: getTodayDateString(),
     venue: '',
     transferMethod: '',
-    downloadLink: '',
-    licenseKey: '',
-    serviceDate: '',
-    quantity: '1', // For tickets
-  })
+    seatSection: '',
+    seatRow: '',
+    seatNumbers: '',
+    quantity: '1',
+    // Service-specific fields
+    serviceDate: getTodayDateString(),
+    serviceScope: '',
+    serviceDeliverables: '',
+    completionCriteria: '',
+    allowsPartialRelease: false,
+    milestones: [] as Array<{ title: string; description: string; amount: string; dueDate: string }>,
+    // License key-specific fields
+    softwareName: '',
+    licenseType: '',
+  }
+
+  const [formData, setFormData] = useState(defaultFormData)
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -67,7 +92,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   const TITLE_MAX_LENGTH = 100
   const DESCRIPTION_MAX_LENGTH = 1000
   const AMOUNT_MIN = 5
-  const AMOUNT_MAX = 100000
 
   // Currency symbols mapping
   const currencySymbols: Record<string, string> = {
@@ -104,13 +128,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         if (!value) return 'Amount is required'
         const num = parseFloat(value)
         if (isNaN(num) || num <= 0) return 'Amount must be a positive number'
-        if (num < AMOUNT_MIN) return `Minimum amount is ${currencySymbols[formData.currency] || ''}${AMOUNT_MIN}`
-        if (num > AMOUNT_MAX) return `Maximum amount is ${currencySymbols[formData.currency] || ''}${AMOUNT_MAX.toLocaleString()}`
+        if (num < AMOUNT_MIN) return `Minimum amount is ${currencySymbols[formData.currency] || ''}${AMOUNT_MIN.toFixed(2)}`
         return ''
-      case 'downloadLink':
-        if (itemType === 'DIGITAL' && !value.trim()) return 'Download link is required'
-        if (value && !/^https?:\/\/.+/.test(value)) return 'Please enter a valid URL (must start with http:// or https://)'
-        return ''
+      // Digital file fields removed from creation - no validation needed
       case 'eventDate':
         if (itemType === 'TICKETS' && !value) return 'Event date is required'
         if (value) {
@@ -123,11 +143,36 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       case 'venue':
         if (itemType === 'TICKETS' && !value.trim()) return 'Venue is required'
         return ''
+      case 'seatSection':
+        if (itemType === 'TICKETS' && !value.trim()) return 'Section is required'
+        return ''
+      case 'seatRow':
+        if (itemType === 'TICKETS' && !value.trim()) return 'Row is required'
+        return ''
+      case 'seatNumbers':
+        if (itemType === 'TICKETS' && !value.trim()) return 'Seat numbers are required'
+        return ''
       case 'transferMethod':
         if (itemType === 'TICKETS' && !value) return 'Transfer method is required'
         return ''
+      // License key fields removed from creation - no validation needed
       case 'serviceDate':
-        if (itemType === 'SERVICES' && !value.trim()) return 'Service date/timeline is required'
+        if (itemType === 'SERVICES' && !value) return 'Service date is required'
+        if (value) {
+          const selectedDate = new Date(value)
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          if (selectedDate < today) return 'Service date must be today or in the future'
+        }
+        return ''
+      case 'serviceScope':
+        if (itemType === 'SERVICES' && !value.trim()) return 'Scope of service is required'
+        return ''
+      case 'serviceDeliverables':
+        if (itemType === 'SERVICES' && !value.trim()) return 'Deliverables are required'
+        return ''
+      case 'completionCriteria':
+        if (itemType === 'SERVICES' && !value.trim()) return 'Completion criteria are required'
         return ''
       default:
         return ''
@@ -142,7 +187,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        setFormData(parsed)
+        // Merge with defaults to ensure all fields are present
+        setFormData({ ...defaultFormData, ...parsed })
       } catch (e) {
         console.error('Failed to load draft:', e)
       }
@@ -168,14 +214,20 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
       setSearchLoading(true)
       try {
-        const response = await fetch(`/api/users/search?q=${encodeURIComponent(query.trim())}`, {
+        const trimmedQuery = query.trim().toUpperCase()
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(trimmedQuery)}&exactRiftId=true`, {
           credentials: 'include',
         })
         if (response.ok) {
           const data = await response.json()
-          // Only show results if exact match found
+          // Only show results if exact Rift ID match found
           setSearchResults(data.users || [])
           setShowResults(data.users && data.users.length > 0)
+        } else {
+          // Handle non-OK responses
+          console.error('Search failed:', response.status, response.statusText)
+          setSearchResults([])
+          setShowResults(false)
         }
       } catch (error) {
         console.error('Search error:', error)
@@ -246,15 +298,37 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     
     // Validate all fields
     const allErrors: Record<string, string> = {}
-    Object.keys(formData).forEach((key) => {
-      if (key === 'quantity' && itemType !== 'TICKETS') return // Skip quantity for non-tickets
-      if (key === 'licenseKey') return // Optional field
-      if (key === 'notes') return // Optional field
-      if (key === 'sellerId' || key === 'sellerEmail' || key === 'buyerId' || key === 'buyerEmail') return // Handled separately
       
+    // Always validate basic fields
+    const basicFields = ['itemTitle', 'itemDescription', 'amount']
+    basicFields.forEach((key) => {
       const error = validateField(key, formData[key as keyof typeof formData] as string)
       if (error) allErrors[key] = error
     })
+    
+    // Type-specific validation
+    if (itemType === 'TICKETS') {
+      const ticketFields = ['eventDate', 'venue', 'seatSection', 'seatRow', 'seatNumbers', 'transferMethod']
+      ticketFields.forEach((key) => {
+        const error = validateField(key, formData[key as keyof typeof formData] as string)
+        if (error) allErrors[key] = error
+      })
+    } else if (itemType === 'DIGITAL') {
+      // No validation needed for digital items during creation
+      // Proof of delivery (files, links, license keys) will be submitted after payment
+    } else if (itemType === 'SERVICES') {
+      const serviceFields = ['serviceDate', 'serviceScope', 'serviceDeliverables', 'completionCriteria']
+      serviceFields.forEach((key) => {
+        const error = validateField(key, formData[key as keyof typeof formData] as string)
+        if (error) allErrors[key] = error
+      })
+    } else if (itemType === 'LICENSE_KEYS') {
+      const licenseFields = ['softwareName', 'licenseType']
+      licenseFields.forEach((key) => {
+        const error = validateField(key, formData[key as keyof typeof formData] as string)
+        if (error) allErrors[key] = error
+      })
+    }
     
     // Validate partner selection
     const hasSeller = creatorRole === 'BUYER' && (formData.sellerId || selectedUser)
@@ -275,7 +349,20 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     setErrors(allErrors)
     
     if (Object.keys(allErrors).length > 0) {
-      showToast('Please fix all errors before submitting', 'error')
+      // Show first error in toast, and log all errors for debugging
+      const firstErrorKey = Object.keys(allErrors)[0]
+      const firstError = allErrors[firstErrorKey]
+      console.error('Validation errors:', allErrors)
+      showToast(`Please fix errors: ${firstError}`, 'error')
+      
+      // Scroll to first error field
+      const errorElement = document.querySelector(`[name="${firstErrorKey}"], #${firstErrorKey}`)
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        if (errorElement instanceof HTMLElement) {
+          errorElement.focus()
+        }
+      }
       return
     }
     
@@ -334,15 +421,49 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       if (itemType === 'TICKETS') {
         payload.eventDate = formData.eventDate
         payload.venue = formData.venue
+        // Construct seat details from separate fields
+        if (formData.seatSection && formData.seatRow && formData.seatNumbers) {
+          payload.seatDetails = `Section ${formData.seatSection}, Row ${formData.seatRow}, Seats ${formData.seatNumbers}`
+        } else {
+          // Fallback if fields are missing (shouldn't happen due to validation)
+          payload.seatDetails = ''
+        }
         payload.transferMethod = formData.transferMethod
         payload.quantity = parseInt(formData.quantity) || 1
       } else if (itemType === 'DIGITAL') {
-        payload.downloadLink = formData.downloadLink
-        payload.licenseKey = formData.licenseKey || null
+        // No digital-specific fields during creation
+        // Files, links, and license keys will be added during proof submission after payment
       } else if (itemType === 'SERVICES') {
         payload.serviceDate = formData.serviceDate
+        payload.serviceScope = formData.serviceScope
+        payload.serviceDeliverables = formData.serviceDeliverables
+        payload.completionCriteria = formData.completionCriteria
+        payload.allowsPartialRelease = formData.allowsPartialRelease
+        if (formData.allowsPartialRelease && formData.milestones && formData.milestones.length > 0) {
+          // Validate milestones sum equals total amount
+          const milestoneTotal = formData.milestones.reduce((sum, m) => sum + parseFloat(m.amount || '0'), 0)
+          if (Math.abs(milestoneTotal - parseFloat(formData.amount || '0')) > 0.01) {
+            showToast('Milestone amounts must equal the total rift amount', 'error')
+            return
+          }
+          // Validate all milestones have required fields
+          const milestones = formData.milestones || []
+          for (const milestone of milestones) {
+            if (!milestone.title || !milestone.amount || !milestone.dueDate) {
+              showToast('All milestones must have a title, amount, and due date', 'error')
+              return
+            }
+          }
+          payload.milestones = milestones.map(m => ({
+            title: m.title,
+            description: m.description || '',
+            amount: parseFloat(m.amount),
+            dueDate: m.dueDate,
+          }))
+        }
       }
 
+      // Create rift first
       const response = await fetch('/api/rifts/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -364,25 +485,31 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           error: errorMessage,
           statusText: response.statusText,
           details: error.details,
+          payload: payload, // Log payload for debugging
         })
         
         if (response.status === 401) {
           showToast('You are not authenticated. Please sign in again.', 'error')
           router.push('/auth/signin')
         } else {
-          showToast(errorMessage, 'error')
+          // Show more detailed error message
+          const detailedError = error.details 
+            ? `${errorMessage}\n\nDetails: ${error.details}` 
+            : errorMessage
+          showToast(detailedError, 'error')
         }
         setLoading(false)
         return
       }
 
       const data = await response.json()
+      const riftId = data.escrowId
       
       // Clear draft on success
       localStorage.removeItem(DRAFT_KEY)
       
       showToast('Rift created successfully!', 'success')
-      router.push(`/rifts/${data.escrowId}`)
+      router.push(`/rifts/${riftId}`)
     } catch (error) {
       console.error('Error creating rift:', error)
       showToast('Failed to create rift. Please try again.', 'error')
@@ -416,16 +543,33 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         if (itemType === 'TICKETS') {
           const dateError = validateField('eventDate', formData.eventDate)
           const venueError = validateField('venue', formData.venue)
+          const sectionError = validateField('seatSection', formData.seatSection)
+          const rowError = validateField('seatRow', formData.seatRow)
+          const seatNumbersError = validateField('seatNumbers', formData.seatNumbers)
           const methodError = validateField('transferMethod', formData.transferMethod)
           if (dateError) stepErrors.eventDate = dateError
           if (venueError) stepErrors.venue = venueError
+          if (sectionError) stepErrors.seatSection = sectionError
+          if (rowError) stepErrors.seatRow = rowError
+          if (seatNumbersError) stepErrors.seatNumbers = seatNumbersError
           if (methodError) stepErrors.transferMethod = methodError
         } else if (itemType === 'DIGITAL') {
-          const linkError = validateField('downloadLink', formData.downloadLink)
-          if (linkError) stepErrors.downloadLink = linkError
+          // No validation needed for digital items during creation
+          // Proof of delivery (files, links, license keys) will be submitted after payment
         } else if (itemType === 'SERVICES') {
           const serviceError = validateField('serviceDate', formData.serviceDate)
+          const scopeError = validateField('serviceScope', formData.serviceScope)
+          const deliverablesError = validateField('serviceDeliverables', formData.serviceDeliverables)
+          const criteriaError = validateField('completionCriteria', formData.completionCriteria)
           if (serviceError) stepErrors.serviceDate = serviceError
+          if (scopeError) stepErrors.serviceScope = scopeError
+          if (deliverablesError) stepErrors.serviceDeliverables = deliverablesError
+          if (criteriaError) stepErrors.completionCriteria = criteriaError
+        } else if (itemType === 'LICENSE_KEYS') {
+          const softwareError = validateField('softwareName', formData.softwareName)
+          const licenseTypeError = validateField('licenseType', formData.licenseType)
+          if (softwareError) stepErrors.softwareName = softwareError
+          if (licenseTypeError) stepErrors.licenseType = licenseTypeError
         }
         break
     }
@@ -452,7 +596,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     'Basic Information',
     'Payment Details',
     'Partner Selection',
-    itemType === 'TICKETS' ? 'Event Details' : itemType === 'DIGITAL' ? 'Delivery Details' : 'Service Details',
+    itemType === 'TICKETS' ? 'Event Details' 
+      : itemType === 'DIGITAL' ? 'Item Details' 
+      : itemType === 'SERVICES' ? 'Service Details'
+      : 'License Details',
     'Review & Submit'
   ]
 
@@ -545,6 +692,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               placeholder={
                 itemType === 'TICKETS' ? 'e.g., Taylor Swift Concert Tickets' :
                 itemType === 'DIGITAL' ? 'e.g., Premium Software License' :
+                itemType === 'LICENSE_KEYS' ? 'e.g., Adobe Creative Cloud License' :
                 'e.g., Web Development Service'
               }
             />
@@ -560,27 +708,29 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 ({formData.itemDescription.length}/{DESCRIPTION_MAX_LENGTH} characters)
               </span>
             </label>
-            <textarea
-              required
-              maxLength={DESCRIPTION_MAX_LENGTH}
-              value={formData.itemDescription}
-              onChange={(e) => {
-                setFormData({ ...formData, itemDescription: e.target.value })
-                const error = validateField('itemDescription', e.target.value)
-                setErrors({ ...errors, itemDescription: error })
-              }}
-              onBlur={(e) => {
-                const error = validateField('itemDescription', e.target.value)
-                setErrors({ ...errors, itemDescription: error })
-              }}
-              className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
-                errors.itemDescription 
-                  ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                  : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-              }`}
-              rows={5}
-              placeholder="Describe the item in detail..."
-            />
+            <div className="relative">
+              <textarea
+                required
+                maxLength={DESCRIPTION_MAX_LENGTH}
+                value={formData.itemDescription}
+                onChange={(e) => {
+                  setFormData({ ...formData, itemDescription: e.target.value })
+                  const error = validateField('itemDescription', e.target.value)
+                  setErrors({ ...errors, itemDescription: error })
+                }}
+                onBlur={(e) => {
+                  const error = validateField('itemDescription', e.target.value)
+                  setErrors({ ...errors, itemDescription: error })
+                }}
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                  errors.itemDescription 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                rows={5}
+                placeholder="Describe the item in detail..."
+              />
+            </div>
             {errors.itemDescription && (
               <p className="mt-2 text-sm text-red-400 font-light">{errors.itemDescription}</p>
             )}
@@ -605,7 +755,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               <label className="block text-sm font-light text-white/80 mb-3">
                 Transaction Amount (Subtotal) *
                 <span className="ml-2 text-xs text-white/50 font-light">
-                  Min: {currencySymbols[formData.currency] || ''}{AMOUNT_MIN}, Max: {currencySymbols[formData.currency] || ''}{AMOUNT_MAX.toLocaleString()}
+                  Min: {currencySymbols[formData.currency] || ''}{AMOUNT_MIN.toFixed(2)}
                 </span>
               </label>
               <div className="relative">
@@ -617,7 +767,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   step="0.01"
                   required
                   min={AMOUNT_MIN}
-                  max={AMOUNT_MAX}
                   value={formData.amount}
                   onChange={(e) => {
                     setFormData({ ...formData, amount: e.target.value })
@@ -777,6 +926,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 </div>
               </div>
             )}
+            </div>
 
             {/* Selected User Display */}
             {selectedUser && (
@@ -823,17 +973,16 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>
-                  <strong className="text-white/80">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'seller' : 'buyer'} for their Rift User ID. It looks like <code className="bg-white/10 px-1 rounded font-mono">RIFT111111</code>. Only exact matches will appear in search results.
+                  <strong className="text-white/80">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'seller' : 'buyer'} for their Rift User ID. It looks like <code className="bg-white/10 px-1 rounded font-mono">RIFT111111</code>.                   Only exact matches will appear in search results.
                 </span>
               </p>
             )}
-          </div>
           </div>
         )}
 
         {/* Step 4: Type-specific fields */}
         {currentStep === 4 && (
-          <>
+          <div>
             {itemType === 'TICKETS' && (
               <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
@@ -852,36 +1001,16 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     Must be in the future
                   </span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    value={formData.eventDate}
-                    onChange={(e) => {
-                      setFormData({ ...formData, eventDate: e.target.value })
-                      const error = validateField('eventDate', e.target.value)
-                      setErrors({ ...errors, eventDate: error })
-                    }}
-                    onBlur={(e) => {
-                      const error = validateField('eventDate', e.target.value)
-                      setErrors({ ...errors, eventDate: error })
-                    }}
-                    className={`w-full px-5 py-3.5 pr-12 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light date-input-visible ${
-                      errors.eventDate 
-                        ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                        : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                    }`}
-                    style={{
-                      colorScheme: 'dark',
-                    }}
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    <svg className="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
+                <DatePicker
+                  value={formData.eventDate}
+                  onChange={(date) => {
+                    setFormData({ ...formData, eventDate: date })
+                    const error = validateField('eventDate', date)
+                    setErrors({ ...errors, eventDate: error })
+                  }}
+                  minDate={getTodayDateString()}
+                  className={errors.eventDate ? 'border-red-500/50' : ''}
+                />
                 {errors.eventDate && (
                   <p className="mt-2 text-sm text-red-400 font-light">{errors.eventDate}</p>
                 )}
@@ -957,14 +1086,101 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   }`}
                 >
                   <option value="" className="bg-black/90">Select transfer method...</option>
-                  <option value="email" className="bg-black/90">Email Transfer</option>
-                  <option value="mobile_app" className="bg-black/90">Mobile App (Ticketmaster, etc.)</option>
-                  <option value="pdf" className="bg-black/90">PDF Download</option>
-                  <option value="other" className="bg-black/90">Other</option>
+                  <option value="TICKETMASTER" className="bg-black/90">Ticketmaster</option>
+                  <option value="AXS" className="bg-black/90">AXS</option>
+                  <option value="SEATGEEK" className="bg-black/90">SeatGeek</option>
+                  <option value="EMAIL" className="bg-black/90">Email Transfer</option>
+                  <option value="PDF" className="bg-black/90">PDF Download</option>
+                  <option value="OTHER" className="bg-black/90">Other</option>
                 </select>
                 {errors.transferMethod && (
                   <p className="mt-2 text-sm text-red-400 font-light">{errors.transferMethod}</p>
                 )}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-light text-white/80 mb-3">
+                Seat Details *
+              </label>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-light text-white/60 mb-2">Section</label>
+              <input
+                    type="text"
+                required
+                    value={formData.seatSection}
+                onChange={(e) => {
+                      setFormData({ ...formData, seatSection: e.target.value })
+                      const error = validateField('seatSection', e.target.value)
+                      setErrors({ ...errors, seatSection: error })
+                }}
+                onBlur={(e) => {
+                      const error = validateField('seatSection', e.target.value)
+                      setErrors({ ...errors, seatSection: error })
+                }}
+                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+                      errors.seatSection 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                    placeholder="e.g., 101"
+              />
+                  {errors.seatSection && (
+                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatSection}</p>
+              )}
+            </div>
+            <div>
+                  <label className="block text-xs font-light text-white/60 mb-2">Row</label>
+              <input
+                type="text"
+                    required
+                    value={formData.seatRow}
+                    onChange={(e) => {
+                      setFormData({ ...formData, seatRow: e.target.value })
+                      const error = validateField('seatRow', e.target.value)
+                      setErrors({ ...errors, seatRow: error })
+                    }}
+                    onBlur={(e) => {
+                      const error = validateField('seatRow', e.target.value)
+                      setErrors({ ...errors, seatRow: error })
+                    }}
+                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+                      errors.seatRow 
+                        ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                        : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    }`}
+                    placeholder="e.g., 5"
+                  />
+                  {errors.seatRow && (
+                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatRow}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-light text-white/60 mb-2">Seat Numbers</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.seatNumbers}
+                    onChange={(e) => {
+                      setFormData({ ...formData, seatNumbers: e.target.value })
+                      const error = validateField('seatNumbers', e.target.value)
+                      setErrors({ ...errors, seatNumbers: error })
+                    }}
+                    onBlur={(e) => {
+                      const error = validateField('seatNumbers', e.target.value)
+                      setErrors({ ...errors, seatNumbers: error })
+                    }}
+                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+                      errors.seatNumbers 
+                        ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                        : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    }`}
+                    placeholder="e.g., 1-2"
+                  />
+                  {errors.seatNumbers && (
+                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatNumbers}</p>
+                  )}
+                </div>
               </div>
             </div>
               </div>
@@ -980,48 +1196,102 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
               <h2 className="text-2xl font-light text-white">Delivery Details</h2>
             </div>
-            <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
-                Download Link *
-                <span className="ml-2 text-xs text-white/50 font-light">
-                  Must be a valid URL (http:// or https://)
-                </span>
-              </label>
-              <input
-                type="url"
-                required
-                value={formData.downloadLink}
-                onChange={(e) => {
-                  setFormData({ ...formData, downloadLink: e.target.value })
-                  const error = validateField('downloadLink', e.target.value)
-                  setErrors({ ...errors, downloadLink: error })
-                }}
-                onBlur={(e) => {
-                  const error = validateField('downloadLink', e.target.value)
-                  setErrors({ ...errors, downloadLink: error })
-                }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                  errors.downloadLink 
-                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-                placeholder="https://example.com/download"
-              />
-              {errors.downloadLink && (
-                <p className="mt-2 text-sm text-red-400 font-light">{errors.downloadLink}</p>
-              )}
+            
+            <div className="p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-white/90 font-light mb-2">Proof of delivery will be required after payment</p>
+                  <p className="text-white/60 text-sm font-light">
+                    After the buyer pays, you'll be able to upload files to Rift Vault, provide download links, or add license keys when submitting proof of delivery.
+                  </p>
+                </div>
+              </div>
             </div>
+          </div>
+            )}
+
+            {itemType === 'LICENSE_KEYS' && (
+              <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/10 border border-emerald-500/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-light text-white">License Details</h2>
+            </div>
+            
+            <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-6">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-white/90 font-light mb-2">License keys will be securely delivered after payment</p>
+                  <p className="text-white/60 text-sm font-light">
+                    After the buyer pays, you'll be able to add license keys, account invites, or download links when submitting proof of delivery.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
-                License Key <span className="text-white/50">(if applicable)</span>
+              <label className="block text-sm font-medium text-white/70 mb-2">
+                Software Name <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
-                value={formData.licenseKey}
-                onChange={(e) => setFormData({ ...formData, licenseKey: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light"
-                placeholder="Enter license key..."
+                value={formData.softwareName}
+                onChange={(e) => {
+                  setFormData({ ...formData, softwareName: e.target.value })
+                  if (errors.softwareName) {
+                    setErrors({ ...errors, softwareName: '' })
+                  }
+                }}
+                className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 transition-all ${
+                  errors.softwareName
+                    ? 'border-red-400/50 focus:ring-red-400/50 focus:border-red-400/50'
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                placeholder="e.g., Adobe Photoshop, Microsoft Office"
               />
+              {errors.softwareName && (
+                <p className="text-red-400 text-xs mt-1.5">{errors.softwareName}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">
+                License Type <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={formData.licenseType}
+                onChange={(e) => {
+                  setFormData({ ...formData, licenseType: e.target.value })
+                  if (errors.licenseType) {
+                    setErrors({ ...errors, licenseType: '' })
+                  }
+                }}
+                className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 transition-all ${
+                  errors.licenseType
+                    ? 'border-red-400/50 focus:ring-red-400/50 focus:border-red-400/50'
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+              >
+                <option value="">Select license type</option>
+                <option value="SINGLE_USE">Single Use</option>
+                <option value="MULTI_USE">Multi-Use</option>
+                <option value="LIFETIME">Lifetime</option>
+                <option value="SUBSCRIPTION">Subscription</option>
+                <option value="ACCOUNT_ACCESS">Account Access</option>
+                <option value="OTHER">Other</option>
+              </select>
+              {errors.licenseType && (
+                <p className="text-red-400 text-xs mt-1.5">{errors.licenseType}</p>
+              )}
             </div>
           </div>
             )}
@@ -1039,35 +1309,311 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             </div>
             <div>
               <label className="block text-sm font-light text-white/80 mb-3">
-                Service Date / Timeline *
+                Service Date / Delivery Date *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  When will the service be completed?
+                </span>
               </label>
-              <input
-                type="text"
-                required
+              <DatePicker
                 value={formData.serviceDate}
-                onChange={(e) => {
-                  setFormData({ ...formData, serviceDate: e.target.value })
-                  const error = validateField('serviceDate', e.target.value)
+                onChange={(date) => {
+                  setFormData({ ...formData, serviceDate: date })
+                  const error = validateField('serviceDate', date)
                   setErrors({ ...errors, serviceDate: error })
                 }}
-                onBlur={(e) => {
-                  const error = validateField('serviceDate', e.target.value)
-                  setErrors({ ...errors, serviceDate: error })
-                }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                  errors.serviceDate 
-                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-                placeholder="e.g., January 15, 2024 or Within 2 weeks"
+                minDate={getTodayDateString()}
+                className={errors.serviceDate ? 'border-red-500/50' : ''}
               />
               {errors.serviceDate && (
                 <p className="mt-2 text-sm text-red-400 font-light">{errors.serviceDate}</p>
               )}
             </div>
+            <div>
+              <label className="block text-sm font-light text-white/80 mb-3">
+                Scope of Service *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  What work will be performed?
+                </span>
+              </label>
+              <textarea
+                required
+                value={formData.serviceScope}
+                onChange={(e) => {
+                  setFormData({ ...formData, serviceScope: e.target.value })
+                  const error = validateField('serviceScope', e.target.value)
+                  setErrors({ ...errors, serviceScope: error })
+                }}
+                onBlur={(e) => {
+                  const error = validateField('serviceScope', e.target.value)
+                  setErrors({ ...errors, serviceScope: error })
+                }}
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                  errors.serviceScope 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                rows={4}
+                placeholder="Describe the scope of work, tasks, and responsibilities..."
+              />
+              {errors.serviceScope && (
+                <p className="mt-2 text-sm text-red-400 font-light">{errors.serviceScope}</p>
+              )}
+              </div>
+            <div>
+              <label className="block text-sm font-light text-white/80 mb-3">
+                Deliverables *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  What will be delivered upon completion?
+                </span>
+              </label>
+              <textarea
+                required
+                value={formData.serviceDeliverables}
+                onChange={(e) => {
+                  setFormData({ ...formData, serviceDeliverables: e.target.value })
+                  const error = validateField('serviceDeliverables', e.target.value)
+                  setErrors({ ...errors, serviceDeliverables: error })
+                }}
+                onBlur={(e) => {
+                  const error = validateField('serviceDeliverables', e.target.value)
+                  setErrors({ ...errors, serviceDeliverables: error })
+                }}
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                  errors.serviceDeliverables 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                rows={4}
+                placeholder="List all deliverables: files, reports, designs, code, etc..."
+              />
+              {errors.serviceDeliverables && (
+                <p className="mt-2 text-sm text-red-400 font-light">{errors.serviceDeliverables}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-light text-white/80 mb-3">
+                Completion Criteria *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  How will completion be determined?
+                </span>
+              </label>
+              <textarea
+                required
+                value={formData.completionCriteria}
+                onChange={(e) => {
+                  setFormData({ ...formData, completionCriteria: e.target.value })
+                  const error = validateField('completionCriteria', e.target.value)
+                  setErrors({ ...errors, completionCriteria: error })
+                }}
+                onBlur={(e) => {
+                  const error = validateField('completionCriteria', e.target.value)
+                  setErrors({ ...errors, completionCriteria: error })
+                }}
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                  errors.completionCriteria 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                rows={3}
+                placeholder="Define clear completion criteria that buyer can verify..."
+              />
+              {errors.completionCriteria && (
+                <p className="mt-2 text-sm text-red-400 font-light">{errors.completionCriteria}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
+              <input
+                type="checkbox"
+                id="allowsPartialRelease"
+                checked={formData.allowsPartialRelease ?? false}
+                onChange={(e) => setFormData({ ...formData, allowsPartialRelease: e.target.checked })}
+                className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              />
+              <label htmlFor="allowsPartialRelease" className="text-white/80 font-light cursor-pointer flex-1">
+                <span className="font-medium">Allow partial release per milestone</span>
+                <p className="text-xs text-white/60 font-light mt-1">
+                  Enable milestone-based payments. Funds can be released incrementally as milestones are completed.
+                </p>
+              </label>
+            </div>
+
+            {formData.allowsPartialRelease && (
+              <div className="space-y-4 p-6 bg-white/[0.03] border border-white/10 rounded-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-light text-white">Milestones</h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const totalAmount = parseFloat(formData.amount || '0')
+                      const milestones = formData.milestones || []
+                      const existingTotal = milestones.reduce((sum, m) => sum + parseFloat(m.amount || '0'), 0)
+                      const remaining = totalAmount - existingTotal
+                      
+                      setFormData({
+                        ...formData,
+                        milestones: [
+                          ...milestones,
+                          {
+                            title: '',
+                            description: '',
+                            amount: remaining > 0 ? remaining.toFixed(2) : '',
+                            dueDate: getTodayDateString(),
+                          },
+                        ],
+                      })
+                    }}
+                    className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 text-sm font-light transition-colors"
+                  >
+                    + Add Milestone
+                  </button>
+                </div>
+
+                {(!formData.milestones || formData.milestones.length === 0) ? (
+                  <p className="text-white/50 text-sm font-light text-center py-4">
+                    No milestones added yet. Click "Add Milestone" to create payment milestones.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {(() => {
+                      const totalAmount = parseFloat(formData.amount || '0')
+                      const milestones = formData.milestones || []
+                      const existingTotal = milestones.reduce((sum, m) => sum + parseFloat(m.amount || '0'), 0)
+                      
+                      return (
+                        <>
+                          {milestones.map((milestone, index) => {
+                            const remaining = totalAmount - existingTotal + parseFloat(milestone.amount || '0')
+                            
+                            return (
+                        <div 
+                          key={index} 
+                          className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-white/60 text-sm font-light">Milestone {index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const milestones = formData.milestones || []
+                                const newMilestones = milestones.filter((_, i) => i !== index)
+                                setFormData({ ...formData, milestones: newMilestones })
+                              }}
+                              className="text-red-400 hover:text-red-300 text-sm font-light"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs text-white/60 font-light mb-1">Title *</label>
+                            <input
+                              type="text"
+                              value={milestone.title}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                const milestones = formData.milestones || []
+                                const newMilestones = [...milestones]
+                                newMilestones[index].title = e.target.value
+                                setFormData({ ...formData, milestones: newMilestones })
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              placeholder="e.g., Initial Design, First Draft, Final Delivery"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs text-white/60 font-light mb-1">Description</label>
+                            <textarea
+                              value={milestone.description}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                const milestones = formData.milestones || []
+                                const newMilestones = [...milestones]
+                                newMilestones[index].description = e.target.value
+                                setFormData({ ...formData, milestones: newMilestones })
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                              rows={2}
+                              placeholder="What needs to be completed for this milestone?"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-white/60 font-light mb-1">Amount ({formData.currency}) *</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={milestone.amount}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  const milestones = formData.milestones || []
+                                  const newMilestones = [...milestones]
+                                  newMilestones[index].amount = e.target.value
+                                  setFormData({ ...formData, milestones: newMilestones })
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                placeholder="0.00"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-xs text-white/60 font-light mb-1">
+                                Due Date *
+                              </label>
+                              <DatePicker
+                                value={milestone.dueDate}
+                                onChange={(date) => {
+                                  const milestones = formData.milestones || []
+                                  const newMilestones = [...milestones]
+                                  newMilestones[index].dueDate = date
+                                  setFormData({ ...formData, milestones: newMilestones })
+                                }}
+                                minDate={getTodayDateString()}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                          
+                          {remaining < 0 && (
+                            <p className="text-red-400 text-xs font-light">
+                              Milestone amounts exceed total rift amount by {currencySymbols[formData.currency] || formData.currency} {Math.abs(remaining).toFixed(2)}
+                            </p>
+                          )}
+                            </div>
+                            )
+                          })}
+                          
+                          <div className="pt-2 border-t border-white/10">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-white/60 font-light">Total Milestone Amount:</span>
+                              <span className={`font-light ${existingTotal > totalAmount ? 'text-red-400' : existingTotal < totalAmount ? 'text-yellow-400' : 'text-green-400'}`}>
+                                {currencySymbols[formData.currency] || formData.currency} {existingTotal.toFixed(2)} / {currencySymbols[formData.currency] || formData.currency} {totalAmount.toFixed(2)}
+                              </span>
+                            </div>
+                            {existingTotal !== totalAmount && (
+                              <p className="text-xs text-white/50 font-light mt-1">
+                                {existingTotal < totalAmount 
+                                  ? `Remaining: ${currencySymbols[formData.currency] || formData.currency} ${(totalAmount - existingTotal).toFixed(2)}`
+                                  : 'Milestone amounts exceed total rift amount'}
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             )}
-          </>
+          </div>
+            )}
+          </div>
         )}
 
         {/* Step 5: Review & Submit */}
@@ -1180,7 +1726,15 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                           <p className="text-white font-light">{formData.quantity} {formData.quantity === '1' ? 'ticket' : 'tickets'}</p>
                         </div>
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Transfer</p>
+                          <p className="text-white/50 text-xs font-light mb-1">Seat Details</p>
+                          <p className="text-white font-light">
+                            {formData.seatSection && formData.seatRow && formData.seatNumbers
+                              ? `Section ${formData.seatSection}, Row ${formData.seatRow}, Seats ${formData.seatNumbers}`
+                              : 'Not set'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs font-light mb-1">Transfer Method</p>
                           <p className="text-white font-light capitalize">{formData.transferMethod?.replace('_', ' ') || 'Not set'}</p>
                         </div>
                       </div>
@@ -1199,13 +1753,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Delivery</h4>
-                      <p className="text-white font-light break-all mb-3">{formData.downloadLink || 'Not set'}</p>
-                      {formData.licenseKey && (
-                        <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                          <p className="text-white/50 text-xs font-light mb-1">License Key</p>
-                          <p className="text-white font-light font-mono text-sm">{formData.licenseKey}</p>
-                        </div>
-                      )}
+                      <p className="text-white/60 text-sm font-light">
+                        Proof of delivery (files, links, license keys) will be submitted after the buyer pays.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1221,8 +1771,57 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Service Timeline</h4>
-                      <p className="text-white font-light text-lg">{formData.serviceDate || 'Not set'}</p>
+                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Service Details</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-white/50 text-xs font-light mb-1">Service Date</p>
+                          <p className="text-white font-light">
+                            {formData.serviceDate 
+                              ? new Date(formData.serviceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : 'Not set'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs font-light mb-1">Scope</p>
+                          <p className="text-white font-light text-sm">{formData.serviceScope || 'Not set'}</p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs font-light mb-1">Deliverables</p>
+                          <p className="text-white font-light text-sm">{formData.serviceDeliverables || 'Not set'}</p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-xs font-light mb-1">Completion Criteria</p>
+                          <p className="text-white font-light text-sm">{formData.completionCriteria || 'Not set'}</p>
+                        </div>
+                        {formData.allowsPartialRelease && (
+                          <div className="mt-4 space-y-3">
+                            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                              <p className="text-blue-300 text-xs font-light">✓ Partial release per milestone enabled</p>
+                            </div>
+                            {formData.milestones && formData.milestones.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-white/60 text-xs font-light uppercase tracking-widest">Milestones</p>
+                                {(formData.milestones || []).map((milestone, idx) => (
+                                  <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                                    <div className="flex items-start justify-between mb-1">
+                                      <p className="text-white font-light text-sm">{milestone.title || `Milestone ${idx + 1}`}</p>
+                                      <p className="text-white/80 font-light text-sm">
+                                        {currencySymbols[formData.currency] || formData.currency} {parseFloat(milestone.amount || '0').toFixed(2)}
+                                      </p>
+                                    </div>
+                                    {milestone.description && (
+                                      <p className="text-white/60 text-xs font-light mb-2">{milestone.description}</p>
+                                    )}
+                                    <p className="text-white/50 text-xs font-light">
+                                      Due: {milestone.dueDate ? new Date(milestone.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1355,105 +1954,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             </PremiumButton>
           )}
         </div>
-
-        {/* Form Preview Modal */}
-        {showPreview && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-black/95 border border-white/10 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-light text-white">Review Your Rift</h3>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="text-white/60 hover:text-white transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm text-white/60 font-light mb-2">Item</h4>
-                  <p className="text-white font-light">{formData.itemTitle}</p>
-                  <p className="text-white/70 text-sm font-light mt-2">{formData.itemDescription}</p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm text-white/60 font-light mb-2">Amount</h4>
-                  <p className="text-white font-light text-lg">
-                    {currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount).toFixed(2)} {formData.currency}
-                  </p>
-                  {creatorRole === 'BUYER' ? (
-                    <p className="text-white/60 text-sm font-light mt-1">
-                      You'll pay: {currencySymbols[formData.currency] || formData.currency} {calculateBuyerTotal(parseFloat(formData.amount)).toFixed(2)} (includes 3% fee)
-                    </p>
-                  ) : (
-                    <p className="text-white/60 text-sm font-light mt-1">
-                      You'll receive: {currencySymbols[formData.currency] || formData.currency} {calculateSellerNet(parseFloat(formData.amount)).toFixed(2)} (after 5% platform fee)
-                    </p>
-                  )}
-                </div>
-                
-                <div>
-                  <h4 className="text-sm text-white/60 font-light mb-2">{creatorRole === 'BUYER' ? 'Seller' : 'Buyer'}</h4>
-                  <p className="text-white font-light">{selectedUser?.name || 'User'}</p>
-                  <p className="text-white/60 text-sm font-light font-mono">{selectedUser?.riftUserId}</p>
-                </div>
-                
-                {itemType === 'TICKETS' && (
-                  <div>
-                    <h4 className="text-sm text-white/60 font-light mb-2">Event Details</h4>
-                    <p className="text-white font-light">Date: {new Date(formData.eventDate).toLocaleDateString()}</p>
-                    <p className="text-white font-light">Venue: {formData.venue}</p>
-                    <p className="text-white font-light">Quantity: {formData.quantity}</p>
-                    <p className="text-white font-light">Transfer: {formData.transferMethod}</p>
-                  </div>
-                )}
-                
-                {itemType === 'DIGITAL' && (
-                  <div>
-                    <h4 className="text-sm text-white/60 font-light mb-2">Delivery</h4>
-                    <p className="text-white font-light break-all">{formData.downloadLink}</p>
-                    {formData.licenseKey && (
-                      <p className="text-white font-light mt-2">License Key: {formData.licenseKey}</p>
-                    )}
-                  </div>
-                )}
-                
-                {itemType === 'SERVICES' && (
-                  <div>
-                    <h4 className="text-sm text-white/60 font-light mb-2">Service Timeline</h4>
-                    <p className="text-white font-light">{formData.serviceDate}</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-8 flex gap-4">
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="flex-1 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white font-light"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={async () => {
-                    setShowPreview(false)
-                    // Create a synthetic submit event
-                    const syntheticEvent = {
-                      preventDefault: () => {},
-                    } as React.FormEvent
-                    await handleSubmit(syntheticEvent)
-                  }}
-                  className="flex-1 px-6 py-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/15 transition-all text-white font-light"
-                >
-                  Confirm & Create
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
       </form>
     </GlassCard>
   )

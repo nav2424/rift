@@ -1,30 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import PremiumButton from './ui/PremiumButton'
 import Card from './ui/Card'
 import PaymentModal from './PaymentModal'
+import DisputeWizard from './DisputeWizard'
 import { useToast } from './ui/Toast'
-
-type EscrowStatus = 
-  | 'DRAFT'
-  | 'FUNDED'
-  | 'PROOF_SUBMITTED'
-  | 'UNDER_REVIEW'
-  | 'RELEASED'
-  | 'DISPUTED'
-  | 'RESOLVED'
-  | 'PAYOUT_SCHEDULED'
-  | 'PAID_OUT'
-  | 'CANCELED'
-  // Legacy
-  | 'AWAITING_PAYMENT'
-  | 'AWAITING_SHIPMENT'
-  | 'IN_TRANSIT'
-  | 'DELIVERED_PENDING_RELEASE'
-  | 'REFUNDED'
-  | 'CANCELLED'
+import { getAllowedActions, isActionAllowed } from '@/lib/rift-permissions'
+import { EscrowStatus } from '@prisma/client'
 
 interface RiftTransaction {
   id: string
@@ -34,6 +19,8 @@ interface RiftTransaction {
   amount?: number
   buyerFee?: number
   currency?: string
+  eventDateTz?: Date | string | null
+  allowsPartialRelease?: boolean
 }
 
 interface EscrowActionsProps {
@@ -49,6 +36,7 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
   const { showToast } = useToast()
   const [loading, setLoading] = useState<string | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showDisputeWizard, setShowDisputeWizard] = useState(false)
 
   // Determine if user is buyer - use explicit flag or fall back to role
   const userIsBuyer = isBuyer !== undefined ? isBuyer : currentUserRole === 'BUYER'
@@ -64,11 +52,13 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
     isSeller: userIsSeller
   })
 
-  const handleAction = async (action: string, endpoint: string) => {
+  const handleAction = async (action: string, endpoint: string, body?: any) => {
     setLoading(action)
     try {
       const response = await fetch(`/api/rifts/${rift.id}/${endpoint}`, {
         method: 'POST',
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
       })
 
       if (!response.ok) {
@@ -89,87 +79,58 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
 
   const actions: React.ReactElement[] = []
 
+  // Helper function to get seller proof button text based on item type
+  const getSellerProofButtonText = (): string => {
+    switch (rift.itemType) {
+      case 'DIGITAL':
+        return 'Add File/PDF to Vault'
+      case 'TICKETS':
+        return 'Add Ticket Proof to Vault'
+      case 'SERVICES':
+        return 'Add Completion Proof to Vault'
+      case 'PHYSICAL':
+        return 'Add Shipment Proof to Vault'
+      default:
+        return 'Add Proof to Vault'
+    }
+  }
+
   // ============================================
   // PHASE 3: Category-specific actions
   // ============================================
 
-  // DIGITAL GOODS
-  if (rift.itemType === 'DIGITAL') {
-    // Seller: Upload Delivery
-    if (userIsSeller && (rift.status === 'FUNDED' || rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW')) {
+  // DIGITAL GOODS AND LICENSE KEYS
+  if (rift.itemType === 'DIGITAL' || rift.itemType === 'LICENSE_KEYS') {
+
+    // Buyer: Confirm Receipt - Only if proof has been submitted
+    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
+    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCESS_VAULT')) {
+      // Show vault access link as a subtle action
       actions.push(
         <PremiumButton
-          key="upload-delivery"
-          onClick={() => {
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = '*/*'
-            input.onchange = async (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0]
-              if (!file) return
-
-              setLoading('upload-delivery')
-              try {
-                const formData = new FormData()
-                formData.append('file', file)
-
-                const response = await fetch(`/api/rifts/${rift.id}/delivery/upload`, {
-                  method: 'POST',
-                  body: formData,
-                })
-
-                if (!response.ok) {
-                  const error = await response.json()
-                  showToast(error.error || 'Upload failed', 'error')
-                  return
-                }
-
-                showToast('Delivery uploaded successfully', 'success')
-                router.refresh()
-              } catch (error) {
-                console.error('Upload error:', error)
-                showToast('Upload failed. Please try again.', 'error')
-              } finally {
-                setLoading(null)
-              }
-            }
-            input.click()
-          }}
-          disabled={loading === 'upload-delivery'}
-          className="w-full"
-        >
-          {loading === 'upload-delivery' ? 'Uploading...' : 'Upload Delivery'}
-        </PremiumButton>
-      )
-    }
-
-    // Buyer: Open Delivery, Confirm Receipt
-    if (userIsBuyer) {
-      if (rift.status === 'DELIVERED_PENDING_RELEASE' || rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW') {
-        actions.push(
-          <PremiumButton
-            key="open-delivery"
+            key="view-proof"
+            variant="ghost"
             onClick={() => router.push(`/rifts/${rift.id}/delivery`)}
-            className="w-full"
-            glow
+            className="w-full text-sm"
           >
-            Open Delivery
+            View Proof →
           </PremiumButton>
-        )
+      )
 
+      if (isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
         actions.push(
           <PremiumButton
             key="confirm-receipt-digital"
             variant="outline"
             onClick={() => {
-              if (confirm('Confirm you have received the digital delivery? This confirmation is final.')) {
+              if (confirm('Confirm you have received the digital delivery? This will release payment to the seller.')) {
                 handleAction('confirm-receipt', 'delivery/confirm-receipt')
               }
             }}
             disabled={loading === 'confirm-receipt'}
             className="w-full"
           >
-            {loading === 'confirm-receipt' ? 'Processing...' : 'Confirm Receipt'}
+            {loading === 'confirm-receipt' ? 'Processing...' : 'I Received It'}
           </PremiumButton>
         )
       }
@@ -178,103 +139,56 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
 
   // SERVICES
   if (rift.itemType === 'SERVICES') {
-    // Seller: Mark Delivered
-    if (userIsSeller && (rift.status === 'FUNDED' || rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW')) {
-      actions.push(
-        <PremiumButton
-          key="mark-delivered"
-          onClick={() => handleAction('mark-delivered', 'services/mark-delivered')}
-          disabled={loading === 'mark-delivered'}
-          className="w-full"
-        >
-          {loading === 'mark-delivered' ? 'Processing...' : 'Mark Delivered'}
-        </PremiumButton>
-      )
-    }
 
-    // Buyer: Confirm Completion
-    if (userIsBuyer && rift.status === 'DELIVERED_PENDING_RELEASE') {
+    // Buyer: Release All Funds - Only if proof has been submitted
+    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
+    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
+      // Permission check is sufficient - it handles PROOF_SUBMITTED, UNDER_REVIEW, and DELIVERED_PENDING_RELEASE
       actions.push(
         <PremiumButton
-          key="confirm-completion"
-          onClick={() => {
-            if (confirm('Confirm the service is complete? This confirmation is final.')) {
-              handleAction('confirm-completion', 'services/confirm-completion')
-            }
-          }}
-          disabled={loading === 'confirm-completion'}
-          className="w-full"
-          glow
-        >
-          {loading === 'confirm-completion' ? 'Processing...' : 'Confirm Completion'}
-        </PremiumButton>
+            key="confirm-completion"
+            variant="outline"
+            onClick={() => {
+              if (confirm('Release all funds to the seller? This will complete the transaction.')) {
+                handleAction('confirm-completion', 'services/confirm-completion')
+              }
+            }}
+            disabled={loading === 'confirm-completion'}
+            className="w-full"
+          >
+            {loading === 'confirm-completion' ? 'Processing...' : 'Release All Funds'}
+          </PremiumButton>
       )
     }
   }
 
   // TICKETS
   if (rift.itemType === 'TICKETS') {
-    // Seller: Claim Transfer Sent
-    if (userIsSeller && (rift.status === 'FUNDED' || rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW')) {
+    // Buyer: Confirm Receipt - Only show if proof has been submitted and buyer can accept
+    // This automatically releases funds - no separate "Release Funds" button needed
+    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
+    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
+      // Permission check is sufficient - it handles PROOF_SUBMITTED, UNDER_REVIEW, and DELIVERED_PENDING_RELEASE
       actions.push(
         <PremiumButton
-          key="claim-transfer-sent"
-          onClick={async () => {
-            const provider = prompt('Enter ticket provider (ticketmaster, axs, seatgeek, stubhub, or other):')
-            if (!provider) return
-
-            setLoading('claim-transfer-sent')
-            try {
-              const response = await fetch(`/api/rifts/${rift.id}/tickets/claim-transfer-sent`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider }),
-              })
-
-              if (!response.ok) {
-                const error = await response.json()
-                showToast(error.error || 'Action failed', 'error')
-                return
+            key="confirm-ticket-receipt"
+            variant="outline"
+            onClick={() => {
+              if (confirm(
+                'Confirm you received the ticket?\n\n' +
+                '⚠️ This confirmation is final and automatically releases payment to the seller.'
+              )) {
+                handleAction('confirm-ticket-receipt', 'tickets/confirm-receipt')
               }
-
-              showToast('Transfer marked as sent', 'success')
-              router.refresh()
-            } catch (error) {
-              console.error('Claim transfer error:', error)
-              showToast('Action failed. Please try again.', 'error')
-            } finally {
-              setLoading(null)
-            }
-          }}
-          disabled={loading === 'claim-transfer-sent'}
-          className="w-full"
-        >
-          {loading === 'claim-transfer-sent' ? 'Processing...' : 'I Sent the Transfer'}
-        </PremiumButton>
+            }}
+            disabled={loading === 'confirm-ticket-receipt'}
+            className="w-full"
+          >
+            {loading === 'confirm-ticket-receipt' ? 'Processing...' : 'I Received It'}
+          </PremiumButton>
       )
     }
-
-    // Buyer: Confirm Receipt
-    if (userIsBuyer && rift.status === 'DELIVERED_PENDING_RELEASE') {
-      actions.push(
-        <PremiumButton
-          key="confirm-ticket-receipt"
-          onClick={() => {
-            if (confirm(
-              'Confirm you received the ticket in your official ticketing app/account?\n\n' +
-              '⚠️ This confirmation is final and is used as transaction proof.'
-            )) {
-              handleAction('confirm-ticket-receipt', 'tickets/confirm-receipt')
-            }
-          }}
-          disabled={loading === 'confirm-ticket-receipt'}
-          className="w-full"
-          glow
-        >
-          {loading === 'confirm-ticket-receipt' ? 'Processing...' : 'Confirm Receipt in App'}
-        </PremiumButton>
-      )
-    }
+    // Note: No "Release Funds" button for tickets - "I Received It" handles everything
   }
 
   // ============================================
@@ -290,10 +204,10 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
       actions.push(
         <PremiumButton
           key="pay"
+          variant="outline"
           onClick={() => setShowPaymentModal(true)}
           disabled={loading !== null}
-          className="w-full"
-          glow
+          className="w-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-blue-400/30 hover:from-blue-500/30 hover:to-blue-600/30"
         >
           Pay Rift
         </PremiumButton>
@@ -302,7 +216,7 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
       actions.push(
         <PremiumButton
           key="cancel"
-          variant="outline"
+          variant="ghost"
           onClick={() => {
             if (confirm('Are you sure you want to cancel this rift?')) {
               handleAction('cancel', 'cancel')
@@ -311,62 +225,50 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
           disabled={loading === 'cancel'}
           className="w-full"
         >
-          {loading === 'cancel' ? 'Cancelling...' : 'Cancel Rift'}
+          {loading === 'cancel' ? 'Cancelling...' : 'Cancel'}
         </PremiumButton>
       )
     }
 
-    // Release funds (PROOF_SUBMITTED or UNDER_REVIEW)
-    // Don't show if already RELEASED, RELEASED, PAYOUT_SCHEDULED, or PAID_OUT
+    // Release funds - Only if allowed by permissions
+    // Don't show if already RELEASED, PAYOUT_SCHEDULED, or PAID_OUT
+    // Don't show for service rifts with milestone-based releases (use MilestoneCard instead)
+    // Don't show for TICKETS - "I Received It" handles everything for tickets
+    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
     const canReleaseFunds = 
-      (rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW') &&
-      !['RELEASED', 'PAYOUT_SCHEDULED', 'PAID_OUT'].includes(rift.status)
+      isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF') &&
+      !['RELEASED', 'PAYOUT_SCHEDULED', 'PAID_OUT', 'RESOLVED', 'CANCELED', 'CANCELLED'].includes(rift.status) &&
+      !(rift.itemType === 'SERVICES' && rift.allowsPartialRelease) &&
+      rift.itemType !== 'TICKETS' // Tickets use "I Received It" which auto-releases
     
     if (canReleaseFunds) {
       actions.push(
         <PremiumButton
           key="release"
+          variant="outline"
           onClick={() => handleAction('release', 'release')}
           disabled={loading === 'release'}
           className="w-full"
         >
-          {loading === 'release' ? 'Processing...' : 'Release Funds to Seller'}
-        </PremiumButton>
-      )
-      
-      // Dispute option
-      actions.push(
-        <PremiumButton
-          key="dispute"
-          variant="outline"
-          onClick={() => {
-            const reason = prompt('Enter dispute reason:')
-            if (!reason) return
-            handleAction('dispute', 'dispute')
-          }}
-          disabled={loading === 'dispute'}
-          className="w-full"
-        >
-          {loading === 'dispute' ? 'Processing...' : 'Open Dispute'}
+          {loading === 'release' ? 'Processing...' : 'Release Payment'}
         </PremiumButton>
       )
     }
 
-    // Dispute (PAID state - before proof submitted)
-    if (rift.status === 'FUNDED') {
+    // Dispute option - Only if allowed by permissions (for both buyers and sellers)
+    // Permission system handles both new and legacy statuses (FUNDED, AWAITING_SHIPMENT, IN_TRANSIT, PROOF_SUBMITTED, UNDER_REVIEW, DELIVERED_PENDING_RELEASE)
+    const userRole = userIsBuyer ? 'BUYER' : userIsSeller ? 'SELLER' : currentUserRole
+    if (isActionAllowed(rift.status as EscrowStatus, userRole, 'OPEN_DISPUTE')) {
+      // Permission check is sufficient - it handles all appropriate statuses
       actions.push(
         <PremiumButton
           key="dispute"
           variant="outline"
-          onClick={() => {
-            const reason = prompt('Enter dispute reason:')
-            if (!reason) return
-            handleAction('dispute', 'dispute')
-          }}
+          onClick={() => setShowDisputeWizard(true)}
           disabled={loading === 'dispute'}
-          className="w-full"
+          className="w-full text-red-400/80 hover:text-red-400 hover:bg-red-500/10 border-red-400/30 hover:border-red-400/50"
         >
-          {loading === 'dispute' ? 'Processing...' : 'Open Dispute'}
+          Open Dispute
         </PremiumButton>
       )
     }
@@ -379,12 +281,12 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
         actions.push(
           <PremiumButton
             key="release-funds-early"
+            variant="outline"
             onClick={() => handleAction('release-funds', 'release-funds')}
             disabled={loading === 'release-funds'}
             className="w-full"
-            glow
           >
-            {loading === 'release-funds' ? 'Processing...' : 'Release Funds Early'}
+            {loading === 'release-funds' ? 'Processing...' : 'Release Payment'}
           </PremiumButton>
         )
       }
@@ -393,11 +295,12 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
       actions.push(
         <PremiumButton
           key="confirm-received"
+          variant="outline"
           onClick={() => handleAction('confirm-received', 'confirm-received')}
           disabled={loading === 'confirm-received'}
           className="w-full"
         >
-          {loading === 'confirm-received' ? 'Processing...' : 'Confirm Item Received'}
+          {loading === 'confirm-received' ? 'Processing...' : 'I Received It'}
         </PremiumButton>
       )
     }
@@ -407,27 +310,39 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
       actions.push(
         <PremiumButton
           key="release-funds"
+          variant="outline"
           onClick={() => handleAction('release-funds', 'release-funds')}
           disabled={loading === 'release-funds'}
           className="w-full"
         >
-          {loading === 'release-funds' ? 'Processing...' : 'Release Funds to Seller'}
+          {loading === 'release-funds' ? 'Processing...' : 'Release Payment'}
         </PremiumButton>
       )
     }
   }
 
-  // Seller actions - check if user is seller
+  // Seller actions - Unified "Add Proof to Vault" action
   if (userIsSeller) {
-    // Submit proof (PAID state)
-    if (rift.status === 'FUNDED' || rift.status === 'AWAITING_SHIPMENT') {
+    // Add proof to vault - Only if allowed by permissions
+    // Permission system handles both new (FUNDED) and legacy (AWAITING_SHIPMENT, IN_TRANSIT) statuses
+    const canUploadProof = isActionAllowed(rift.status as EscrowStatus, 'SELLER', 'UPLOAD_PROOF')
+    console.log('Seller upload proof check:', {
+      status: rift.status,
+      userIsSeller,
+      canUploadProof,
+      allowedActions: getAllowedActions(rift.status as EscrowStatus, 'SELLER'),
+    })
+    
+    if (canUploadProof) {
+      // Permission check is sufficient - it handles FUNDED, AWAITING_SHIPMENT, and IN_TRANSIT
       actions.push(
         <PremiumButton
-          key="submit-proof"
+          key="add-proof-to-vault"
+          variant="outline"
           onClick={() => router.push(`/rifts/${rift.id}/submit-proof`)}
-          className="w-full"
+          className="w-full bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-blue-400/30 hover:from-blue-500/30 hover:to-blue-600/30"
         >
-          Submit Proof of Delivery
+          {getSellerProofButtonText()}
         </PremiumButton>
       )
     }
@@ -481,9 +396,10 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
     actions.push(
       <div key="admin-actions" className="space-y-2">
         <PremiumButton
+          variant="outline"
           onClick={() => handleAdminAction('FULL_RELEASE')}
           disabled={loading === 'resolve-FULL_RELEASE'}
-          className="w-full"
+          className="w-full bg-gradient-to-r from-green-500/20 to-green-600/20 border-green-400/30 hover:from-green-500/30 hover:to-green-600/30"
         >
           {loading === 'resolve-FULL_RELEASE' ? 'Processing...' : 'Full Release to Seller'}
         </PremiumButton>
@@ -496,20 +412,15 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
           {loading === 'resolve-PARTIAL_REFUND' ? 'Processing...' : 'Partial Refund'}
         </PremiumButton>
         <PremiumButton
-          variant="outline"
+          variant="ghost"
           onClick={() => handleAdminAction('FULL_REFUND')}
           disabled={loading === 'resolve-FULL_REFUND'}
-          className="w-full"
+          className="w-full text-red-400/80 hover:text-red-400 hover:bg-red-500/10"
         >
           {loading === 'resolve-FULL_REFUND' ? 'Processing...' : 'Full Refund to Buyer'}
         </PremiumButton>
       </div>
     )
-  }
-
-  // If no actions available, don't show the Actions section at all
-  if (actions.length === 0) {
-    return null
   }
 
   console.log('Rendering actions:', actions.length)
@@ -519,12 +430,45 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
     router.refresh()
   }
 
+  const handleDisputeWizardClose = () => {
+    setShowDisputeWizard(false)
+    router.refresh()
+  }
+
+  // Disable background scroll while modal is open
+  useEffect(() => {
+    if (!showDisputeWizard) return
+    
+    // Lock body scroll
+    const prevOverflow = document.body.style.overflow
+    const prevPosition = document.body.style.position
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    
+    // Hide all other content by adding a class to body
+    document.body.classList.add('modal-open')
+    
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.style.position = prevPosition
+      document.body.style.width = ''
+      document.body.classList.remove('modal-open')
+    }
+  }, [showDisputeWizard])
+
   return (
     <>
-      <Card>
-        <h2 className="text-xl font-light text-white mb-6">Actions</h2>
-        <div className="space-y-3">{actions}</div>
-      </Card>
+      {!showDisputeWizard && (
+        <Card>
+          <h2 className="text-xl font-light text-white mb-6">Actions</h2>
+          {actions.length > 0 ? (
+            <div className="space-y-3">{actions}</div>
+          ) : (
+            <p className="text-white/60 font-light text-sm">No actions required at this time</p>
+          )}
+        </Card>
+      )}
       {showPaymentModal && rift.currency && (
         <PaymentModal
           isOpen={showPaymentModal}
@@ -535,6 +479,60 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
           currency={rift.currency}
           onSuccess={handlePaymentSuccess}
         />
+      )}
+      {showDisputeWizard && rift.itemType && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Backdrop - rendered first, covers everything */}
+          <div
+            className="fixed inset-0 bg-black pointer-events-auto"
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+            }}
+            onClick={handleDisputeWizardClose}
+          />
+          {/* Modal Container */}
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-6 pointer-events-none"
+            data-modal-content
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            {/* Close button - outside modal window */}
+            <button
+              onClick={handleDisputeWizardClose}
+              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              style={{ zIndex: 2147483647 }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+              <div className="overflow-y-auto max-h-[90vh]">
+                <DisputeWizard
+                  riftId={rift.id}
+                  itemType={rift.itemType}
+                  eventDateTz={rift.eventDateTz ? (typeof rift.eventDateTz === 'string' ? new Date(rift.eventDateTz) : rift.eventDateTz) : null}
+                  onClose={handleDisputeWizardClose}
+                />
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body
       )}
     </>
   )

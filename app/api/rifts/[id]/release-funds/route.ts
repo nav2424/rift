@@ -236,7 +236,7 @@ export async function POST(
     // Only create if no FUNDS_RELEASED event exists for this rift
     const existingEvent = await prisma.timelineEvent.findFirst({
       where: {
-        escrowId: id,
+        riftId: id,
         type: 'FUNDS_RELEASED',
       },
       orderBy: {

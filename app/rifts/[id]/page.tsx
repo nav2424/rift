@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import RiftActions from '@/components/RiftActions'
@@ -12,7 +13,6 @@ import DeliveryStatus from '@/components/DeliveryStatus'
 import MilestoneCard from '@/components/MilestoneCard'
 import RiskScoreBadge from '@/components/RiskScoreBadge'
 import DisputeWizard from '@/components/DisputeWizard'
-import DisputeCaseView from '@/components/DisputeCaseView'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 
@@ -99,9 +99,34 @@ export default function RiftDetailPage() {
   const [loading, setLoading] = useState(true)
   const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null)
   const [showDisputeWizard, setShowDisputeWizard] = useState(false)
-  const [showDisputeCaseView, setShowDisputeCaseView] = useState(false)
+  const [showDisputeSummary, setShowDisputeSummary] = useState(false)
+  const [disputeSummary, setDisputeSummary] = useState<{
+    reason: string
+    summary: string
+    evidence: Array<{ type: string; fileName?: string; textContent?: string; url?: string }>
+  } | null>(null)
 
   const riftId = params?.id as string
+
+  // Disable background scroll while modals are open
+  useEffect(() => {
+    if (showDisputeWizard || showDisputeSummary) {
+      // Lock body scroll and hide content
+      const prevOverflow = document.body.style.overflow
+      const prevPosition = document.body.style.position
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.classList.add('modal-open')
+      
+      return () => {
+        document.body.style.overflow = prevOverflow
+        document.body.style.position = prevPosition
+        document.body.style.width = ''
+        document.body.classList.remove('modal-open')
+      }
+    }
+  }, [showDisputeWizard, showDisputeSummary])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -176,9 +201,14 @@ export default function RiftDetailPage() {
 
   const loadRift = async () => {
     try {
+      setLoading(true)
       const response = await fetch(`/api/rifts/${riftId}`, {
         credentials: 'include',
       })
+
+      if (!response) {
+        throw new Error('No response received from server')
+      }
 
       if (!response.ok) {
         let errorData: any = {}
@@ -194,28 +224,36 @@ export default function RiftDetailPage() {
           } else {
             const text = await response.text()
             errorMessage = text || response.statusText || 'Unknown error'
-            errorData = { error: errorMessage }
+            if (text) {
+              errorData = { error: errorMessage, rawText: text }
+            } else {
+              errorData = { error: errorMessage }
+            }
           }
-        } catch (parseError) {
+        } catch (parseError: any) {
           // If parsing fails, use status text
           errorMessage = response.statusText || 'Failed to parse error response'
-          errorData = { error: errorMessage }
+          errorData = { 
+            error: errorMessage,
+            parseError: parseError?.message || String(parseError)
+          }
         }
         
-        // Log error details
+        // Log error details with all available information
         const errorLogData: any = {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorMessage,
+          status: response.status || 'unknown',
+          statusText: response.statusText || 'unknown',
+          error: errorMessage || 'Unknown error',
           url: `/api/rifts/${riftId}`,
+          riftId: riftId,
         }
         
-        // Only include errorData if it has meaningful content
-        if (errorData && Object.keys(errorData).length > 0) {
+        // Always include errorData if it exists
+        if (errorData && typeof errorData === 'object') {
           errorLogData.errorData = errorData
         }
         
-        console.error('API error:', errorLogData)
+        console.error('API error:', JSON.stringify(errorLogData, null, 2))
         
         if (response.status === 404) {
           showToast('Rift not found', 'error')
@@ -245,7 +283,15 @@ export default function RiftDetailPage() {
       const data = await response.json()
       setRift(data)
     } catch (error: any) {
-      console.error('Error loading rift:', error)
+      // Handle network errors or other fetch failures
+      console.error('Error loading rift:', {
+        error: error?.message || 'Unknown error',
+        stack: error?.stack,
+        name: error?.name,
+        riftId: riftId,
+        url: `/api/rifts/${riftId}`,
+        fullError: error,
+      })
       const errorMessage = error?.message || 'Failed to load rift. Please try again.'
       showToast(errorMessage, 'error')
       // Don't redirect on network errors - let user stay on page to retry
@@ -432,12 +478,27 @@ export default function RiftDetailPage() {
                     return (
                       <button
                         key={dispute.id}
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedDisputeId(dispute.id)
                           if (isDraft && canEdit) {
                             setShowDisputeWizard(true)
                           } else {
-                            setShowDisputeCaseView(true)
+                            // Fetch dispute summary for viewing
+                            try {
+                              const response = await fetch(`/api/disputes/${dispute.id}/summary`, {
+                                credentials: 'include',
+                              })
+                              if (response.ok) {
+                                const data = await response.json()
+                                setDisputeSummary(data)
+                                setShowDisputeSummary(true)
+                              } else {
+                                showToast('Failed to load dispute summary', 'error')
+                              }
+                            } catch (error) {
+                              console.error('Error loading dispute summary:', error)
+                              showToast('Failed to load dispute summary', 'error')
+                            }
                           }
                         }}
                         className="w-full text-left p-5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] hover:border-white/20 transition-all cursor-pointer"
@@ -490,8 +551,8 @@ export default function RiftDetailPage() {
                 />
               </div>
 
-              {/* Risk Score Badge - Show for admins or high-risk rifts */}
-              {(isAdmin || (rift as any).riskScore > 50) && (
+              {/* Risk Score Badge - Show for admins only */}
+              {isAdmin && (
                 <RiskScoreBadge riftId={rift.id} />
               )}
 
@@ -596,31 +657,55 @@ export default function RiftDetailPage() {
       </div>
 
       {/* Dispute Wizard Modal */}
-      {showDisputeWizard && selectedDisputeId && rift && (
-        <div className="fixed inset-0 z-[9999] isolate">
-          {/* Backdrop */}
+      {showDisputeWizard && selectedDisputeId && rift && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black pointer-events-auto"
+            data-modal-backdrop
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+            }}
             onClick={() => {
               setShowDisputeWizard(false)
               setSelectedDisputeId(null)
             }}
           />
           {/* Modal */}
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <div className="relative w-[min(980px,92vw)] max-h-[86vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl">
-              <button
-                onClick={() => {
-                  setShowDisputeWizard(false)
-                  setSelectedDisputeId(null)
-                }}
-                className="absolute top-4 right-4 z-20 text-white/60 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="overflow-y-auto max-h-[86vh]">
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-6 pointer-events-none" 
+            data-modal-content
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            {/* Close button - outside modal window */}
+            <button
+              onClick={() => {
+                setShowDisputeWizard(false)
+                setSelectedDisputeId(null)
+              }}
+              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              style={{ zIndex: 2147483647 }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+              <div className="overflow-y-auto max-h-[90vh]">
                 <DisputeWizard
                   riftId={rift.id}
                   itemType={rift.itemType}
@@ -637,40 +722,143 @@ export default function RiftDetailPage() {
               </div>
             </div>
           </div>
-        </div>
+        </>,
+        document.body
       )}
 
-      {/* Dispute Case View Modal */}
-      {showDisputeCaseView && selectedDisputeId && (
-        <div className="fixed inset-0 z-[9999] isolate">
-          {/* Backdrop */}
+      {/* Dispute Summary Modal */}
+      {showDisputeSummary && disputeSummary && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-black pointer-events-auto"
+            data-modal-backdrop
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+            }}
             onClick={() => {
-              setShowDisputeCaseView(false)
+              setShowDisputeSummary(false)
               setSelectedDisputeId(null)
+              setDisputeSummary(null)
             }}
           />
           {/* Modal */}
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <div className="relative w-[min(1200px,95vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl">
-              <button
-                onClick={() => {
-                  setShowDisputeCaseView(false)
-                  setSelectedDisputeId(null)
-                }}
-                className="absolute top-4 right-4 z-20 text-white/60 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="overflow-y-auto max-h-[90vh] p-6">
-                <DisputeCaseView disputeId={selectedDisputeId} />
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-6 pointer-events-none" 
+            data-modal-content
+            style={{ 
+              zIndex: 2147483647,
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            {/* Close button - outside modal window */}
+            <button
+              onClick={() => {
+                setShowDisputeSummary(false)
+                setSelectedDisputeId(null)
+                setDisputeSummary(null)
+              }}
+              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              style={{ zIndex: 2147483647 }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+              <div className="overflow-y-auto max-h-[90vh] p-4">
+                <GlassCard variant="strong" className="p-6 space-y-5">
+                  <div className="text-center space-y-2">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                      <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="space-y-1.5">
+                      <h2 className="text-2xl font-light text-white tracking-tight">Dispute Summary</h2>
+                      <p className="text-white/60 font-light text-sm">Review of submitted dispute information</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-5 max-w-3xl mx-auto">
+                    <div className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm space-y-5 overflow-hidden">
+                      <div className="space-y-4 min-w-0">
+                        <div className="pb-4 border-b border-white/10 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-white/40"></div>
+                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Reason</span>
+                          </div>
+                          <p className="text-white/90 font-light text-base pl-5 leading-relaxed break-words">
+                            {disputeSummary.reason.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                          </p>
+                        </div>
+
+                        <div className="pb-4 border-b border-white/10 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-white/40"></div>
+                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Summary</span>
+                          </div>
+                          <p className="text-white/80 font-light text-sm leading-relaxed pl-5 whitespace-pre-wrap break-words overflow-wrap-anywhere max-w-full">
+                            {disputeSummary.summary || 'No summary provided'}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-white/40"></div>
+                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Evidence</span>
+                          </div>
+                          <div className="pl-5 space-y-2">
+                            {disputeSummary.evidence && disputeSummary.evidence.length > 0 ? (
+                              disputeSummary.evidence.map((ev, idx) => (
+                                <div key={idx} className="flex items-center gap-3 text-white/70 font-light text-sm">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+                                  <span className="capitalize">{ev.type}</span>
+                                  <span className="text-white/50">•</span>
+                                  <span className="truncate">{ev.fileName || ev.textContent || ev.url || 'Evidence'}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-white/50 font-light text-sm italic">No evidence provided</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <GlassCard variant="light" className="p-4 border-blue-500/30 bg-blue-500/5">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-0.5">
+                          <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="space-y-1 flex-1">
+                          <h3 className="text-white/90 font-light text-sm">What Happens Next?</h3>
+                          <p className="text-blue-300/90 text-xs font-light">
+                            Our team will review the timeline, delivery logs, and chat transcript. You may be contacted for more information during the review process.
+                          </p>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </div>
+                </GlassCard>
               </div>
             </div>
           </div>
-        </div>
+        </>,
+        document.body
       )}
     </div>
   )

@@ -3,8 +3,8 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType, EscrowStatus } from '@prisma/client'
+import { sendDisputeResolvedEmail } from '@/lib/email'
 
 /**
  * POST /api/admin/disputes/[id]/reject
@@ -47,6 +47,17 @@ export async function POST(
         id: true,
         status: true,
         itemType: true,
+        itemTitle: true,
+        buyer: {
+          select: {
+            email: true,
+          },
+        },
+        seller: {
+          select: {
+            email: true,
+          },
+        },
       },
     })
 
@@ -80,19 +91,50 @@ export async function POST(
       note: note || 'Dispute rejected as invalid',
     })
 
-    // Restore rift to eligible state
-    let newRiftStatus: EscrowStatus = EscrowStatus.DELIVERED_PENDING_RELEASE
-    if (rift.itemType === 'DIGITAL' || rift.itemType === 'SERVICES' || rift.itemType === 'TICKETS') {
-      newRiftStatus = EscrowStatus.DELIVERED_PENDING_RELEASE
+    // Restore rift to eligible state using proper state transition
+    const { transitionRiftState } = await import('@/lib/rift-state')
+    
+    try {
+      // Transition from DISPUTED to RESOLVED, then to appropriate status
+      await transitionRiftState(dispute.rift_id, 'RESOLVED', {
+        userId: auth.userId,
+        reason: 'Dispute rejected as invalid',
+      })
+      
+      // Determine appropriate status based on previous state and item type
+      // If proof was submitted, go back to PROOF_SUBMITTED or UNDER_REVIEW
+      // Otherwise, go to RELEASED if eligible
+      if (rift.status === 'DISPUTED') {
+        // Check if proof exists
+        const proofCount = await prisma.vaultAsset.count({
+          where: { riftId: dispute.rift_id },
+        })
+        
+        if (proofCount > 0) {
+          // Has proof, go to PROOF_SUBMITTED or UNDER_REVIEW
+          await transitionRiftState(dispute.rift_id, 'PROOF_SUBMITTED', {
+            userId: auth.userId,
+            reason: 'Dispute rejected - proof exists',
+          })
+        } else {
+          // No proof, release if eligible
+          await transitionRiftState(dispute.rift_id, 'RELEASED', {
+            userId: auth.userId,
+            reason: 'Dispute rejected - releasing funds',
+          })
+        }
+      }
+    } catch (transitionError: any) {
+      // If transition fails, try direct update as fallback
+      console.error('State transition error, using fallback:', transitionError)
+      await prisma.riftTransaction.update({
+        where: { id: dispute.rift_id },
+        data: {
+          status: 'PROOF_SUBMITTED',
+          releaseEligibleAt: new Date(),
+        },
+      })
     }
-
-    await prisma.riftTransaction.update({
-      where: { id: dispute.rift_id },
-      data: {
-        status: newRiftStatus,
-        releaseEligibleAt: new Date(),
-      },
-    })
 
     // Log event
     const requestMeta = extractRequestMetadata(request)
@@ -108,11 +150,22 @@ export async function POST(
       requestMeta
     )
 
-    // Post system message
-    await postSystemMessage(
-      dispute.rift_id,
-      'Dispute was rejected. Funds are now eligible for release.'
-    )
+    // Send email notifications (not in chat)
+    if (rift) {
+      try {
+        await sendDisputeResolvedEmail(
+          rift.buyer.email,
+          rift.seller.email,
+          dispute.rift_id,
+          rift.itemTitle || 'Rift Transaction',
+          'rejected',
+          note || undefined
+        )
+      } catch (emailError) {
+        console.error('Error sending dispute rejection email:', emailError)
+        // Don't fail the rejection if email fails
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

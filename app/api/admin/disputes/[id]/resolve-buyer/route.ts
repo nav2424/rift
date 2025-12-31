@@ -3,10 +3,11 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType } from '@prisma/client'
 import Stripe from 'stripe'
 import { updateMetricsOnDisputeResolved } from '@/lib/risk/metrics'
+import { debitSellerOnRefund } from '@/lib/wallet'
+import { sendDisputeResolvedEmail } from '@/lib/email'
 
 /**
  * POST /api/admin/disputes/[id]/resolve-buyer
@@ -114,6 +115,25 @@ export async function POST(
           refundId: refund.id,
           amount: refund.amount / 100,
         }
+        
+        // Debit seller wallet for the refund amount
+        try {
+          await debitSellerOnRefund(
+            dispute.rift_id,
+            rift.sellerId,
+            rift.subtotal, // Refund the subtotal amount
+            rift.currency,
+            {
+              resolution: 'FULL_REFUND',
+              adminId: auth.userId,
+              disputeId,
+              stripeRefundId: refund.id,
+            }
+          )
+        } catch (walletError: any) {
+          console.error('Wallet debit error:', walletError)
+          // Don't fail the refund if wallet debit fails - log it
+        }
       } catch (stripeError: any) {
         console.error('Stripe refund error:', stripeError)
         refundResult = {
@@ -121,15 +141,59 @@ export async function POST(
           error: stripeError.message,
         }
       }
+    } else {
+      // If no Stripe refund, still debit seller wallet (manual refund scenario)
+      try {
+        await debitSellerOnRefund(
+          dispute.rift_id,
+          rift.sellerId,
+          rift.subtotal,
+          rift.currency,
+          {
+            resolution: 'FULL_REFUND',
+            adminId: auth.userId,
+            disputeId,
+          }
+        )
+      } catch (walletError: any) {
+        console.error('Wallet debit error:', walletError)
+        // Continue even if wallet debit fails
+      }
     }
 
-    // Update rift status to refunded
-    await prisma.riftTransaction.update({
-      where: { id: dispute.rift_id },
-      data: {
-        status: 'REFUNDED',
-      },
-    })
+    // Update rift status using proper state transition
+    const { transitionRiftState } = await import('@/lib/rift-state')
+    
+    try {
+      // Transition from DISPUTED to RESOLVED, then to REFUNDED/CANCELED
+      await transitionRiftState(dispute.rift_id, 'RESOLVED', {
+        userId: auth.userId,
+        reason: 'Dispute resolved in favor of buyer',
+      })
+      
+      // Then transition to REFUNDED (or CANCELED if REFUNDED not available)
+      try {
+        await transitionRiftState(dispute.rift_id, 'REFUNDED', {
+          userId: auth.userId,
+          reason: 'Admin resolved dispute - refunding buyer',
+        })
+      } catch (refundError) {
+        // If REFUNDED status not available, use CANCELED
+        await transitionRiftState(dispute.rift_id, 'CANCELED', {
+          userId: auth.userId,
+          reason: 'Admin resolved dispute - refunding buyer',
+        })
+      }
+    } catch (transitionError: any) {
+      // If transition fails, try direct update as fallback
+      console.error('State transition error, using fallback:', transitionError)
+      await prisma.riftTransaction.update({
+        where: { id: dispute.rift_id },
+        data: {
+          status: 'REFUNDED',
+        },
+      })
+    }
 
     // Log event
     const requestMeta = extractRequestMetadata(request)
@@ -161,11 +225,30 @@ export async function POST(
       // Don't fail resolution if metrics update fails
     }
 
-    // Post system message
-    await postSystemMessage(
-      dispute.rift_id,
-      'Dispute resolved in favor of buyer. Refund has been processed.'
-    )
+    // Send email notifications (not in chat)
+    try {
+      const rift = await prisma.riftTransaction.findUnique({
+        where: { id: dispute.rift_id },
+        include: {
+          buyer: true,
+          seller: true,
+        },
+      })
+      
+      if (rift) {
+        await sendDisputeResolvedEmail(
+          rift.buyer.email,
+          rift.seller.email,
+          dispute.rift_id,
+          rift.itemTitle || 'Rift Transaction',
+          'buyer',
+          note || undefined
+        )
+      }
+    } catch (emailError) {
+      console.error('Error sending dispute resolution email:', emailError)
+      // Don't fail the resolution if email fails
+    }
 
     return NextResponse.json({
       success: true,

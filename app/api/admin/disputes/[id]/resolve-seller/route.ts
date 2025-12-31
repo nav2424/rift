@@ -3,9 +3,9 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType } from '@prisma/client'
 import { updateMetricsOnDisputeResolved } from '@/lib/risk/metrics'
+import { sendDisputeResolvedEmail } from '@/lib/email'
 
 /**
  * POST /api/admin/disputes/[id]/resolve-seller
@@ -83,14 +83,33 @@ export async function POST(
       note: note || 'Resolved in favor of seller',
     })
 
-    // Restore rift to eligible state (based on category)
-    await prisma.riftTransaction.update({
-      where: { id: dispute.rift_id },
-      data: {
-        status: 'DELIVERED_PENDING_RELEASE',
-        releaseEligibleAt: new Date(), // Mark eligible for release
-      },
-    })
+    // Restore rift to eligible state using proper state transition
+    const { transitionRiftState } = await import('@/lib/rift-state')
+    
+    // Transition from DISPUTED to appropriate status
+    // First transition to RESOLVED, then to RELEASED if eligible
+    try {
+      await transitionRiftState(dispute.rift_id, 'RESOLVED', {
+        userId: auth.userId,
+        reason: 'Dispute resolved in favor of seller',
+      })
+      
+      // Then transition to RELEASED to make funds available
+      await transitionRiftState(dispute.rift_id, 'RELEASED', {
+        userId: auth.userId,
+        reason: 'Admin resolved dispute - releasing funds to seller',
+      })
+    } catch (transitionError: any) {
+      // If transition fails, try direct update as fallback
+      console.error('State transition error, using fallback:', transitionError)
+      await prisma.riftTransaction.update({
+        where: { id: dispute.rift_id },
+        data: {
+          status: 'RELEASED',
+          releaseEligibleAt: new Date(),
+        },
+      })
+    }
 
     // Update risk metrics (dispute resolved in favor of seller = buyer lost)
     try {
@@ -121,11 +140,30 @@ export async function POST(
       requestMeta
     )
 
-    // Post system message
-    await postSystemMessage(
-      dispute.rift_id,
-      'Dispute resolved in favor of seller. Funds are now eligible for release.'
-    )
+    // Send email notifications (not in chat)
+    try {
+      const rift = await prisma.riftTransaction.findUnique({
+        where: { id: dispute.rift_id },
+        include: {
+          buyer: true,
+          seller: true,
+        },
+      })
+      
+      if (rift) {
+        await sendDisputeResolvedEmail(
+          rift.buyer.email,
+          rift.seller.email,
+          dispute.rift_id,
+          rift.itemTitle || 'Rift Transaction',
+          'seller',
+          note || undefined
+        )
+      }
+    } catch (emailError) {
+      console.error('Error sending dispute resolution email:', emailError)
+      // Don't fail the resolution if email fails
+    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

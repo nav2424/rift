@@ -3,10 +3,13 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { canUserWithdraw, debitSellerOnWithdrawal } from '@/lib/wallet'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
+import { getConnectAccountStatus } from '@/lib/stripe'
+import { sanitizeErrorMessage, logError } from '@/lib/error-handling'
 
 /**
  * Check if user can withdraw (GET/HEAD)
  * Returns withdrawal eligibility status
+ * Also refreshes Stripe verification status if account exists
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +18,46 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Refresh Stripe verification status before checking withdrawal eligibility
+    // This ensures we have the latest status from Stripe (important after returning from Stripe)
+    const user = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { stripeConnectAccountId: true, stripeIdentityVerified: true },
+    })
+
+    if (user?.stripeConnectAccountId && stripe) {
+      try {
+        const accountStatus = await getConnectAccountStatus(user.stripeConnectAccountId)
+        const isVerified = accountStatus.chargesEnabled && accountStatus.payoutsEnabled
+        
+        // Update database if verification status has changed
+        if (user.stripeIdentityVerified !== isVerified) {
+          await prisma.user.update({
+            where: { id: auth.userId },
+            data: {
+              stripeIdentityVerified: isVerified,
+            },
+          })
+          // Only log in development
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Updated identity verification status in withdraw check: ${user.stripeIdentityVerified} -> ${isVerified}`)
+          }
+        }
+      } catch (error: any) {
+        // If we can't check Stripe status, continue with database value
+        logError('Refresh Stripe status in withdraw check', error, { context: 'Withdrawal eligibility check' })
+      }
+    }
+
     const canWithdraw = await canUserWithdraw(auth.userId, auth.isMobile)
     return NextResponse.json({
       canWithdraw: canWithdraw.canWithdraw,
       reason: canWithdraw.reason,
     })
   } catch (error: any) {
-    console.error('Check withdrawal eligibility error:', error)
+    logError('Check withdrawal eligibility', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: sanitizeErrorMessage(error, 'Failed to check withdrawal eligibility') },
       { status: 500 }
     )
   }
@@ -116,7 +150,7 @@ export async function POST(request: NextRequest) {
           },
         })
       } catch (error: any) {
-        console.error('Stripe transfer error:', error)
+        logError('Stripe transfer', error, { payoutId: payout.id, userId: auth.userId, amount })
         
         // Rollback wallet debit on failure
         await prisma.walletAccount.update({
@@ -130,12 +164,12 @@ export async function POST(request: NextRequest) {
           where: { id: payout.id },
           data: {
             status: 'FAILED',
-            failureReason: error.message,
+            failureReason: sanitizeErrorMessage(error, 'Transfer failed'),
           },
         })
 
         return NextResponse.json(
-          { error: `Payout failed: ${error.message}` },
+          { error: sanitizeErrorMessage(error, 'Payout failed. Please try again or contact support.') },
           { status: 500 }
         )
       }
@@ -158,9 +192,9 @@ export async function POST(request: NextRequest) {
       currency,
     })
   } catch (error: any) {
-    console.error('Withdraw error:', error)
+    logError('Withdraw', error)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: sanitizeErrorMessage(error, 'Withdrawal failed. Please try again or contact support.') },
       { status: 500 }
     )
   }

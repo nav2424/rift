@@ -24,6 +24,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate and format phone number to E.164 format
+    const { formatPhoneNumber, validatePhoneNumber } = await import('@/lib/sms')
+    
+    // First validate
+    const validation = validatePhoneNumber(phone)
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error || 'Invalid phone number format. Please include country code (e.g., +1 for US/Canada)' },
+        { status: 400 }
+      )
+    }
+    
+    // Then format to E.164
+    const { formatted: formattedPhone, error: formatError } = formatPhoneNumber(phone)
+    if (formatError || !formattedPhone) {
+      return NextResponse.json(
+        { error: formatError || 'Failed to format phone number' },
+        { status: 400 }
+      )
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: auth.userId },
       select: {
@@ -36,34 +57,55 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (user.phoneVerified && user.phone === phone) {
+    // Compare with formatted phone (user.phone should already be in E.164 format)
+    if (user.phoneVerified && user.phone === formattedPhone) {
       return NextResponse.json(
         { error: 'Phone number is already verified' },
         { status: 400 }
       )
     }
 
-    // Update user's phone number if different
-    if (user.phone !== phone) {
-      await prisma.user.update({
-        where: { id: auth.userId },
-        data: {
-          phone: phone.trim(),
-          phoneVerified: false, // Reset verification when phone changes
-        },
-      })
-    }
+          // Update user's phone number if different (store in E.164 format)
+          if (user.phone !== formattedPhone) {
+            // Check if phone number is already in use by another user (only for completed signups)
+            const existingUserByPhone = await prisma.user.findFirst({
+              where: {
+                phone: formattedPhone,
+                onboardingCompleted: true,
+                id: { not: auth.userId }, // Exclude current user
+              },
+            })
 
-    // Generate and store verification code
-    const code = await generateVerificationCode(auth.userId, 'PHONE', phone.trim())
+            if (existingUserByPhone) {
+              return NextResponse.json(
+                { error: 'This phone number is already associated with another account' },
+                { status: 400 }
+              )
+            }
 
-    // Send SMS via Twilio
-    const smsResult = await sendVerificationCodeSMS(phone.trim(), code)
+            await prisma.user.update({
+              where: { id: auth.userId },
+              data: {
+                phone: formattedPhone,
+                phoneVerified: false, // Reset verification when phone changes
+              },
+            })
+          }
+
+    // Generate and store verification code (use formatted phone for consistency)
+    const code = await generateVerificationCode(auth.userId, 'PHONE', formattedPhone)
+
+    // Send SMS via Twilio (will format again, but that's okay for consistency)
+    const smsResult = await sendVerificationCodeSMS(formattedPhone, code)
 
     if (!smsResult.success) {
-      // In development, still return success but log the code
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📱 SMS verification code for ${phone}: ${code}`)
+      // In development/localhost, still return success but log the code
+      const isDevelopment = process.env.NODE_ENV === 'development' || 
+                            process.env.NODE_ENV !== 'production' ||
+                            process.env.VERCEL_ENV !== 'production'
+      
+      if (isDevelopment) {
+        console.log(`📱 SMS verification code for ${formattedPhone}: ${code}`)
         console.warn('⚠️ Twilio not configured. SMS not sent:', smsResult.error)
         return NextResponse.json({
           success: true,
@@ -81,11 +123,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Return code in development for testing
+    const isDevelopment = process.env.NODE_ENV === 'development' || 
+                          process.env.NODE_ENV !== 'production' ||
+                          process.env.VERCEL_ENV !== 'production'
+    
     return NextResponse.json({
       success: true,
       message: 'Verification code sent to your phone',
-      // Only return code in development for testing
-      code: process.env.NODE_ENV === 'development' ? code : undefined,
+      code: isDevelopment ? code : undefined, // Only return code in development for testing
     })
   } catch (error: any) {
     console.error('Send phone verification error:', error)

@@ -119,7 +119,7 @@ export async function POST(
     // For non-physical items, we don't need tracking number or carrier
     const proof = await prisma.shipmentProof.create({
       data: {
-        escrowId: id,
+        riftId: id,
         filePath,
         notes: notes || null,
         verified: false, // Proof will be reviewed by buyer/admin

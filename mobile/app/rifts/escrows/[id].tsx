@@ -544,7 +544,7 @@ export default function EscrowDetailScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Transaction Amount</Text>
             <Text style={styles.detailValue}>
-              {rift.subtotal || rift.amount} {rift.currency}
+              {((rift.subtotal || rift.amount) || 0).toFixed(2)} {rift.currency}
             </Text>
           </View>
           {rift.buyerFee && rift.buyerFee > 0 && isBuyer && (

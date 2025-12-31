@@ -134,7 +134,13 @@ export async function POST(
       },
     })
 
-    // Send email notifications
+    // Get dispute details for email
+    const dispute = await prisma.dispute.findFirst({
+      where: { escrowId: id },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Send email notifications with comprehensive details
     const escrowWithUsers = await prisma.riftTransaction.findUnique({
       where: { id },
       include: {
@@ -155,7 +161,22 @@ export async function POST(
         admin.email,
         id,
         escrowWithUsers.itemTitle,
-        reason
+        reason,
+        {
+          disputeType: disputeType,
+          disputeId: dispute?.id,
+          riftNumber: escrowWithUsers.riftNumber,
+          subtotal: escrowWithUsers.subtotal,
+          currency: escrowWithUsers.currency,
+          itemDescription: escrowWithUsers.itemDescription,
+          itemType: escrowWithUsers.itemType,
+          shippingAddress: escrowWithUsers.shippingAddress,
+          buyerName: escrowWithUsers.buyer.name,
+          sellerName: escrowWithUsers.seller.name,
+          buyerEmail: escrowWithUsers.buyer.email,
+          sellerEmail: escrowWithUsers.seller.email,
+          createdAt: dispute?.createdAt || new Date(),
+        }
       )
     }
 

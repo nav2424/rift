@@ -147,7 +147,7 @@ export default function MessagesPage() {
 
   const getStatusLabel = (status: string | null) => {
     if (!status) return 'Unknown'
-    if (status === 'FUNDED') return 'Paid'
+    if (status === 'FUNDED' || status === 'PAID') return 'Paid'
     return status.replace(/_/g, ' ')
   }
 
@@ -281,46 +281,44 @@ export default function MessagesPage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20 mt-3">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-light text-white mb-2 tracking-tight">
-                  Messages
-                </h1>
-                <p className="text-white/60 font-light">Your conversations</p>
-              </div>
+        <div className="mb-10 pb-6 border-b border-white/10">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-500/10 flex items-center justify-center border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
+              <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-1">
+                Messages
+              </h1>
+              <p className="text-white/50 font-light text-sm">Your conversations</p>
             </div>
           </div>
+        </div>
 
-          {/* Search Bar */}
-          <div className="relative mt-6" ref={searchRef}>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search for a user or conversation..."
-                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
-              />
-              {isSearching && (
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                </div>
-              )}
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative" ref={searchRef}>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search for a user or conversation..."
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200"
+            />
+            {isSearching && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+              </div>
+            )}
 
             {/* Search Results Dropdown */}
             {searchQuery.trim() && searchResults.length > 0 && (
@@ -333,8 +331,8 @@ export default function MessagesPage() {
                       onClick={() => createConversationWithUser(user.id, user.name || user.email)}
                       className="w-full px-3 py-3 text-left hover:bg-white/5 rounded-lg transition-colors flex items-center gap-3"
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20 flex-shrink-0">
-                        <span className="text-blue-400 text-sm font-light">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/10 flex items-center justify-center border border-cyan-500/20 flex-shrink-0">
+                        <span className="text-cyan-400 text-sm font-light">
                           {(user.name || user.email || 'U').charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -360,23 +358,17 @@ export default function MessagesPage() {
         )}
 
         {conversations.length === 0 ? (
-          <GlassCard>
-            <div className="text-center py-16">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <GlassCard variant="strong" className="overflow-hidden">
+            <div className="p-16 text-center">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10">
+                <svg className="w-12 h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-light text-white mb-2">No conversations yet</h3>
-              <p className="text-white/60 font-light text-sm mb-6">
-                Conversations will appear here when you start messaging with other users
+              <h3 className="text-2xl font-light text-white mb-3">No conversations yet</h3>
+              <p className="text-white/50 font-light">
+                {searchQuery ? 'Try a different search query' : 'Conversations will appear here when you start messaging with other users'}
               </p>
-              <Link 
-                href="/rifts"
-                className="inline-block px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-colors border border-white/20 text-white font-light text-sm"
-              >
-                View Your Rifts
-              </Link>
             </div>
           </GlassCard>
         ) : (
@@ -392,50 +384,48 @@ export default function MessagesPage() {
                   href={`/messages/${conv.id}`}
                   className="block"
                 >
-                  <GlassCard className="hover:bg-white/5 transition-all duration-200 cursor-pointer border border-transparent hover:border-white/10">
+                  <GlassCard className="hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer group">
                     <div className="p-6">
-                      {/* Header Row */}
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-start gap-4">
+                        {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-light text-white mb-2 truncate">{displayName}</h3>
-                          {conv.transactionStatus && (
-                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg ${statusColors.bg} border border-current/20`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${statusColors.dot}`} />
-                              <span className={`text-xs font-light uppercase tracking-wide ${statusColors.text}`}>
+                          <div className="flex items-start justify-between gap-4 mb-3">
+                            <div>
+                              <h3 className="text-white font-light text-lg mb-1">{displayName}</h3>
+                              <p className="text-white/80 font-light leading-relaxed">{conv.transactionTitle}</p>
+                            </div>
+                            <span className="text-white/40 font-light text-xs whitespace-nowrap flex-shrink-0 pt-1">
+                              {formatTime(conv.updatedAt)}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 flex-wrap">
+                            {conv.transactionStatus && (
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-light border ${statusColors.bg} ${statusColors.text}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${statusColors.dot}`} />
                                 {getStatusLabel(conv.transactionStatus)}
                               </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-right ml-4 flex-shrink-0">
-                          <p className="text-white/40 font-light text-xs">
-                            {formatTime(conv.updatedAt)}
-                          </p>
+                            )}
+                            {conv.lastMessage ? (
+                              <span className={`text-sm font-light ${
+                                isLastMessageMine ? 'text-white/60' : 'text-white/70'
+                              }`}>
+                                {isLastMessageMine && <span className="text-white/40">You: </span>}
+                                {conv.lastMessage.isSystem 
+                                  ? `---- ${conv.lastMessage.body} ----`
+                                  : conv.lastMessage.body}
+                              </span>
+                            ) : (
+                              <span className="text-white/40 font-light text-sm italic">No messages yet</span>
+                            )}
+                            {conv.unreadCount > 0 && (
+                              <span className="ml-auto px-2 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-light border border-cyan-500/30">
+                                {conv.unreadCount} new
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-
-                      {/* Transaction Title */}
-                      <p className="text-white/80 font-light text-sm mb-3 truncate">
-                        {conv.transactionTitle}
-                      </p>
-
-                      {/* Last Message */}
-                      {conv.lastMessage ? (
-                        <div className="pt-3 border-t border-white/10">
-                          <p className={`text-sm font-light truncate ${
-                            isLastMessageMine ? 'text-white/60' : 'text-white/70'
-                          }`}>
-                            {isLastMessageMine && <span className="text-white/40">You: </span>}
-                            {conv.lastMessage.isSystem 
-                              ? `---- ${conv.lastMessage.body} ----`
-                              : conv.lastMessage.body}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="pt-3 border-t border-white/10">
-                          <p className="text-white/40 font-light text-sm italic">No messages yet</p>
-                        </div>
-                      )}
                     </div>
                   </GlassCard>
                 </Link>

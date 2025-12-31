@@ -91,23 +91,26 @@ export default function AccountPage() {
         // Handle both { user: {...} } and direct user object formats
         const userData = data.user || data
         
-        // If user is logged in and viewing account page, they should be verified
-        // But we'll show the actual status from the database
-        // If Rift ID is missing, refetch after a short delay to allow ensureRiftUserId to complete
+        // If Rift ID is missing, try multiple times to get it (ensureRiftUserId might need time)
         let riftUserId = userData.riftUserId || null
         if (!riftUserId) {
-          // Wait a bit and refetch to get the Rift ID that might have been assigned
-          await new Promise(resolve => setTimeout(resolve, 500))
-          const retryResponse = await fetch('/api/auth/me', {
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-          if (retryResponse.ok) {
-            const retryData = await retryResponse.json()
-            const retryUserData = retryData.user || retryData
-            riftUserId = retryUserData.riftUserId || null
+          // Retry up to 3 times with increasing delays
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+            const retryResponse = await fetch('/api/auth/me', {
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            if (retryResponse.ok) {
+              const retryData = await retryResponse.json()
+              const retryUserData = retryData.user || retryData
+              if (retryUserData.riftUserId) {
+                riftUserId = retryUserData.riftUserId
+                break
+              }
+            }
           }
         }
         
@@ -354,25 +357,29 @@ export default function AccountPage() {
                 <span className="text-white font-light">{userProfile.phone || 'Not set'}</span>
               </div>
               
-              <button
-                onClick={handleCopyRiftId}
-                className="flex justify-between items-center py-4 w-full hover:bg-white/5 transition-all duration-200 rounded-lg group"
-              >
+              <div className="flex justify-between items-center py-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
                   <span className="text-white/60 font-light">Rift ID</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span className="text-white font-light tracking-wider">{userProfile.riftUserId || 'Not assigned'}</span>
                   {userProfile.riftUserId && (
-                    <svg className="w-4 h-4 text-white/40 group-hover:text-white/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                    <button
+                      onClick={handleCopyRiftId}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 transition-all duration-200 group"
+                      title="Copy Rift ID"
+                    >
+                      <svg className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-white/70 group-hover:text-white text-xs font-light">Copy</span>
+                    </button>
                   )}
                 </div>
-              </button>
+              </div>
             </div>
             
             <Link 

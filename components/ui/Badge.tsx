@@ -24,3 +24,4 @@ export function Badge({ children, className = '', variant = 'default' }: BadgePr
   )
 }
 
+

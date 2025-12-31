@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signUp: (firstName: string, lastName: string, birthday: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -187,8 +187,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function signUp(name: string, email: string, password: string) {
-    const { user, token } = await api.signUp(name, email, password);
+  async function signUp(firstName: string, lastName: string, birthday: string, email: string, password: string) {
+    const { user, token } = await api.signUp(firstName, lastName, birthday, email, password);
     // Ensure role is included
     const fullUser = await api.getCurrentUser().catch(() => user);
     await saveCachedUser(fullUser);

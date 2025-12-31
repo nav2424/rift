@@ -6,12 +6,14 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
+import ProofQualityIndicator from '@/components/ProofQualityIndicator'
+import DatePicker from '@/components/ui/DatePicker'
 import { useToast } from '@/components/ui/Toast'
 
 interface RiftTransaction {
   id: string
   itemTitle: string
-  itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'LICENSE_KEYS'
   status: string
   sellerId: string
   buyerId: string
@@ -30,6 +32,16 @@ export default function SubmitProofPage() {
     notes: '',
     trackingNumber: '',
     shippingCarrier: '',
+    licenseKey: '',
+    url: '',
+    textContent: '',
+    softwareName: '',
+    licenseType: '',
+    eventName: '',
+    eventDate: '',
+    platform: '',
+    deliverySummary: '',
+    scopeCompletion: '',
   })
   const [files, setFiles] = useState<File[]>([])
 
@@ -50,7 +62,20 @@ export default function SubmitProofPage() {
     try {
       const response = await fetch(`/api/rifts/${riftId}`)
       if (!response.ok) {
-        throw new Error('Failed to load rift')
+        let errorMessage = 'Failed to load rift'
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json()
+            errorMessage = errorData.error || errorData.message || errorMessage
+          } else {
+            const text = await response.text()
+            errorMessage = text || response.statusText || errorMessage
+          }
+        } catch (parseError) {
+          errorMessage = response.statusText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
       const data = await response.json()
       setRift(data)
@@ -61,9 +86,10 @@ export default function SubmitProofPage() {
         router.push(`/rifts/${riftId}`)
         return
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading rift:', error)
-      showToast('Failed to load rift', 'error')
+      const errorMessage = error?.message || 'Failed to load rift'
+      showToast(errorMessage, 'error')
       router.push(`/rifts/${riftId}`)
     } finally {
       setLoading(false)
@@ -81,6 +107,8 @@ export default function SubmitProofPage() {
         return 'proof of ticket transfer (screenshot of transfer confirmation, email, etc.)'
       case 'SERVICES':
         return 'proof of service completion (photos, completion certificate, etc.)'
+      case 'LICENSE_KEYS':
+        return 'license key or account access (enter key, upload proof, or provide download link)'
     }
   }
 
@@ -97,9 +125,18 @@ export default function SubmitProofPage() {
       return
     }
 
-    if (files.length === 0) {
-      showToast('Please upload at least one proof file', 'error')
-      return
+    // Validation: For digital items, require either files or license key
+    if (rift?.itemType === 'DIGITAL') {
+      if (files.length === 0 && !formData.licenseKey) {
+        showToast('Please upload at least one proof file or provide a license key', 'error')
+        return
+      }
+    } else {
+      // For other item types, files are required
+      if (files.length === 0) {
+        showToast('Please upload at least one proof file', 'error')
+        return
+      }
     }
 
     setSubmitting(true)
@@ -141,6 +178,47 @@ export default function SubmitProofPage() {
         formDataToSend.append('notes', formData.notes)
       }
       
+      // Append license key if provided (for digital items or license keys)
+      if ((rift?.itemType === 'DIGITAL' || rift?.itemType === 'LICENSE_KEYS') && formData.licenseKey) {
+        formDataToSend.append('licenseKey', formData.licenseKey)
+      }
+
+      // Append license key metadata if LICENSE_KEYS item type
+      if (rift?.itemType === 'LICENSE_KEYS') {
+        if (formData.softwareName) {
+          formDataToSend.append('softwareName', formData.softwareName)
+        }
+        if (formData.licenseType) {
+          formDataToSend.append('licenseType', formData.licenseType)
+        }
+        if (formData.url) {
+          formDataToSend.append('url', formData.url)
+        }
+      }
+
+      // Append ticket metadata if TICKETS item type
+      if (rift?.itemType === 'TICKETS') {
+        if (formData.eventName) {
+          formDataToSend.append('eventName', formData.eventName)
+        }
+        if (formData.eventDate) {
+          formDataToSend.append('eventDate', formData.eventDate)
+        }
+        if (formData.platform) {
+          formDataToSend.append('platform', formData.platform)
+        }
+      }
+
+      // Append service metadata if SERVICES item type
+      if (rift?.itemType === 'SERVICES') {
+        if (formData.deliverySummary) {
+          formDataToSend.append('deliverySummary', formData.deliverySummary)
+        }
+        if (formData.scopeCompletion) {
+          formDataToSend.append('scopeCompletion', formData.scopeCompletion)
+        }
+      }
+      
       // Append all files
       files.forEach((file) => {
         formDataToSend.append('files', file)
@@ -155,7 +233,11 @@ export default function SubmitProofPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit proof')
+        // Show detailed validation errors if available
+        const errorMessage = data.details && Array.isArray(data.details) 
+          ? `${data.error}\n\n${data.details.join('\n')}`
+          : data.error || 'Failed to submit proof'
+        throw new Error(errorMessage)
       }
 
       showToast(data.message || 'Proof submitted successfully', 'success')
@@ -184,48 +266,63 @@ export default function SubmitProofPage() {
     <div className="min-h-screen relative overflow-hidden bg-black">
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
-          <Link
-            href={`/rifts/${riftId}`}
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-all mb-6 font-light group"
-          >
-            <svg
-              className="w-5 h-5 group-hover:-translate-x-1 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                {rift.itemType === 'DIGITAL' ? 'Add File/PDF to Vault' :
+                 rift.itemType === 'TICKETS' ? 'Add Ticket Proof to Vault' :
+                 rift.itemType === 'SERVICES' ? 'Add Completion Proof to Vault' :
+                 rift.itemType === 'PHYSICAL' ? 'Add Shipment Proof to Vault' :
+                 'Add Proof to Vault'}
+              </h1>
+              <p className="text-white/60 font-light">
+                {rift.itemTitle}
+              </p>
+              <p className="text-white/40 text-sm font-light mt-2">
+                {getProofTypeText()}
+              </p>
+            </div>
+            <Link
+              href={`/rifts/${riftId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            <span className="text-sm">Back to Rift</span>
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
-            Submit Proof of Delivery
-          </h1>
-          <p className="text-white/60 font-light">
-            {rift.itemTitle}
-          </p>
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Rift
+            </Link>
+          </div>
         </div>
 
         <GlassCard className="p-8 lg:p-10">
+          {/* Proof Quality Indicator - Will show after files are selected */}
+          {files.length > 0 && (
+            <div className="mb-6">
+              <ProofQualityIndicator
+                riftId={riftId}
+                assetIds={[]} // Will be populated after upload
+              />
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* File Upload - Required for all item types */}
             <div>
               <label className="block text-sm font-medium text-white/70 mb-2">
-                Proof Files <span className="text-red-400">*</span>
+                Proof Files {rift.itemType !== 'DIGITAL' && <span className="text-red-400">*</span>}
               </label>
               <p className="text-white/50 text-xs font-light mb-3">
-                Upload {getProofTypeText()}
+                {rift.itemType === 'DIGITAL' && 'Upload files, PDFs, or screenshots (optional if providing license key)'}
+                {rift.itemType === 'TICKETS' && 'Upload screenshot of transfer confirmation, email, or ticket proof'}
+                {rift.itemType === 'SERVICES' && 'Upload photos, completion certificate, or service proof'}
+                {rift.itemType === 'PHYSICAL' && 'Upload shipment proof or receipt'}
               </p>
               <input
                 type="file"
                 onChange={handleFileChange}
-                accept="image/*,.pdf"
+                accept={rift.itemType === 'DIGITAL' ? "image/*,.pdf,.zip" : "image/*,.pdf"}
                 multiple
-                required
+                required={rift.itemType !== 'DIGITAL'}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-white/10 file:text-white file:cursor-pointer hover:file:bg-white/20 transition-all"
               />
               {files.length > 0 && (
@@ -234,6 +331,185 @@ export default function SubmitProofPage() {
                 </p>
               )}
             </div>
+
+            {/* License Key - For Digital Items */}
+            {rift.itemType === 'DIGITAL' && (
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">
+                  License Key (Optional)
+                </label>
+                <p className="text-white/50 text-xs font-light mb-3">
+                  Enter the license key or activation code for the digital product
+                </p>
+                <input
+                  type="text"
+                  value={formData.licenseKey}
+                  onChange={(e) => setFormData({ ...formData, licenseKey: e.target.value })}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all font-mono"
+                  placeholder="Enter license key or activation code"
+                />
+                <p className="text-white/40 text-xs mt-2">
+                  {files.length === 0 && !formData.licenseKey && 'Either files or license key is required'}
+                </p>
+              </div>
+            )}
+
+            {/* Ticket Fields - For TICKETS Item Type */}
+            {rift.itemType === 'TICKETS' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Event Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.eventName}
+                    onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                    placeholder="e.g., Taylor Swift Concert"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Event Date <span className="text-red-400">*</span>
+                  </label>
+                  <DatePicker
+                    value={formData.eventDate}
+                    onChange={(value) => setFormData({ ...formData, eventDate: value })}
+                    minDate={new Date().toISOString().split('T')[0]}
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Platform <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.platform}
+                    onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                    placeholder="e.g., Ticketmaster, StubHub, etc."
+                  />
+                </div>
+              </>
+            )}
+
+            {/* License Key Fields - For LICENSE_KEYS Item Type */}
+            {rift.itemType === 'LICENSE_KEYS' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Software Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.softwareName}
+                    onChange={(e) => setFormData({ ...formData, softwareName: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                    placeholder="e.g., Adobe Photoshop, Microsoft Office"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    License Type <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={formData.licenseType}
+                    onChange={(e) => setFormData({ ...formData, licenseType: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                  >
+                    <option value="">Select license type</option>
+                    <option value="SINGLE_USE">Single Use</option>
+                    <option value="MULTI_USE">Multi-Use</option>
+                    <option value="LIFETIME">Lifetime</option>
+                    <option value="SUBSCRIPTION">Subscription</option>
+                    <option value="ACCOUNT_ACCESS">Account Access</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    License Key
+                  </label>
+                  <p className="text-white/50 text-xs font-light mb-3">
+                    Enter the license key or activation code. Alternatively, upload a file with the key or provide a download link.
+                  </p>
+                  <input
+                    type="text"
+                    value={formData.licenseKey}
+                    onChange={(e) => setFormData({ ...formData, licenseKey: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all font-mono"
+                    placeholder="Enter license key or activation code"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Download Link (Optional)
+                  </label>
+                  <p className="text-white/50 text-xs font-light mb-3">
+                    If the license key is provided via download link instead of direct entry
+                  </p>
+                  <input
+                    type="url"
+                    value={formData.url}
+                    onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <p className="text-white/40 text-xs mt-2">
+                  {files.length === 0 && !formData.licenseKey && !formData.url && 'Either license key, file, or download link is required'}
+                </p>
+              </>
+            )}
+
+            {/* Service Fields - For SERVICES Item Type */}
+            {rift.itemType === 'SERVICES' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Delivery Summary <span className="text-red-400">*</span>
+                  </label>
+                  <p className="text-white/50 text-xs font-light mb-3">
+                    Describe what was delivered or completed
+                  </p>
+                  <textarea
+                    value={formData.deliverySummary}
+                    onChange={(e) => setFormData({ ...formData, deliverySummary: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+                    rows={3}
+                    placeholder="Describe what was delivered..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-2">
+                    Scope Completion <span className="text-red-400">*</span>
+                  </label>
+                  <p className="text-white/50 text-xs font-light mb-3">
+                    Confirm that the agreed scope of work has been completed
+                  </p>
+                  <textarea
+                    value={formData.scopeCompletion}
+                    onChange={(e) => setFormData({ ...formData, scopeCompletion: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+                    rows={3}
+                    placeholder="Confirm scope completion..."
+                  />
+                </div>
+              </>
+            )}
 
             {rift.itemType === 'PHYSICAL' && (
               <>
@@ -295,10 +571,18 @@ export default function SubmitProofPage() {
               </PremiumButton>
               <PremiumButton
                 type="submit"
-                disabled={submitting || files.length === 0 || (rift.itemType === 'PHYSICAL' && !formData.trackingNumber)}
+                disabled={
+                  submitting || 
+                  (rift.itemType === 'PHYSICAL' && !formData.trackingNumber) ||
+                  (rift.itemType === 'DIGITAL' && files.length === 0 && !formData.licenseKey) ||
+                  (rift.itemType === 'LICENSE_KEYS' && (!formData.softwareName || !formData.licenseType || (files.length === 0 && !formData.licenseKey && !formData.url))) ||
+                  (rift.itemType === 'TICKETS' && (!formData.eventName || !formData.eventDate || !formData.platform || files.length === 0)) ||
+                  (rift.itemType === 'SERVICES' && (!formData.deliverySummary || !formData.scopeCompletion)) ||
+                  (rift.itemType !== 'DIGITAL' && rift.itemType !== 'PHYSICAL' && rift.itemType !== 'LICENSE_KEYS' && rift.itemType !== 'TICKETS' && rift.itemType !== 'SERVICES' && files.length === 0)
+                }
                 className="flex-1"
               >
-                {submitting ? 'Submitting...' : 'Submit Proof'}
+                {submitting ? 'Adding to Vault...' : 'Add to Vault'}
               </PremiumButton>
             </div>
 

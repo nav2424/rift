@@ -4,10 +4,10 @@ import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
 
 /**
- * POST /api/disputes/[id]/evidence
- * Upload evidence metadata (file should already be uploaded to storage)
+ * GET /api/disputes/[id]/evidence
+ * List all evidence for a dispute (buyer/seller/admin)
  */
-export async function POST(
+export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -19,23 +19,13 @@ export async function POST(
 
     const { id: disputeId } = await params
     const userId = auth.userId
-    const body = await request.json()
-    const { type, storagePath, textContent, meta } = body
-
-    // Validate type
-    const validTypes = ['image', 'pdf', 'text', 'link', 'file']
-    if (!type || !validTypes.includes(type)) {
-      return NextResponse.json(
-        { error: `Invalid type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      )
-    }
+    const isAdmin = auth.userRole === 'ADMIN'
 
     // Get dispute and verify access
     const supabase = createServerClient()
     const { data: dispute, error: disputeError } = await supabase
       .from('disputes')
-      .select('*, rift_id')
+      .select('rift_id, status, opened_by')
       .eq('id', disputeId)
       .single()
 
@@ -64,73 +54,58 @@ export async function POST(
 
     const isBuyer = rift.buyerId === userId
     const isSeller = rift.sellerId === userId
-    const isAdmin = auth.userRole === 'ADMIN'
 
-    if (!isBuyer && !isSeller && !isAdmin) {
+    // Access control: Admin can always view, buyer/seller can view after dispute is submitted
+    if (!isAdmin && !isBuyer && !isSeller) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Determine uploader role
-    const uploaderRole = isBuyer ? 'buyer' : isSeller ? 'seller' : 'admin'
-
-    // Check if evidence can be added based on dispute status
-    if (isBuyer && !['draft', 'submitted', 'needs_info'].includes(dispute.status)) {
+    // Buyers and sellers can only view evidence after dispute is submitted
+    if (!isAdmin && !['submitted', 'needs_info', 'under_review', 'resolved', 'closed'].includes(dispute.status)) {
       return NextResponse.json(
-        { error: 'Cannot add evidence in current dispute status' },
-        { status: 400 }
+        { error: 'Evidence can only be viewed after dispute is submitted' },
+        { status: 403 }
       )
     }
 
-    if (isSeller && !['submitted', 'needs_info', 'under_review'].includes(dispute.status)) {
-      return NextResponse.json(
-        { error: 'Cannot add evidence in current dispute status' },
-        { status: 400 }
-      )
-    }
-
-    // Create evidence record
+    // Get all evidence
     const { data: evidence, error: evidenceError } = await supabase
       .from('dispute_evidence')
-      .insert({
-        dispute_id: disputeId,
-        uploader_id: userId,
-        uploader_role: uploaderRole,
-        type,
-        storage_path: storagePath || null,
-        text_content: textContent || null,
-        meta: meta || {},
-      })
-      .select()
-      .single()
+      .select('*')
+      .eq('dispute_id', disputeId)
+      .order('created_at', { ascending: false })
 
-    if (evidenceError || !evidence) {
-      console.error('Create evidence error:', evidenceError)
+    if (evidenceError) {
+      console.error('Get evidence error:', evidenceError)
       return NextResponse.json(
-        { error: 'Failed to create evidence', details: evidenceError?.message },
+        { error: 'Failed to get evidence', details: evidenceError.message },
         { status: 500 }
       )
     }
 
-    // Create dispute action
-    await supabase.from('dispute_actions').insert({
-      dispute_id: disputeId,
-      actor_id: userId,
-      actor_role: uploaderRole,
-      action_type: 'evidence_added',
-      note: `Added ${type} evidence`,
-      meta: { evidenceId: evidence.id },
-    })
+    // For non-admin users, don't include signed URLs in list (they need to request individually)
+    const evidenceList = evidence?.map(ev => ({
+      id: ev.id,
+      type: ev.type,
+      uploaderRole: ev.uploader_role,
+      uploaderId: ev.uploader_id,
+      createdAt: ev.created_at,
+      hasFile: !!ev.storage_path,
+      hasText: !!ev.text_content,
+      textContent: ev.text_content ? ev.text_content.substring(0, 100) + (ev.text_content.length > 100 ? '...' : '') : null,
+      fileName: ev.meta?.fileName || null,
+      fileSize: ev.meta?.fileSize || null,
+    })) || []
 
     return NextResponse.json({
-      success: true,
-      evidence,
+      evidence: evidenceList,
+      count: evidenceList.length,
     })
   } catch (error: any) {
-    console.error('Add evidence error:', error)
+    console.error('List evidence error:', error)
     return NextResponse.json(
       { error: 'Internal server error', message: error.message },
       { status: 500 }
     )
   }
 }
-

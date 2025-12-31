@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createServerClient } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
+import { analyzeDisputeText, generateDisputeSummary } from '@/lib/ai/dispute-analysis'
+import { extractAndSummarizeEvidence } from '@/lib/ai/evidence-extraction'
 
 /**
  * GET /api/admin/disputes/[id]
@@ -58,6 +60,10 @@ export async function GET(
             id: true,
             name: true,
             email: true,
+            emailVerified: true,
+            phoneVerified: true,
+            idVerified: true,
+            bankVerified: true,
           },
         },
         seller: {
@@ -65,6 +71,10 @@ export async function GET(
             id: true,
             name: true,
             email: true,
+            emailVerified: true,
+            phoneVerified: true,
+            idVerified: true,
+            bankVerified: true,
           },
         },
         riftEvents: {
@@ -114,8 +124,23 @@ export async function GET(
         id: true,
         name: true,
         email: true,
+        emailVerified: true,
+        phoneVerified: true,
+        idVerified: true,
+        bankVerified: true,
       },
     })
+
+    // AI Dispute Analysis
+    let aiAnalysis = null
+    let evidenceSummary = null
+    try {
+      aiAnalysis = await analyzeDisputeText(disputeId, dispute.summary || '', dispute.rift_id)
+      evidenceSummary = await extractAndSummarizeEvidence(disputeId, dispute.rift_id)
+    } catch (error) {
+      console.error('AI dispute analysis failed:', error)
+      // Continue without AI analysis if it fails
+    }
 
     return NextResponse.json({
       dispute: {
@@ -127,6 +152,8 @@ export async function GET(
       rift,
       deliveryProof,
       chatMessages,
+      aiAnalysis, // AI-powered dispute analysis
+      evidenceSummary, // AI-extracted evidence summary
     })
   } catch (error: any) {
     console.error('Get dispute case error:', error)

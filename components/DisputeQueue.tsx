@@ -23,16 +23,41 @@ interface Dispute {
     currency: string
     itemType: string
     eventDateTz?: string | null
-    buyer: { id: string; name: string | null; email: string }
-    seller: { id: string; name: string | null; email: string }
+    buyer: { 
+      id: string
+      name: string | null
+      email: string
+      emailVerified?: boolean
+      phoneVerified?: boolean
+      idVerified?: boolean
+      bankVerified?: boolean
+    }
+    seller: { 
+      id: string
+      name: string | null
+      email: string
+      emailVerified?: boolean
+      phoneVerified?: boolean
+      idVerified?: boolean
+      bankVerified?: boolean
+    }
   }
-  openedByUser?: { id: string; name: string | null; email: string }
+  openedByUser?: { 
+    id: string
+    name: string | null
+    email: string
+    emailVerified?: boolean
+    phoneVerified?: boolean
+    idVerified?: boolean
+    bankVerified?: boolean
+  }
 }
 
 export default function DisputeQueue() {
   const router = useRouter()
   const [disputes, setDisputes] = useState<Dispute[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState({
     status: 'all',
     category: '',
@@ -45,6 +70,7 @@ export default function DisputeQueue() {
 
   const loadDisputes = async () => {
     setLoading(true)
+    setError(null)
     try {
       const params = new URLSearchParams()
       if (filters.status) params.append('status', filters.status)
@@ -53,13 +79,19 @@ export default function DisputeQueue() {
 
       const response = await fetch(`/api/admin/disputes?${params}`)
       if (!response.ok) {
-        throw new Error('Failed to load disputes')
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.details || errorData.error || 'Failed to load disputes'
+        setError(errorMessage)
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
       setDisputes(data.disputes || [])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Load disputes error:', error)
+      if (!error.message || error.message === 'Failed to load disputes') {
+        setError(error.message || 'Failed to load disputes. Please check your Supabase configuration.')
+      }
     } finally {
       setLoading(false)
     }
@@ -146,7 +178,24 @@ export default function DisputeQueue() {
 
       {/* Disputes List */}
       <GlassCard>
-        {disputes.length === 0 ? (
+        {loading ? (
+          <div className="text-white/60 font-light text-center py-12">
+            Loading disputes...
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-red-400 font-light mb-2">Failed to load disputes</div>
+            <div className="text-white/60 font-light text-sm max-w-2xl mx-auto whitespace-pre-line">
+              {error}
+            </div>
+            {error.includes('Supabase configuration') && (
+              <div className="mt-4 text-white/40 font-light text-xs">
+                <p>Get your Supabase keys from:</p>
+                <p className="mt-1">https://supabase.com/dashboard/project/zosvdbzroydrwwlwlzvi/settings/api</p>
+              </div>
+            )}
+          </div>
+        ) : disputes.length === 0 ? (
           <div className="text-white/60 font-light text-center py-12">
             No disputes found
           </div>
@@ -175,10 +224,26 @@ export default function DisputeQueue() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 text-xs text-white/50 font-light mt-3">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 font-light mt-3">
                   <span>Category: {dispute.category_snapshot}</span>
                   <span>Reason: {dispute.reason.replace(/_/g, ' ')}</span>
-                  <span>Buyer: {dispute.openedByUser?.email || dispute.opened_by}</span>
+                  <span>Opened by: {dispute.openedByUser?.email || dispute.opened_by}</span>
+                  {dispute.rift?.buyer && (
+                    <span className="flex items-center gap-1.5">
+                      Buyer: {dispute.rift.buyer.email}
+                      {dispute.rift.buyer.emailVerified && dispute.rift.buyer.phoneVerified && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Email & Phone Verified" />
+                      )}
+                    </span>
+                  )}
+                  {dispute.rift?.seller && (
+                    <span className="flex items-center gap-1.5">
+                      Seller: {dispute.rift.seller.email}
+                      {dispute.rift.seller.emailVerified && dispute.rift.seller.phoneVerified && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Email & Phone Verified" />
+                      )}
+                    </span>
+                  )}
                   {dispute.auto_triage?.decision && (
                     <span className="text-yellow-400/80">
                       Auto: {dispute.auto_triage.decision}

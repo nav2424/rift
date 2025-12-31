@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { createServerClient } from '@/lib/supabase'
+import { moderateAndAction } from '@/lib/ai/message-moderation'
 
 // Helper function to get or create conversation for a transaction
 async function getOrCreateConversationForTransaction(
@@ -338,6 +339,35 @@ export async function POST(
         },
         { status: 500 }
       )
+    }
+
+    // AI Message Moderation
+    const moderationResult = await moderateAndAction(messageBody.trim(), {
+      conversationId: conversation.id,
+      senderId: userId,
+      receiverId: isBuyer ? transaction.sellerId : transaction.buyerId,
+      riftId: transactionId,
+    })
+
+    if (!moderationResult.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Message blocked',
+          reason: moderationResult.moderationResult.reasoning,
+          severity: moderationResult.moderationResult.severity,
+        },
+        { status: 403 }
+      )
+    }
+
+    // If flagged but allowed, log it for admin review
+    if (moderationResult.moderationResult.action === 'flag' || moderationResult.moderationResult.action === 'alert') {
+      console.warn(`[MODERATION FLAG] Message flagged: ${moderationResult.moderationResult.reasoning}`, {
+        conversationId: conversation.id,
+        transactionId,
+        senderId: userId,
+        severity: moderationResult.moderationResult.severity,
+      })
     }
 
     // Insert new message (trigger will update last_message_at)

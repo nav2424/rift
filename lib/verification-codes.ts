@@ -5,6 +5,7 @@
 
 import { prisma } from './prisma'
 import crypto from 'crypto'
+import { randomUUID } from 'crypto'
 
 const CODE_EXPIRY_MINUTES = 15
 const MAX_ATTEMPTS = 5
@@ -32,6 +33,7 @@ export async function generateVerificationCode(
   // Store new code
   await prisma.verificationCode.create({
     data: {
+      id: randomUUID(),
       userId,
       type,
       code,

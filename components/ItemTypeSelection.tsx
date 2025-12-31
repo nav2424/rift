@@ -4,7 +4,7 @@ import { useState } from 'react'
 import GlassCard from './ui/GlassCard'
 import PremiumButton from './ui/PremiumButton'
 
-export type ItemType = 'TICKETS' | 'DIGITAL' | 'SERVICES'
+export type ItemType = 'TICKETS' | 'DIGITAL' | 'SERVICES' | 'LICENSE_KEYS'
 
 interface ItemTypeSelectionProps {
   onSelect: (type: ItemType) => void
@@ -45,6 +45,17 @@ const itemTypes = [
       </svg>
     ),
     features: ['Service date', 'Milestone tracking', 'Completion proof']
+  },
+  {
+    type: 'LICENSE_KEYS' as ItemType,
+    title: 'License Keys',
+    description: 'Software licenses, activation keys, account access',
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+      </svg>
+    ),
+    features: ['Software name', 'License type', 'Secure key delivery']
   }
 ]
 
@@ -117,62 +128,61 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
           ))}
         </div>
 
-        {/* Third item (Service) centered below */}
-        {itemTypes[2] && (
-          <div className="flex justify-center">
-            <div className="w-full md:w-1/2">
-              <button
-                onClick={() => setSelectedType(itemTypes[2].type)}
-                className={`text-left transition-all duration-300 group w-full ${
-                  selectedType === itemTypes[2].type
-                    ? 'scale-[1.02]'
-                    : 'hover:scale-[1.01]'
+        {/* Third and fourth items in a 2-column grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {itemTypes.slice(2).map((item) => (
+            <button
+              key={item.type}
+              onClick={() => setSelectedType(item.type)}
+              className={`text-left transition-all duration-300 group ${
+                selectedType === item.type
+                  ? 'scale-[1.02]'
+                  : 'hover:scale-[1.01]'
+              }`}
+            >
+              <GlassCard
+                variant="glass"
+                hover
+                className={`p-8 cursor-pointer border-2 transition-all h-full ${
+                  selectedType === item.type
+                    ? 'border-white/30 bg-white/5'
+                    : 'border-white/10 hover:border-white/20'
                 }`}
               >
-                <GlassCard
-                  variant="glass"
-                  hover
-                  className={`p-8 cursor-pointer border-2 transition-all h-full ${
-                    selectedType === itemTypes[2].type
-                      ? 'border-white/30 bg-white/5'
-                      : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-start gap-5">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      selectedType === itemTypes[2].type
-                        ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 text-blue-400'
-                        : 'bg-white/5 border border-white/10 text-white/60 group-hover:bg-white/10 group-hover:text-white/80'
-                    }`}>
-                      {itemTypes[2].icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-2xl font-light text-white mb-3">{itemTypes[2].title}</h3>
-                      <p className="text-white/70 text-sm font-light mb-6 leading-relaxed">{itemTypes[2].description}</p>
-                      <ul className="space-y-2.5">
-                        {itemTypes[2].features.map((feature, idx) => (
-                          <li key={idx} className="text-white/60 text-sm font-light flex items-center gap-3">
-                            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              selectedType === itemTypes[2].type ? 'bg-blue-400' : 'bg-white/40'
-                            }`} />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {selectedType === itemTypes[2].type && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-400/50 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    )}
+                <div className="flex items-start gap-5">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                    selectedType === item.type
+                      ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 text-blue-400'
+                      : 'bg-white/5 border border-white/10 text-white/60 group-hover:bg-white/10 group-hover:text-white/80'
+                  }`}>
+                    {item.icon}
                   </div>
-                </GlassCard>
-              </button>
-            </div>
-          </div>
-        )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-2xl font-light text-white mb-3">{item.title}</h3>
+                    <p className="text-white/70 text-sm font-light mb-6 leading-relaxed">{item.description}</p>
+                    <ul className="space-y-2.5">
+                      {item.features.map((feature, idx) => (
+                        <li key={idx} className="text-white/60 text-sm font-light flex items-center gap-3">
+                          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                            selectedType === item.type ? 'bg-blue-400' : 'bg-white/40'
+                          }`} />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {selectedType === item.type && (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-400/50 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            </button>
+          ))}
+        </div>
       </div>
 
       {selectedType && (

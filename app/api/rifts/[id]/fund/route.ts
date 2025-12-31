@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { createPaymentIntent, stripe } from '@/lib/stripe'
 import { transitionRiftState } from '@/lib/rift-state'
 import { calculateBuyerTotal } from '@/lib/fees'
+import { randomUUID } from 'crypto'
 
 /**
  * Pay for a rift (buyer pays)
@@ -60,7 +61,44 @@ export async function POST(
       )
     }
 
-    // Update rift with payment intent ID
+    // Check risk score and apply risk policy before funding
+    try {
+      const { applyRiskPolicy } = await import('@/lib/risk/computeRisk')
+      const { getVerificationRecommendations } = await import('@/lib/ai/fraud-ring-detection')
+      
+      // Recompute risk score
+      const { computeRiftRisk } = await import('@/lib/risk/computeRisk')
+      const riskScore = await computeRiftRisk(id)
+      
+      // Apply risk policy
+      const policy = await applyRiskPolicy(id)
+      
+      // Get verification recommendations
+      const verification = await getVerificationRecommendations(id)
+      
+      // Update rift with risk score and policy
+      await prisma.riftTransaction.update({
+        where: { id },
+        data: {
+          stripePaymentIntentId: paymentIntent.paymentIntentId,
+          riskScore,
+          // Store policy flags if needed
+        },
+      })
+      
+      // If critical risk, require manual review
+      if (verification.requireManualReview) {
+        await prisma.riftTransaction.update({
+          where: { id },
+          data: { requiresManualReview: true },
+        })
+      }
+    } catch (error) {
+      console.error('Risk policy application error (non-blocking):', error)
+      // Continue with payment even if risk check fails
+    }
+
+    // Update rift with payment intent ID (fallback if risk check fails)
     await prisma.riftTransaction.update({
       where: { id },
       data: {
@@ -103,7 +141,23 @@ export async function PUT(
     }
 
     const { id } = await params
-    const { paymentIntentId } = await request.json()
+    
+    let paymentIntentId: string
+    try {
+      const body = await request.json()
+      paymentIntentId = body.paymentIntentId
+      if (!paymentIntentId) {
+        return NextResponse.json({ 
+          error: 'Payment intent ID is required',
+          details: 'The paymentIntentId field is missing from the request body'
+        }, { status: 400 })
+      }
+    } catch (parseError: any) {
+      return NextResponse.json({ 
+        error: 'Invalid request body',
+        details: parseError.message || 'Failed to parse request body'
+      }, { status: 400 })
+    }
 
     const rift = await prisma.riftTransaction.findUnique({
       where: { id },
@@ -165,7 +219,7 @@ export async function PUT(
       }
     }
 
-    // Transition to FUNDED
+    // Transition to PAID
     try {
       await transitionRiftState(rift.id, 'FUNDED', { userId: auth.userId })
     } catch (transitionError: any) {
@@ -185,6 +239,7 @@ export async function PUT(
         console.warn(`Rift ${rift.id} has no subtotal set, cannot create accurate timeline event`)
         await prisma.timelineEvent.create({
           data: {
+            id: randomUUID(),
             escrowId: rift.id,
             type: 'PAYMENT_RECEIVED',
             message: 'Payment received',
@@ -197,6 +252,7 @@ export async function PUT(
         
         await prisma.timelineEvent.create({
           data: {
+            id: randomUUID(),
             escrowId: rift.id,
             type: 'PAYMENT_RECEIVED',
             message,
@@ -212,10 +268,15 @@ export async function PUT(
     return NextResponse.json({ success: true, status: 'FUNDED' })
   } catch (error: any) {
     console.error('Confirm payment error:', error)
+    const errorMessage = error?.message || error?.toString() || 'Internal server error'
+    const errorDetails = process.env.NODE_ENV === 'development' 
+      ? (error?.stack || errorMessage)
+      : 'An unexpected error occurred while processing payment'
+    
     return NextResponse.json(
       { 
-        error: error.message || 'Internal server error',
-        details: error.stack || 'An unexpected error occurred while processing payment'
+        error: errorMessage,
+        details: errorDetails
       },
       { status: 500 }
     )

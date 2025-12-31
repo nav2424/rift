@@ -37,6 +37,8 @@ export default function WalletPage() {
   const [withdrawReason, setWithdrawReason] = useState('')
   const [stripeStatus, setStripeStatus] = useState<any>(null)
   const [connectingStripe, setConnectingStripe] = useState(false)
+  const [payouts, setPayouts] = useState<any[]>([])
+  const [loadingPayouts, setLoadingPayouts] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -47,6 +49,7 @@ export default function WalletPage() {
     if (status === 'authenticated') {
       loadWallet()
       loadStripeStatus()
+      loadPayoutHistory()
     }
   }, [status, router])
 
@@ -95,6 +98,8 @@ export default function WalletPage() {
           setCanWithdraw(checkData.canWithdraw || false)
           if (!checkData.canWithdraw) {
             setWithdrawReason(checkData.reason || 'Cannot withdraw')
+          } else {
+            setWithdrawReason('') // Clear reason if withdrawal is allowed
           }
         } else {
           // Fallback: assume they can if balance > 0
@@ -218,6 +223,47 @@ export default function WalletPage() {
   }
 
   // Format Stripe requirement strings to be user-friendly
+  const loadPayoutHistory = async () => {
+    try {
+      setLoadingPayouts(true)
+      const response = await fetch('/api/wallet/payouts?limit=10', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setPayouts(data.data || [])
+      }
+    } catch (error) {
+      console.error('Error loading payout history:', error)
+    } finally {
+      setLoadingPayouts(false)
+    }
+  }
+
+  const getPayoutStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      PENDING: 'Pending',
+      SCHEDULED: 'Scheduled',
+      PROCESSING: 'Processing',
+      COMPLETED: 'Completed',
+      FAILED: 'Failed',
+    }
+    return labels[status] || status
+  }
+
+  const getPayoutStatusColor = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return 'text-green-400 border-green-500/30 bg-green-500/10'
+      case 'FAILED':
+        return 'text-red-400 border-red-500/30 bg-red-500/10'
+      case 'PROCESSING':
+        return 'text-blue-400 border-blue-500/30 bg-blue-500/10'
+      default:
+        return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'
+    }
+  }
+
   const formatRequirement = (requirement: string): string => {
     // Remove common prefixes
     let formatted = requirement
@@ -277,14 +323,21 @@ export default function WalletPage() {
       
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <Link href="/dashboard" className="text-white/60 hover:text-white font-light text-sm flex items-center gap-2 mb-4">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-          <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">Your Wallet</h1>
-          <p className="text-white/60 font-light">Manage your balance and withdrawals</p>
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">Your Wallet</h1>
+              <p className="text-white/60 font-light">Manage your balance and withdrawals</p>
+            </div>
+            <Link 
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Balance Card */}
@@ -293,7 +346,7 @@ export default function WalletPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Available Balance</p>
-                <p className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                <p className="text-2xl md:text-3xl font-light text-white mb-2 tracking-tight">
                   {formatCurrency(wallet.wallet.availableBalance, wallet.wallet.currency)}
                 </p>
                 {wallet.wallet.pendingBalance > 0 && (
@@ -302,8 +355,8 @@ export default function WalletPage() {
                   </p>
                 )}
               </div>
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center border border-green-500/20">
-                <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/10 flex items-center justify-center border border-green-500/20">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -483,17 +536,45 @@ export default function WalletPage() {
             {wallet.wallet.availableBalance > 0 && (
               <div className="pt-6 border-t border-white/10">
                 <h3 className="text-lg font-light text-white mb-4">Request Withdrawal</h3>
-                {!canWithdraw && (
+                {!canWithdraw && withdrawReason && (
                   <div className="mb-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
                     <p className="text-yellow-400/90 font-light text-sm mb-3">
-                      Complete verification to withdraw: Phone verified, Stripe Connect account set up, and Stripe Identity verification completed.
+                      {withdrawReason}
                     </p>
-                    <Link 
-                      href="/settings/verification"
-                      className="inline-block text-yellow-400 hover:text-yellow-300 font-light text-sm underline"
-                    >
-                      Verify Phone →
-                    </Link>
+                    {withdrawReason.toLowerCase().includes('phone') && (
+                      <Link 
+                        href="/settings/verification"
+                        className="inline-block text-yellow-400 hover:text-yellow-300 font-light text-sm underline"
+                      >
+                        Verify Phone →
+                      </Link>
+                    )}
+                    {withdrawReason.toLowerCase().includes('email') && !withdrawReason.toLowerCase().includes('phone') && (
+                      <Link 
+                        href="/settings/verification"
+                        className="inline-block text-yellow-400 hover:text-yellow-300 font-light text-sm underline"
+                      >
+                        Verify Email →
+                      </Link>
+                    )}
+                    {withdrawReason.toLowerCase().includes('stripe connect') && (
+                      <button
+                        onClick={handleConnectStripe}
+                        disabled={connectingStripe}
+                        className="inline-block text-yellow-400 hover:text-yellow-300 font-light text-sm underline disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {connectingStripe ? 'Loading...' : 'Set up Stripe Connect →'}
+                      </button>
+                    )}
+                    {withdrawReason.toLowerCase().includes('stripe identity') && (
+                      <button
+                        onClick={handleConnectStripe}
+                        disabled={connectingStripe}
+                        className="inline-block text-yellow-400 hover:text-yellow-300 font-light text-sm underline disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {connectingStripe ? 'Loading...' : 'Complete Stripe Identity Verification →'}
+                      </button>
+                    )}
                   </div>
                 )}
                 <div className="space-y-4">
@@ -537,6 +618,42 @@ export default function WalletPage() {
             )}
           </div>
         </GlassCard>
+
+        {/* Withdrawal History */}
+        {payouts.length > 0 && (
+          <GlassCard className="mb-6">
+            <div className="p-6">
+              <h2 className="text-xl font-light text-white mb-6">Withdrawal History</h2>
+              <div className="space-y-3">
+                {payouts.map((payout) => (
+                  <div key={payout.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <p className="text-white/90 font-light">Withdrawal</p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-light border ${getPayoutStatusColor(payout.status)}`}>
+                          {getPayoutStatusLabel(payout.status)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/50 font-light mt-1">
+                        {new Date(payout.createdAt).toLocaleString()}
+                      </p>
+                      {payout.failureReason && (
+                        <p className="text-xs text-red-400 font-light mt-1">
+                          {payout.failureReason}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-light text-red-400">
+                        -{formatCurrency(payout.amount, payout.currency)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </GlassCard>
+        )}
 
         {/* Ledger */}
         <GlassCard>

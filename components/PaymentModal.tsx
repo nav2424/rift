@@ -28,6 +28,13 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasInteracted, setHasInteracted] = useState(false)
+  
+  // Reset error and interaction state when clientSecret changes (modal reopened)
+  useEffect(() => {
+    setError(null)
+    setHasInteracted(false)
+  }, [clientSecret])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,6 +53,7 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
       if (submitError) {
         const errorMessage = submitError.message || 'Please check your payment details'
         setError(errorMessage)
+        setHasInteracted(true) // Mark as interacted when validation fails
         showToast(errorMessage, 'error')
         setLoading(false)
         return
@@ -63,21 +71,102 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
           redirect: 'if_required',
         })
       } catch (stripeError: any) {
-        console.error('Stripe confirmPayment error:', stripeError)
-        const errorMessage = stripeError.message || 'Payment confirmation failed. Please try again.'
+        console.error('Stripe confirmPayment exception:', {
+          error: stripeError,
+          message: stripeError?.message,
+          code: stripeError?.code,
+          type: stripeError?.type,
+          stack: stripeError?.stack
+        })
+        const errorMessage = stripeError?.message || stripeError?.code || 'Payment confirmation failed. Please try again.'
         setError(errorMessage)
         showToast(errorMessage, 'error')
         setLoading(false)
         return
       }
 
-      if (confirmResult.error) {
-        const errorMessage = confirmResult.error.message || 'Payment failed'
-        console.error('Stripe payment error:', confirmResult.error)
+      // Check if confirmResult exists and has an error
+      if (!confirmResult) {
+        console.error('Stripe confirmPayment returned undefined result')
+        const errorMessage = 'Payment confirmation failed. Please try again.'
         setError(errorMessage)
         showToast(errorMessage, 'error')
         setLoading(false)
         return
+      }
+
+      // Check for error in confirmResult
+      if (confirmResult.error) {
+        const stripeError = confirmResult.error as any
+        
+        // Extract error details using JSON.stringify since Stripe error objects
+        // have non-enumerable properties that aren't directly accessible
+        let errorMessage = 'Payment failed'
+        let errorCode = ''
+        let errorType = ''
+        
+        try {
+          // Use JSON.stringify to serialize the error object, which exposes all properties
+          const errorJson = JSON.parse(JSON.stringify(stripeError, Object.getOwnPropertyNames(stripeError)))
+          
+          if (errorJson.message) {
+            errorMessage = errorJson.message
+          }
+          if (errorJson.code) {
+            errorCode = errorJson.code
+          }
+          if (errorJson.type) {
+            errorType = errorJson.type
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, try direct property access as fallback
+          if (stripeError.message) {
+            errorMessage = stripeError.message
+          }
+          if (stripeError.code) {
+            errorCode = stripeError.code
+          }
+          if (stripeError.type) {
+            errorType = stripeError.type
+          }
+        }
+        
+        // Use code-specific messages for better UX
+        if (errorCode === 'payment_intent_unexpected_state') {
+          errorMessage = 'Payment is in an unexpected state. Please try again or use a different payment method.'
+        } else if (errorCode && errorMessage === 'Payment failed') {
+          errorMessage = `Payment error: ${errorCode}`
+        } else if (errorMessage === 'Payment failed') {
+          errorMessage = 'Payment processing error. Please try again.'
+        }
+        
+        // Log error details for debugging
+        console.error('Stripe payment error:', 
+          `Message: ${errorMessage}, Code: ${errorCode || 'N/A'}, Type: ${errorType || 'N/A'}`
+        )
+        
+        setError(errorMessage)
+        showToast(errorMessage, 'error')
+        setLoading(false)
+        return
+      }
+      
+      // Also check if paymentIntent exists and has an error status
+      const paymentIntent = (confirmResult as any).paymentIntent
+      if (paymentIntent?.status) {
+        const status = paymentIntent.status
+        if (status === 'requires_payment_method' || status === 'canceled' || status === 'requires_action') {
+          console.warn('Payment intent status indicates failure:', status)
+          const errorMessage = status === 'requires_payment_method' 
+            ? 'Payment method was declined. Please try a different card.'
+            : status === 'canceled'
+            ? 'Payment was canceled. Please try again.'
+            : 'Payment requires additional action. Please try again.'
+          setError(errorMessage)
+          showToast(errorMessage, 'error')
+          setLoading(false)
+          return
+        }
       }
 
       // Wait a moment for Stripe to update the payment intent status
@@ -104,20 +193,46 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
 
       if (!confirmResponse.ok) {
         let errorData: any = {}
+        let responseText = ''
         try {
-          errorData = await confirmResponse.json()
+          responseText = await confirmResponse.text()
+          if (responseText) {
+            try {
+              errorData = JSON.parse(responseText)
+            } catch {
+              // If JSON parsing fails, use the text as error message
+              errorData = { error: responseText.substring(0, 200) }
+            }
+          }
         } catch (parseError) {
-          errorData = { error: `HTTP ${confirmResponse.status}: ${confirmResponse.statusText}` }
+          console.error('Failed to parse error response:', parseError)
         }
         
-        const errorMessage = errorData.error || errorData.message || errorData.details || 'Failed to confirm payment'
-        console.error('Payment confirmation error:', {
+        // Ensure we have at least a basic error message
+        if (!errorData.error && !errorData.message && !errorData.details) {
+          errorData.error = `HTTP ${confirmResponse.status}: ${confirmResponse.statusText || 'Unknown error'}`
+        }
+        
+        const errorMessage = errorData.error || errorData.message || errorData.details || `Failed to confirm payment (${confirmResponse.status})`
+        
+        const errorLogData: any = {
           status: confirmResponse.status,
           statusText: confirmResponse.statusText,
           error: errorMessage,
-          details: errorData.details,
-          fullError: errorData
-        })
+        }
+        
+        // Only include additional fields if they have meaningful content
+        if (errorData.details) {
+          errorLogData.details = errorData.details
+        }
+        if (Object.keys(errorData).length > 0 && (errorData.error || errorData.message)) {
+          errorLogData.fullError = errorData
+        }
+        if (responseText) {
+          errorLogData.responseText = responseText.substring(0, 500)
+        }
+        
+        console.error('Payment confirmation error:', errorLogData)
         
         setError(errorMessage)
         showToast(errorMessage, 'error')
@@ -174,6 +289,24 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
     // The PaymentIntent already restricts to cards only via payment_method_types: ['card']
   }
 
+  // Handle change events from PaymentElement to track user interaction
+  useEffect(() => {
+    if (!elements) return
+    
+    const paymentElement = elements.getElement('payment')
+    if (!paymentElement) return
+
+    const handleChange = () => {
+      setHasInteracted(true)
+    }
+
+    paymentElement.on('change', handleChange)
+    
+    return () => {
+      paymentElement.off('change', handleChange)
+    }
+  }, [elements])
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement 
@@ -183,7 +316,7 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
         }}
       />
       
-      {error && (
+      {error && hasInteracted && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
           <p className="text-red-400 text-sm font-light">{error}</p>
         </div>
@@ -215,6 +348,16 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
   const { showToast } = useToast()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
+
+  // Disable background scroll while modal is open
+  useEffect(() => {
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isOpen])
 
   useEffect(() => {
     if (!isOpen) {
@@ -271,9 +414,12 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="absolute inset-0" onClick={onClose}></div>
-      <GlassCard variant="strong" className="relative w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
+      {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
+      <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
+      {/* Modal */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
+        <GlassCard variant="strong" className="relative w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto pointer-events-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-light text-white">Complete Payment</h2>
           <button
@@ -298,6 +444,23 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
           )}
         </div>
 
+        {/* Dispute Fee Disclosure */}
+        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1 space-y-1">
+              <p className="text-sm text-white/90 font-light">
+                <strong className="text-white">Disputes are free</strong> when handled through Rift.
+              </p>
+              <p className="text-xs text-white/60 font-light leading-relaxed">
+                Filing a bank or card chargeback instead may result in a $15 processing fee, refunded if you win.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {clientSecret && paymentIntentId ? (
           <Elements stripe={stripePromise} options={options}>
             <PaymentForm
@@ -317,7 +480,8 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
             <p className="text-white/60 font-light">Initializing payment...</p>
           </div>
         )}
-      </GlassCard>
+        </GlassCard>
+      </div>
     </div>
   )
 }

@@ -226,22 +226,22 @@ export default function Home() {
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       {/* Hero Section */}
-      <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 sm:pt-2 pb-8 sm:pb-12 lg:pt-4 lg:pb-16">
+      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
         <div className="relative z-10">
           {/* Trust Badge */}
-          <div className={`flex justify-center mb-10 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/8 hover:border-white/15 transition-all duration-300 group">
-              <svg className="w-3.5 h-3.5 text-green-400/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`flex justify-center mb-12 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+            <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-white/[0.04] backdrop-blur-xl border border-white/10 hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300 shadow-lg shadow-black/20">
+              <svg className="w-4 h-4 text-green-400/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-white/70 font-light text-xs tracking-wide">Trusted by thousands worldwide</span>
+              <span className="text-white/80 font-light text-xs tracking-wide">Trusted by thousands worldwide</span>
             </div>
           </div>
           
           {/* Main Heading */}
-          <div className={`text-center mb-6 sm:mb-8 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light mb-4 sm:mb-6 leading-[1.1] tracking-[-0.03em] px-2">
-              <span className="block text-white/95 mb-2 sm:mb-3 font-light">The Safest Way to</span>
+          <div className={`text-center mb-8 sm:mb-10 transition-all duration-1000 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light mb-6 sm:mb-8 leading-[1.1] tracking-[-0.02em] px-2">
+              <span className="block text-white/90 mb-3 sm:mb-4 font-light">The Safest Way to</span>
               <span className="block text-white font-light">
                 Buy & Sell Online
               </span>
@@ -249,61 +249,64 @@ export default function Home() {
           </div>
           
           {/* Subheading */}
-          <div className={`text-center mb-8 sm:mb-10 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <p className="text-xl sm:text-2xl md:text-3xl text-white/90 font-light mb-3 sm:mb-4 max-w-2xl mx-auto leading-relaxed px-4">
+          <div className={`text-center mb-10 sm:mb-12 transition-all duration-1000 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/85 font-light mb-4 sm:mb-5 max-w-2xl mx-auto leading-relaxed px-4">
               Never get scammed again.
             </p>
-            <p className="text-sm sm:text-base md:text-lg text-white/60 max-w-xl mx-auto leading-relaxed font-light px-4">
+            <p className="text-sm sm:text-base md:text-lg text-white/65 max-w-xl mx-auto leading-relaxed font-light px-4">
               Rift protects your money until the job is done — and verifies every buyer & seller.
             </p>
           </div>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-12 px-4 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className={`flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center mb-10 sm:mb-14 px-4 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Link href="/auth/signup" className="group relative w-full sm:w-auto">
               <PremiumButton 
                 size="lg" 
-                variant="primary" 
-                className="w-full sm:w-auto min-w-[200px] text-base px-8 sm:px-10 py-4 font-semibold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.25)] transition-all duration-300"
+                variant="outline" 
+                className="w-full sm:w-auto min-w-[220px] text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 font-medium bg-white/5 hover:bg-white/10 border-2 border-white hover:border-white text-white transition-all duration-300 rounded-xl backdrop-blur-sm"
               >
-                <span className="flex items-center justify-center gap-2">
-                  <span>Start a Rift</span>
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
+                <span className="font-semibold tracking-tight">Start a Rift</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </PremiumButton>
             </Link>
             <Link href="#how-it-works" className="group w-full sm:w-auto">
               <PremiumButton 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto min-w-[200px] text-base px-8 sm:px-10 py-4 font-medium bg-transparent !border !border-white text-white hover:bg-white/5 hover:!border-white transition-all duration-300 rounded-full"
-                style={{ borderColor: 'white' }}
+                className="w-full sm:w-auto min-w-[200px] text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 font-medium bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-white transition-all duration-300 rounded-xl backdrop-blur-sm"
               >
-                How Rift Works
+                How it works
               </PremiumButton>
             </Link>
           </div>
 
           {/* Security Features */}
-          <div className={`flex flex-wrap justify-center gap-6 transition-all duration-1000 delay-400 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="flex items-center gap-2 text-white/50 text-sm font-light">
-              <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+          <div className={`flex flex-wrap justify-center gap-8 sm:gap-10 transition-all duration-1000 delay-400 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="flex items-center gap-3 text-white/60 hover:text-white/80 text-sm sm:text-base font-light transition-colors duration-300 group/feature">
+              <div className="w-5 h-5 rounded-lg bg-white/5 border border-white/10 group-hover/feature:bg-white/10 group-hover/feature:border-white/20 flex items-center justify-center transition-all duration-300">
+                <svg className="w-3 h-3 text-white/60 group-hover/feature:text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
               <span>Secure Protection</span>
             </div>
-            <div className="flex items-center gap-2 text-white/50 text-sm font-light">
-              <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="flex items-center gap-3 text-white/60 hover:text-white/80 text-sm sm:text-base font-light transition-colors duration-300 group/feature">
+              <div className="w-5 h-5 rounded-lg bg-white/5 border border-white/10 group-hover/feature:bg-white/10 group-hover/feature:border-white/20 flex items-center justify-center transition-all duration-300">
+                <svg className="w-3 h-3 text-white/60 group-hover/feature:text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
               <span>Verified Users</span>
             </div>
-            <div className="flex items-center gap-2 text-white/50 text-sm font-light">
-              <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+            <div className="flex items-center gap-3 text-white/60 hover:text-white/80 text-sm sm:text-base font-light transition-colors duration-300 group/feature">
+              <div className="w-5 h-5 rounded-lg bg-white/5 border border-white/10 group-hover/feature:bg-white/10 group-hover/feature:border-white/20 flex items-center justify-center transition-all duration-300">
+                <svg className="w-3 h-3 text-white/60 group-hover/feature:text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
               <span>Dispute Resolution</span>
             </div>
           </div>
@@ -1057,65 +1060,6 @@ export default function Home() {
             </div>
           </div>
         </GlassCard>
-      </section>
-
-      {/* FAQ */}
-      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {[
-            {
-              question: 'What payment methods do you accept?',
-              answer: 'We accept credit and debit cards (Visa, Mastercard, American Express), Apple Pay, and Google Pay. All payments are processed securely through encrypted channels.'
-            },
-            {
-              question: 'How does buyer protection work?',
-              answer: 'When a buyer pays, Rift holds the funds securely until completion. The seller can see the payment but cannot access the money until you confirm receipt (or after a protection period). This protects both parties from scams.'
-            },
-            {
-              question: 'How does protection work for different item types?',
-              answer: 'Digital items, tickets, and services get instant payouts when the seller marks delivered, with a 24-hour buyer protection window. Buyers can raise disputes during this period if there are any issues.'
-            },
-            {
-              question: 'What\'s the difference between Rift and PayPal/Venmo?',
-              answer: 'Unlike PayPal or Venmo, Rift holds funds securely until both parties confirm completion. This prevents chargebacks, fake payment screenshots, and "item not received" scams. Funds are only released when the transaction is verified complete.'
-            },
-            {
-              question: 'How long does it take to receive funds?',
-              answer: 'For digital items, tickets, and services: instant payout after seller confirms delivery and buyer confirms receipt (with 24-hour buyer protection window for disputes).'
-            },
-            {
-              question: 'What happens if I dispute a transaction?',
-              answer: 'You can raise a dispute at any time before funds are released. Our admin team reviews all evidence (messages, photos, tracking info) and makes a fair decision. Disputes are typically resolved within 24-48 hours.'
-            },
-            {
-              question: 'What are the fees?',
-              answer: 'Buyers pay a 3% payment processing fee (covers card network and processing costs). Sellers pay a 5% platform fee. All fees are clearly displayed before any transaction. No hidden charges.'
-            },
-            {
-              question: 'Is my information secure?',
-              answer: 'Absolutely. We use bank-level encryption for all data in transit and at rest. Your card details are never stored on our servers — they\'re processed securely through our payment processor. We never share your financial information with third parties.'
-            }
-          ].map((faq, index) => (
-            <GlassCard 
-              key={index} 
-              variant="glass" 
-              hover 
-              className={`p-6 sm:p-8 lg:p-10 cursor-pointer relative transition-all duration-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-              style={{ transitionDelay: `${index * 50}ms` }}
-            >
-              <div className="relative z-10">
-                <h3 className="text-lg sm:text-xl font-light text-white mb-3 sm:mb-4">{faq.question}</h3>
-                <p className="text-white/70 font-light leading-relaxed text-sm sm:text-base">{faq.answer}</p>
-              </div>
-            </GlassCard>
-          ))}
-        </div>
       </section>
 
     </div>

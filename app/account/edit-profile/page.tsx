@@ -43,6 +43,32 @@ export default function EditProfilePage() {
     }
   }, [session, status, router])
 
+  const formatPhoneNumber = (phone: string | null | undefined): string => {
+    if (!phone) return ''
+    
+    // If phone is already in E.164 format (+1234567890), format it nicely
+    const cleaned = phone.replace(/^\+/, '')
+    
+    // US/Canada format: (123) 456-7890
+    if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      const areaCode = cleaned.slice(1, 4)
+      const exchange = cleaned.slice(4, 7)
+      const number = cleaned.slice(7, 11)
+      return `+1 (${areaCode}) ${exchange}-${number}`
+    }
+    
+    // US/Canada without country code: (123) 456-7890
+    if (cleaned.length === 10) {
+      const areaCode = cleaned.slice(0, 3)
+      const exchange = cleaned.slice(3, 6)
+      const number = cleaned.slice(6, 10)
+      return `(${areaCode}) ${exchange}-${number}`
+    }
+    
+    // Return original if format is unknown
+    return phone
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loading) return
@@ -59,7 +85,7 @@ export default function EditProfilePage() {
         credentials: 'include',
         body: JSON.stringify({
           name: name.trim() || null,
-          phone: phone.trim() || null,
+          // Phone cannot be changed here
         }),
       })
 
@@ -70,13 +96,10 @@ export default function EditProfilePage() {
 
       const data = await response.json()
       
-      // Update the session
+      // Update the session - this will trigger the JWT callback with trigger='update'
+      // NextAuth will automatically refresh all components using useSession
       await updateSession({
-        ...session,
-        user: {
-          ...session?.user,
-          name: data.user.name,
-        },
+        name: data.user.name,
       })
 
       router.push('/account')
@@ -111,29 +134,31 @@ export default function EditProfilePage() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
-          <Link 
-            href="/account"
-            className="text-white/60 hover:text-white/90 font-light mb-6 transition-colors flex items-center gap-2 inline-block"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Account
-          </Link>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 mt-1">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                  Edit Profile
+                </h1>
+                <p className="text-white/60 font-light">Update your personal information</p>
+              </div>
+            </div>
+            <Link 
+              href="/account"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-            </div>
-            <div>
-              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
-                Edit Profile
-              </h1>
-              <p className="text-white/60 font-light">Update your personal information</p>
-            </div>
+              Back to Account
+            </Link>
           </div>
         </div>
 
@@ -171,11 +196,13 @@ export default function EditProfilePage() {
                 </label>
                 <input
                   type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone number"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-white/30 transition-colors"
+                  value={formatPhoneNumber(phone) || ''}
+                  readOnly
+                  disabled
+                  placeholder="No phone number set"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 font-light cursor-not-allowed"
                 />
+                <p className="mt-2 text-white/40 text-sm font-light">Phone number cannot be changed here. Use the verification page to update your phone number.</p>
               </div>
 
               <div>

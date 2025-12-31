@@ -30,6 +30,26 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
+  const markAllAsRead = async (convId: string) => {
+    try {
+      // Use the first message ID as a dummy param, but send conversationId in body
+      const firstMessage = messages[0]
+      if (!firstMessage) return
+      
+      await fetch(`/api/messages/${firstMessage.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ conversationId: convId }),
+      })
+    } catch (error) {
+      console.error('Error marking messages as read:', error)
+      // Don't show error to user, this is not critical
+    }
+  }
+
   const fetchMessages = async () => {
     try {
       const response = await fetch(`/api/conversations/transaction/${transactionId}`, {
@@ -61,9 +81,16 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
       if (!data.conversation || !data.conversation.id) {
         throw new Error('Invalid response: missing conversation data')
       }
-      setConversationId(data.conversation.id)
-      setMessages(data.messages || [])
+      const convId = data.conversation.id
+      setConversationId(convId)
+      const msgs = data.messages || []
+      setMessages(msgs)
       setError(null)
+      
+      // Mark all messages as read when viewing conversation
+      if (msgs.length > 0) {
+        markAllAsRead(convId)
+      }
     } catch (err: any) {
       console.error('Error fetching messages:', err)
       const errorMessage = err.message || 'Failed to load messages. Please try again.'
@@ -121,16 +148,21 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
 
   useEffect(() => {
     // Only scroll messages container to bottom when messages change, but not on initial load
-    // This prevents auto-scrolling the whole page when the component first mounts
+    // Don't scroll if the last message was sent by the current user (they just sent it)
     if (messages.length > 0 && !loading && messagesContainerRef.current) {
-      // Scroll the container itself, not the whole page
-      const container = messagesContainerRef.current
-      const timeout = setTimeout(() => {
-        container.scrollTop = container.scrollHeight
-      }, 100)
-      return () => clearTimeout(timeout)
+      const lastMessage = messages[messages.length - 1]
+      const isLastMessageFromCurrentUser = lastMessage?.senderId === session?.user?.id
+      
+      // Only auto-scroll if the last message is from someone else
+      if (!isLastMessageFromCurrentUser) {
+        const container = messagesContainerRef.current
+        const timeout = setTimeout(() => {
+          container.scrollTop = container.scrollHeight
+        }, 100)
+        return () => clearTimeout(timeout)
+      }
     }
-  }, [messages, loading])
+  }, [messages, loading, session?.user?.id])
 
   const handleSend = async () => {
     if (!messageText.trim() || sending || !transactionId) return

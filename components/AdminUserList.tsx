@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import GlassCard from './ui/GlassCard'
 
 interface User {
@@ -20,11 +21,15 @@ interface User {
   responseTimeMs: number | null
   idVerified: boolean
   bankVerified: boolean
+  emailVerified: boolean
+  phoneVerified: boolean
+  stripeIdentityVerified?: boolean
   _count: {
     sellerTransactions: number
     buyerTransactions: number
-    disputesRaised: number
-    disputesResolved: number
+    activities: number
+    // Note: disputes are stored in Supabase, not Prisma
+    // Dispute counts would need to be fetched separately
   }
 }
 
@@ -33,6 +38,7 @@ interface AdminUserListProps {
 }
 
 export default function AdminUserList({ users: initialUsers }: AdminUserListProps) {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'createdAt' | 'email' | 'totalProcessedAmount' | 'numCompletedTransactions'>('createdAt')
@@ -179,21 +185,25 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <div className="text-sm font-light text-white">
-                        {user.name || 'No name'}
+                <tr 
+                  key={user.id} 
+                  className="hover:bg-white/5 transition-colors cursor-pointer"
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                >
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <div className="text-sm font-light text-white">
+                          {user.name || 'No name'}
+                        </div>
+                        <div className="text-sm text-white/60 font-light">{user.email}</div>
+                        {user.riftUserId && (
+                          <div className="text-xs text-white/40 font-light font-mono">{user.riftUserId}</div>
+                        )}
+                        {user.phone && (
+                          <div className="text-xs text-white/40 font-light">{user.phone}</div>
+                        )}
                       </div>
-                      <div className="text-sm text-white/60 font-light">{user.email}</div>
-                      {user.riftUserId && (
-                        <div className="text-xs text-white/40 font-light font-mono">{user.riftUserId}</div>
-                      )}
-                      {user.phone && (
-                        <div className="text-xs text-white/40 font-light">{user.phone}</div>
-                      )}
-                    </div>
-                  </td>
+                    </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1.5 text-xs font-light rounded-lg border ${
                       user.role === 'ADMIN'
@@ -245,7 +255,19 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${
+                          user.emailVerified ? 'bg-green-400' : 'bg-red-400/50'
+                        }`} />
+                        <span className="text-xs text-white/60 font-light">Email</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${
+                          user.phoneVerified ? 'bg-green-400' : 'bg-red-400/50'
+                        }`} />
+                        <span className="text-xs text-white/60 font-light">Phone</span>
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${
                           user.idVerified ? 'bg-green-400' : 'bg-white/20'
@@ -258,6 +280,14 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
                         }`} />
                         <span className="text-xs text-white/60 font-light">Bank</span>
                       </div>
+                      {user.stripeIdentityVerified !== undefined && (
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            user.stripeIdentityVerified ? 'bg-green-400' : 'bg-white/20'
+                          }`} />
+                          <span className="text-xs text-white/60 font-light">Stripe ID</span>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-white/60 font-light">

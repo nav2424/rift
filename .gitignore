@@ -30,8 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files - NEVER commit these to GitHub
+# This pattern covers all .env files including:
+# .env, .env.local, .env.development, .env.production, .env.test, etc.
 .env*
+# Exception: Allow .env.example as a template (if you want to track it)
+!.env.example
 
 # vercel
 .vercel
@@ -50,4 +54,3 @@ prisma/dev.db*
 # uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
-.env*.local

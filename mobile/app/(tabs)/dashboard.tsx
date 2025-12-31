@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert, Platform, ScrollView, Animated } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { api, RiftTransaction } from '@/lib/api';
 import { BlurView } from 'expo-blur';
@@ -20,6 +20,7 @@ export default function DashboardScreen() {
   const [scrollY] = useState(new Animated.Value(0));
   const { user } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   const loadEscrows = useCallback(async () => {
     try {
@@ -37,7 +38,7 @@ export default function DashboardScreen() {
     loadEscrows();
   }, [loadEscrows]);
 
-  // Reload rifts when screen comes into focus (instant updates after actions)
+
   useFocusEffect(
     useCallback(() => {
       loadEscrows();
@@ -253,8 +254,8 @@ export default function DashboardScreen() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -401,7 +402,13 @@ export default function DashboardScreen() {
 
   const recentActivity = getRecentActivity();
   const displayedActivity = recentActivity.slice(0, 6);
-  const userName = user?.name || user?.email?.split('@')[0] || 'User';
+  // Extract first name only from full name
+  const getFirstName = (fullName: string | null | undefined): string => {
+    if (!fullName) return user?.email?.split('@')[0] || 'User'
+    const firstName = fullName.trim().split(' ')[0]
+    return firstName || user?.email?.split('@')[0] || 'User'
+  }
+  const userName = getFirstName(user?.name);
 
   return (
     <View style={styles.container}>

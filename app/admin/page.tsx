@@ -4,12 +4,13 @@ import AdminDisputeList from '@/components/AdminDisputeList'
 import AdminUserList from '@/components/AdminUserList'
 import RiftList from '@/components/RiftList'
 import GlassCard from '@/components/ui/GlassCard'
+import CollapsibleSection from '@/components/ui/CollapsibleSection'
 import Link from 'next/link'
 
 export default async function AdminPage() {
   await requireAdmin()
 
-  // Get all users
+  // Get all users with verification status
   const allUsers = await prisma.user.findMany({
     select: {
       id: true,
@@ -28,12 +29,16 @@ export default async function AdminPage() {
       responseTimeMs: true,
       idVerified: true,
       bankVerified: true,
+      emailVerified: true,
+      phoneVerified: true,
+      stripeIdentityVerified: true,
       _count: {
         select: {
           sellerTransactions: true,
           buyerTransactions: true,
-          disputesRaised: true,
-          disputesResolved: true,
+          activities: true,
+          // Note: disputes are stored in Supabase, not Prisma
+          // Dispute counts would need to be fetched separately from Supabase
         },
       },
     },
@@ -70,48 +75,17 @@ export default async function AdminPage() {
     },
   })
 
-  // Get all disputes
-  const disputes = await prisma.dispute.findMany({
-    where: {
-      status: 'OPEN',
-    },
-    select: {
-      id: true,
-      escrowId: true,
-      raisedById: true,
-      reason: true,
-      status: true,
-      adminNotes: true,
-      resolvedById: true,
-      createdAt: true,
-      updatedAt: true,
-      EscrowTransaction: {
-        select: {
-          id: true,
-          riftNumber: true,
-          status: true,
-          buyer: {
-            select: {
-              email: true,
-            },
-          },
-          seller: {
-            select: {
-              email: true,
-            },
-          },
-        },
-      },
-      raisedBy: {
-        select: {
-          email: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+  // Get disputes from Supabase (new dispute system)
+  // Note: Disputes are now stored in Supabase, not Prisma
+  // We'll fetch a count for the stats, but the full list is in /admin/disputes page
+  const { createServerClient } = await import('@/lib/supabase')
+  const supabase = createServerClient()
+  const { count: disputesCount } = await supabase
+    .from('disputes')
+    .select('*', { count: 'exact', head: true })
+    .in('status', ['submitted', 'needs_info', 'under_review'])
+  
+  const openDisputesCount = disputesCount || 0
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
@@ -148,7 +122,7 @@ export default async function AdminPage() {
             <div className="p-6">
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Volume</p>
               <p className="text-4xl font-light text-white mb-2 tracking-tight">
-                ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <p className="text-sm text-white/40 font-light">
                 {allUsers.reduce((sum, u) => sum + u.numCompletedTransactions, 0)} transactions
@@ -157,12 +131,12 @@ export default async function AdminPage() {
           </GlassCard>
           <Link href="/admin/disputes">
             <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">{disputes.length}</p>
+            <div className="p-6">
+              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
+              <p className="text-4xl font-light text-white mb-2 tracking-tight">{openDisputesCount}</p>
                 <p className="text-sm text-white/40 font-light">Click to review →</p>
-              </div>
-            </GlassCard>
+            </div>
+          </GlassCard>
           </Link>
           <Link href="/admin/proofs">
             <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
@@ -177,40 +151,41 @@ export default async function AdminPage() {
             <div className="p-6">
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Verified Users</p>
               <p className="text-4xl font-light text-white mb-2 tracking-tight">
-                {allUsers.filter(u => u.idVerified && u.bankVerified).length}
+                {allUsers.filter(u => u.emailVerified && u.phoneVerified).length}
               </p>
               <p className="text-sm text-white/40 font-light">
-                {allUsers.filter(u => u.idVerified).length} ID verified
+                {allUsers.filter(u => u.emailVerified && u.phoneVerified && u.idVerified && u.bankVerified).length} fully verified
               </p>
             </div>
           </GlassCard>
         </div>
 
-        <div className="mb-12">
-          <h2 className="text-2xl font-light text-white mb-6">All Users ({allUsers.length})</h2>
+        <CollapsibleSection title="All Users" count={allUsers.length}>
           <AdminUserList users={allUsers} />
-        </div>
+        </CollapsibleSection>
 
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-light text-white">Open Disputes</h2>
+        <CollapsibleSection title="Open Disputes" count={openDisputesCount}>
+          <div className="mb-6">
             <Link 
               href="/admin/disputes"
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light text-sm flex items-center gap-2"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light text-sm"
             >
-              View All Disputes
+              View All Disputes ({openDisputesCount})
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
           </div>
-          <AdminDisputeList disputes={disputes} />
-        </div>
+          <GlassCard variant="strong" className="p-8">
+            <p className="text-white/60 font-light text-center">
+              View all disputes in the <Link href="/admin/disputes" className="text-white/80 hover:text-white underline">Dispute Queue</Link>
+            </p>
+          </GlassCard>
+        </CollapsibleSection>
 
-        <div>
-          <h2 className="text-2xl font-light text-white mb-6">All Transactions ({allRifts.length})</h2>
-          <RiftList rifts={allRifts} title="All Transactions" />
-        </div>
+        <CollapsibleSection title="All Transactions" count={allRifts.length}>
+          <RiftList rifts={allRifts} title="All Transactions" showAdminActions={true} />
+        </CollapsibleSection>
       </div>
     </div>
   )

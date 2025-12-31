@@ -3,7 +3,6 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { createServerClient } from '@/lib/supabase'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType } from '@prisma/client'
 
 /**
@@ -23,16 +22,17 @@ export async function POST(
     const { id: riftId } = await params
     const userId = auth.userId
     const body = await request.json()
-    const { provider } = body
+    const { provider, transferToEmail } = body
 
     // Get rift and verify seller
     const rift = await prisma.riftTransaction.findUnique({
       where: { id: riftId },
-      select: {
-        id: true,
-        sellerId: true,
-        itemType: true,
-        status: true,
+      include: {
+        buyer: {
+          select: {
+            email: true,
+          },
+        },
       },
     })
 
@@ -69,6 +69,24 @@ export async function POST(
       )
     }
 
+    // Get or validate transfer email
+    let transferEmail = transferToEmail || rift.buyer?.email
+    if (!transferEmail) {
+      return NextResponse.json(
+        { error: 'Transfer email is required. Please provide transferToEmail in the request body.' },
+        { status: 400 }
+      )
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(transferEmail)) {
+      return NextResponse.json(
+        { error: 'Invalid email format for transfer email' },
+        { status: 400 }
+      )
+    }
+
     // Get or create ticket transfer record
     const supabase = createServerClient()
     const { data: existingTransfer } = await supabase
@@ -79,13 +97,20 @@ export async function POST(
 
     if (existingTransfer) {
       // Update existing transfer
+      const updateData: any = {
+        seller_claimed_sent_at: new Date().toISOString(),
+        status: 'seller_sent',
+      }
+      if (provider) {
+        updateData.provider = provider
+      }
+      if (transferEmail && transferEmail !== existingTransfer.transfer_to_email) {
+        updateData.transfer_to_email = transferEmail
+      }
+
       const { error: updateError } = await supabase
         .from('ticket_transfers')
-        .update({
-          seller_claimed_sent_at: new Date().toISOString(),
-          status: 'seller_sent',
-          ...(provider && { provider }),
-        })
+        .update(updateData)
         .eq('rift_id', riftId)
 
       if (updateError) {
@@ -96,14 +121,13 @@ export async function POST(
         )
       }
     } else {
-      // Create new transfer record (transfer_to_email should already be set from required details)
-      // For now, we'll require it to be passed or retrieved from required details
+      // Create new transfer record
       const { error: insertError } = await supabase
         .from('ticket_transfers')
         .insert({
           rift_id: riftId,
           provider: provider || 'other',
-          transfer_to_email: '', // Should be set from required details - TODO: fetch from required details
+          transfer_to_email: transferEmail,
           seller_claimed_sent_at: new Date().toISOString(),
           status: 'seller_sent',
         })
@@ -136,11 +160,7 @@ export async function POST(
       requestMeta
     )
 
-    // Post system message
-    await postSystemMessage(
-      riftId,
-      'Seller marked ticket transfer as sent.'
-    )
+    // Don't post system messages - status updates are visible in the platform and sent via email
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

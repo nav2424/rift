@@ -29,6 +29,19 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Hide all content behind modals */
+body.modal-open > *:not([data-modal-backdrop]):not([data-modal-content]) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.modal-open main,
+body.modal-open header,
+body.modal-open nav {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* Premium enterprise-grade surfaces */
 .glass {
   background: rgba(255, 255, 255, 0.02);

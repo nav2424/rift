@@ -11,7 +11,7 @@ export function canTransition(
 ): boolean {
   // Admin can resolve disputes
   if (actorRole === 'ADMIN' && currentStatus === 'DISPUTED') {
-    return newStatus === 'RELEASED' || newStatus === 'REFUNDED'
+    return newStatus === 'RELEASED' || newStatus === 'REFUNDED' || newStatus === 'RESOLVED'
   }
 
   // State machine transitions - New system (FUNDED, PROOF_SUBMITTED, UNDER_REVIEW)
@@ -22,55 +22,67 @@ export function canTransition(
       if (actorRole === 'BUYER') {
         return newStatus === 'FUNDED' || newStatus === 'CANCELED'
       }
+      // Seller can decline participation (cancel)
+      if (actorRole === 'SELLER') {
+        return newStatus === 'CANCELED'
+      }
       return false
 
     case 'FUNDED':
-      // Seller can submit proof, buyer can dispute or cancel
+      // Seller can submit proof, buyer can dispute (if seller past SLA) or cancel (with seller approval)
       if (actorRole === 'SELLER') {
         return newStatus === 'PROOF_SUBMITTED'
       }
       if (actorRole === 'BUYER') {
         return newStatus === 'DISPUTED' || newStatus === 'CANCELED'
       }
+      // System can auto-route to UNDER_REVIEW if risk flags
+      if (actorRole === 'ADMIN') {
+        return newStatus === 'UNDER_REVIEW'
+      }
       return false
 
     case 'PROOF_SUBMITTED':
-      // Admin can review (UNDER_REVIEW), buyer can release or dispute
-      if (actorRole === 'ADMIN') {
+      // Buyer can release or dispute, admin/system can route to UNDER_REVIEW
+      if (actorRole === 'ADMIN' || actorRole === 'SYSTEM') {
         return newStatus === 'UNDER_REVIEW' || newStatus === 'RELEASED'
       }
       if (actorRole === 'BUYER') {
         return newStatus === 'RELEASED' || newStatus === 'DISPUTED'
       }
+      // Seller can add supplemental proof (stays in PROOF_SUBMITTED)
       return false
 
     case 'UNDER_REVIEW':
-      // Buyer can release or dispute, admin can release
+      // Buyer can release or dispute, admin can approve/reject/escalate
       if (actorRole === 'BUYER') {
         return newStatus === 'RELEASED' || newStatus === 'DISPUTED'
       }
       if (actorRole === 'ADMIN') {
-        return newStatus === 'RELEASED'
+        return newStatus === 'RELEASED' || newStatus === 'PROOF_SUBMITTED' || newStatus === 'DISPUTED' || newStatus === 'CANCELED'
       }
       return false
 
     case 'DISPUTED':
       // Only admin can resolve
-      return actorRole === 'ADMIN' && (newStatus === 'RELEASED' || newStatus === 'REFUNDED' || newStatus === 'RESOLVED')
+      return actorRole === 'ADMIN' && (newStatus === 'RELEASED' || newStatus === 'REFUNDED' || newStatus === 'RESOLVED' || newStatus === 'CANCELED')
 
     case 'RESOLVED':
-      // Admin can finalize resolution
-      if (actorRole === 'ADMIN') {
-        return newStatus === 'RELEASED' || newStatus === 'REFUNDED'
+      // System transitions based on outcome
+      // RESOLVED → RELEASED (seller wins)
+      // RESOLVED → PAYOUT_SCHEDULED (seller wins, payout already queued)
+      // RESOLVED → CANCELED (buyer wins / refund path)
+      if (actorRole === 'ADMIN' || actorRole === 'SYSTEM') {
+        return newStatus === 'RELEASED' || newStatus === 'PAYOUT_SCHEDULED' || newStatus === 'CANCELED'
       }
       return false
 
     case 'RELEASED':
-      // Can transition to payout scheduled
+      // Can transition to payout scheduled (system)
       return newStatus === 'PAYOUT_SCHEDULED'
 
     case 'PAYOUT_SCHEDULED':
-      // Terminal state after payout
+      // Terminal state after payout (system transitions)
       return newStatus === 'PAID_OUT'
 
     case 'PAID_OUT':

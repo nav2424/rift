@@ -55,7 +55,7 @@ export default function Pricing() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black pt-32 pb-32">
+    <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -138,7 +138,7 @@ export default function Pricing() {
                     <span className="text-green-400 font-light text-sm">For Buyers</span>
                   </div>
                   <div className="mb-4">
-                    <span className="text-5xl md:text-6xl font-light text-white">3%</span>
+                    <span className="text-2xl md:text-3xl font-light text-white">3%</span>
                     <span className="text-white/60 font-light text-xl ml-2">processing fee</span>
                   </div>
                   <p className="text-white/70 font-light text-lg mb-6">
@@ -175,7 +175,7 @@ export default function Pricing() {
                     <span className="text-blue-400 font-light text-sm">For Sellers</span>
                   </div>
                   <div className="mb-4">
-                    <span className="text-5xl md:text-6xl font-light text-white">5%</span>
+                    <span className="text-2xl md:text-3xl font-light text-white">5%</span>
                     <span className="text-white/60 font-light text-xl ml-2">platform fee</span>
                   </div>
                   <p className="text-white/70 font-light text-lg mb-6">
@@ -211,7 +211,7 @@ export default function Pricing() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/signup" className="block">
                     <PremiumButton size="lg" className="w-full sm:w-auto min-w-[240px] px-10 py-4" glow>
-                      Start Protecting Transactions
+                      Get Started
                     </PremiumButton>
                   </Link>
                 </div>
@@ -455,7 +455,7 @@ export default function Pricing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/signup">
                 <PremiumButton size="lg" className="w-full sm:w-auto px-12 py-4" glow>
-                  Get Started Free
+                  Get Started
                 </PremiumButton>
               </Link>
             </div>

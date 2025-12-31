@@ -1,8 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/escrows/auto-release",
-      "schedule": "0 0 * * *"
+      "path": "/api/rifts/auto-release",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/payouts/process",
+      "schedule": "0 9 * * *"
     }
   ]
 }

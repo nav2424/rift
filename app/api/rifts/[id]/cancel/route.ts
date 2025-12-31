@@ -97,7 +97,7 @@ export async function POST(
     await prisma.timelineEvent.create({
       data: {
         escrowId: id,
-        type: 'ESCROW_CANCELLED',
+        type: 'RIFT_CANCELLED',
         message: 'Rift cancelled by buyer',
         createdById: auth.userId,
       },

@@ -35,19 +35,14 @@ export default function Footer() {
             <h4 className="text-xs font-medium text-white/70 mb-4 uppercase tracking-wider">Company</h4>
             <ul className="space-y-2.5">
               <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+                <Link href="/about" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+                <Link href="/careers" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
                   Careers
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -55,19 +50,14 @@ export default function Footer() {
             <h4 className="text-xs font-medium text-white/70 mb-4 uppercase tracking-wider">Support</h4>
             <ul className="space-y-2.5">
               <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+                <Link href="/support?type=faq" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+                <Link href="/support?type=contact" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
                   Contact Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
-                  Status
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -77,15 +67,15 @@ export default function Footer() {
             © {new Date().getFullYear()} Rift. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+            <Link href="/legal" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
               Privacy
-            </a>
-            <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+            </Link>
+            <Link href="/legal" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
               Terms
-            </a>
-            <a href="#" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
+            </Link>
+            <Link href="/legal" className="text-white/50 hover:text-white transition-colors duration-200 text-sm font-light">
               Cookies
-            </a>
+            </Link>
           </div>
         </div>
       </div>

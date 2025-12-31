@@ -123,7 +123,7 @@ export default function AdminDashboardScreen() {
           <View style={styles.amountContainer}>
             <Text style={styles.amountLabel}>Amount</Text>
             <Text style={styles.escrowAmount}>
-              {item.amount} {item.currency}
+              {((item.amount || 0).toFixed(2))} {item.currency}
             </Text>
           </View>
           <View style={styles.partiesContainer}>

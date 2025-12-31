@@ -67,7 +67,7 @@ export function canBuyerDispute(status: EscrowStatus): boolean {
 /**
  * Check if seller can submit proof in current state
  * Allows submission when:
- * - Status is FUNDED (initial proof submission)
+ * - Status is PAID or FUNDED (initial proof submission)
  * - Status is UNDER_REVIEW (resubmission after rejection)
  */
 export function canSellerSubmitProof(status: EscrowStatus): boolean {

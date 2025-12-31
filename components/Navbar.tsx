@@ -49,6 +49,7 @@ export default function Navbar() {
         href="/messages" 
         className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
         onClick={() => setMobileMenuOpen(false)}
+        data-onboarding="messages"
       >
         Messages
       </Link>
@@ -56,18 +57,19 @@ export default function Navbar() {
         href="/account" 
         className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
         onClick={() => setMobileMenuOpen(false)}
+        data-onboarding="account"
       >
         Account
       </Link>
       {session.user.role === 'ADMIN' && (
         <>
-          <Link 
-            href="/admin" 
-            className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Admin
-          </Link>
+        <Link 
+          href="/admin" 
+          className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          Admin
+        </Link>
           <Link 
             href="/admin/disputes" 
             className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
@@ -127,28 +129,28 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/8" style={{ backgroundColor: '#000000', position: 'relative' }}>
-        <Link 
-          href={session ? "/dashboard" : "/"} 
-          className="flex items-center hover:opacity-80 transition-opacity" 
-          style={{ 
-            background: '#000000', 
-            backgroundColor: '#000000',
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/8" style={{ backgroundColor: '#000000', position: 'relative' }} data-onboarding="navigation">
+              <Link 
+                href={session ? "/dashboard" : "/"} 
+                className="flex items-center hover:opacity-80 transition-opacity" 
+                style={{ 
+                  background: '#000000', 
+                  backgroundColor: '#000000',
             margin: 0,
-            padding: 0,
+                  padding: 0,
             paddingLeft: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            lineHeight: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  lineHeight: 0,
             height: '100%',
             position: 'absolute',
             left: 0,
             top: 0,
             zIndex: 10
-          }}
-        >
-          <RiftLogo size="md" />
-        </Link>
+                }}
+              >
+                <RiftLogo size="md" />
+              </Link>
         <div className="max-w-7xl mx-auto pl-28 pr-0">
           <div className="flex justify-between items-center h-16 sm:h-20">
             <div className="flex items-center">
@@ -177,10 +179,10 @@ export default function Navbar() {
                     </Link>
                     {session.user.role === 'ADMIN' && (
                       <>
-                        <Link href="/admin" className="text-white/60 hover:text-white transition-colors duration-200 font-medium text-sm relative group">
-                          Admin
-                          <span className="absolute bottom-0 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300"></span>
-                        </Link>
+                      <Link href="/admin" className="text-white/60 hover:text-white transition-colors duration-200 font-medium text-sm relative group">
+                        Admin
+                        <span className="absolute bottom-0 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300"></span>
+                      </Link>
                         <Link href="/admin/disputes" className="text-white/60 hover:text-white transition-colors duration-200 font-medium text-sm relative group">
                           Disputes
                           <span className="absolute bottom-0 left-0 w-0 h-px bg-white group-hover:w-full transition-all duration-300"></span>

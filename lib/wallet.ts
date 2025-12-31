@@ -5,6 +5,7 @@
 
 import { prisma } from './prisma'
 import { WalletLedgerType } from '@prisma/client'
+import { randomUUID } from 'crypto'
 
 /**
  * Get or create wallet account for a user
@@ -20,10 +21,12 @@ export async function getOrCreateWalletAccount(
   if (!wallet) {
     wallet = await prisma.walletAccount.create({
       data: {
+        id: randomUUID(),
         userId,
         currency,
         availableBalance: 0,
         pendingBalance: 0,
+        updatedAt: new Date(),
       },
     })
   }

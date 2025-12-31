@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
-import { postSystemMessage } from '@/lib/rift-messaging'
 import { RiftEventActorType } from '@prisma/client'
 
 /**
@@ -74,11 +73,7 @@ export async function POST(
       requestMeta
     )
 
-    // Post system message
-    await postSystemMessage(
-      riftId,
-      'Seller marked this service as delivered.'
-    )
+    // Don't post system messages - status updates are visible in the platform and sent via email
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

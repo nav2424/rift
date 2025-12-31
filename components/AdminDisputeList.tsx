@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import RiftStatusBadge from './RiftStatusBadge'
+import EscrowStatusBadge from './EscrowStatusBadge'
 import GlassCard from './ui/GlassCard'
 import { EscrowStatus, DisputeStatus } from '@prisma/client'
 
@@ -80,7 +80,7 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
                 {dispute.EscrowTransaction.seller.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <RiftStatusBadge status={dispute.EscrowTransaction.status} />
+                <EscrowStatusBadge status={dispute.EscrowTransaction.status} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
                 {dispute.raisedBy.email}

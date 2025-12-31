@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
@@ -8,6 +8,7 @@ import GlassCard from '@/components/ui/GlassCard'
 function SupportContent() {
   const searchParams = useSearchParams()
   const type = searchParams?.get('type') || 'faq'
+  const [openFaq, setOpenFaq] = useState<number | null>(0) // First FAQ open by default
 
   const getIcon = () => {
     switch (type) {
@@ -47,6 +48,49 @@ function SupportContent() {
     }
   }
 
+  const getColor = () => {
+    switch (type) {
+      case 'faq':
+        return 'blue'
+      case 'contact':
+        return 'purple'
+      case 'report':
+        return 'red'
+      default:
+        return 'blue'
+    }
+  }
+
+  const color = getColor()
+  const colorClasses = {
+    blue: {
+      bg: 'bg-blue-500/5',
+      border: 'border-blue-500/20',
+      iconBg: 'from-blue-500/20 to-blue-500/10',
+      iconBorder: 'border-blue-500/20',
+      iconText: 'text-blue-400',
+      button: 'from-blue-500/10 to-blue-500/5 border-blue-500/20 hover:border-blue-500/40 hover:from-blue-500/20 hover:to-blue-500/10'
+    },
+    purple: {
+      bg: 'bg-purple-500/5',
+      border: 'border-purple-500/20',
+      iconBg: 'from-purple-500/20 to-purple-500/10',
+      iconBorder: 'border-purple-500/20',
+      iconText: 'text-purple-400',
+      button: 'from-purple-500/10 to-purple-500/5 border-purple-500/20 hover:border-purple-500/40 hover:from-purple-500/20 hover:to-purple-500/10'
+    },
+    red: {
+      bg: 'bg-red-500/5',
+      border: 'border-red-500/20',
+      iconBg: 'from-red-500/20 to-red-500/10',
+      iconBorder: 'border-red-500/20',
+      iconText: 'text-red-400',
+      button: 'from-red-500/10 to-red-500/5 border-red-500/20 hover:border-red-500/40 hover:from-red-500/20 hover:to-red-500/10'
+    }
+  }
+
+  const colors = colorClasses[color as keyof typeof colorClasses]
+
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Subtle grid background */}
@@ -59,98 +103,163 @@ function SupportContent() {
       <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
-          <Link 
-            href="/account"
-            className="text-white/60 hover:text-white/90 font-light mb-6 transition-colors flex items-center gap-2 inline-block"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Account
-          </Link>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20">
-              {getIcon()}
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex items-start gap-4 flex-1">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.iconBg} border ${colors.iconBorder} flex items-center justify-center flex-shrink-0 mt-1`}>
+                {getIcon()}
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                  {getTitle()}
+                </h1>
+                <p className="text-white/60 font-light">Get help and answers</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
-                {getTitle()}
-              </h1>
-              <p className="text-white/60 font-light">Get help and answers</p>
-            </div>
+            <Link 
+              href="/account"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Account
+            </Link>
           </div>
         </div>
 
-        <GlassCard>
-          <div className="p-6">
+        <GlassCard variant="liquid" className={`relative overflow-hidden group ${colors.bg}`}>
+          <div className={`absolute top-0 right-0 w-64 h-64 ${colors.bg} rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity`} />
+          <div className="relative z-10 p-6">
             {type === 'faq' && (
-              <div className="space-y-8">
-                <div>
-                  <h3 className="text-white font-light text-lg mb-3">How does Rift protect my transactions?</h3>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">
-                    Rift holds funds securely until both parties confirm the transaction is complete. 
-                    For physical items, we verify tracking and provide a grace period. For digital items 
-                    and services, we use instant release systems with buyer protection.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-light text-lg mb-3">What fees does Rift charge?</h3>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">
-                    <strong>Buyers pay 0%</strong> - You pay exactly the listed price with no added fees. 
-                    <strong>Sellers pay 8% total</strong> - A flat fee that includes both the platform fee and payment 
-                    processing fees (Stripe). No additional fees. Simple and transparent.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-light text-lg mb-3">How do I resolve a dispute?</h3>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">
-                    If you have an issue with a transaction, you can raise a dispute from the transaction 
-                    detail page. Our admin team will review the dispute and work to resolve it fairly.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-light text-lg mb-3">How long does it take to receive funds?</h3>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">
-                    Once the buyer confirms receipt or the auto-release period expires, funds are typically 
-                    released immediately. For physical items, there's a 48-hour grace period after delivery 
-                    confirmation.
-                  </p>
-                </div>
+              <div className="space-y-0">
+                {[
+                  {
+                    question: 'How does Rift protect my transactions?',
+                    answer: 'Rift holds funds securely until both parties confirm the transaction is complete. We provide secure communication channels, transaction tracking, and conditional fund release mechanisms to ensure both buyers and sellers are protected throughout the process.'
+                  },
+                  {
+                    question: 'What fees does Rift charge?',
+                    answer: 'Buyers pay 3% - A small processing fee that covers card network and payment processing costs. Sellers pay 5% - A platform fee that includes complete protection, dispute resolution, and support. No additional fees. Simple and transparent.'
+                  },
+                  {
+                    question: 'How do I resolve a dispute?',
+                    answer: 'If you have an issue with a transaction, you can raise a dispute from the transaction detail page. Our admin team will review the dispute and work to resolve it fairly.'
+                  },
+                  {
+                    question: 'How long does it take to receive funds?',
+                    answer: 'Once the buyer confirms receipt or the auto-release period expires, funds are typically released immediately. The exact timing depends on the transaction type and any grace periods that may apply.'
+                  },
+                  {
+                    question: 'Is Rift safe to use?',
+                    answer: 'Yes! Rift uses bank-level encryption and secure payment processing through Stripe. Your funds are held securely until transactions are completed, and we never store your full payment card information.'
+                  }
+                ].map((item, idx) => {
+                  const isOpen = openFaq === idx
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`border-b border-white/10 last:border-0 transition-all ${isOpen ? 'pb-6' : 'pb-0'}`}
+                    >
+                      <button
+                        onClick={() => setOpenFaq(isOpen ? null : idx)}
+                        className="w-full text-left py-6 flex items-start justify-between gap-4 hover:opacity-80 transition-opacity group"
+                      >
+                        <h3 className="text-white font-light text-xl flex-1">
+                          {item.question}
+                        </h3>
+                        <svg 
+                          className={`w-5 h-5 ${colors.iconText} flex-shrink-0 mt-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div 
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        <p className="text-white/70 font-light leading-relaxed pr-12">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
 
             {type === 'contact' && (
               <div className="space-y-6">
-                <p className="text-white/60 font-light leading-relaxed">
-                  Need help? Contact our support team at{' '}
-                  <a href="mailto:support@rift.com" className="text-white hover:underline">
-                    support@rift.com
+                <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+                  <p className="text-white/80 leading-relaxed font-light mb-4 text-lg">
+                    Need help? Contact our support team and we'll get back to you as soon as possible.
+                  </p>
+                  <a 
+                    href="mailto:support@joinrift.co" 
+                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-white transition-all font-light text-lg group/link`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>support@joinrift.co</span>
+                    <svg className="w-5 h-5 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </a>
-                </p>
-
-                <p className="text-white/60 font-light leading-relaxed">
-                  We typically respond within 24 hours during business days.
-                </p>
+                </div>
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
+                  <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-white/70 font-light leading-relaxed">
+                    We typically respond within 24 hours during business days.
+                  </p>
+                </div>
               </div>
             )}
 
             {type === 'report' && (
               <div className="space-y-6">
-                <p className="text-white/60 font-light leading-relaxed">
-                  If you've encountered a bug, issue, or have a feature request, please email us at{' '}
-                  <a href="mailto:report@rift.com" className="text-white hover:underline">
-                    report@rift.com
+                <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+                  <p className="text-white/80 leading-relaxed font-light mb-4 text-lg">
+                    If you've encountered a bug, issue, or have a feature request, please email us with details.
+                  </p>
+                  <a 
+                    href="mailto:support@joinrift.co" 
+                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-white transition-all font-light text-lg group/link`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>support@joinrift.co</span>
+                    <svg className="w-5 h-5 transition-transform group-hover/link:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </a>
-                </p>
-
-                <p className="text-white/60 font-light leading-relaxed">
-                  Please include as much detail as possible, including screenshots if applicable.
-                </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
+                    <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-white/70 font-light leading-relaxed">
+                      Please include as much detail as possible, including screenshots if applicable.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
+                    <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-white/70 font-light leading-relaxed">
+                      We review all reports and prioritize issues based on severity and impact.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

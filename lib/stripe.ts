@@ -329,13 +329,19 @@ export async function createOrGetConnectAccount(
 }
 
 /**
- * Create an account link for Stripe Connect onboarding
+ * Create an account link for Stripe Connect onboarding or account update
  * Returns the onboarding URL
+ * 
+ * @param accountId - Stripe Connect account ID
+ * @param returnUrl - URL to redirect to after completion
+ * @param refreshUrl - URL to redirect to if link expires
+ * @param forIdentityVerification - If true, use account_update type to specifically complete identity verification
  */
 export async function createAccountLink(
   accountId: string,
   returnUrl: string,
-  refreshUrl: string
+  refreshUrl: string,
+  forIdentityVerification: boolean = false
 ): Promise<string> {
   if (!stripe) {
     // In development, return a mock URL
@@ -343,11 +349,15 @@ export async function createAccountLink(
   }
 
   try {
+    // If account already exists and we need identity verification, use account_update
+    // This allows users to complete identity verification even after initial onboarding
+    const linkType = forIdentityVerification ? 'account_update' : 'account_onboarding'
+    
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: refreshUrl,
       return_url: returnUrl,
-      type: 'account_onboarding',
+      type: linkType,
     })
 
     return accountLink.url

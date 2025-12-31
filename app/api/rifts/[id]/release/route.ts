@@ -23,6 +23,11 @@ export async function POST(
     const { id } = await params
     const rift = await prisma.riftTransaction.findUnique({
       where: { id },
+      include: {
+        milestoneReleases: {
+          where: { status: 'RELEASED' },
+        },
+      },
     })
 
     if (!rift) {
@@ -32,6 +37,34 @@ export async function POST(
     // Verify buyer
     if (rift.buyerId !== auth.userId) {
       return NextResponse.json({ error: 'Only buyer can release funds' }, { status: 403 })
+    }
+
+    // For service rifts with milestone-based releases, prevent full release
+    // Buyers must release milestones individually
+    if (rift.itemType === 'SERVICES' && rift.allowsPartialRelease) {
+      const milestones = (rift.milestones as Array<{ amount: number }>) || []
+      const releasedCount = rift.milestoneReleases.length
+      
+      if (releasedCount < milestones.length) {
+        return NextResponse.json(
+          {
+            error: 'This rift uses milestone-based payments. Please release funds per milestone using the milestone interface.',
+            requiresMilestoneRelease: true,
+            totalMilestones: milestones.length,
+            releasedMilestones: releasedCount,
+          },
+          { status: 400 }
+        )
+      }
+      
+      // If all milestones are released, the rift should already be RELEASED
+      // This should not happen, but handle it gracefully
+      if (rift.status === 'RELEASED') {
+        return NextResponse.json(
+          { error: 'All milestones have already been released' },
+          { status: 400 }
+        )
+      }
     }
 
     // Check eligibility using release engine

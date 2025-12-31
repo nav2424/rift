@@ -1,23 +1,20 @@
 # Twilio SMS Setup Guide
 
-## 📍 Where to Get Your Twilio Credentials
+## Quick Setup
 
-1. Go to [Twilio Console](https://console.twilio.com/)
-2. Sign up for a free account (or log in if you already have one)
-3. You'll get free trial credits to test SMS functionality
-4. Navigate to **Dashboard** → You'll see:
+### 1. Get Twilio Credentials
+
+1. Sign up at https://www.twilio.com (free trial available)
+2. Go to **Console Dashboard** → **Account Info**
+3. Copy:
    - **Account SID** (starts with `AC...`)
-   - **Auth Token** (click "View" to reveal)
-5. Get a phone number:
+   - **Auth Token** (click to reveal)
+4. Get a **Phone Number**:
    - Go to **Phone Numbers** → **Manage** → **Buy a number**
-   - For testing, you can use Twilio's trial number (limited to verified numbers)
-   - For production, purchase a number (costs ~$1/month)
+   - Choose a number that supports SMS
+   - Copy the number (format: `+1234567890`)
 
-## 🔧 Configuration Steps
-
-### 1. Backend Configuration (`.env.local` file in root)
-
-Add your Twilio credentials:
+### 2. Add to `.env.local`
 
 ```env
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -25,88 +22,130 @@ TWILIO_AUTH_TOKEN=your_auth_token_here
 TWILIO_PHONE_NUMBER=+1234567890
 ```
 
-**Important Notes:**
-- `TWILIO_ACCOUNT_SID` starts with `AC` (Account SID)
-- `TWILIO_AUTH_TOKEN` is your secret auth token (keep it secure!)
-- `TWILIO_PHONE_NUMBER` must include country code (e.g., `+1` for US/Canada)
-- The phone number format should be: `+[country code][number]` (e.g., `+15551234567`)
+**Important:**
+- `TWILIO_PHONE_NUMBER` must include country code with `+` (e.g., `+1` for US)
+- Format: `+[country code][number]` (e.g., `+14155552671`)
 
-## ✅ After Adding Credentials
+### 3. Restart Your Server
 
-1. **Restart your backend server:**
-   ```bash
-   # Stop current server (Ctrl+C)
-   npm run dev
+After adding credentials, restart your development server:
+
+```bash
+# Stop server (Ctrl+C)
+npm run dev
+```
+
+The server needs to restart to load new environment variables.
+
+### 4. Test
+
+1. Try sending a phone verification code
+2. Check your server logs - you should see:
    ```
-
-2. **Test SMS sending:**
-   - Go to `/settings/verification`
-   - Enter your phone number
-   - Click "Send Verification Code"
-   - You should receive an SMS with the code
-
-## 🧪 Testing with Twilio Trial Account
-
-**Trial Account Limitations:**
-- Can only send SMS to verified phone numbers
-- To verify a number: Twilio Console → Phone Numbers → Verified Caller IDs → Add a new number
-- Free trial credits available (usually $15-20 worth)
-
-**For Production:**
-- Upgrade your Twilio account
-- Purchase a phone number (~$1/month)
-- SMS costs ~$0.0083 per message in US/Canada
-
-## 🚨 Important Notes
-
-- ✅ **Use TEST credentials** for development (trial account)
-- ✅ Keep `TWILIO_AUTH_TOKEN` secret (never commit to git)
-- ✅ Phone numbers must include country code (e.g., `+1` for US/Canada)
-- ❌ **Never commit your auth token to git** (it's already in `.gitignore`)
-
-## 🔄 Development Mode Behavior
-
-If Twilio credentials are not configured:
-- In **development**: SMS codes are logged to console for testing
-- In **production**: API will return an error if SMS cannot be sent
-
-## 📱 Phone Number Format
-
-The system automatically formats phone numbers:
-- If number starts with `+`, it's used as-is
-- If number doesn't start with `+`, it's prefixed with `+`
-- Example: `15551234567` → `+15551234567`
-
-## 💰 Cost Estimate
-
-- **Per SMS**: ~$0.0083 (US/Canada)
-- **Phone Number**: ~$1/month
-- **100 verifications/month**: ~$0.83
-- **1,000 verifications/month**: ~$8.30
-
-## 🔄 When Going to Production
-
-1. Upgrade your Twilio account from trial
-2. Purchase a dedicated phone number
-3. Update environment variables with production credentials
-4. Test SMS delivery to unverified numbers
-5. Monitor usage and costs in Twilio Console
+   ✅ SMS sent successfully via Twilio: { to: '+11234567890', sid: 'SM...' }
+   ```
+3. Check your phone - you should receive the SMS
 
 ## Troubleshooting
 
-**"SMS service not configured" error:**
-- Verify `.env.local` exists in project root
-- Check variable names match exactly (case-sensitive)
-- Ensure `TWILIO_PHONE_NUMBER` includes country code with `+`
-- Restart your dev server
+### "SMS service not configured" Error
 
-**SMS not received:**
-- Check Twilio Console → Logs → Messaging for delivery status
-- Verify phone number format (must include country code)
-- For trial accounts, ensure recipient number is verified in Twilio
-- Check Twilio account balance/credits
+**Check:**
+1. ✅ Variables are in `.env.local` (not `.env`)
+2. ✅ Variable names are exact: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+3. ✅ No extra spaces or quotes around values
+4. ✅ Server was restarted after adding variables
 
-**"Invalid phone number" error:**
-- Ensure phone number includes country code
-- Format: `+[country code][number]` (e.g., `+15551234567`)
-- Remove spaces, dashes, or parentheses
+**Test if variables are loaded:**
+```bash
+# In your terminal
+node -e "require('dotenv').config({ path: '.env.local' }); console.log('SID:', process.env.TWILIO_ACCOUNT_SID ? 'SET' : 'NOT SET')"
+```
+
+### "Invalid phone number format" Error
+
+**Twilio requires E.164 format:**
+- ✅ `+11234567890` (correct)
+- ❌ `1234567890` (missing country code)
+- ❌ `(123) 456-7890` (wrong format)
+
+The system automatically formats numbers, but ensure:
+- US/Canada: Include country code `+1` or provide 10-digit number
+- International: Include `+` and country code
+
+### "Phone number cannot receive SMS" Error
+
+**Possible causes:**
+- Number is a landline (can't receive SMS)
+- Number is blocked or invalid
+- Number format is incorrect
+
+**Solutions:**
+- Use a mobile number
+- Verify number format is correct
+- Check Twilio logs in dashboard
+
+### SMS Not Received
+
+**Check:**
+1. ✅ Twilio account has balance (trial accounts have free credits)
+2. ✅ Phone number is correct
+3. ✅ Check spam/filtered messages
+4. ✅ Check Twilio logs in dashboard for delivery status
+5. ✅ Verify phone number can receive SMS (not landline)
+
+### Error Codes
+
+**Common Twilio Error Codes:**
+
+- `21211` - Invalid phone number format
+- `21608` - Phone number not reachable
+- `21614` - Phone number cannot receive SMS
+- `20003` / `20008` - Authentication error (check credentials)
+
+## Twilio Dashboard
+
+Monitor SMS delivery:
+- **Console** → **Monitor** → **Logs** → **Messaging**
+- Check delivery status, errors, and costs
+
+## Production Deployment
+
+For Vercel/production:
+
+1. Add environment variables in Vercel Dashboard:
+   - Project Settings → Environment Variables
+   - Add all three Twilio variables
+   - Select "Production" environment
+
+2. Redeploy after adding variables
+
+3. Verify variables are set:
+   - Check Vercel deployment logs
+   - Look for "✅ SMS sent successfully" messages
+
+## Cost
+
+- **Trial Account**: Free credits for testing
+- **Paid Account**: ~$0.0075 per SMS in US/Canada
+- Check pricing: https://www.twilio.com/sms/pricing
+
+## Testing
+
+**Test Mode:**
+- Twilio provides test credentials for testing
+- Test credentials won't send real SMS
+- Use actual credentials for production
+
+**Verification:**
+1. Send verification code
+2. Check server logs for success message
+3. Receive SMS on phone
+4. Enter code to verify
+
+---
+
+**Need Help?**
+- Twilio Docs: https://www.twilio.com/docs/sms
+- Twilio Console: https://console.twilio.com
+- Check server logs for detailed error messages

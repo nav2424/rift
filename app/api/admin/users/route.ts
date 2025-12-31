@@ -1,85 +1,91 @@
+/**
+ * Admin Users Module
+ * Search and manage users
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUser } from '@/lib/mobile-auth'
+import { withAdminPermission } from '../middleware'
+import { AdminPermission } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { logAdminAction } from '@/lib/admin-audit'
+import { AdminAuditAction } from '@prisma/client'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/users
+ * Search users
+ */
+export const GET = withAdminPermission(AdminPermission.USER_READ, async (
+  request: NextRequest,
+  { session }
+) => {
   try {
-    const auth = await getAuthenticatedUser(request)
-    if (!auth || auth.userRole !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get query parameters for pagination and filtering
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
+    const search = searchParams.get('search')
     const limit = parseInt(searchParams.get('limit') || '50')
-    const search = searchParams.get('search') || ''
-    const skip = (page - 1) * limit
+    const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build where clause for search
     const where: any = {}
+
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
         { name: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+        { riftUserId: { contains: search, mode: 'insensitive' } },
       ]
     }
 
-    // Get total count for pagination
-    const total = await prisma.user.count({ where })
-
-    // Get users with detailed information
-    const users = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-        totalProcessedAmount: true,
-        availableBalance: true,
-        pendingBalance: true,
-        numCompletedTransactions: true,
-        averageRating: true,
-        responseTimeMs: true,
-        level: true,
-        xp: true,
-        idVerified: true,
-        bankVerified: true,
-        _count: {
-          select: {
-            sellerTransactions: true,
-            buyerTransactions: true,
-            disputesRaised: true,
-            disputesResolved: true,
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        include: {
+          riskProfile: true,
+          _count: {
+            select: {
+              disputesRaised: true,
+              sellerTransactions: true,
+              buyerTransactions: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      skip,
-      take: limit,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.user.count({ where }),
+    ])
+
+    // Log view
+    await logAdminAction({
+      adminUserId: session.adminUserId,
+      action: 'USER_VIEWED',
+      reasonCode: 'SEARCH',
+      notes: `Searched users: ${search || 'all'}`,
     })
 
     return NextResponse.json({
-      users,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      users: users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        riftUserId: u.riftUserId,
+        riskProfile: u.riskProfile,
+        stats: {
+          disputesRaised: u._count.disputesRaised,
+          sellerTransactions: u._count.sellerTransactions,
+          buyerTransactions: u._count.buyerTransactions,
+        },
+        createdAt: u.createdAt,
+      })),
+      total,
+      limit,
+      offset,
     })
-  } catch (error) {
-    console.error('Get admin users error:', error)
+  } catch (error: any) {
+    console.error('Admin users search error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Failed to search users' },
       { status: 500 }
     )
   }
-}
-
+})

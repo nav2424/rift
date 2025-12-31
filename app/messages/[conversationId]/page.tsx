@@ -7,13 +7,17 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
 export default async function ConversationDetail({ 
-  params 
+  params,
+  searchParams
 }: { 
-  params: Promise<{ conversationId: string }> 
+  params: Promise<{ conversationId: string }>
+  searchParams?: Promise<{ riftId?: string }>
 }) {
   const session = await requireAuth()
   const userId = session.user.id
   const { conversationId } = await params
+  const search = await searchParams
+  const riftIdFromQuery = search?.riftId
 
   let supabase
   try {
@@ -77,20 +81,39 @@ export default async function ConversationDetail({
   let transaction = null
 
   if (buyerParticipant && sellerParticipant) {
-    transaction = await prisma.riftTransaction.findFirst({
-      where: {
-        buyerId: buyerParticipant.user_id,
-        sellerId: sellerParticipant.user_id,
-      },
-      select: {
-        id: true,
-        itemTitle: true,
-        status: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+    // If riftId is passed in query params (from navigation from rift page), use that specific transaction
+    if (riftIdFromQuery) {
+      transaction = await prisma.riftTransaction.findFirst({
+        where: {
+          id: riftIdFromQuery,
+          buyerId: buyerParticipant.user_id,
+          sellerId: sellerParticipant.user_id,
+        },
+        select: {
+          id: true,
+          itemTitle: true,
+          status: true,
+        },
+      })
+    }
+    
+    // If no transaction found (or no riftId in query), fall back to finding most recent transaction
+    if (!transaction) {
+      transaction = await prisma.riftTransaction.findFirst({
+        where: {
+          buyerId: buyerParticipant.user_id,
+          sellerId: sellerParticipant.user_id,
+        },
+        select: {
+          id: true,
+          itemTitle: true,
+          status: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+    }
   }
 
   const otherParticipant = participantUsers[0] || null
@@ -114,35 +137,48 @@ export default async function ConversationDetail({
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/messages"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white font-light text-sm mb-4 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Messages
-          </Link>
-          
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl md:text-3xl font-light text-white mb-2 tracking-tight truncate">
+                  {displayName}
+                </h1>
+                {transaction && (
+                  <Link 
+                    href={`/rifts/${transaction.id}`}
+                    className="text-white/60 hover:text-white/80 font-light text-sm transition-colors"
+                  >
+                    View Transaction: {transaction.itemTitle}
+                  </Link>
+                )}
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
-                {displayName}
-              </h1>
-              {transaction && (
-                <Link 
-                  href={`/rifts/${transaction.id}`}
-                  className="text-white/60 hover:text-white/80 font-light text-sm transition-colors"
-                >
-                  View Transaction: {transaction.itemTitle}
-                </Link>
-              )}
-            </div>
+            {transaction ? (
+              <Link 
+                href={`/rifts/${transaction.id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Rift
+              </Link>
+            ) : (
+              <Link 
+                href="/messages"
+                className="inline-flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Messages
+              </Link>
+            )}
           </div>
         </div>
 
@@ -152,3 +188,4 @@ export default async function ConversationDetail({
     </div>
   )
 }
+

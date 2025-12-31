@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { subscribeToMessages } from '@/lib/realtime-messaging'
 import GlassCard from './ui/GlassCard'
+import MessageBubble from './MessageBubble'
 
 interface Message {
   id: string
@@ -124,9 +125,17 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
   }, [conversationId, session?.user])
 
   useEffect(() => {
-    // Scroll to bottom when new messages arrive
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    // Scroll to bottom when new messages arrive, but not if the user just sent a message
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1]
+      const isLastMessageFromCurrentUser = lastMessage?.senderId === session?.user?.id
+      
+      // Only auto-scroll if the last message is from someone else
+      if (!isLastMessageFromCurrentUser) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+  }, [messages, session?.user?.id])
 
   const handleSend = async () => {
     if (!messageText.trim() || sending || !conversationId) return
@@ -134,6 +143,17 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
     const textToSend = messageText.trim()
     setMessageText('')
     setSending(true)
+    
+    // Show moderation warning if message might be flagged (client-side check)
+    const hasOffPlatformKeywords = /venmo|paypal|zelle|cashapp|call me|text me|email me|whatsapp/i.test(textToSend)
+    if (hasOffPlatformKeywords) {
+      const proceed = window.confirm('Warning: This message may contain content that violates our terms. Off-platform transaction requests are not allowed. Do you want to send anyway?')
+      if (!proceed) {
+        setMessageText(textToSend)
+        setSending(false)
+        return
+      }
+    }
 
     // Store optimistic message ID for cleanup
     const optimisticId = `temp-${Date.now()}`
@@ -161,6 +181,15 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+        
+        // Handle moderation blocks
+        if (response.status === 403 && errorData.reason) {
+          setError(`Message blocked: ${errorData.reason}`)
+          setMessageText(textToSend) // Restore message text
+          setSending(false)
+          return
+        }
+        
         throw new Error(errorData.error || `Failed to send message: ${response.status}`)
       }
 
@@ -230,7 +259,32 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
         </div>
       )}
 
-      <div className="space-y-4 mb-6 max-h-[600px] min-h-[400px] overflow-y-auto">
+      <div 
+        className="messages-container space-y-4 mb-6 max-h-[600px] min-h-[400px] overflow-y-auto pr-8"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+        }}
+      >
+        <style dangerouslySetInnerHTML={{__html: `
+          .messages-container::-webkit-scrollbar {
+            width: 12px;
+          }
+          .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 8px 0;
+          }
+          .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            border: 3px solid transparent;
+            background-clip: padding-box;
+          }
+          .messages-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+            background-clip: padding-box;
+          }
+        `}} />
         {messages.length === 0 ? (
           <div className="text-center py-8 text-white/60 font-light">
             Start the conversation.
@@ -238,23 +292,13 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
         ) : (
           messages.map((message) => {
             const isMine = message.senderId === session?.user?.id
-
             return (
-              <div
+              <MessageBubble
                 key={message.id}
-                className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                    isMine
-                      ? 'bg-blue-500/30 border border-blue-500/50'
-                      : 'bg-white/10 border border-white/20'
-                  }`}
-                >
-                  <p className="text-white text-sm mb-1">{message.body}</p>
-                  <p className="text-white/50 text-xs">{formatTime(message.createdAt)}</p>
-                </div>
-              </div>
+                message={message}
+                isMine={isMine}
+                formatTime={formatTime}
+              />
             )
           })
         )}

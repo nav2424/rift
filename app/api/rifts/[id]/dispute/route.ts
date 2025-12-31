@@ -22,12 +22,50 @@ export async function POST(
     const { id: riftId } = await params
     const userId = auth.userId
 
-    // Get rift and verify buyer
+    // Check user verification status before allowing dispute creation
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        emailVerified: true,
+        phoneVerified: true,
+        email: true,
+        phone: true,
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Require email and phone verification to open disputes
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Email verification required',
+          message: 'You must verify your email address before opening a dispute. Please verify your email in Settings.',
+        },
+        { status: 403 }
+      )
+    }
+
+    if (!user.phoneVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Phone verification required',
+          message: 'You must verify your phone number before opening a dispute. Please verify your phone in Settings.',
+        },
+        { status: 403 }
+      )
+    }
+
+    // Get rift and verify user is buyer or seller
     const rift = await prisma.riftTransaction.findUnique({
       where: { id: riftId },
       select: {
         id: true,
         buyerId: true,
+        sellerId: true,
         itemType: true,
         status: true,
       },
@@ -37,14 +75,28 @@ export async function POST(
       return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
     }
 
-    if (rift.buyerId !== userId) {
+    const isBuyer = rift.buyerId === userId
+    const isSeller = rift.sellerId === userId
+
+    if (!isBuyer && !isSeller) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Check if rift is in a state that allows disputes
-    if (!['FUNDED', 'PROOF_SUBMITTED', 'UNDER_REVIEW', 'DELIVERED_PENDING_RELEASE', 'IN_PROGRESS'].includes(rift.status)) {
+    // Disputes can only be opened for active transactions after payment has been made
+    const allowedStatuses = [
+      'FUNDED', 
+      'PROOF_SUBMITTED', 
+      'UNDER_REVIEW', 
+      'DELIVERED_PENDING_RELEASE', 
+      'IN_PROGRESS',
+      'IN_TRANSIT',
+      'AWAITING_SHIPMENT',
+    ]
+    
+    if (!allowedStatuses.includes(rift.status)) {
       return NextResponse.json(
-        { error: 'Cannot open dispute in current status' },
+        { error: `Cannot open dispute in current status: ${rift.status}. Disputes can only be opened for active transactions after payment has been made.` },
         { status: 400 }
       )
     }
@@ -67,6 +119,7 @@ export async function POST(
     }
 
     // Create draft dispute
+    const actorRole = isBuyer ? 'buyer' : 'seller'
     const { data: dispute, error: disputeError } = await supabase
       .from('disputes')
       .insert({
@@ -92,7 +145,7 @@ export async function POST(
     await supabase.from('dispute_actions').insert({
       dispute_id: dispute.id,
       actor_id: userId,
-      actor_role: 'buyer',
+      actor_role: actorRole,
       action_type: 'created',
       note: 'Draft dispute created',
     })

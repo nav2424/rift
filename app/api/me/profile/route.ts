@@ -22,7 +22,43 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (phone !== undefined) {
-      updateData.phone = phone || null;
+      if (phone) {
+        // Validate and format phone number
+        const { formatPhoneNumber, validatePhoneNumber } = await import('@/lib/sms')
+        const validation = validatePhoneNumber(phone)
+        if (!validation.valid) {
+          return NextResponse.json(
+            { error: validation.error || 'Invalid phone number format' },
+            { status: 400 }
+          )
+        }
+        const { formatted: formattedPhone, error: formatError } = formatPhoneNumber(phone)
+        if (formatError || !formattedPhone) {
+          return NextResponse.json(
+            { error: formatError || 'Failed to format phone number' },
+            { status: 400 }
+          )
+        }
+        
+        // Check if phone number is already in use by another user
+        const existingUserByPhone = await prisma.user.findFirst({
+          where: {
+            phone: formattedPhone,
+            id: { not: auth.userId }, // Exclude current user
+          },
+        })
+
+        if (existingUserByPhone) {
+          return NextResponse.json(
+            { error: 'This phone number is already associated with another account' },
+            { status: 400 }
+          )
+        }
+        
+        updateData.phone = formattedPhone
+      } else {
+        updateData.phone = null
+      }
     }
 
     const user = await prisma.user.update({

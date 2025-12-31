@@ -7,6 +7,7 @@ import PremiumButton from './ui/PremiumButton'
 import GlassCard from './ui/GlassCard'
 import { useToast } from './ui/Toast'
 import Timeline from './Timeline'
+import EvidencePDFViewer from './EvidencePDFViewer'
 
 interface DisputeCaseViewProps {
   disputeId: string
@@ -18,6 +19,7 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
   const [loading, setLoading] = useState(true)
   const [caseData, setCaseData] = useState<any>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [viewingPDF, setViewingPDF] = useState<{ evidenceId: string; fileName?: string } | null>(null)
 
   useEffect(() => {
     loadCase()
@@ -60,18 +62,36 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        showToast(error.error || 'Action failed', 'error')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        const errorMessage = errorData.error || errorData.message || `Action failed (${response.status})`
+        console.error('Admin action error:', {
+          action,
+          endpoint,
+          status: response.status,
+          error: errorMessage,
+          details: errorData,
+        })
+        showToast(errorMessage, 'error')
+        setActionLoading(null)
         return
       }
 
+      const result = await response.json()
+      console.log('Admin action success:', { action, endpoint, result })
+      
       showToast('Action completed successfully', 'success')
+      
+      // Reload case data and refresh page
+      await loadCase()
       router.refresh()
-      loadCase()
-    } catch (error) {
+      
+      // Small delay to ensure UI updates
+      setTimeout(() => {
+        setActionLoading(null)
+      }, 500)
+    } catch (error: any) {
       console.error('Admin action error:', error)
-      showToast('Action failed', 'error')
-    } finally {
+      showToast(error?.message || 'Action failed. Please try again.', 'error')
       setActionLoading(null)
     }
   }
@@ -92,26 +112,139 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
     )
   }
 
-  const { dispute, evidence, actions, rift, deliveryProof, chatMessages } = caseData
+  const { dispute, evidence, actions, rift, deliveryProof, chatMessages, aiAnalysis, evidenceSummary } = caseData
 
   return (
     <div className="space-y-6">
+      {/* AI Analysis Section - Prominent Display */}
+      {aiAnalysis && (
+        <GlassCard className="border-blue-500/30 bg-blue-500/5">
+          <div className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <h2 className="text-xl font-light text-white">AI Analysis</h2>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Suggested Outcome */}
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-white/60 font-light">Suggested Outcome</span>
+                  <span className={`px-3 py-1 rounded-lg text-sm font-light ${
+                    aiAnalysis.suggestedOutcome === 'buyer' 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : aiAnalysis.suggestedOutcome === 'seller'
+                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                  }`}>
+                    {aiAnalysis.suggestedOutcome.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-white/80 font-light text-sm">{aiAnalysis.reasoning}</p>
+                <div className="mt-2">
+                  <span className="text-xs text-white/50">Confidence: </span>
+                  <span className="text-xs text-white/80 font-medium">{aiAnalysis.confidenceScore}%</span>
+                </div>
+              </div>
+
+              {/* Key Facts */}
+              {aiAnalysis.keyFacts && aiAnalysis.keyFacts.length > 0 && (
+                <div>
+                  <h3 className="text-sm text-white/60 font-light mb-2">Key Facts</h3>
+                  <ul className="space-y-1">
+                    {aiAnalysis.keyFacts.map((fact: string, idx: number) => (
+                      <li key={idx} className="text-white/80 font-light text-sm flex items-start gap-2">
+                        <span className="text-blue-400 mt-1">•</span>
+                        <span>{fact}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Flags */}
+              {aiAnalysis.flags && (
+                <div className="flex flex-wrap gap-2">
+                  {aiAnalysis.flags.frivolous && (
+                    <span className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-light">
+                      ⚠️ Frivolous
+                    </span>
+                  )}
+                  {aiAnalysis.flags.legitimate && (
+                    <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg text-xs font-light">
+                      ✓ Legitimate
+                    </span>
+                  )}
+                  {aiAnalysis.flags.requiresUrgentReview && (
+                    <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-lg text-xs font-light">
+                      🚨 Urgent Review
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Sentiment */}
+              {aiAnalysis.sentiment && (
+                <div className="text-xs text-white/60">
+                  <span>Credibility: {aiAnalysis.sentiment.credibility}/100</span>
+                  <span className="mx-2">•</span>
+                  <span>Sentiment: {aiAnalysis.sentiment.overall}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Evidence Summary */}
+      {evidenceSummary && (
+        <GlassCard>
+          <div className="p-6">
+            <h2 className="text-xl font-light text-white mb-4">Evidence Summary</h2>
+            <div className="prose prose-invert max-w-none">
+              <div className="text-white/80 font-light whitespace-pre-wrap text-sm">
+                {evidenceSummary.summary}
+              </div>
+              
+              {evidenceSummary.contradictions && evidenceSummary.contradictions.length > 0 && (
+                <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <h3 className="text-sm text-yellow-400 font-light mb-2">Contradictions Detected</h3>
+                  <ul className="space-y-1">
+                    {evidenceSummary.contradictions.map((c: any, idx: number) => (
+                      <li key={idx} className="text-white/80 text-sm font-light">
+                        • {c.contradiction} <span className="text-white/50">({c.severity})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="mb-6">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex-1">
+            <h1 className="text-4xl font-light text-white tracking-tight mb-2">
+              Dispute Case #{disputeId.slice(-8)}
+            </h1>
+            <div className="text-white/60 font-light text-sm">
+              Rift #{rift?.riftNumber || dispute.rift_id.slice(-4)} - {rift?.itemTitle}
+            </div>
+          </div>
           <Link
             href="/admin/disputes"
-            className="text-white/60 hover:text-white/80 font-light text-sm mb-2 inline-block"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
           >
-            ← Back to Queue
+            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Queue
           </Link>
-          <h1 className="text-4xl font-light text-white tracking-tight">
-            Dispute Case #{disputeId.slice(-8)}
-          </h1>
-        </div>
-        <div className="text-right">
-          <div className="text-white/60 font-light text-sm">Rift #{rift?.riftNumber || dispute.rift_id.slice(-4)}</div>
-          <div className="text-white/80 font-light">{rift?.itemTitle}</div>
         </div>
       </div>
 
@@ -176,14 +309,34 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
                       <p className="text-white/70 text-sm font-light mt-2">{ev.text_content}</p>
                     )}
                     {ev.storage_path && (
-                      <a
-                        href={`/api/admin/disputes/${disputeId}/evidence/${ev.id}/download`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400/80 hover:text-blue-400 text-sm mt-2 inline-block"
-                      >
-                        View file →
-                      </a>
+                      <div className="flex gap-2 mt-2">
+                        {ev.type === 'pdf' ? (
+                          <button
+                            onClick={() => setViewingPDF({ evidenceId: ev.id, fileName: ev.meta?.fileName || 'Evidence.pdf' })}
+                            className="text-blue-400/80 hover:text-blue-400 text-sm font-light transition-colors"
+                          >
+                            View PDF →
+                          </button>
+                        ) : (
+                          <a
+                            href={`/api/admin/disputes/${disputeId}/evidence/${ev.id}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400/80 hover:text-blue-400 text-sm font-light transition-colors"
+                          >
+                            View file →
+                          </a>
+                        )}
+                        <a
+                          href={`/api/admin/disputes/${disputeId}/evidence/${ev.id}/download`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="text-white/50 hover:text-white/70 text-sm font-light transition-colors"
+                        >
+                          Download
+                        </a>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -363,12 +516,48 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
             <div className="space-y-2 text-sm">
               <div>
                 <span className="text-white/60">Buyer:</span>
-                <span className="text-white/90 ml-2">{rift?.buyer?.email}</span>
+                <div className="ml-2 flex items-center gap-2">
+                  <span className="text-white/90">{rift?.buyer?.email}</span>
+                  {rift?.buyer?.emailVerified && rift?.buyer?.phoneVerified && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Email & Phone Verified" />
+                  )}
+                  {rift?.buyer && (!rift.buyer.emailVerified || !rift.buyer.phoneVerified) && (
+                    <span className="text-xs text-yellow-400/80" title="Verification incomplete">
+                      ⚠
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="text-white/60">Seller:</span>
-                <span className="text-white/90 ml-2">{rift?.seller?.email}</span>
+                <div className="ml-2 flex items-center gap-2">
+                  <span className="text-white/90">{rift?.seller?.email}</span>
+                  {rift?.seller?.emailVerified && rift?.seller?.phoneVerified && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Email & Phone Verified" />
+                  )}
+                  {rift?.seller && (!rift.seller.emailVerified || !rift.seller.phoneVerified) && (
+                    <span className="text-xs text-yellow-400/80" title="Verification incomplete">
+                      ⚠
+                    </span>
+                  )}
+                </div>
               </div>
+              {caseData.dispute?.openedByUser && (
+                <div>
+                  <span className="text-white/60">Opened By:</span>
+                  <div className="ml-2 flex items-center gap-2">
+                    <span className="text-white/90">{caseData.dispute.openedByUser.email}</span>
+                    {caseData.dispute.openedByUser.emailVerified && caseData.dispute.openedByUser.phoneVerified && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Email & Phone Verified" />
+                    )}
+                    {caseData.dispute.openedByUser && (!caseData.dispute.openedByUser.emailVerified || !caseData.dispute.openedByUser.phoneVerified) && (
+                      <span className="text-xs text-yellow-400/80" title="Verification incomplete">
+                        ⚠
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               <div>
                 <span className="text-white/60">Amount:</span>
                 <span className="text-white/90 ml-2">
@@ -383,6 +572,16 @@ export default function DisputeCaseView({ disputeId }: DisputeCaseViewProps) {
           </GlassCard>
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {viewingPDF && (
+        <EvidencePDFViewer
+          disputeId={disputeId}
+          evidenceId={viewingPDF.evidenceId}
+          fileName={viewingPDF.fileName}
+          onClose={() => setViewingPDF(null)}
+        />
+      )}
     </div>
   )
 }

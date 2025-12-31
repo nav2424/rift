@@ -29,6 +29,20 @@ export async function POST(
       return NextResponse.json({ error: 'File is required' }, { status: 400 })
     }
 
+    // Validate file size (10MB max)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { 
+          error: 'File size exceeds limit',
+          message: `File size (${(file.size / 1024 / 1024).toFixed(2)}MB) exceeds maximum allowed size of 10MB`,
+          maxSize: MAX_FILE_SIZE,
+          fileSize: file.size,
+        },
+        { status: 400 }
+      )
+    }
+
     // Validate type
     const validTypes = ['image', 'pdf', 'file']
     const fileType = type || (file.type.startsWith('image/') ? 'image' : file.type === 'application/pdf' ? 'pdf' : 'file')

@@ -7,15 +7,37 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 
 export default function AccountScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
   const router = useRouter();
   const [disputes, setDisputes] = useState<any[]>([]);
 
   useEffect(() => {
+    // Refresh user data to ensure Rift ID is loaded
+    const refresh = async () => {
+      try {
+        console.log('Account Screen - Refreshing user data...');
+        await refreshUser();
+      } catch (error) {
+        console.error('Error refreshing user:', error);
+      }
+    };
+    refresh();
+  }, []);
+
+  useEffect(() => {
     if (user) {
+      console.log('Account Screen - User data:', {
+        id: user.id,
+        email: user.email,
+        riftUserId: user.riftUserId,
+        hasRiftUserId: !!user.riftUserId,
+      });
       loadDisputes();
+    } else {
+      console.log('Account Screen - No user object');
     }
   }, [user]);
 
@@ -44,6 +66,20 @@ export default function AccountScreen() {
         },
       ]
     );
+  };
+
+  const handleCopyRiftId = async () => {
+    if (!user?.riftUserId) {
+      Alert.alert('Error', 'Rift ID not available');
+      return;
+    }
+
+    try {
+      await Clipboard.setStringAsync(user.riftUserId);
+      Alert.alert('Copied!', `Your Rift ID ${user.riftUserId} has been copied to clipboard`);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to copy Rift ID');
+    }
   };
 
   return (
@@ -94,6 +130,21 @@ export default function AccountScreen() {
               <Text style={styles.profileLabel}>Phone</Text>
               <Text style={styles.profileValue}>{user?.phone || 'Not set'}</Text>
             </View>
+            <TouchableOpacity 
+              style={styles.profileRow}
+              onPress={handleCopyRiftId}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.profileLabel}>Rift ID</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
+                <Text style={[styles.profileValue, styles.riftIdValue]}>
+                  {user?.riftUserId ? user.riftUserId : 'Not assigned'}
+                </Text>
+                {user?.riftUserId && (
+                  <Ionicons name="copy-outline" size={16} color={Colors.textTertiary} />
+                )}
+              </View>
+            </TouchableOpacity>
             <TouchableOpacity 
               style={styles.editButton}
               onPress={() => router.push('/account/edit-profile')}
@@ -377,5 +428,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.text,
     fontWeight: '400',
+  },
+  riftIdContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  riftIdValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  riftIdValue: {
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+  copyIcon: {
+    marginLeft: Spacing.xs,
   },
 });

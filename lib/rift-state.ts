@@ -10,6 +10,8 @@ import { creditSellerOnRelease } from './wallet'
 import { schedulePayout } from './risk-tiers'
 import { calculateSellerNet } from './fees'
 import { logEvent } from './rift-events'
+import { sendRiftStatusUpdateEmail } from './email'
+import { randomUUID } from 'crypto'
 
 /**
  * Transition rift to a new state with validation
@@ -44,7 +46,7 @@ export async function transitionRiftState(
   const now = metadata?.timestamp || new Date()
   switch (newStatus) {
     case 'FUNDED':
-      updateData.fundedAt = now
+      updateData.paidAt = now
       break
     case 'PROOF_SUBMITTED':
       updateData.proofSubmittedAt = now
@@ -129,6 +131,7 @@ export async function transitionRiftState(
         if (!recentEvent) {
           await prisma.timelineEvent.create({
             data: {
+              id: randomUUID(),
               escrowId: riftId,
               type: 'STATUS_CHANGE',
               message: timelineMessage,
@@ -206,6 +209,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     try {
       await prisma.timelineEvent.create({
         data: {
+          id: randomUUID(),
           escrowId: riftId,
           type: 'FUNDS_RELEASED',
           message: `Funds released to seller. Amount: ${rift.currency} ${riftValue.toFixed(2)}`,
@@ -220,6 +224,32 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
   } else {
     console.log(`⚠️ FUNDS_RELEASED event already exists for rift ${riftId}`)
   }
+
+  // Send email notification (not in chat)
+  try {
+    const riftWithUsers = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+      include: {
+        buyer: true,
+        seller: true,
+      },
+    })
+    
+    if (riftWithUsers) {
+      const riftValue = rift.subtotal ?? 0
+      await sendRiftStatusUpdateEmail(
+        riftWithUsers.buyer.email,
+        riftWithUsers.seller.email,
+        riftId,
+        riftWithUsers.itemTitle,
+        'RELEASED',
+        `Funds have been released. Amount: ${rift.currency} ${riftValue.toFixed(2)}`
+      )
+    }
+  } catch (emailError) {
+    console.error('Error sending rift status update email:', emailError)
+    // Don't fail the release if email fails
+  }
 }
 
 /**
@@ -228,7 +258,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
 export function calculateAutoReleaseDeadline(
   itemType: string,
   proofSubmittedAt: Date | null,
-  fundedAt: Date | null
+  paidAt: Date | null
 ): Date | null {
   // Default review window: 72 hours
   let reviewWindowHours = 72
@@ -239,7 +269,7 @@ export function calculateAutoReleaseDeadline(
   }
 
   // Use proof submitted time if available, otherwise use funded time
-  const baseTime = proofSubmittedAt || fundedAt
+  const baseTime = proofSubmittedAt || paidAt
   if (!baseTime) {
     return null
   }

@@ -6,19 +6,19 @@
 
 **Goal**: Maximize user growth, trust, and transaction volume while maintaining healthy platform margins.
 
-### 1. Buyer Fee: 0%
-- **Buyers pay exactly the listed price** - no added fees at checkout
-- Increases trust and conversion
-- Helps scale early adoption
-- Buyer never sees fees in the UI
+### 1. Buyer Fee: 3%
+- **Buyers pay: subtotal + 3%** - Payment processing and card network fee
+- Transparent fee structure shown at checkout
+- Covers Stripe payment processing costs
 
-### 2. Seller Fee: 8% Flat
+### 2. Seller Fee: 5% Flat
 - **Automatically deducted** from all seller payouts
-- Calculated as: `platformFee = escrowAmount * 0.08`
+- Calculated as: `sellerFee = subtotal * 0.05`
 - Covers:
-  - Platform margin (~5%)
-  - Stripe processing (~3%)
-  - Fraud protection, dispute resolution, rift
+  - Platform services and infrastructure
+  - Fraud protection
+  - Dispute resolution
+  - Transaction support
 
 ### 3. Payment Processing Fees (Stripe)
 - **Automatically handled** by Stripe (2.9% + $0.30 per transaction)
@@ -26,46 +26,48 @@
 - Standard across all payment platforms
 
 ### 4. Total Seller Deduction
-- **~11% total** (8% platform fee + ~3% Stripe fees)
-- Example: $100 transaction → Seller receives ~$88.80
+- **~8% total** (5% platform fee + ~3% Stripe fees)
+- Example: $100 transaction → Seller receives ~$92.01
 
 ### 5. Fee Tracking
-- `platformFee` stored in database (8% of original amount)
-- `sellerPayoutAmount` stored in database
-- Both fields tracked in `EscrowTransaction` model
+- `buyerFee` stored in database (3% of subtotal)
+- `sellerFee` stored in database (5% of subtotal)
+- `sellerNet` stored in database (subtotal - sellerFee)
+- All fields tracked in `RiftTransaction` model
 
 ### 6. Updated Endpoints
-- ✅ `/api/escrows/[id]/release-funds` - Deducts 8% platform fee
-- ✅ `/api/escrows/[id]/confirm-received` - Deducts 8% platform fee
-- ✅ `/api/escrows/auto-release` - Deducts 8% platform fee
-- ✅ `/api/admin/escrows/[id]/resolve-dispute` - Deducts 8% platform fee
+- ✅ `/api/rifts/create` - Calculates buyer fee (3%) and seller fee (5%)
+- ✅ `/api/rifts/[id]/fund` - Creates payment intent with buyer total (subtotal + 3%)
+- ✅ `/api/rifts/[id]/release` - Uses sellerNet for wallet credit
+- ✅ `/api/rifts/auto-release` - Uses sellerNet for wallet credit
+- ✅ `/api/admin/rifts/[id]/resolve-dispute` - Uses sellerNet for wallet credit
 
 ### 7. Transparency
 - Timeline events show fee breakdown (for sellers)
 - Email notifications include fee details (for sellers)
-- All payouts show: "Platform fee (8%): $X. Seller receives: $Y"
-- **Buyers never see fees** - they pay listed price only
+- All payouts show: "Platform fee (5%): $X. Seller receives: $Y"
+- **Buyers see 3% fee** at checkout
 
 ## Fee Flow Example
 
-**Rift Amount: $100.00**
+**Rift Subtotal: $100.00**
 
-1. **Buyer pays**: $100.00 (exactly the listed price, 0% fee)
-2. **Stripe processing fees**: ~$3.20 (2.9% + $0.30) [AUTOMATIC - passed to seller]
-3. **Platform receives**: ~$96.80 (after Stripe fees)
-4. **Platform fee (8% of $100)**: $8.00 [DEDUCTED from seller]
-5. **Seller receives**: $88.80 [TRANSFERRED]
+1. **Buyer pays**: $103.00 (subtotal $100 + 3% buyer fee $3)
+2. **Stripe processing fees**: ~$2.99 (2.9% + $0.30) [AUTOMATIC - passed to seller]
+3. **Platform receives**: ~$100.01 (after Stripe fees)
+4. **Platform fee (5% of $100)**: $5.00 [DEDUCTED from seller]
+5. **Seller receives**: $92.01 [TRANSFERRED]
 
 **Summary:**
-- Buyer pays: $100.00 (0% fee)
-- Seller receives: $88.80
-- Total seller deduction: $11.20 (~11.2%)
-- Platform earns: $8.00 (~8% of transaction)
+- Buyer pays: $103.00 (subtotal $100 + 3% fee $3)
+- Seller receives: $92.01
+- Total seller deduction: $7.99 (~8%)
+- Platform earns: $5.00 (5% platform fee)
 
 ## Important Notes
 
-- **Buyer fees: 0%** - Buyers pay listed price only, no fees shown
-- **Seller fees: 8%** - Platform fee calculated from original amount
+- **Buyer fees: 3%** - Buyers pay subtotal + 3% payment processing fee
+- **Seller fees: 5%** - Platform fee calculated from subtotal
 - **Stripe fees: Passed to seller** - Not absorbed by platform
 - **Fee structure is fixed** - No customization allowed (reduces friction)
 - **Transfers are free** - No additional fees on transfers to payment accounts
@@ -74,9 +76,9 @@
 ## Strategic Justification
 
 This fee structure:
-- Mirrors top growth strategies used by Vinted, Etsy, StockX, Whop
-- Keeps margins clean, UX friction low, and fees psychologically fair
-- Sets Rift up to scale quickly and dominate trust-based digital/physical transactions
-- Maximizes buyer trust and conversion by eliminating buyer fees
+- Provides transparent pricing for both buyers and sellers
+- Keeps margins clean, UX friction low, and fees competitive
+- Sets Rift up to scale quickly with clear value proposition
+- Standard fee structure used by many successful platforms
 
 See `PAYMENT_PROCESSING_FEES.md` for detailed explanation!

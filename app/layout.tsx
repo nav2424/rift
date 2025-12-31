@@ -7,6 +7,7 @@ import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import Chatbot from "@/components/Chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: "Rift - Secure Buyer Protection for Marketplace Deals",
   description: "Send money safely, receive goods, and release funds only when everything checks out.",
   // Icons are handled via file-based convention (app/icon.svg, app/icon.png, etc.)
@@ -62,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen flex flex-col`}
       >
@@ -71,6 +73,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1 pt-4 sm:pt-8">{children}</main>
           <Footer />
+          <Chatbot />
         </Providers>
         <Analytics />
         <SpeedInsights />

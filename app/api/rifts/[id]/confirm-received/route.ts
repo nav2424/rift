@@ -255,7 +255,7 @@ export async function POST(
         // Check if event already exists to prevent duplicates
         const existingEvent = await prisma.timelineEvent.findFirst({
           where: {
-            escrowId: id,
+            riftId: id,
             type: 'FUNDS_RELEASED',
           },
           orderBy: {

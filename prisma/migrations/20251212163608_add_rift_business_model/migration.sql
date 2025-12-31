@@ -14,6 +14,9 @@ BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'FUNDED' AND enumtypid = enum_type_oid) THEN
             ALTER TYPE "EscrowStatus" ADD VALUE 'FUNDED';
         END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'PAID' AND enumtypid = enum_type_oid) THEN
+            ALTER TYPE "EscrowStatus" ADD VALUE 'PAID';
+        END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'PROOF_SUBMITTED' AND enumtypid = enum_type_oid) THEN
             ALTER TYPE "EscrowStatus" ADD VALUE 'PROOF_SUBMITTED';
         END IF;
@@ -364,48 +367,88 @@ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'WalletAccount')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'WalletAccount_userId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "WalletAccount" 
+        WHERE "userId" NOT IN (SELECT "id" FROM "User");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "WalletAccount" ADD CONSTRAINT "WalletAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'WalletLedgerEntry')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'WalletAccount')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'WalletLedgerEntry_walletAccountId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "WalletLedgerEntry" 
+        WHERE "walletAccountId" NOT IN (SELECT "id" FROM "WalletAccount");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "WalletLedgerEntry" ADD CONSTRAINT "WalletLedgerEntry_walletAccountId_fkey" FOREIGN KEY ("walletAccountId") REFERENCES "WalletAccount"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Proof')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'EscrowTransaction')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'Proof_riftId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "Proof" 
+        WHERE "riftId" NOT IN (SELECT "id" FROM "EscrowTransaction");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "Proof" ADD CONSTRAINT "Proof_riftId_fkey" FOREIGN KEY ("riftId") REFERENCES "EscrowTransaction"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Payout')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'Payout_userId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "Payout" 
+        WHERE "userId" IS NOT NULL AND "userId" NOT IN (SELECT "id" FROM "User");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "Payout" ADD CONSTRAINT "Payout_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Payout')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'EscrowTransaction')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'Payout_riftId_fkey') THEN
+        -- Clean up orphaned records before adding constraint (riftId can be NULL, so only delete non-null orphans)
+        DELETE FROM "Payout" 
+        WHERE "riftId" IS NOT NULL AND "riftId" NOT IN (SELECT "id" FROM "EscrowTransaction");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "Payout" ADD CONSTRAINT "Payout_riftId_fkey" FOREIGN KEY ("riftId") REFERENCES "EscrowTransaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'UserRiskProfile')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'UserRiskProfile_userId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "UserRiskProfile" 
+        WHERE "userId" NOT IN (SELECT "id" FROM "User");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "UserRiskProfile" ADD CONSTRAINT "UserRiskProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'UserBlock')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'UserBlock_userId_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "UserBlock" 
+        WHERE "userId" NOT IN (SELECT "id" FROM "User");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "UserBlock" ADD CONSTRAINT "UserBlock_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
     
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'UserBlock')
        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User')
        AND NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_schema = 'public' AND constraint_name = 'UserBlock_blockedById_fkey') THEN
+        -- Clean up orphaned records before adding constraint
+        DELETE FROM "UserBlock" 
+        WHERE "blockedById" NOT IN (SELECT "id" FROM "User");
+        
+        -- Now add the foreign key constraint
         ALTER TABLE "UserBlock" ADD CONSTRAINT "UserBlock_blockedById_fkey" FOREIGN KEY ("blockedById") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
 END $$;

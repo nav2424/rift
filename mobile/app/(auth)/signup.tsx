@@ -8,9 +8,13 @@ import RiftLogo from '@/components/RiftLogo';
 import { Colors } from '@/constants/Colors';
 import { Spacing, Typography, BorderRadius } from '@/constants/DesignSystem';
 import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function SignUpScreen() {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [birthday, setBirthday] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,6 +23,32 @@ export default function SignUpScreen() {
   const router = useRouter();
 
   const handleSignUp = async () => {
+    if (!firstName.trim()) {
+      Alert.alert('Error', 'First name is required');
+      return;
+    }
+
+    if (!lastName.trim()) {
+      Alert.alert('Error', 'Last name is required');
+      return;
+    }
+
+    if (!birthday) {
+      Alert.alert('Error', 'Birthday is required');
+      return;
+    }
+
+    // Validate birthday (must be at least 13 years old)
+    const today = new Date();
+    const age = today.getFullYear() - birthday.getFullYear();
+    const monthDiff = today.getMonth() - birthday.getMonth();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthday.getDate()) ? age - 1 : age;
+    
+    if (actualAge < 13) {
+      Alert.alert('Error', 'You must be at least 13 years old to sign up');
+      return;
+    }
+
     if (!email || !password) {
       Alert.alert('Error', 'Email and password are required');
       return;
@@ -36,13 +66,18 @@ export default function SignUpScreen() {
 
     setLoading(true);
     try {
-      await signUp(name, email, password);
-      router.replace('/(tabs)/dashboard');
+      await signUp(firstName, lastName, birthday.toISOString().split('T')[0], email, password);
+      router.replace('/(tabs)/dashboard?registered=true');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to sign up');
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   return (
@@ -69,16 +104,57 @@ export default function SignUpScreen() {
 
           <GlassCard variant="liquid" style={styles.formCard}>
             <View style={styles.form}>
+              <View style={styles.inputRow}>
+                <View style={[styles.inputContainer, { flex: 1, marginRight: Spacing.sm }]}>
+                  <Text style={styles.inputLabel}>First Name *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="First name"
+                    placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    autoCapitalize="words"
+                  />
+                </View>
+                <View style={[styles.inputContainer, { flex: 1, marginLeft: Spacing.sm }]}>
+                  <Text style={styles.inputLabel}>Last Name *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Last name"
+                    placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    autoCapitalize="words"
+                  />
+                </View>
+              </View>
+              
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Name (optional)</Text>
-                <TextInput
+                <Text style={styles.inputLabel}>Birthday *</Text>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
                   style={styles.input}
-                  placeholder="Your name"
-                  placeholderTextColor="rgba(255, 255, 255, 0.4)"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                />
+                >
+                  <Text style={[styles.inputText, !birthday && { color: 'rgba(255, 255, 255, 0.4)' }]}>
+                    {birthday ? formatDate(birthday) : 'Select your birthday'}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={birthday || new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      if (Platform.OS === 'android') {
+                        setShowDatePicker(false);
+                      }
+                      if (event.type === 'set' && selectedDate) {
+                        setBirthday(selectedDate);
+                      }
+                    }}
+                    maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 13))}
+                  />
+                )}
               </View>
               
               <View style={styles.inputContainer}>
@@ -178,8 +254,16 @@ const styles = StyleSheet.create({
   form: {
     width: '100%',
   },
+  inputRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.xl,
+  },
   inputContainer: {
     marginBottom: Spacing.xl, // 24px
+  },
+  inputText: {
+    color: Colors.text,
+    ...Typography.body,
   },
   inputLabel: {
     ...Typography.sectionTitle,

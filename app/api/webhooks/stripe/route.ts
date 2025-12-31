@@ -27,9 +27,21 @@ export async function POST(request: NextRequest) {
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const isProduction = process.env.NODE_ENV === 'production'
+  
   if (!webhookSecret) {
-    console.warn('STRIPE_WEBHOOK_SECRET not set, skipping webhook verification')
-    return NextResponse.json({ received: true })
+    if (isProduction) {
+      // In production, webhook secret is REQUIRED for security
+      console.error('STRIPE_WEBHOOK_SECRET not set in production - this is a security risk!')
+      return NextResponse.json(
+        { error: 'Webhook configuration error' },
+        { status: 500 }
+      )
+    } else {
+      // In development, allow skipping verification (for local testing with Stripe CLI)
+      console.warn('STRIPE_WEBHOOK_SECRET not set, skipping webhook verification (development mode only)')
+      return NextResponse.json({ received: true })
+    }
   }
 
   let event

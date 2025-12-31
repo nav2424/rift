@@ -8,6 +8,7 @@ import { autoTriageDispute } from '@/lib/dispute-auto-triage'
 import { RiftEventActorType } from '@prisma/client'
 import { isDisputesRestricted } from '@/lib/risk/enforcement'
 import { updateMetricsOnDisputeSubmitted } from '@/lib/risk/metrics'
+import { sendDisputeRaisedEmail } from '@/lib/email'
 
 /**
  * POST /api/disputes/[id]/submit
@@ -25,6 +26,43 @@ export async function POST(
 
     const { id: disputeId } = await params
     const userId = auth.userId
+
+    // Check user verification status before allowing dispute submission
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        emailVerified: true,
+        phoneVerified: true,
+        email: true,
+        phone: true,
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Require email and phone verification to submit disputes
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Email verification required',
+          message: 'You must verify your email address before submitting a dispute. Please verify your email in Settings.',
+        },
+        { status: 403 }
+      )
+    }
+
+    if (!user.phoneVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Phone verification required',
+          message: 'You must verify your phone number before submitting a dispute. Please verify your phone in Settings.',
+        },
+        { status: 403 }
+      )
+    }
 
     // Get dispute and verify buyer owns it
     const supabase = createServerClient()
@@ -126,6 +164,7 @@ export async function POST(
     }
 
     // Run auto-triage
+    // Use Auto-Triage system
     const triageResult = await autoTriageDispute(
       dispute.rift_id,
       dispute.reason,
@@ -243,17 +282,55 @@ export async function POST(
       // Don't fail dispute submission if metrics update fails
     }
 
-    // Post system message
-    if (newStatus === 'auto_rejected') {
-      await postSystemMessage(
-        dispute.rift_id,
-        'Dispute was automatically reviewed and rejected based on system evidence.'
-      )
-    } else {
-      await postSystemMessage(
-        dispute.rift_id,
-        'A dispute has been opened. This will be reviewed by our team.'
-      )
+    // Don't post system messages - emails are sent instead (see below)
+
+    // Send email notifications (only if dispute was successfully submitted, not auto-rejected)
+    if (newStatus !== 'auto_rejected') {
+      try {
+        // Get rift details for email
+        const rift = await prisma.riftTransaction.findUnique({
+          where: { id: dispute.rift_id },
+          include: {
+            buyer: true,
+            seller: true,
+          },
+        })
+
+        // Get admin email
+        const admin = await prisma.user.findFirst({
+          where: { role: 'ADMIN' },
+        })
+
+        if (rift && admin) {
+          await sendDisputeRaisedEmail(
+            rift.buyer.email,
+            rift.seller.email,
+            admin.email,
+            dispute.rift_id,
+            rift.itemTitle,
+            dispute.summary || dispute.reason || 'No reason provided',
+            {
+              disputeType: dispute.reason || 'OTHER',
+              disputeId: disputeId,
+              riftNumber: rift.riftNumber,
+              subtotal: rift.subtotal,
+              currency: rift.currency,
+              itemDescription: rift.itemDescription,
+              itemType: rift.itemType,
+              shippingAddress: rift.shippingAddress,
+              buyerName: rift.buyer.name,
+              sellerName: rift.seller.name,
+              buyerEmail: rift.buyer.email,
+              sellerEmail: rift.seller.email,
+              createdAt: updatedDispute?.created_at || dispute.created_at || new Date(),
+              summary: dispute.summary || null,
+            }
+          )
+        }
+      } catch (emailError) {
+        // Log email error but don't fail the dispute submission
+        console.error('Error sending dispute email notification:', emailError)
+      }
     }
 
     return NextResponse.json({
