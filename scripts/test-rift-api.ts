@@ -226,7 +226,7 @@ async function testRiftAPI() {
     if (Math.abs(rift.sellerFee - expectedSellerFee) > 0.01) {
       throw new Error(`Seller fee incorrect: expected ${expectedSellerFee}, got ${rift.sellerFee}`)
     }
-    if (Math.abs(rift.sellerNet - expectedSellerNet) > 0.01) {
+    if (rift.sellerNet === null || Math.abs(rift.sellerNet - expectedSellerNet) > 0.01) {
       throw new Error(`Seller net incorrect: expected ${expectedSellerNet}, got ${rift.sellerNet}`)
     }
 
