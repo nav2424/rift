@@ -137,48 +137,7 @@ export default function RiftDetailPage() {
     if (status === 'authenticated' && riftId) {
       loadRift()
       
-      // Set up polling to refresh timeline every 3 seconds when page is visible
-      // This ensures real-time updates without excessive requests
-      let pollInterval: NodeJS.Timeout | null = null
-      
-      const startPolling = () => {
-        if (pollInterval) return
-        pollInterval = setInterval(() => {
-          // Only poll if page is visible
-          if (document.visibilityState === 'visible') {
-            loadRift()
-          }
-        }, 3000)
-      }
-      
-      const stopPolling = () => {
-        if (pollInterval) {
-          clearInterval(pollInterval)
-          pollInterval = null
-        }
-      }
-      
-      // Start polling when page is visible
-      if (document.visibilityState === 'visible') {
-        startPolling()
-      }
-      
-      // Handle visibility changes
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          loadRift() // Refresh immediately when page becomes visible
-          startPolling()
-        } else {
-          stopPolling()
-        }
-      }
-      
-      document.addEventListener('visibilitychange', handleVisibilityChange)
-
-      return () => {
-        stopPolling()
-        document.removeEventListener('visibilitychange', handleVisibilityChange)
-      }
+      // Polling removed - page will only refresh when manually reloaded or when user returns to the page
     }
   }, [status, riftId, router])
 
