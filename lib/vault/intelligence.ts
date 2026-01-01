@@ -130,10 +130,9 @@ export async function generateEvidencePacket(
   const keyReveals: KeyReveal[] = []
   for (const asset of assets) {
     if (asset.assetType === 'LICENSE_KEY') {
-      // Note: Check for buyer access events for license keys instead
-      // VaultEventType enum doesn't have KEY_REVEALED, so we check for BUYER_ACCESSED_ASSET
+      // Check for buyer revealed license key events
       const revealEvent = vaultEvents.find(
-        e => e.assetId === asset.id && e.eventType === 'BUYER_ACCESSED_ASSET'
+        e => e.assetId === asset.id && e.eventType === 'BUYER_REVEALED_LICENSE_KEY'
       )
       if (revealEvent) {
         keyReveals.push({
