@@ -179,7 +179,7 @@ export default function Pricing() {
                     <span className="text-white/60 font-light text-xl ml-2">platform fee</span>
                   </div>
                   <p className="text-white/70 font-light text-lg mb-6">
-                    Keep 95% of every sale. Small platform fee for complete protection and support.
+                    Keep 95% of every sale. Small platform fee for enhanced protection and support.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-white/80 font-light">
