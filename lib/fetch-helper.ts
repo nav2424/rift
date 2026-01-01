@@ -32,8 +32,8 @@ export async function safeFetch<T = any>(
       }
     }
     
-    // Try to parse as JSON if content type suggests JSON or if we expect JSON
-    if (isJson || options?.headers?.['Accept']?.includes('application/json')) {
+    // Try to parse as JSON if content type suggests JSON
+    if (isJson) {
       try {
         const data = JSON.parse(text) as T
         return { data, error: null, status }
@@ -43,6 +43,16 @@ export async function safeFetch<T = any>(
           error: `Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
           status 
         }
+      }
+    }
+    
+    // Try to parse as JSON if text looks like JSON (starts with { or [)
+    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+      try {
+        const data = JSON.parse(text) as T
+        return { data, error: null, status }
+      } catch (parseError) {
+        // If parsing fails, return as text
       }
     }
     
