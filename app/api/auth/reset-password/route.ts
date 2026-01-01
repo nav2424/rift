@@ -89,6 +89,14 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     // Update user password
+    // verification.userId should always be set for password reset (not a signup session)
+    if (!verification.userId) {
+      return NextResponse.json(
+        { error: 'Invalid verification code' },
+        { status: 400 }
+      )
+    }
+
     await prisma.user.update({
       where: { id: verification.userId },
       data: {
