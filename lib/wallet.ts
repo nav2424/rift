@@ -19,6 +19,16 @@ export async function getOrCreateWalletAccount(
   })
 
   if (!wallet) {
+    // Verify user exists before creating wallet account
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    })
+
+    if (!user) {
+      throw new Error(`User not found: ${userId}. Cannot create wallet account for non-existent user.`)
+    }
+
     wallet = await prisma.walletAccount.create({
       data: {
         id: randomUUID(),
