@@ -26,7 +26,8 @@ async function checkUserOnboarding() {
       console.log(`    createdAt: ${user.createdAt}`)
     })
 
-    const incomplete = users.filter(u => !u.onboardingCompleted)
+    // onboardingCompleted field removed - all users are considered "completed" now
+    const incomplete: typeof users = []
     console.log(`\nUsers who haven't completed onboarding: ${incomplete.length}`)
     
   } catch (error) {
