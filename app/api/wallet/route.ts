@@ -44,6 +44,15 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Get wallet error:', error)
+    
+    // If user doesn't exist in database, return 401 to force re-authentication
+    if (error.message?.includes('User not found') || error.message?.includes('Cannot create wallet account for non-existent user')) {
+      return NextResponse.json(
+        { error: 'Session invalid. Please sign in again.' },
+        { status: 401 }
+      )
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

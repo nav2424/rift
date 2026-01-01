@@ -30,10 +30,22 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthRe
   // In Next.js App Router, getServerSession automatically reads cookies from the request context
   const session = await getServerSession(authOptions)
   if (session?.user?.id) {
+    // Verify user still exists in database (session might be stale)
+    const { prisma } = await import('./prisma')
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    })
+    
+    if (!user) {
+      console.log('getAuthenticatedUser: Session user not found in database')
+      return null
+    }
+    
     console.log('getAuthenticatedUser: Session auth successful')
     return {
       userId: session.user.id,
-      userRole: session.user.role || 'USER',
+      userRole: (user.role as 'USER' | 'ADMIN') || 'USER',
       isMobile: false,
     }
   }
