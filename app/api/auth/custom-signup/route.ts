@@ -155,10 +155,26 @@ async function handlePOST(request: NextRequest) {
         },
       })
     } catch (createError: any) {
-      // Handle Prisma unique constraint violation (email already exists)
-      if (createError.code === 'P2002' && createError.meta?.target?.includes('email')) {
+      // Handle Prisma unique constraint violation
+      if (createError.code === 'P2002') {
+        const target = createError.meta?.target || []
+        if (Array.isArray(target)) {
+          if (target.includes('email')) {
+            return NextResponse.json(
+              { error: 'User with this email already exists' },
+              { status: 400 }
+            )
+          }
+          if (target.includes('phone')) {
+            return NextResponse.json(
+              { error: 'This phone number is already associated with another account' },
+              { status: 400 }
+            )
+          }
+        }
+        // Generic unique constraint error
         return NextResponse.json(
-          { error: 'User with this email already exists' },
+          { error: 'A user with this information already exists' },
           { status: 400 }
         )
       }

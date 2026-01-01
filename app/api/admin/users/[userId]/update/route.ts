@@ -128,22 +128,50 @@ export async function PATCH(
       }
     }
 
-    // Update user
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
+    // Update user with error handling for unique constraints
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      })
 
-    return NextResponse.json(updatedUser)
+      return NextResponse.json(updatedUser)
+    } catch (updateError: any) {
+      // Handle Prisma unique constraint violation
+      if (updateError.code === 'P2002') {
+        const target = updateError.meta?.target || []
+        if (Array.isArray(target)) {
+          if (target.includes('email')) {
+            return NextResponse.json(
+              { error: 'This email is already associated with another account' },
+              { status: 400 }
+            )
+          }
+          if (target.includes('phone')) {
+            return NextResponse.json(
+              { error: 'This phone number is already associated with another account' },
+              { status: 400 }
+            )
+          }
+        }
+        // Generic unique constraint error
+        return NextResponse.json(
+          { error: 'A user with this information already exists' },
+          { status: 400 }
+        )
+      }
+      // Re-throw if it's a different error
+      throw updateError
+    }
   } catch (error: any) {
     console.error('Update user error:', error)
     

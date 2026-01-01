@@ -103,7 +103,7 @@ model User {
   riftUserId               String?            @unique // Public-facing Rift user ID (e.g., RIFT111111)
   name                     String?
   email                    String             @unique
-  phone                    String?
+  phone                    String?             @unique
   passwordHash             String
   role                     String             @default("USER")
   createdAt                DateTime           @default(now())

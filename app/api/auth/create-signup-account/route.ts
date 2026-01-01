@@ -98,10 +98,26 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Create signup account error:', error)
     
-    // Handle Prisma unique constraint violation (email already exists)
-    if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+    // Handle Prisma unique constraint violation
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || []
+      if (Array.isArray(target)) {
+        if (target.includes('email')) {
+          return NextResponse.json(
+            { error: 'Email is already registered' },
+            { status: 400 }
+          )
+        }
+        if (target.includes('phone')) {
+          return NextResponse.json(
+            { error: 'This phone number is already associated with another account' },
+            { status: 400 }
+          )
+        }
+      }
+      // Generic unique constraint error
       return NextResponse.json(
-        { error: 'Email is already registered' },
+        { error: 'A user with this information already exists' },
         { status: 400 }
       )
     }

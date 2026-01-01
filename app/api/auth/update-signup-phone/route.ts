@@ -51,10 +51,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user's phone number
-    await prisma.user.update({
-      where: { id: userId },
-      data: { phone: formattedPhone },
-    })
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { phone: formattedPhone },
+      })
+    } catch (updateError: any) {
+      // Handle Prisma unique constraint violation (phone already exists)
+      if (updateError.code === 'P2002' && updateError.meta?.target?.includes('phone')) {
+        return NextResponse.json(
+          { error: 'This phone number is already associated with another account' },
+          { status: 400 }
+        )
+      }
+      // Re-throw if it's a different error
+      throw updateError
+    }
 
     // Generate and send phone verification code
     const phoneCode = await generateVerificationCode(userId, 'PHONE', formattedPhone)

@@ -61,23 +61,35 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    const user = await prisma.user.update({
-      where: { id: auth.userId },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        role: true,
-      },
-    });
+    try {
+      const user = await prisma.user.update({
+        where: { id: auth.userId },
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          role: true,
+        },
+      });
 
-    return NextResponse.json({ user });
-  } catch (error) {
+      return NextResponse.json({ user });
+    } catch (updateError: any) {
+      // Handle Prisma unique constraint violation (phone already exists)
+      if (updateError.code === 'P2002' && updateError.meta?.target?.includes('phone')) {
+        return NextResponse.json(
+          { error: 'This phone number is already associated with another account' },
+          { status: 400 }
+        )
+      }
+      // Re-throw if it's a different error
+      throw updateError
+    }
+  } catch (error: any) {
     console.error('Update profile error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }
