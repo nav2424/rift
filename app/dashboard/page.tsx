@@ -48,9 +48,16 @@ export default function Dashboard() {
         credentials: 'include',
       })
       if (response.ok) {
-        const data = await response.json()
-        // Handle both old format (rifts) and new paginated format (data)
-        setRifts(data.data || data.rifts || [])
+        const text = await response.text()
+        if (text && text.trim().length > 0) {
+          try {
+            const data = JSON.parse(text)
+            // Handle both old format (rifts) and new paginated format (data)
+            setRifts(data.data || data.rifts || [])
+          } catch (parseError) {
+            console.error('Failed to parse rifts response:', parseError)
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading rifts:', error)
@@ -85,9 +92,16 @@ export default function Dashboard() {
         credentials: 'include',
       })
       if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications || [])
-        setUnreadCount(data.unreadCount || 0)
+        const text = await response.text()
+        if (text && text.trim().length > 0) {
+          try {
+            const data = JSON.parse(text)
+            setNotifications(data.notifications || [])
+            setUnreadCount(data.unreadCount || 0)
+          } catch (parseError) {
+            console.error('Failed to parse notifications response:', parseError)
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading notifications:', error)

@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyCode } from '@/lib/verification-codes'
+import { markPhoneVerified, getSignupSession } from '@/lib/signup-session'
 
 /**
- * Verify phone during signup (before full authentication)
- * Accepts userId and code - no authentication required since user is just signing up
+ * Verify phone during signup (before user account is created)
+ * Accepts sessionId and code - works with SignupSession, not User
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, code } = body
+    const { sessionId, code } = body
 
-    if (!userId || !code) {
+    if (!sessionId || !code) {
       return NextResponse.json(
-        { error: 'User ID and verification code are required' },
+        { error: 'Session ID and verification code are required' },
         { status: 400 }
       )
     }
@@ -25,34 +25,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        phone: true,
-        phoneVerified: true,
-      },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    // Get signup session
+    const session = await getSignupSession(sessionId)
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Signup session not found or expired' },
+        { status: 404 }
+      )
     }
 
-    if (!user.phone) {
+    if (!session.phone) {
       return NextResponse.json(
-        { error: 'Phone number not set' },
+        { error: 'Phone number not set in signup session' },
         { status: 400 }
       )
     }
 
-    if (user.phoneVerified) {
+    if (session.phoneVerified) {
       return NextResponse.json(
         { error: 'Phone number is already verified' },
         { status: 400 }
       )
     }
 
-    // Verify the code
-    const verification = await verifyCode(userId, 'PHONE', code)
+    // Verify the code (using sessionId, not userId)
+    const verification = await verifyCode(sessionId, 'PHONE', code, true)
 
     if (!verification.valid) {
       return NextResponse.json(
@@ -61,17 +58,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mark phone as verified
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        phoneVerified: true,
-      },
-    })
+    // Mark phone as verified in signup session
+    await markPhoneVerified(sessionId)
 
     return NextResponse.json({
       success: true,
       message: 'Phone number verified successfully',
+      sessionId,
     })
   } catch (error: any) {
     console.error('Verify phone signup error:', error)

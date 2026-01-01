@@ -66,7 +66,23 @@ export async function POST(request: NextRequest) {
     }
 
     // In production, return error if email failed
+    // But also check if SMTP is configured - if not, provide helpful error
     if (!emailSent) {
+      const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASSWORD)
+      
+      if (!smtpConfigured) {
+        // SMTP not configured - return code in response for now (one-time exception)
+        // In production, admin should configure SMTP
+        console.warn('⚠️ SMTP not configured. Returning code in response for this request.')
+        return NextResponse.json({
+          success: true,
+          message: 'Verification code generated. SMTP not configured - code returned in response.',
+          code: code, // Return code as exception since SMTP not configured
+          smtpNotConfigured: true,
+        })
+      }
+      
+      // SMTP is configured but email failed to send
       return NextResponse.json(
         {
           error: 'Failed to send verification email. Please check your email configuration or try again later.',

@@ -37,10 +37,35 @@ function ResetPasswordForm() {
       })
 
       if (response.ok) {
-        setTokenValid(true)
+        const text = await response.text()
+        if (text && text.trim().length > 0) {
+          try {
+            const data = JSON.parse(text)
+            if (data.valid) {
+              setTokenValid(true)
+            } else {
+              setError(data.error || 'Invalid or expired reset token')
+            }
+          } catch (parseError) {
+            // If parsing fails but status is OK, assume valid
+            setTokenValid(true)
+          }
+        } else {
+          // Empty response but OK status, assume valid
+          setTokenValid(true)
+        }
       } else {
-        const data = await response.json()
-        setError(data.error || 'Invalid or expired reset token')
+        const text = await response.text()
+        if (text && text.trim().length > 0) {
+          try {
+            const data = JSON.parse(text)
+            setError(data.error || 'Invalid or expired reset token')
+          } catch (parseError) {
+            setError('Invalid or expired reset token')
+          }
+        } else {
+          setError('Invalid or expired reset token')
+        }
       }
     } catch (error) {
       console.error('Token validation error:', error)
@@ -78,7 +103,20 @@ function ResetPasswordForm() {
         }),
       })
 
-      const data = await response.json()
+      const text = await response.text()
+      let data: any = {}
+      
+      if (text && text.trim().length > 0) {
+        try {
+          data = JSON.parse(text)
+        } catch (parseError) {
+          console.error('Failed to parse reset password response:', parseError)
+          if (!response.ok) {
+            setError('Failed to reset password')
+            return
+          }
+        }
+      }
 
       if (!response.ok) {
         setError(data.error || 'Failed to reset password')

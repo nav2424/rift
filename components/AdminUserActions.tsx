@@ -53,8 +53,33 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to delete user')
+        let errorMessage = 'Failed to delete user'
+        try {
+          const text = await response.text()
+          if (text && text.trim().length > 0) {
+            const data = JSON.parse(text)
+            errorMessage = data.error || errorMessage
+          } else {
+            errorMessage = `HTTP ${response.status}: ${response.statusText || 'Unknown error'}`
+          }
+        } catch (parseError) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText || 'Unknown error'}`
+        }
+        throw new Error(errorMessage)
+      }
+
+      // Handle successful deletion - response might be empty
+      const text = await response.text()
+      if (text && text.trim().length > 0) {
+        try {
+          const data = JSON.parse(text)
+          if (data.error) {
+            throw new Error(data.error)
+          }
+        } catch (parseError) {
+          // If parsing fails but status is OK, assume success
+          console.log('Delete successful (empty or non-JSON response)')
+        }
       }
 
       router.push('/admin')

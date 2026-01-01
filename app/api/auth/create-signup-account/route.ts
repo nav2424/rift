@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
-import { randomUUID } from 'crypto'
-import { generateNextRiftUserId } from '@/lib/rift-user-id'
+import { createSignupSession } from '@/lib/signup-session'
 import { generateVerificationCode } from '@/lib/verification-codes'
 import { sendEmail } from '@/lib/email'
 
 /**
- * Create a temporary account during signup (before password is set)
- * This allows us to send verification codes
+ * Create a signup session (temporary storage before user account is created)
+ * User account is NOT created until email, phone, and password are all verified
  */
 export async function POST(request: NextRequest) {
   try {
@@ -23,45 +20,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    })
-
-    // Generate temporary password (user will set real password later)
-    const tempPassword = `temp_${Date.now()}_${Math.random().toString(36).slice(2)}`
-    const passwordHash = await bcrypt.hash(tempPassword, 10)
-
-    // If user exists, reject (email already registered)
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'Email is already registered' },
-        { status: 400 }
-      )
+    // Create signup session (checks for existing email/phone in User table)
+    let sessionId: string
+    try {
+      sessionId = await createSignupSession({
+        email,
+        firstName,
+        lastName,
+        name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        birthday: new Date(birthday),
+      })
+    } catch (error: any) {
+      if (error.message.includes('already registered')) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+      throw error
     }
 
-    // Generate Rift user ID for new user
-    const riftUserId = await generateNextRiftUserId()
-
-    // Create new user with temporary password (signup not completed yet)
-    const user = await prisma.user.create({
-      data: {
-        id: randomUUID(),
-        name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-        email,
-        phone: '', // Will be set later
-        passwordHash,
-        role: 'USER',
-        riftUserId,
-        emailVerified: false,
-        phoneVerified: false,
-        updatedAt: new Date(),
-      },
-    })
-
-    // Generate and send email verification code
-    const emailCode = await generateVerificationCode(user.id, 'EMAIL', email)
+    // Generate and send email verification code (linked to session, not user)
+    const emailCode = await generateVerificationCode(sessionId, 'EMAIL', email, true)
     const emailHtml = `
       <h2>Verify Your Email</h2>
       <p>Your verification code is: <strong>${emailCode}</strong></p>
@@ -85,42 +65,18 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      userId: user.id,
+      sessionId, // Return sessionId instead of userId
       // Only return code in development if email failed to send (for testing purposes only)
       emailCode: !emailSent && isDevelopment ? emailCode : undefined,
       emailSent,
       message: emailSent 
-        ? 'Account created. Please check your email for the verification code.'
+        ? 'Signup session created. Please check your email for the verification code.'
         : (isDevelopment 
-          ? 'Account created. Email not sent (SMTP not configured). Check console for verification code.'
-          : 'Account created. Please verify your email.'),
+          ? 'Signup session created. Email not sent (SMTP not configured). Check console for verification code.'
+          : 'Signup session created. Please verify your email.'),
     }, { status: 201 })
   } catch (error: any) {
-    console.error('Create signup account error:', error)
-    
-    // Handle Prisma unique constraint violation
-    if (error.code === 'P2002') {
-      const target = error.meta?.target || []
-      if (Array.isArray(target)) {
-        if (target.includes('email')) {
-          return NextResponse.json(
-            { error: 'Email is already registered' },
-            { status: 400 }
-          )
-        }
-        if (target.includes('phone')) {
-          return NextResponse.json(
-            { error: 'This phone number is already associated with another account' },
-            { status: 400 }
-          )
-        }
-      }
-      // Generic unique constraint error
-      return NextResponse.json(
-        { error: 'A user with this information already exists' },
-        { status: 400 }
-      )
-    }
+    console.error('Create signup session error:', error)
     
     return NextResponse.json(
       { error: error.message || 'Internal server error' },

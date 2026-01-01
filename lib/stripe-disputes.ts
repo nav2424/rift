@@ -13,6 +13,7 @@ import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { RiftEventActorType } from '@prisma/client'
 import { updateMetricsOnChargeback } from '@/lib/risk/metrics'
 import { isFundsFrozen } from '@/lib/risk/enforcement'
+import { sendDisputeRaisedEmail } from '@/lib/email'
 
 /**
  * Handle Stripe dispute created
@@ -27,16 +28,24 @@ export async function handleStripeDisputeCreated(
     return
   }
 
-  // Find rift by charge ID
+  // Find rift by charge ID with full details for notifications
   const rift = await prisma.riftTransaction.findFirst({
     where: { stripeChargeId: chargeId },
-    select: {
-      id: true,
-      buyerId: true,
-      sellerId: true,
-      subtotal: true,
-      currency: true,
-      status: true,
+    include: {
+      buyer: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
+      seller: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
     },
   })
 
@@ -102,12 +111,23 @@ export async function handleStripeDisputeCreated(
     onConflict: 'user_id',
   })
 
-  // Also freeze seller payouts for this specific rift
-  // Update rift status to indicate frozen due to dispute
+  // Freeze seller payouts for this specific rift
+  // Also freeze seller funds to prevent any payouts
+  await supabase.from('user_restrictions').upsert({
+    user_id: rift.sellerId,
+    funds_frozen: true,
+    frozen_reason: `Stripe dispute created: ${disputeId}. Seller payouts frozen pending resolution.`,
+    updated_at: new Date().toISOString(),
+  }, {
+    onConflict: 'user_id',
+  })
+
+  // Update rift status to DISPUTED and cancel any auto-release scheduling
   await prisma.riftTransaction.update({
     where: { id: rift.id },
     data: {
-      status: 'DISPUTED', // Or create a 'FROZEN' status if preferred
+      status: 'DISPUTED',
+      autoReleaseScheduled: false, // Cancel any scheduled auto-release
     },
   })
 
@@ -169,6 +189,44 @@ export async function handleStripeDisputeCreated(
       message: `Stripe dispute created: ${rift.currency} ${(amountCents / 100).toFixed(2)}. Status: ${status}`,
     },
   })
+
+  // Notify admin about the dispute
+  try {
+    const admin = await prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+      select: { email: true },
+    })
+
+    if (admin && rift.buyer && rift.seller) {
+      await sendDisputeRaisedEmail(
+        rift.buyer.email,
+        rift.seller.email,
+        admin.email,
+        rift.id,
+        rift.itemTitle || 'Untitled Item',
+        reason || 'Stripe chargeback',
+        {
+          disputeType: 'CHARGEBACK',
+          disputeId: disputeId,
+          riftNumber: rift.riftNumber,
+          subtotal: amountCents / 100,
+          currency: currency.toUpperCase(),
+          itemDescription: rift.itemDescription,
+          itemType: rift.itemType,
+          shippingAddress: rift.shippingAddress,
+          buyerName: rift.buyer.name,
+          sellerName: rift.seller.name,
+          buyerEmail: rift.buyer.email,
+          sellerEmail: rift.seller.email,
+          createdAt: new Date(),
+          summary: `Stripe chargeback: ${reason || 'No reason provided'}`,
+        }
+      )
+    }
+  } catch (emailError) {
+    // Log email error but don't fail the dispute handler
+    console.error('Error sending admin notification for Stripe dispute:', emailError)
+  }
 }
 
 /**

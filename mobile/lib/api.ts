@@ -194,14 +194,30 @@ class ApiClient {
       if (response.status === 401) {
         // Don't immediately clear token - let the auth context handle it
         // This prevents logging out users on temporary errors
-        const errorData = await response.json().catch(() => ({ error: 'Unauthorized' }));
+        let errorData = { error: 'Unauthorized' };
+        try {
+          const text = await response.text();
+          if (text && text.trim().length > 0) {
+            errorData = JSON.parse(text);
+          }
+        } catch {
+          // Use default errorData
+        }
         throw new Error(errorData.error || 'Unauthorized');
       }
 
       if (!response.ok) {
         let errorData;
         try {
-          errorData = await response.json();
+          const text = await response.text();
+          if (text && text.trim().length > 0) {
+            errorData = JSON.parse(text);
+          } else {
+            errorData = { 
+              error: 'Unknown error',
+              details: `HTTP ${response.status}: ${response.statusText}`
+            };
+          }
         } catch {
           errorData = { 
             error: 'Unknown error',
@@ -216,7 +232,19 @@ class ApiClient {
         throw new Error(`${errorMessage}${errorDetails}`);
       }
 
-      return response.json();
+      // Handle successful response - check if body is empty
+      const text = await response.text();
+      if (!text || text.trim().length === 0) {
+        // Return null for empty responses (some endpoints may return 200 with no body)
+        return null as T;
+      }
+      
+      try {
+        return JSON.parse(text) as T;
+      } catch (parseError) {
+        // If parsing fails, return text as-is (shouldn't happen for JSON endpoints)
+        throw new Error(`Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+      }
     } catch (error: any) {
       // Handle network errors - don't clear token on network errors
       if (error.message === 'Failed to fetch' || error.message.includes('Network') || error.message.includes('fetch')) {

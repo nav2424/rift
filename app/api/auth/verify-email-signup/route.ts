@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyCode } from '@/lib/verification-codes'
+import { markEmailVerified, getSignupSession } from '@/lib/signup-session'
 
 /**
- * Verify email during signup (before full authentication)
- * Accepts userId and code - no authentication required since user is just signing up
+ * Verify email during signup (before user account is created)
+ * Accepts sessionId and code - works with SignupSession, not User
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, code } = body
+    const { sessionId, code } = body
 
-    if (!userId || !code) {
+    if (!sessionId || !code) {
       return NextResponse.json(
-        { error: 'User ID and verification code are required' },
+        { error: 'Session ID and verification code are required' },
         { status: 400 }
       )
     }
@@ -25,27 +25,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        email: true,
-        emailVerified: true,
-      },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    // Get signup session
+    const session = await getSignupSession(sessionId)
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Signup session not found or expired' },
+        { status: 404 }
+      )
     }
 
-    if (user.emailVerified) {
+    if (session.emailVerified) {
       return NextResponse.json(
         { error: 'Email is already verified' },
         { status: 400 }
       )
     }
 
-    // Verify the code
-    const verification = await verifyCode(userId, 'EMAIL', code)
+    // Verify the code (using sessionId, not userId)
+    const verification = await verifyCode(sessionId, 'EMAIL', code, true)
 
     if (!verification.valid) {
       return NextResponse.json(
@@ -54,17 +51,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Mark email as verified
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        emailVerified: true,
-      },
-    })
+    // Mark email as verified in signup session
+    await markEmailVerified(sessionId)
 
     return NextResponse.json({
       success: true,
       message: 'Email verified successfully',
+      sessionId,
     })
   } catch (error: any) {
     console.error('Verify email signup error:', error)

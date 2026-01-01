@@ -12,29 +12,37 @@ const MAX_ATTEMPTS = 5
 
 /**
  * Generate and store a verification code
+ * Can be used for both existing users (userId) and signup sessions (sessionId)
  */
 export async function generateVerificationCode(
-  userId: string,
+  userIdOrSessionId: string,
   type: 'EMAIL' | 'PHONE',
-  contactInfo: string // email or phone number
+  contactInfo: string, // email or phone number
+  isSession: boolean = false // true if userIdOrSessionId is a sessionId
 ): Promise<string> {
   // Generate 6-digit code
   const code = crypto.randomInt(100000, 999999).toString()
   const expiresAt = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000)
 
-  // Delete any existing codes for this user and type
+  // Delete any existing codes for this user/session and type
   await prisma.verificationCode.deleteMany({
-    where: {
-      userId,
-      type,
-    },
+    where: isSession
+      ? {
+          sessionId: userIdOrSessionId,
+          type,
+        }
+      : {
+          userId: userIdOrSessionId,
+          type,
+        },
   })
 
   // Store new code
   await prisma.verificationCode.create({
     data: {
       id: randomUUID(),
-      userId,
+      userId: isSession ? null : userIdOrSessionId,
+      sessionId: isSession ? userIdOrSessionId : null,
       type,
       code,
       contactInfo,
@@ -48,17 +56,24 @@ export async function generateVerificationCode(
 
 /**
  * Verify a code
+ * Can be used for both existing users (userId) and signup sessions (sessionId)
  */
 export async function verifyCode(
-  userId: string,
+  userIdOrSessionId: string,
   type: 'EMAIL' | 'PHONE',
-  code: string
+  code: string,
+  isSession: boolean = false // true if userIdOrSessionId is a sessionId
 ): Promise<{ valid: boolean; reason?: string }> {
   const verification = await prisma.verificationCode.findFirst({
-    where: {
-      userId,
-      type,
-    },
+    where: isSession
+      ? {
+          sessionId: userIdOrSessionId,
+          type,
+        }
+      : {
+          userId: userIdOrSessionId,
+          type,
+        },
     orderBy: {
       createdAt: 'desc',
     },

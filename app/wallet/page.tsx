@@ -159,8 +159,15 @@ export default function WalletPage() {
         credentials: 'include',
       })
       if (response.ok) {
-        const data = await response.json()
-        setStripeStatus(data)
+        const text = await response.text()
+        if (text && text.trim().length > 0) {
+          try {
+            const data = JSON.parse(text)
+            setStripeStatus(data)
+          } catch (parseError) {
+            console.error('Failed to parse Stripe status response:', parseError)
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading Stripe status:', error)

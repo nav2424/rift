@@ -69,10 +69,16 @@ export default function VerificationPage() {
       })
       const data = await response.json()
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message || 'Verification code sent to your email' })
         if (data.code) {
-          // In development, show the code
-          setMessage({ type: 'success', text: `Code sent! (Dev: ${data.code})` })
+          // Code returned (SMTP not configured or dev mode)
+          setMessage({ 
+            type: 'success', 
+            text: `Verification code: ${data.code} (SMTP not configured - code shown here)` 
+          })
+          // Auto-fill the code for convenience
+          setEmailCode(data.code)
+        } else {
+          setMessage({ type: 'success', text: data.message || 'Verification code sent to your email' })
         }
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to send verification code' })

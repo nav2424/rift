@@ -27,21 +27,14 @@ export async function POST(request: NextRequest) {
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-  const isProduction = process.env.NODE_ENV === 'production'
   
+  // Fix 1: Remove dangerous dev bypass - always require secret
   if (!webhookSecret) {
-    if (isProduction) {
-      // In production, webhook secret is REQUIRED for security
-      console.error('STRIPE_WEBHOOK_SECRET not set in production - this is a security risk!')
-      return NextResponse.json(
-        { error: 'Webhook configuration error' },
-        { status: 500 }
-      )
-    } else {
-      // In development, allow skipping verification (for local testing with Stripe CLI)
-      console.warn('STRIPE_WEBHOOK_SECRET not set, skipping webhook verification (development mode only)')
-      return NextResponse.json({ received: true })
-    }
+    console.error('STRIPE_WEBHOOK_SECRET not set')
+    return NextResponse.json(
+      { error: 'Webhook misconfigured' },
+      { status: 500 }
+    )
   }
 
   let event
@@ -53,6 +46,44 @@ export async function POST(request: NextRequest) {
       { error: `Webhook Error: ${err.message}` },
       { status: 400 }
     )
+  }
+
+  // Fix 2: Add livemode guard (prevents test events in prod, live events in dev)
+  const isProd = process.env.NODE_ENV === 'production'
+  if (isProd && event.livemode !== true) {
+    console.error(`Test event in production: ${event.id}`)
+    return NextResponse.json(
+      { error: 'Test event in production' },
+      { status: 400 }
+    )
+  }
+  if (!isProd && event.livemode !== false) {
+    console.error(`Live event in development: ${event.id}`)
+    return NextResponse.json(
+      { error: 'Live event in development' },
+      { status: 400 }
+    )
+  }
+
+  // Fix 3: Add idempotency / replay protection
+  // Process each Stripe event ID once, even if Stripe retries
+  try {
+    await prisma.stripeWebhookEvent.create({
+      data: {
+        id: event.id,
+        type: event.type,
+        livemode: event.livemode,
+        processedAt: new Date(),
+      },
+    })
+  } catch (e: any) {
+    // Unique constraint => already processed (Prisma error code: P2002)
+    if (e?.code === 'P2002') {
+      console.log(`Event ${event.id} already processed, deduplicating`)
+      return NextResponse.json({ received: true, deduped: true })
+    }
+    // Re-throw other errors (database issues, etc.)
+    throw e
   }
 
   try {

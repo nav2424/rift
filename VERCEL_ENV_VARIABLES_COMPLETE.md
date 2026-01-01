@@ -131,11 +131,12 @@
     - **Required for:** Securing auto-release and payout cron jobs
     - **Note:** Without this, cron endpoints are unprotected (security risk)
 
-### Vault Encryption (if using custom encryption)
-22. **`VAULT_ENCRYPTION_KEY`** (if applicable)
-    - Encryption key for vault files
+### Vault Encryption
+22. **`VAULT_ENCRYPTION_KEY`**
+    - Encryption key for vault sensitive data encryption
     - Generate: `openssl rand -hex 32`
-    - **Note:** Check if your vault system requires this
+    - **Required for:** Admin vault operations that encrypt/decrypt sensitive data
+    - **Note:** Only needed if using admin vault encryption features
 
 ---
 

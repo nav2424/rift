@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { generateNextRiftUserId } from '@/lib/rift-user-id'
-import { capturePolicyAcceptance } from '@/lib/policy-acceptance'
-import { extractRequestMetadata } from '@/lib/rift-events'
 import { withRateLimit } from '@/lib/api-middleware'
 import { generateVerificationCode } from '@/lib/verification-codes'
 import { sendEmail } from '@/lib/email'
 import { sendVerificationCodeSMS, formatPhoneNumber, validatePhoneNumber } from '@/lib/sms'
 import { validatePassword } from '@/lib/password-validation'
+import { createSignupSession, setSignupPassword } from '@/lib/signup-session'
 
 async function handlePOST(request: NextRequest) {
   try {
@@ -99,91 +96,38 @@ async function handlePOST(request: NextRequest) {
       )
     }
 
-    // Check if user already exists by email
-    const existingUserByEmail = await prisma.user.findFirst({
-      where: { 
-        email,
-      },
-    })
-
-    if (existingUserByEmail) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 400 }
-      )
-    }
-
-    // Check if phone number is already in use
-    const existingUserByPhone = await prisma.user.findFirst({
-      where: {
-        phone: formattedPhone,
-      },
-    })
-
-    if (existingUserByPhone) {
-      return NextResponse.json(
-        { error: 'This phone number is already associated with another account' },
-        { status: 400 }
-      )
-    }
-
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
-
-    // Generate Rift user ID
-    const riftUserId = await generateNextRiftUserId()
 
     // Combine firstName and lastName into name
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
-    // Create user with Rift user ID
-    // Note: Email uniqueness is enforced by Prisma @unique constraint
-    // If somehow a duplicate email gets through (race condition), Prisma will throw an error
-    // User is created with emailVerified and phoneVerified both false - they must verify before accessing platform
-    let user
+    // Create signup session (NO USER CREATED YET - user will be created only after verifications complete)
+    let sessionId: string
     try {
-      user = await prisma.user.create({
-        data: {
-          name: fullName,
-          email,
-          phone: formattedPhone,
-          passwordHash,
-          role: 'USER',
-          riftUserId,
-          emailVerified: false, // Must verify before accessing platform
-          phoneVerified: false, // Must verify before accessing platform
-        },
+      sessionId = await createSignupSession({
+        email,
+        phone: formattedPhone,
+        firstName,
+        lastName,
+        name: fullName,
+        birthday: new Date(birthday),
       })
-    } catch (createError: any) {
-      // Handle Prisma unique constraint violation
-      if (createError.code === 'P2002') {
-        const target = createError.meta?.target || []
-        if (Array.isArray(target)) {
-          if (target.includes('email')) {
-            return NextResponse.json(
-              { error: 'User with this email already exists' },
-              { status: 400 }
-            )
-          }
-          if (target.includes('phone')) {
-            return NextResponse.json(
-              { error: 'This phone number is already associated with another account' },
-              { status: 400 }
-            )
-          }
-        }
-        // Generic unique constraint error
+    } catch (error: any) {
+      if (error.message.includes('already registered')) {
         return NextResponse.json(
-          { error: 'A user with this information already exists' },
+          { error: error.message },
           { status: 400 }
         )
       }
-      // Re-throw if it's a different error
-      throw createError
+      throw error
     }
 
-    // Generate and send email verification code
-    const emailCode = await generateVerificationCode(user.id, 'EMAIL', email)
+    // Set password in signup session
+    await setSignupPassword(sessionId, passwordHash)
+
+    // Generate and send email verification code (linked to session, not user)
+    const emailCode = await generateVerificationCode(sessionId, 'EMAIL', email, true)
     const emailHtml = `
       <h2>Verify Your Email</h2>
       <p>Your verification code is: <strong>${emailCode}</strong></p>
@@ -192,18 +136,9 @@ async function handlePOST(request: NextRequest) {
     `
     await sendEmail(email, 'Verify Your Email - Rift', emailHtml)
 
-    // Generate and send phone verification code
-    const phoneCode = await generateVerificationCode(user.id, 'PHONE', formattedPhone)
+    // Generate and send phone verification code (linked to session, not user)
+    const phoneCode = await generateVerificationCode(sessionId, 'PHONE', formattedPhone, true)
     await sendVerificationCodeSMS(formattedPhone, phoneCode)
-
-    // Capture policy acceptance at signup
-    try {
-      const requestMeta = extractRequestMetadata(request)
-      await capturePolicyAcceptance(user.id, 'signup', requestMeta)
-    } catch (error) {
-      console.error('Error capturing policy acceptance:', error)
-      // Don't fail signup if policy acceptance fails
-    }
 
     // Return codes in development for testing
     const isDevelopment = process.env.NODE_ENV === 'development' || 
@@ -212,14 +147,15 @@ async function handlePOST(request: NextRequest) {
 
     return NextResponse.json(
       { 
-        message: 'User created successfully. Please verify your email and phone to access the platform.',
-        userId: user.id,
+        message: 'Signup session created. Please verify your email and phone, then finalize your account.',
+        sessionId, // Return sessionId instead of userId
         requiresVerification: true,
+        requiresFinalization: true, // User must call finalize-signup after verifications
         // Only return codes in development
         ...(isDevelopment && {
           emailCode,
           phoneCode,
-          note: 'Codes returned in development mode only'
+          note: 'Codes returned in development mode only. User account will be created after email+phone verification and finalize-signup call.'
         })
       },
       { status: 201 }

@@ -76,7 +76,18 @@ export default function Chatbot() {
         throw new Error('Failed to get response')
       }
 
-      const data = await response.json()
+      const text = await response.text()
+      if (!text || text.trim().length === 0) {
+        throw new Error('Empty response from server')
+      }
+
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch (parseError) {
+        console.error('Failed to parse chatbot response:', parseError)
+        throw new Error('Invalid response format')
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

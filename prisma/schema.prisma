@@ -103,7 +103,7 @@ model User {
   riftUserId               String?            @unique // Public-facing Rift user ID (e.g., RIFT111111)
   name                     String?
   email                    String             @unique
-  phone                    String?             @unique
+  phone                    String?            @unique
   passwordHash             String
   role                     String             @default("USER")
   createdAt                DateTime           @default(now())
@@ -463,18 +463,44 @@ model UserBlock {
   @@index([userId])
 }
 
+model SignupSession {
+  id                String             @id @default(cuid())
+  email             String
+  phone             String?
+  name              String?
+  firstName         String?
+  lastName          String?
+  birthday          DateTime?
+  passwordHash      String? // Temporary password hash (will be updated when password is set)
+  emailVerified     Boolean            @default(false)
+  phoneVerified     Boolean            @default(false)
+  passwordSet       Boolean            @default(false)
+  expiresAt         DateTime // Session expires after 24 hours
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  verificationCodes VerificationCode[]
+
+  @@unique([email])
+  @@index([email])
+  @@index([expiresAt])
+  @@map("signup_sessions")
+}
+
 model VerificationCode {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String // 'EMAIL' or 'PHONE'
-  code        String
-  contactInfo String // email address or phone number
-  attempts    Int      @default(0)
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  userId        String? // Nullable - used for existing users
+  sessionId     String? // Nullable - used for signup sessions
+  type          String // 'EMAIL' or 'PHONE'
+  code          String
+  contactInfo   String // email address or phone number
+  attempts      Int            @default(0)
+  expiresAt     DateTime
+  createdAt     DateTime       @default(now())
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  signupSession SignupSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
+  @@index([sessionId, type])
   @@index([expiresAt])
 }
 
@@ -534,6 +560,7 @@ enum AdminAuditAction {
   USER_UNBANNED
   USER_RESTRICTED
   USER_VERIFIED
+  USER_DELETED
   RIFT_VIEWED
   RIFT_FORCE_UNDER_REVIEW
   RIFT_APPROVED
@@ -586,6 +613,7 @@ enum AdminPermission {
   USER_FREEZE
   USER_BAN
   USER_VERIFY
+  USER_DELETE
   PAYOUT_READ
   PAYOUT_PAUSE
   PAYOUT_SCHEDULE
@@ -813,4 +841,17 @@ model AdminUserRole {
   @@index([userId])
   @@index([roleId])
   @@map("admin_user_roles")
+}
+
+model StripeWebhookEvent {
+  id          String    @id // Stripe event id: evt_...
+  type        String
+  livemode    Boolean
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([type])
+  @@index([livemode])
+  @@index([processedAt])
+  @@map("stripe_webhook_events")
 }

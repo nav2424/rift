@@ -67,9 +67,14 @@ export async function POST(request: NextRequest) {
     })
 
     // Create reset URL
-    const baseUrl = process.env.NEXTAUTH_URL || 
-                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-                   'http://localhost:3000'
+    let baseUrl = process.env.NEXTAUTH_URL
+    if (!baseUrl) {
+      if (process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`
+      } else {
+        baseUrl = 'http://localhost:3000'
+      }
+    }
     const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`
 
     // Send password reset email
