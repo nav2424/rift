@@ -25,12 +25,10 @@ const worker = createWorker<VerificationJobData>(
     await job.updateProgress(10)
     
     // Process the verification
-    const result = await processVerificationJob(job.data)
+    await processVerificationJob(job.data)
     
     // Update progress to complete
     await job.updateProgress(100)
-    
-    return result
   },
   {
     ...defaultWorkerOptions,
