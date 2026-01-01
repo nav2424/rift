@@ -122,7 +122,9 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-20 w-[90vw] sm:w-96 h-[600px] max-h-[80vh] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-20 w-[90vw] sm:w-96 h-[600px] max-h-[80vh] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+          {/* Chat bubble tail pointing right (away from button) */}
+          <div className="absolute -bottom-3 left-6 w-6 h-6 bg-black/95 backdrop-blur-xl border-r border-b border-white/20 transform rotate-45"></div>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center gap-3">
