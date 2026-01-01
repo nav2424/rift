@@ -96,9 +96,9 @@ export default function Pricing() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-light text-white mb-4">Complete Protection</h3>
+            <h3 className="text-2xl font-light text-white mb-4">Enhanced Protection</h3>
             <p className="text-white/70 font-light leading-relaxed">
-              Complete buyer protection, dispute resolution, fraud prevention, and transaction tracking. All included.
+              Enhanced buyer protection, dispute resolution, fraud prevention, and transaction tracking. All included.
             </p>
           </GlassCard>
 
@@ -161,7 +161,7 @@ export default function Pricing() {
                       <svg className="w-5 h-5 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span>Complete buyer protection</span>
+                      <span>Enhanced buyer protection</span>
                     </div>
                   </div>
                 </div>
@@ -397,7 +397,7 @@ export default function Pricing() {
             <div className="text-center mb-10">
               <h3 className="text-3xl font-light text-white mb-4">Why Rift Makes Sense</h3>
               <p className="text-white/70 font-light text-lg">
-                A small fee for complete protection and peace of mind
+                A small fee for enhanced protection and peace of mind
               </p>
             </div>
 
@@ -426,10 +426,10 @@ export default function Pricing() {
                 <h4 className="text-xl font-light text-white mb-6">With Rift</h4>
                 <div className="space-y-3">
                   {[
-                    'Complete buyer protection included',
+                    'Enhanced buyer protection',
                     'Fraud prevention and identity verification',
                     'Expert dispute resolution service',
-                    'No chargebacks or payment reversals',
+                    'Reduced risk of chargebacks',
                     'Full transaction tracking and history'
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-start gap-3">
