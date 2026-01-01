@@ -841,7 +841,7 @@ export default function Home() {
             },
             {
               type: 'Tickets',
-              features: ['Instant wallet credits', '24-hour buyer protection', 'Transfer verification', 'Auto-release system', 'QR code validation'],
+              features: ['Instant wallet credits', '24-hour buyer protection', 'Transfer verification', 'Auto-release system'],
               icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -928,7 +928,7 @@ export default function Home() {
             },
             {
               title: 'Buyer Protection',
-              description: 'Funds are held securely by Rift until both parties confirm the transaction is complete. Minimum $10 transaction requirement.',
+              description: 'Funds are held securely by Rift until both parties confirm the transaction is complete.',
               icon: (
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -1268,7 +1268,7 @@ export default function Home() {
               </ul>
               <Link href="/auth/signup">
                 <PremiumButton variant="outline" className="w-full sm:w-auto px-10 py-4 bg-white/5 border-white/20 text-white hover:bg-white/10">
-                  Get Started
+                  Coming Soon
                 </PremiumButton>
               </Link>
             </div>
