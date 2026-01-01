@@ -254,7 +254,7 @@ export default function Home() {
               Never get scammed again.
             </p>
             <p className="text-sm sm:text-base md:text-lg text-white/65 max-w-xl mx-auto leading-relaxed font-light px-4">
-              Rift protects your money until the job is done — and verifies every buyer & seller.
+              Rift protects your money until the job is done — with AI-powered verification, secure vault storage, and instant payouts.
             </p>
           </div>
           
@@ -307,7 +307,15 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <span>Dispute Resolution</span>
+              <span>AI-Powered Dispute Resolution</span>
+            </div>
+            <div className="flex items-center gap-3 text-white/60 hover:text-white/80 text-sm sm:text-base font-light transition-colors duration-300 group/feature">
+              <div className="w-5 h-5 rounded-lg bg-white/5 border border-white/10 group-hover/feature:bg-white/10 group-hover/feature:border-white/20 flex items-center justify-center transition-all duration-300">
+                <svg className="w-3 h-3 text-white/60 group-hover/feature:text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span>Instant Wallet Payouts</span>
             </div>
           </div>
         </div>
@@ -686,6 +694,128 @@ export default function Home() {
         <ScreenshotGallery />
       </section>
 
+      {/* AI Assistant Section */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
+            RIFT AI Assistant
+          </h2>
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
+            Get instant answers about transactions, disputes, and platform rules
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <GlassCard variant="glass" hover className="p-8 relative transition-all duration-500">
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/10 border border-purple-500/20 flex items-center justify-center text-white/90 mb-6">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-light text-white mb-4">24/7 Support</h3>
+              <p className="text-white/70 font-light text-sm leading-relaxed mb-4">
+                Ask questions about how Rift works, understand transaction rules, and get guidance on disputes. Available anytime, anywhere.
+              </p>
+              <ul className="space-y-2">
+                {['Transaction guidance', 'Dispute explanations', 'Platform rules', 'Risk assessment help'].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-white/80 font-light text-sm">
+                    <svg className="w-4 h-4 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </GlassCard>
+
+          <GlassCard variant="glass" hover className="p-8 relative transition-all duration-500">
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/20 flex items-center justify-center text-white/90 mb-6">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-light text-white mb-4">Smart & Secure</h3>
+              <p className="text-white/70 font-light text-sm leading-relaxed mb-4">
+                RIFT AI is designed to protect the platform and prevent disputes. It provides accurate, risk-aware guidance without making promises.
+              </p>
+              <ul className="space-y-2">
+                {['Zero-trust approach', 'Chargeback prevention', 'Platform integrity focus', 'No outcome predictions'].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-white/80 font-light text-sm">
+                    <svg className="w-4 h-4 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
+      {/* Vault & Security Section */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
+            Secure Vault System
+          </h2>
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
+            Tamper-evident proof storage with complete audit trails
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {[
+            {
+              title: 'Encrypted Storage',
+              description: 'All proof files are encrypted and stored securely. Buyers can only access after proof submission.',
+              icon: (
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              )
+            },
+            {
+              title: 'Tamper-Evident Logging',
+              description: 'Every access, download, and reveal is logged with hash chaining. Complete audit trail for disputes.',
+              icon: (
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )
+            },
+            {
+              title: 'AI Verification',
+              description: 'Automated proof quality checks, duplicate detection, and fraud pattern analysis.',
+              icon: (
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              )
+            }
+          ].map((item, index) => (
+            <GlassCard 
+              key={index} 
+              variant="glass" 
+              hover
+              className={`p-8 relative transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center text-white/90 mb-6">
+                  {item.icon}
+                </div>
+                <h3 className="text-xl font-light text-white mb-4">{item.title}</h3>
+                <p className="text-white/70 font-light text-sm leading-relaxed">{item.description}</p>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      </section>
+
       {/* Protection Features Section */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
         <div className="text-center mb-12 sm:mb-16">
@@ -697,11 +827,11 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {[
             {
               type: 'Digital Products',
-              features: ['Instant payouts', '24-hour buyer protection', 'Auto-release after seller confirms', 'Download verification'],
+              features: ['Instant wallet credits', '24-hour buyer protection', 'Auto-release after access', 'Secure vault storage', 'Minimum $10 transaction'],
               icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -711,7 +841,7 @@ export default function Home() {
             },
             {
               type: 'Tickets',
-              features: ['Instant payouts', '24-hour buyer protection', 'Transfer verification', 'Auto-release system'],
+              features: ['Instant wallet credits', '24-hour buyer protection', 'Transfer verification', 'Auto-release system', 'QR code validation'],
               icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -721,7 +851,7 @@ export default function Home() {
             },
             {
               type: 'Services',
-              features: ['Instant payouts', '24-hour buyer protection', 'Service completion tracking', 'Quick resolution'],
+              features: ['Instant wallet credits', '24-hour buyer protection', 'Service completion tracking', 'Milestone-based releases', 'Quick resolution'],
               icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -729,6 +859,16 @@ export default function Home() {
                 </svg>
               ),
               highlight: 'Fast Payouts'
+            },
+            {
+              type: 'License Keys',
+              features: ['Masked key storage', 'One-time reveal logging', 'Instant wallet credits', 'Platform verification', 'Secure delivery'],
+              icon: (
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              ),
+              highlight: 'Secure Keys'
             }
           ].map((item, index) => (
             <GlassCard 
@@ -775,7 +915,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[
             {
               title: 'Payment Processing Security',
@@ -788,10 +928,19 @@ export default function Home() {
             },
             {
               title: 'Buyer Protection',
-              description: 'Funds are held securely by Rift until both parties confirm the transaction is complete.',
+              description: 'Funds are held securely by Rift until both parties confirm the transaction is complete. Minimum $10 transaction requirement.',
               icon: (
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              )
+            },
+            {
+              title: 'AI Fraud Detection',
+              description: 'Advanced AI-powered fraud detection with pattern analysis, device fingerprinting, and behavioral biometrics.',
+              icon: (
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               )
             },
@@ -801,6 +950,15 @@ export default function Home() {
               icon: (
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              )
+            },
+            {
+              title: 'Message Moderation',
+              description: 'AI-powered message moderation prevents off-platform requests, spam, and harassment automatically.',
+              icon: (
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               )
             }
@@ -1016,6 +1174,68 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Wallet & Payouts Section */}
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white mb-4 sm:mb-6 tracking-tight">
+            Instant Wallet Payouts
+          </h2>
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto font-light px-4">
+            Get paid instantly to your Rift wallet. Withdraw to your bank based on your risk tier.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <GlassCard variant="glass" hover className="p-8 relative transition-all duration-500">
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/20 flex items-center justify-center text-white/90 mb-6">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-light text-white mb-4">Instant Wallet Credits</h3>
+              <p className="text-white/70 font-light text-sm leading-relaxed mb-4">
+                When funds are released, they're instantly available in your Rift wallet. No waiting, no delays.
+              </p>
+              <ul className="space-y-2">
+                {['Instant wallet credits', 'Real-time balance updates', 'Complete transaction history', 'Pending balance tracking'].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-white/80 font-light text-sm">
+                    <svg className="w-4 h-4 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </GlassCard>
+
+          <GlassCard variant="glass" hover className="p-8 relative transition-all duration-500">
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/20 flex items-center justify-center text-white/90 mb-6">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-light text-white mb-4">Risk-Based Payouts</h3>
+              <p className="text-white/70 font-light text-sm leading-relaxed mb-4">
+                Bank payouts are scheduled based on your risk tier. Trusted sellers get faster payouts (1-5 business days).
+              </p>
+              <ul className="space-y-2">
+                {['Tier-based payout delays', 'Stripe Connect integration', 'Secure bank transfers', 'Automatic payout processing'].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-white/80 font-light text-sm">
+                    <svg className="w-4 h-4 text-green-400/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
       {/* Mobile App Section */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
         <GlassCard variant="glass" className="p-12 md:p-20 relative">
@@ -1033,7 +1253,8 @@ export default function Home() {
                   'Push notifications for status changes',
                   'Secure mobile payments',
                   'Easy dispute filing',
-                  'Quick access to your balance'
+                  'Quick access to your wallet balance',
+                  'Mobile-optimized creation flow'
                 ].map((feature, index) => (
                   <li key={index} className="flex items-center gap-4 text-white/90 font-light">
                     <div className="w-6 h-6 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
@@ -1047,7 +1268,7 @@ export default function Home() {
               </ul>
               <Link href="/auth/signup">
                 <PremiumButton variant="outline" className="w-full sm:w-auto px-10 py-4 bg-white/5 border-white/20 text-white hover:bg-white/10">
-                  Coming Soon
+                  Get Started
                 </PremiumButton>
               </Link>
             </div>
