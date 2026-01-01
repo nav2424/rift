@@ -19,16 +19,10 @@ console.log('Starting Verification Worker...')
 const worker = createWorker<VerificationJobData>(
   QUEUE_NAMES.VERIFICATION,
   async (job) => {
-    console.log(`Processing verification job ${job.id} for rift ${job.data.riftId}`)
-    
-    // Update job progress
-    await job.updateProgress(10)
+    console.log(`Processing verification job for rift ${job.data.riftId}`)
     
     // Process the verification
     await processVerificationJob(job.data)
-    
-    // Update progress to complete
-    await job.updateProgress(100)
   },
   {
     ...defaultWorkerOptions,
@@ -37,12 +31,12 @@ const worker = createWorker<VerificationJobData>(
 )
 
 // Worker event handlers
-worker.on('completed', (job) => {
-  console.log(`Verification job ${job.id} completed for rift ${job.data.riftId}`)
+worker.on('completed', (job: any) => {
+  console.log(`Verification job completed for rift ${job?.data?.riftId}`)
 })
 
-worker.on('failed', (job, err) => {
-  console.error(`Verification job ${job?.id} failed for rift ${job?.data.riftId}:`, err)
+worker.on('failed', (job: any, err) => {
+  console.error(`Verification job failed for rift ${job?.data?.riftId}:`, err)
 })
 
 worker.on('error', (err) => {
