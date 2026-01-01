@@ -121,7 +121,7 @@ export async function generateEvidencePacket(
 
   const accessLogs: AccessLog[] = vaultEvents.map(e => ({
     timestamp: e.timestampUtc,
-    actor: e.actor?.name || e.actor?.email || 'Unknown',
+    actor: e.actorId || 'Unknown', // actorId is a string, not a relation
     action: e.eventType,
     assetId: e.assetId || undefined,
   }))
