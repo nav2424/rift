@@ -18,7 +18,7 @@ export default function Chatbot() {
     {
       id: '1',
       role: 'assistant',
-      content: "Hi! I'm Rift's AI assistant. How can I help you today?",
+      content: "I'm RIFT AI. I can help you understand how Rift works, guide you through transactions, and explain our processes. How can I assist you?",
       timestamp: new Date(),
     },
   ])
