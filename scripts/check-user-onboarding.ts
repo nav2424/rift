@@ -22,7 +22,7 @@ async function checkUserOnboarding() {
     console.log(`\nFound ${users.length} recent users:`)
     users.forEach(user => {
       console.log(`  - ${user.email} (${user.name || 'No name'})`)
-      console.log(`    onboardingCompleted: ${user.onboardingCompleted}`)
+      // onboardingCompleted field removed
       console.log(`    createdAt: ${user.createdAt}`)
     })
 
