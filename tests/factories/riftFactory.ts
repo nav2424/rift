@@ -83,7 +83,7 @@ export function createTestRiftPastDeadline(itemType: ItemType) {
   
   const rift = createTestRift({
     itemType,
-    status: 'PAID',
+    status: 'FUNDED',
     paidAt,
     proofSubmittedAt: null,
   })
@@ -100,7 +100,7 @@ export function createTestRiftBeforeDeadline(itemType: ItemType) {
   
   return createTestRift({
     itemType,
-    status: 'PAID',
+    status: 'FUNDED',
     paidAt,
     proofSubmittedAt: null,
   })
