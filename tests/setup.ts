@@ -9,11 +9,12 @@ import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://test:test@localhost:5432/rift_test'
 process.env.NEXTAUTH_SECRET = 'test-secret-key-for-testing-only'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
-process.env.JWT_SECRET = 'test-jwt-secret-for-testing-only'
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
-(process.env as any).NODE_ENV = 'test'
+const env = process.env as any
+env.JWT_SECRET = 'test-jwt-secret-for-testing-only'
+env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
+env.NODE_ENV = 'test'
 
 // Mock PrismaClient constructor to prevent instantiation errors
 vi.mock('@prisma/client', () => ({
