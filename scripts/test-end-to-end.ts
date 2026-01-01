@@ -431,7 +431,7 @@ async function testVaultAssetUpload() {
       
       logTest(
         'Vault Asset Upload: Text instructions created',
-        asset !== null && asset.assetType === 'TEXT_INSTRUCTIONS' && asset.textContent?.includes('example.com'),
+        asset !== null && asset.assetType === 'TEXT_INSTRUCTIONS' && (asset.textContent?.includes('example.com') ?? false),
         asset === null ? 'Asset not created' : undefined
       )
     } catch (error: any) {
