@@ -195,9 +195,27 @@ export async function revealLicenseKeyOneTime(
     })
   }
   
+  // Check for admin override if not first reveal
+  let hasAdminOverride = false
+  if (!isFirstReveal) {
+    const adminOverrideCheck = await prisma.vaultEvent.findFirst({
+      where: {
+        riftId,
+        assetId,
+        actorRole: 'ADMIN',
+        eventType: 'ADMIN_APPROVED_PROOF',
+        metadata: {
+          path: ['allowRevealAgain'],
+          equals: true,
+        },
+      },
+    })
+    hasAdminOverride = !!adminOverrideCheck
+  }
+
   return {
     licenseKey,
     isFirstReveal,
-    canRevealAgain: !isFirstReveal && !!adminOverride,
+    canRevealAgain: !isFirstReveal && hasAdminOverride,
   }
 }
