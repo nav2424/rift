@@ -91,7 +91,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   // Character limits
   const TITLE_MAX_LENGTH = 100
   const DESCRIPTION_MAX_LENGTH = 1000
-  const AMOUNT_MIN = 5
+  const AMOUNT_MIN = 10
 
   // Currency symbols mapping
   const currencySymbols: Record<string, string> = {

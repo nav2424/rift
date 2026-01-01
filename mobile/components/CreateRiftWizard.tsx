@@ -143,12 +143,15 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
     setShowCurrencyPicker(false);
   };
 
+  const MIN_TRANSACTION_AMOUNT = 10;
+
   const validateStep = (step: Step): boolean => {
     switch (step) {
       case 'role':
         return creatorRole !== null;
       case 'basic':
-        return !!(formData.itemTitle && formData.itemDescription && formData.amount);
+        const amount = parseFloat(formData.amount);
+        return !!(formData.itemTitle && formData.itemDescription && formData.amount && !isNaN(amount) && amount >= MIN_TRANSACTION_AMOUNT);
       case 'details':
         if (itemType === 'PHYSICAL') return !!formData.shippingAddress;
         if (itemType === 'TICKETS') return !!(formData.eventDate && formData.venue && formData.transferMethod);
@@ -194,6 +197,17 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
     if (!creatorRole) {
       Alert.alert('Role Required', 'Please select whether you are the buyer or seller');
       setCurrentStep('role');
+      return;
+    }
+
+    // Validate minimum transaction amount
+    const MIN_TRANSACTION_AMOUNT = 10;
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount < MIN_TRANSACTION_AMOUNT) {
+      Alert.alert(
+        'Invalid Amount',
+        `Minimum transaction amount is $${MIN_TRANSACTION_AMOUNT.toFixed(2)}`
+      );
       return;
     }
 

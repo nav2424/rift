@@ -8,6 +8,7 @@ import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { RiftEventActorType } from '@prisma/client'
 import { isCategoryBlocked } from '@/lib/risk/enforcement'
 import { randomUUID } from 'crypto'
+import { MIN_TRANSACTION_AMOUNT } from '@/lib/constants'
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,6 +74,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate minimum transaction amount
+    const subtotal = parseFloat(amount)
+    if (isNaN(subtotal) || subtotal < MIN_TRANSACTION_AMOUNT) {
+      return NextResponse.json(
+        { error: `Minimum transaction amount is $${MIN_TRANSACTION_AMOUNT.toFixed(2)}` },
+        { status: 400 }
+      )
+    }
+
     // Type-specific validation
     if (itemType === 'TICKETS') {
       if (!eventDate || !venue || !seatDetails || !transferMethod) {
@@ -118,6 +128,14 @@ export async function POST(request: NextRequest) {
         
         const subtotal = parseFloat(amount)
         const milestoneTotal = milestones.reduce((sum: number, m: any) => sum + (parseFloat(m.amount) || 0), 0)
+        
+        // Validate minimum transaction amount for total
+        if (subtotal < MIN_TRANSACTION_AMOUNT) {
+          return NextResponse.json(
+            { error: `Minimum transaction amount is $${MIN_TRANSACTION_AMOUNT.toFixed(2)}` },
+            { status: 400 }
+          )
+        }
         
         // Allow small rounding differences (0.01)
         if (Math.abs(milestoneTotal - subtotal) > 0.01) {
@@ -230,8 +248,7 @@ export async function POST(request: NextRequest) {
     // Generate next sequential rift number
     const riftNumber = await generateNextRiftNumber()
 
-    // Calculate fees
-    const subtotal = parseFloat(amount)
+    // Calculate fees (subtotal already validated above)
     const buyerFee = calculateBuyerFee(subtotal)
     const sellerFee = calculateSellerFee(subtotal)
     const sellerNet = calculateSellerNet(subtotal)
