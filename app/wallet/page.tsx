@@ -85,7 +85,22 @@ export default function WalletPage() {
         credentials: 'include',
       })
       if (response.ok) {
-        const data = await response.json()
+        // Check if response has content before parsing
+        const contentType = response.headers.get('content-type')
+        const text = await response.text()
+        
+        if (!text || text.trim().length === 0) {
+          throw new Error('Empty response from server')
+        }
+        
+        let data
+        try {
+          data = JSON.parse(text)
+        } catch (parseError) {
+          console.error('Failed to parse wallet response:', parseError)
+          throw new Error('Invalid response format')
+        }
+        
         setWallet(data)
         
         // Check if user can withdraw
@@ -94,21 +109,45 @@ export default function WalletPage() {
           credentials: 'include',
         })
         if (checkResponse.ok) {
-          const checkData = await checkResponse.json()
-          setCanWithdraw(checkData.canWithdraw || false)
-          if (!checkData.canWithdraw) {
-            setWithdrawReason(checkData.reason || 'Cannot withdraw')
+          const checkText = await checkResponse.text()
+          if (checkText && checkText.trim().length > 0) {
+            try {
+              const checkData = JSON.parse(checkText)
+              setCanWithdraw(checkData.canWithdraw || false)
+              if (!checkData.canWithdraw) {
+                setWithdrawReason(checkData.reason || 'Cannot withdraw')
+              } else {
+                setWithdrawReason('') // Clear reason if withdrawal is allowed
+              }
+            } catch (parseError) {
+              console.error('Failed to parse withdraw check response:', parseError)
+              // Fallback: assume they can if balance > 0
+              setCanWithdraw((data.wallet?.availableBalance || 0) > 0)
+            }
           } else {
-            setWithdrawReason('') // Clear reason if withdrawal is allowed
+            // Empty response, use fallback
+            setCanWithdraw((data.wallet?.availableBalance || 0) > 0)
           }
         } else {
           // Fallback: assume they can if balance > 0
           setCanWithdraw((data.wallet?.availableBalance || 0) > 0)
         }
+      } else {
+        // Handle error response
+        const text = await response.text().catch(() => '')
+        let errorData: any = {}
+        if (text && text.trim().length > 0) {
+          try {
+            errorData = JSON.parse(text)
+          } catch (parseError) {
+            // Not JSON, use status text
+          }
+        }
+        throw new Error(errorData.error || `Failed to load wallet: ${response.status}`)
       }
     } catch (error) {
       console.error('Error loading wallet:', error)
-      showToast('Failed to load wallet. Please try again.', 'error')
+      showToast(error instanceof Error ? error.message : 'Failed to load wallet. Please try again.', 'error')
     } finally {
       setLoading(false)
     }
