@@ -10,7 +10,7 @@ async function checkUserOnboarding() {
         id: true,
         email: true,
         name: true,
-        onboardingCompleted: true,
+        // onboardingCompleted field removed
         createdAt: true,
       },
       orderBy: {
