@@ -107,7 +107,7 @@ export async function generateEvidencePacket(
     fileName: a.fileName || 'Unknown',
     uploadTime: a.createdAt,
     assetType: a.assetType || 'UNKNOWN',
-    size: a.fileSize || 0,
+    size: (a as any).sizeBytes || 0,
     hash: a.sha256,
     verified: true, // Would verify against blockchain/immutable storage
   }))
@@ -115,9 +115,7 @@ export async function generateEvidencePacket(
   // Gather access logs
   const vaultEvents = await prisma.vaultEvent.findMany({
     where: { riftId },
-    include: {
-      actor: { select: { name: true, email: true } },
-    },
+    // Note: VaultEvent doesn't have an 'actor' relation - actorId is just a string
     orderBy: { timestampUtc: 'asc' },
   })
 
