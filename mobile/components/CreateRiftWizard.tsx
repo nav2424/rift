@@ -442,7 +442,12 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
 
           <View style={styles.row}>
             <View style={[styles.inputGroup, { flex: 1, marginRight: 12 }]}>
-              <Text style={styles.inputLabel}>Amount *</Text>
+              <Text style={styles.inputLabel}>
+                Amount * 
+                <Text style={{ fontSize: 12, color: Colors.textTertiary }}>
+                  {' '}(Min: $10.00)
+                </Text>
+              </Text>
               <View style={styles.inputWrapper}>
                 <Text style={styles.currencySymbol}>$</Text>
                 <TextInput
