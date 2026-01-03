@@ -48,7 +48,7 @@ export default async function AdminPage() {
   })
 
   // Get all rifts (no limit - show all data)
-  const allRifts = await prisma.riftTransaction.findMany({
+  const allRifts = await prisma.escrowTransaction.findMany({
     include: {
       buyer: {
         select: {

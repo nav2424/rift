@@ -67,7 +67,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   }
 
   // Get all transactions (both as buyer and seller)
-  const buyerTransactions = await prisma.riftTransaction.findMany({
+  const buyerTransactions = await prisma.escrowTransaction.findMany({
     where: { buyerId: userId },
     include: {
       buyer: {
@@ -90,7 +90,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     },
   })
 
-  const sellerTransactions = await prisma.riftTransaction.findMany({
+  const sellerTransactions = await prisma.escrowTransaction.findMany({
     where: { sellerId: userId },
     include: {
       buyer: {
