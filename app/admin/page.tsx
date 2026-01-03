@@ -34,9 +34,9 @@ export default async function AdminPage() {
       stripeIdentityVerified: true,
       _count: {
         select: {
-          sellerTransactions: true,
-          buyerTransactions: true,
-          activities: true,
+          EscrowTransaction_EscrowTransaction_sellerIdToUser: true,
+          EscrowTransaction_EscrowTransaction_buyerIdToUser: true,
+          Activity: true,
           // Note: disputes are stored in Supabase, not Prisma
           // Dispute counts would need to be fetched separately from Supabase
         },
