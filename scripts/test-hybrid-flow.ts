@@ -34,11 +34,14 @@ async function main() {
 
     if (!buyer) {
       const bcrypt = require('bcryptjs')
+      const { randomUUID } = require('crypto')
       buyer = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'buyer@test.com',
           passwordHash: await bcrypt.hash('password123', 10),
           name: 'Test Buyer',
+          updatedAt: new Date(),
         },
       })
       console.log('✅ Created buyer:', buyer.email)
@@ -48,11 +51,14 @@ async function main() {
 
     if (!seller) {
       const bcrypt = require('bcryptjs')
+      const { randomUUID } = require('crypto')
       seller = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'seller@test.com',
           passwordHash: await bcrypt.hash('password123', 10),
           name: 'Test Seller',
+          updatedAt: new Date(),
         },
       })
       console.log('✅ Created seller:', seller.email)

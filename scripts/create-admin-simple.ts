@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
+import { randomUUID } from 'crypto'
 
 // Usage: tsx scripts/create-admin-simple.ts <email> <password> [name]
 async function main() {
@@ -48,10 +49,12 @@ async function main() {
     // Create admin user
     const user = await prisma.user.create({
       data: {
+        id: randomUUID(),
         email,
         name,
         passwordHash,
         role: 'ADMIN',
+        updatedAt: new Date(),
       },
     })
 

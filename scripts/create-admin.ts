@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import readline from 'readline'
+import { randomUUID } from 'crypto'
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -57,10 +58,12 @@ async function main() {
     // Create admin user
     const user = await prisma.user.create({
       data: {
+        id: randomUUID(),
         email,
         name: name || null,
         passwordHash,
         role: 'ADMIN',
+        updatedAt: new Date(),
       },
     })
 

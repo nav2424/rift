@@ -13,6 +13,7 @@
 import { prisma } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { randomUUID } from 'crypto'
 
 const API_BASE_URL = process.env.API_URL || 'http://localhost:3000'
 // JWT_SECRET should match your .env file - this will be loaded from environment
@@ -139,10 +140,12 @@ async function testRiftAPI() {
       const passwordHash = await bcrypt.hash('test-password', 10)
       buyer = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'test-buyer-api@rift.test',
           name: 'Test Buyer API',
           passwordHash,
           emailVerified: true,
+          updatedAt: new Date(),
         },
       })
     }
@@ -151,10 +154,12 @@ async function testRiftAPI() {
       const passwordHash = await bcrypt.hash('test-password', 10)
       seller = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'test-seller-api@rift.test',
           name: 'Test Seller API',
           passwordHash,
           emailVerified: true,
+          updatedAt: new Date(),
         },
       })
     }

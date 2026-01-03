@@ -13,6 +13,7 @@
 import { prisma } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateNextRiftNumber } from '../lib/rift-number'
+import { randomUUID } from 'crypto'
 
 interface TestResult {
   step: string
@@ -40,10 +41,12 @@ async function testRiftFlow() {
       const passwordHash = await bcrypt.hash('test-password', 10)
       buyer = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'test-buyer@rift.test',
           name: 'Test Buyer',
           passwordHash,
           emailVerified: true,
+          updatedAt: new Date(),
         },
       })
     }
@@ -52,10 +55,12 @@ async function testRiftFlow() {
       const passwordHash = await bcrypt.hash('test-password', 10)
       seller = await prisma.user.create({
         data: {
+          id: randomUUID(),
           email: 'test-seller@rift.test',
           name: 'Test Seller',
           passwordHash,
           emailVerified: true,
+          updatedAt: new Date(),
         },
       })
     }

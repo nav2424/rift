@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import bcrypt from 'bcryptjs'
+import { randomUUID } from 'crypto'
 
 async function main() {
   const demoEmail = 'demo@trusthold.com'
@@ -24,10 +25,12 @@ async function main() {
   // Create demo user
   const user = await prisma.user.create({
     data: {
+      id: randomUUID(),
       name: demoName,
       email: demoEmail,
       passwordHash,
       role: 'USER',
+      updatedAt: new Date(),
     },
   })
 

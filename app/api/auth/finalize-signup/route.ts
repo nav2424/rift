@@ -10,6 +10,7 @@ import {
 import { generateNextRiftUserId } from '@/lib/rift-user-id'
 import { capturePolicyAcceptance } from '@/lib/policy-acceptance'
 import { extractRequestMetadata } from '@/lib/rift-events'
+import { randomUUID } from 'crypto'
 
 /**
  * Finalize signup by setting password and creating user account
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUserByEmail) {
       // Clean up signup session
-      await prisma.signupSession.delete({ where: { id: sessionId } })
+      await prisma.signup_sessions.delete({ where: { id: sessionId } })
       return NextResponse.json(
         { error: 'Email is already registered' },
         { status: 400 }
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
 
       if (existingUserByPhone) {
         // Clean up signup session
-        await prisma.signupSession.delete({ where: { id: sessionId } })
+        await prisma.signup_sessions.delete({ where: { id: sessionId } })
         return NextResponse.json(
           { error: 'Phone number is already registered' },
           { status: 400 }
@@ -117,18 +118,21 @@ export async function POST(request: NextRequest) {
     const riftUserId = await generateNextRiftUserId()
 
     // NOW create the user account (only after all verifications are complete)
+    // Use passwordHash variable directly (we just created it above)
     let user
     try {
       user = await prisma.user.create({
         data: {
+          id: randomUUID(),
           name: session.name || `${session.firstName || ''} ${session.lastName || ''}`.trim(),
           email: session.email,
           phone: session.phone || null,
-          passwordHash: session.passwordHash!,
+          passwordHash: passwordHash,
           role: 'USER',
           riftUserId,
           emailVerified: true, // Already verified in session
           phoneVerified: true, // Already verified in session
+          updatedAt: new Date(),
         },
       })
     } catch (createError: any) {
@@ -137,21 +141,21 @@ export async function POST(request: NextRequest) {
         const target = createError.meta?.target || []
         if (Array.isArray(target)) {
           if (target.includes('email')) {
-            await prisma.signupSession.delete({ where: { id: sessionId } })
+            await prisma.signup_sessions.delete({ where: { id: sessionId } })
             return NextResponse.json(
               { error: 'Email is already registered' },
               { status: 400 }
             )
           }
           if (target.includes('phone')) {
-            await prisma.signupSession.delete({ where: { id: sessionId } })
+            await prisma.signup_sessions.delete({ where: { id: sessionId } })
             return NextResponse.json(
               { error: 'Phone number is already registered' },
               { status: 400 }
             )
           }
         }
-        await prisma.signupSession.delete({ where: { id: sessionId } })
+        await prisma.signup_sessions.delete({ where: { id: sessionId } })
         return NextResponse.json(
           { error: 'A user with this information already exists' },
           { status: 400 }
@@ -170,7 +174,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean up signup session
-    await prisma.signupSession.delete({ where: { id: sessionId } })
+    await prisma.signup_sessions.delete({ where: { id: sessionId } })
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateNextRiftUserId } from '@/lib/rift-user-id'
+import { randomUUID } from 'crypto'
 
 export async function POST() {
   try {
@@ -31,11 +32,13 @@ export async function POST() {
     // Create demo user
     const user = await prisma.user.create({
       data: {
+        id: randomUUID(),
         name: demoName,
         email: demoEmail,
         passwordHash,
         role: 'USER',
         riftUserId,
+        updatedAt: new Date(),
       },
     })
 
