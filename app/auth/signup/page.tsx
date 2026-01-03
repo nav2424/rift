@@ -16,7 +16,13 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState<SignupStep>('personal-info')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [userId, setUserId] = useState<string | null>(null)
+  // Load sessionId from localStorage on mount
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('signupSessionId')
+    }
+    return null
+  })
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [formData, setFormData] = useState({
@@ -135,7 +141,11 @@ export default function SignUp() {
         return
       }
 
-      setUserId(data.userId)
+      setSessionId(data.sessionId)
+      // Persist sessionId to localStorage
+      if (typeof window !== 'undefined' && data.sessionId) {
+        localStorage.setItem('signupSessionId', data.sessionId)
+      }
       setEmail(formData.email)
       setEmailCodeSent(true)
       
@@ -164,8 +174,8 @@ export default function SignUp() {
       return
     }
 
-    if (!userId) {
-      setError('User ID is missing. Please start over.')
+    if (!sessionId) {
+      setError('Signup session is missing. Please start over.')
       return
     }
 
@@ -175,7 +185,7 @@ export default function SignUp() {
       const response = await fetch('/api/auth/verify-email-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, code: emailCode }),
+        body: JSON.stringify({ sessionId, code: emailCode }),
       })
 
       const data = await response.json()
@@ -206,8 +216,8 @@ export default function SignUp() {
       return
     }
 
-    if (!userId) {
-      setError('User ID is missing. Please start over.')
+    if (!sessionId) {
+      setError('Signup session is missing. Please start over.')
       return
     }
 
@@ -218,7 +228,7 @@ export default function SignUp() {
       const response = await fetch('/api/auth/update-signup-phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, phone: formData.phone }),
+        body: JSON.stringify({ sessionId, phone: formData.phone }),
       })
 
       const data = await response.json()
@@ -256,8 +266,8 @@ export default function SignUp() {
       return
     }
 
-    if (!userId) {
-      setError('User ID is missing. Please start over.')
+    if (!sessionId) {
+      setError('Signup session is missing. Please start over.')
       return
     }
 
@@ -267,7 +277,7 @@ export default function SignUp() {
       const response = await fetch('/api/auth/verify-phone-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, code: phoneCode }),
+        body: JSON.stringify({ sessionId, code: phoneCode }),
       })
 
       const data = await response.json()
@@ -310,8 +320,8 @@ export default function SignUp() {
       return
     }
 
-    if (!userId) {
-      setError('User ID is missing. Please start over.')
+    if (!sessionId) {
+      setError('Signup session is missing. Please start over.')
       return
     }
 
@@ -322,7 +332,7 @@ export default function SignUp() {
       const response = await fetch('/api/auth/finalize-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, password: formData.password }),
+        body: JSON.stringify({ sessionId, password: formData.password, confirmPassword: formData.confirmPassword }),
       })
 
       const data = await response.json()
@@ -347,7 +357,10 @@ export default function SignUp() {
           return
         }
 
-        // Successfully signed in, redirect to dashboard
+        // Successfully signed in, clear localStorage and redirect to dashboard
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('signupSessionId')
+        }
         router.push('/dashboard')
       } catch (signInError) {
         console.error('Auto sign-in error:', signInError)
@@ -363,15 +376,33 @@ export default function SignUp() {
   }
 
   const handleResendEmailCode = async () => {
-    if (resendEmailCooldown > 0 || !userId) return
+    if (resendEmailCooldown > 0 || !sessionId) return
 
     setError('')
     setLoading(true)
 
     try {
-      // Recreate account to resend code (or create a resend endpoint)
-      // For now, just show a message
-      setError('Please use the code that was already sent. If you need a new code, please start over.')
+      const response = await fetch('/api/auth/resend-email-code-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to resend verification code')
+        return
+      }
+
+      // Store code in development mode (only if email failed to send)
+      if (data.emailCode) {
+        setDevEmailCode(data.emailCode)
+        console.warn('⚠️ Email not sent. Using dev code for testing:', data.emailCode)
+      }
+      
+      setResendEmailCooldown(60)
+      setError('') // Clear any previous errors
     } catch (error) {
       setError('Failed to resend code. Please try again.')
     } finally {
@@ -380,27 +411,33 @@ export default function SignUp() {
   }
 
   const handleResendPhoneCode = async () => {
-    if (resendPhoneCooldown > 0 || !userId) return
+    if (resendPhoneCooldown > 0 || !sessionId) return
 
     setError('')
     setLoading(true)
 
     try {
-      // Resend phone code
-      const response = await fetch('/api/auth/update-signup-phone', {
+      const response = await fetch('/api/auth/resend-phone-code-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, phone: formData.phone }),
+        body: JSON.stringify({ sessionId }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.phoneCode) {
-          setDevPhoneCode(data.phoneCode)
-          console.log('📱 Phone verification code:', data.phoneCode)
-        }
-        setResendPhoneCooldown(60)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to resend verification code')
+        return
       }
+
+      // Store code in development mode (only if SMS failed to send)
+      if (data.phoneCode) {
+        setDevPhoneCode(data.phoneCode)
+        console.warn('⚠️ SMS not sent. Using dev code for testing:', data.phoneCode)
+      }
+      
+      setResendPhoneCooldown(60)
+      setError('') // Clear any previous errors
     } catch (error) {
       setError('Failed to resend code. Please try again.')
     } finally {
@@ -561,7 +598,10 @@ export default function SignUp() {
                   setEmail('')
                   setEmailCode('')
                   setDevEmailCode(null)
-                  setUserId(null)
+                  setSessionId(null)
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('signupSessionId')
+                  }
                 }}
                 className="text-sm text-white/50 hover:text-white/70 font-light transition-colors"
               >
