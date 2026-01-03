@@ -36,10 +36,10 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       stripeConnectAccountId: true,
       _count: {
         select: {
-          sellerTransactions: true,
-          buyerTransactions: true,
-          disputesRaised: true,
-          disputesResolved: true,
+          EscrowTransaction_EscrowTransaction_sellerIdToUser: true,
+          EscrowTransaction_EscrowTransaction_buyerIdToUser: true,
+          // Note: disputes are stored in Supabase, not Prisma
+          // Dispute counts would need to be fetched separately from Supabase
         },
       },
     },
