@@ -31,6 +31,11 @@ CREATE INDEX IF NOT EXISTS "signup_sessions_email_idx" ON "signup_sessions"("ema
 CREATE INDEX IF NOT EXISTS "signup_sessions_expiresAt_idx" ON "signup_sessions"("expiresAt");
 
 -- AlterTable (Update VerificationCode to support sessionId)
+-- First, make userId nullable (it was NOT NULL before)
+ALTER TABLE "VerificationCode" 
+ALTER COLUMN "userId" DROP NOT NULL;
+
+-- Then add sessionId column
 ALTER TABLE "VerificationCode" 
 ADD COLUMN IF NOT EXISTS "sessionId" TEXT;
 

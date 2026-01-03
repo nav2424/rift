@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update signup session's phone number
-    await prisma.signupSession.update({
+    // Note: updatedAt is automatically handled by Prisma @updatedAt decorator
+    await prisma.signup_sessions.update({
       where: { id: sessionId },
       data: {
         phone: formattedPhone,

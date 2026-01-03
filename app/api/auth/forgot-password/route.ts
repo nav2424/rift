@@ -53,11 +53,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Store reset token
+    // Bulletproof guard: ensure userId is valid before creating verification code
+    if (!user.id || typeof user.id !== 'string') {
+      throw new Error(`forgot-password: invalid userId (${user.id}) before creating verification code`)
+    }
+
+    // Store reset token (explicitly set sessionId to null for existing users)
     await prisma.verificationCode.create({
       data: {
         id: randomUUID(),
         userId: user.id,
+        sessionId: null, // Explicitly null for existing users
         type: 'PASSWORD_RESET',
         code: resetToken,
         contactInfo: user.email,

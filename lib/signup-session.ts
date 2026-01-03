@@ -42,7 +42,7 @@ export async function createSignupSession(data: {
   }
 
   // Check if there's an existing signup session for this email
-  const existingSession = await prisma.signupSession.findUnique({
+  const existingSession = await prisma.signup_sessions.findUnique({
     where: { email: data.email },
   })
 
@@ -50,7 +50,8 @@ export async function createSignupSession(data: {
 
   if (existingSession) {
     // Update existing session
-    const updated = await prisma.signupSession.update({
+    // Note: updatedAt is automatically handled by Prisma @updatedAt decorator
+    const updated = await prisma.signup_sessions.update({
       where: { id: existingSession.id },
       data: {
         ...data,
@@ -64,7 +65,8 @@ export async function createSignupSession(data: {
   }
 
   // Create new session
-  const session = await prisma.signupSession.create({
+  const now = new Date()
+  const session = await prisma.signup_sessions.create({
     data: {
       id: randomUUID(),
       email: data.email,
@@ -74,6 +76,8 @@ export async function createSignupSession(data: {
       name: data.name,
       birthday: data.birthday,
       expiresAt,
+      createdAt: now,
+      updatedAt: now,
     },
   })
 
@@ -84,7 +88,7 @@ export async function createSignupSession(data: {
  * Get signup session by ID
  */
 export async function getSignupSession(sessionId: string) {
-  const session = await prisma.signupSession.findUnique({
+  const session = await prisma.signup_sessions.findUnique({
     where: { id: sessionId },
   })
 
@@ -95,7 +99,7 @@ export async function getSignupSession(sessionId: string) {
   // Check if session expired
   if (new Date() > session.expiresAt) {
     // Delete expired session
-    await prisma.signupSession.delete({
+    await prisma.signup_sessions.delete({
       where: { id: sessionId },
     })
     return null
@@ -113,9 +117,12 @@ export async function markEmailVerified(sessionId: string): Promise<boolean> {
     return false
   }
 
-  await prisma.signupSession.update({
+  await prisma.signup_sessions.update({
     where: { id: sessionId },
-    data: { emailVerified: true },
+    data: { 
+      emailVerified: true,
+      // updatedAt is automatically handled by Prisma @updatedAt decorator
+    },
   })
 
   return true
@@ -130,9 +137,12 @@ export async function markPhoneVerified(sessionId: string): Promise<boolean> {
     return false
   }
 
-  await prisma.signupSession.update({
+  await prisma.signup_sessions.update({
     where: { id: sessionId },
-    data: { phoneVerified: true },
+    data: { 
+      phoneVerified: true,
+      // updatedAt is automatically handled by Prisma @updatedAt decorator
+    },
   })
 
   return true
@@ -147,11 +157,12 @@ export async function setSignupPassword(sessionId: string, passwordHash: string)
     return false
   }
 
-  await prisma.signupSession.update({
+  await prisma.signup_sessions.update({
     where: { id: sessionId },
     data: {
       passwordHash,
       passwordSet: true,
+      // updatedAt is automatically handled by Prisma @updatedAt decorator
     },
   })
 
@@ -179,7 +190,7 @@ export async function isSignupComplete(sessionId: string): Promise<boolean> {
  * Clean up expired signup sessions
  */
 export async function cleanupExpiredSessions() {
-  await prisma.signupSession.deleteMany({
+  await prisma.signup_sessions.deleteMany({
     where: {
       expiresAt: {
         lt: new Date(),

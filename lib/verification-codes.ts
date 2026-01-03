@@ -20,9 +20,40 @@ export async function generateVerificationCode(
   contactInfo: string, // email or phone number
   isSession: boolean = false // true if userIdOrSessionId is a sessionId
 ): Promise<string> {
+  // Validate input - userIdOrSessionId must be a valid string
+  if (!userIdOrSessionId || typeof userIdOrSessionId !== 'string') {
+    throw new Error(`generateVerificationCode: invalid userIdOrSessionId (${userIdOrSessionId})`)
+  }
+
   // Generate 6-digit code
   const code = crypto.randomInt(100000, 999999).toString()
   const expiresAt = new Date(Date.now() + CODE_EXPIRY_MINUTES * 60 * 1000)
+
+  // Prepare data based on whether this is for a session or existing user
+  const userId = isSession ? null : userIdOrSessionId
+  const sessionId = isSession ? userIdOrSessionId : null
+
+  // Bulletproof guard: ensure at least one of userId or sessionId will be set
+  // (This should never fail if userIdOrSessionId is valid, but double-check)
+  if (isSession) {
+    // For sessions: sessionId must be set, userId must be null
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new Error(
+        `generateVerificationCode blocked: invalid sessionId (${sessionId}). ` +
+        `Expected non-null string for signup session verification. ` +
+        `userIdOrSessionId: ${userIdOrSessionId}, isSession: ${isSession}`
+      )
+    }
+  } else {
+    // For existing users: userId must be set, sessionId must be null
+    if (!userId || typeof userId !== 'string') {
+      throw new Error(
+        `generateVerificationCode blocked: invalid userId (${userId}). ` +
+        `Expected non-null string for existing user verification. ` +
+        `userIdOrSessionId: ${userIdOrSessionId}, isSession: ${isSession}`
+      )
+    }
+  }
 
   // Delete any existing codes for this user/session and type
   await prisma.verificationCode.deleteMany({
@@ -37,18 +68,32 @@ export async function generateVerificationCode(
         },
   })
 
-  // Store new code
+  // Store new code with explicit null handling
+  // For sessions: userId must be null, sessionId must be set
+  // For users: userId must be set, sessionId must be null
+  const createData = {
+    id: randomUUID(),
+    userId: isSession ? null : userId,
+    sessionId: isSession ? sessionId : null,
+    type,
+    code,
+    contactInfo,
+    expiresAt,
+    attempts: 0,
+  }
+
+  // Log for debugging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Creating verification code:', {
+      isSession,
+      userId: createData.userId,
+      sessionId: createData.sessionId,
+      type: createData.type,
+    })
+  }
+
   await prisma.verificationCode.create({
-    data: {
-      id: randomUUID(),
-      userId: isSession ? null : userIdOrSessionId,
-      sessionId: isSession ? userIdOrSessionId : null,
-      type,
-      code,
-      contactInfo,
-      expiresAt,
-      attempts: 0,
-    },
+    data: createData,
   })
 
   return code
