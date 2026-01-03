@@ -50,13 +50,13 @@ export default async function AdminPage() {
   // Get all rifts (no limit - show all data)
   const allRifts = await prisma.escrowTransaction.findMany({
     include: {
-      buyer: {
+      User_EscrowTransaction_buyerIdToUser: {
         select: {
           name: true,
           email: true,
         },
       },
-      seller: {
+      User_EscrowTransaction_sellerIdToUser: {
         select: {
           name: true,
           email: true,

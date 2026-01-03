@@ -70,14 +70,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const buyerTransactions = await prisma.escrowTransaction.findMany({
     where: { buyerId: userId },
     include: {
-      buyer: {
+      User_EscrowTransaction_buyerIdToUser: {
         select: {
           id: true,
           name: true,
           email: true,
         },
       },
-      seller: {
+      User_EscrowTransaction_sellerIdToUser: {
         select: {
           id: true,
           name: true,
@@ -93,14 +93,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const sellerTransactions = await prisma.escrowTransaction.findMany({
     where: { sellerId: userId },
     include: {
-      buyer: {
+      User_EscrowTransaction_buyerIdToUser: {
         select: {
           id: true,
           name: true,
           email: true,
         },
       },
-      seller: {
+      User_EscrowTransaction_sellerIdToUser: {
         select: {
           id: true,
           name: true,
