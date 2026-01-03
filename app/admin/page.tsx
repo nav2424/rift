@@ -11,7 +11,7 @@ export default async function AdminPage() {
   await requireAdmin()
 
   // Get all users with verification status
-  const allUsers = await prisma.user.findMany({
+  const allUsersRaw = await prisma.user.findMany({
     select: {
       id: true,
       riftUserId: true,
@@ -46,6 +46,16 @@ export default async function AdminPage() {
       createdAt: 'desc',
     },
   })
+
+  // Map Prisma _count keys to expected component shape
+  const allUsers = allUsersRaw.map((u) => ({
+    ...u,
+    _count: {
+      activities: u._count.Activity,
+      buyerTransactions: u._count.EscrowTransaction_EscrowTransaction_buyerIdToUser,
+      sellerTransactions: u._count.EscrowTransaction_EscrowTransaction_sellerIdToUser,
+    },
+  }))
 
   // Get all rifts (no limit - show all data)
   const allRifts = await prisma.escrowTransaction.findMany({
