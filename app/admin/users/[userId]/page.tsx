@@ -36,8 +36,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       stripeConnectAccountId: true,
       _count: {
         select: {
-          EscrowTransaction_EscrowTransaction_sellerIdToUser: true,
-          EscrowTransaction_EscrowTransaction_buyerIdToUser: true,
+          sellerTransactions: true,
+          buyerTransactions: true,
           // Note: disputes are stored in Supabase, not Prisma
           // Dispute counts would need to be fetched separately from Supabase
         },
@@ -70,14 +70,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const buyerTransactions = await prisma.escrowTransaction.findMany({
     where: { buyerId: userId },
     include: {
-      User_EscrowTransaction_buyerIdToUser: {
+      buyer: {
         select: {
           id: true,
           name: true,
           email: true,
         },
       },
-      User_EscrowTransaction_sellerIdToUser: {
+      seller: {
         select: {
           id: true,
           name: true,
@@ -93,14 +93,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const sellerTransactions = await prisma.escrowTransaction.findMany({
     where: { sellerId: userId },
     include: {
-      User_EscrowTransaction_buyerIdToUser: {
+      buyer: {
         select: {
           id: true,
           name: true,
           email: true,
         },
       },
-      User_EscrowTransaction_sellerIdToUser: {
+      seller: {
         select: {
           id: true,
           name: true,

@@ -42,7 +42,6 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
           riskProfile: true,
           _count: {
             select: {
-              disputesRaised: true,
               sellerTransactions: true,
               buyerTransactions: true,
             },
@@ -71,7 +70,6 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
         riftUserId: u.riftUserId,
         riskProfile: u.riskProfile,
         stats: {
-          disputesRaised: u._count.disputesRaised,
           sellerTransactions: u._count.sellerTransactions,
           buyerTransactions: u._count.buyerTransactions,
         },

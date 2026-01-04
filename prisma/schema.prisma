@@ -110,8 +110,8 @@ model EscrowTransaction {
   stripeCustomerId                      String?
   paidAt                                DateTime?
   Dispute                               Dispute[]
-  User_EscrowTransaction_buyerIdToUser  User               @relation("EscrowTransaction_buyerIdToUser", fields: [buyerId], references: [id])
-  User_EscrowTransaction_sellerIdToUser User               @relation("EscrowTransaction_sellerIdToUser", fields: [sellerId], references: [id])
+  buyer                                 User               @relation("EscrowBuyer", fields: [buyerId], references: [id])
+  seller                                User               @relation("EscrowSeller", fields: [sellerId], references: [id])
   MilestoneRelease                      MilestoneRelease[]
   Payout                                Payout[]
   Proof                                 Proof[]
@@ -241,8 +241,8 @@ model User {
   Activity                                           Activity[]
   Dispute_Dispute_raisedByIdToUser                   Dispute[]           @relation("Dispute_raisedByIdToUser")
   Dispute_Dispute_resolvedByIdToUser                 Dispute[]           @relation("Dispute_resolvedByIdToUser")
-  EscrowTransaction_EscrowTransaction_buyerIdToUser  EscrowTransaction[] @relation("EscrowTransaction_buyerIdToUser")
-  EscrowTransaction_EscrowTransaction_sellerIdToUser EscrowTransaction[] @relation("EscrowTransaction_sellerIdToUser")
+  buyerTransactions                                  EscrowTransaction[] @relation("EscrowBuyer")
+  sellerTransactions                                 EscrowTransaction[] @relation("EscrowSeller")
   Payout                                             Payout[]
   TimelineEvent                                      TimelineEvent[]
   UserBadge                                          UserBadge[]

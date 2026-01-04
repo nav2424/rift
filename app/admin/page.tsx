@@ -34,8 +34,8 @@ export default async function AdminPage() {
       stripeIdentityVerified: true,
       _count: {
         select: {
-          EscrowTransaction_EscrowTransaction_sellerIdToUser: true,
-          EscrowTransaction_EscrowTransaction_buyerIdToUser: true,
+          sellerTransactions: true,
+          buyerTransactions: true,
           Activity: true,
           // Note: disputes are stored in Supabase, not Prisma
           // Dispute counts would need to be fetched separately from Supabase
@@ -47,26 +47,31 @@ export default async function AdminPage() {
     },
   })
 
-  // Map Prisma _count keys to expected component shape
+  // Map Activity to activities for component compatibility
   const allUsers = allUsersRaw.map((u) => ({
     ...u,
     _count: {
+      ...u._count,
       activities: u._count.Activity,
-      buyerTransactions: u._count.EscrowTransaction_EscrowTransaction_buyerIdToUser,
-      sellerTransactions: u._count.EscrowTransaction_EscrowTransaction_sellerIdToUser,
     },
   }))
 
   // Get all rifts (no limit - show all data)
-  const allRiftsRaw = await prisma.escrowTransaction.findMany({
-    include: {
-      User_EscrowTransaction_buyerIdToUser: {
+  const allRifts = await prisma.escrowTransaction.findMany({
+    select: {
+      id: true,
+      riftNumber: true,
+      itemTitle: true,
+      amount: true,
+      currency: true,
+      status: true,
+      buyer: {
         select: {
           name: true,
           email: true,
         },
       },
-      User_EscrowTransaction_sellerIdToUser: {
+      seller: {
         select: {
           name: true,
           email: true,
@@ -77,24 +82,6 @@ export default async function AdminPage() {
       createdAt: 'desc',
     },
   })
-
-  // Transform Prisma relation names to component-expected format
-  const allRifts = allRiftsRaw.map((rift) => ({
-    id: rift.id,
-    riftNumber: rift.riftNumber,
-    itemTitle: rift.itemTitle,
-    amount: rift.amount,
-    currency: rift.currency,
-    status: rift.status,
-    buyer: {
-      name: rift.User_EscrowTransaction_buyerIdToUser.name,
-      email: rift.User_EscrowTransaction_buyerIdToUser.email,
-    },
-    seller: {
-      name: rift.User_EscrowTransaction_sellerIdToUser.name,
-      email: rift.User_EscrowTransaction_sellerIdToUser.email,
-    },
-  }))
 
   // Get pending proofs count
   const pendingProofsCount = await prisma.proof.count({
