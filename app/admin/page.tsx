@@ -58,7 +58,7 @@ export default async function AdminPage() {
   }))
 
   // Get all rifts (no limit - show all data)
-  const allRifts = await prisma.escrowTransaction.findMany({
+  const allRiftsRaw = await prisma.escrowTransaction.findMany({
     include: {
       User_EscrowTransaction_buyerIdToUser: {
         select: {
@@ -77,6 +77,24 @@ export default async function AdminPage() {
       createdAt: 'desc',
     },
   })
+
+  // Transform Prisma relation names to component-expected format
+  const allRifts = allRiftsRaw.map((rift) => ({
+    id: rift.id,
+    riftNumber: rift.riftNumber,
+    itemTitle: rift.itemTitle,
+    amount: rift.amount,
+    currency: rift.currency,
+    status: rift.status,
+    buyer: {
+      name: rift.User_EscrowTransaction_buyerIdToUser.name,
+      email: rift.User_EscrowTransaction_buyerIdToUser.email,
+    },
+    seller: {
+      name: rift.User_EscrowTransaction_sellerIdToUser.name,
+      email: rift.User_EscrowTransaction_sellerIdToUser.email,
+    },
+  }))
 
   // Get pending proofs count
   const pendingProofsCount = await prisma.proof.count({
