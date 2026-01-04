@@ -8,6 +8,7 @@ import { refundPayment } from '@/lib/stripe'
 import { sendFundsReleasedEmail } from '@/lib/email'
 import { DisputeResolution } from '@prisma/client'
 import { debitSellerOnRefund } from '@/lib/wallet'
+import { createActivity } from '@/lib/activity'
 
 export async function POST(
   request: NextRequest,
@@ -164,6 +165,37 @@ export async function POST(
         createdById: session.user.id,
       },
     })
+
+    // Create activity for both buyer and seller
+    try {
+      const buyerName = rift.buyer.name || rift.buyer.email.split('@')[0]
+      const sellerName = rift.seller.name || rift.seller.email.split('@')[0]
+      const resolutionText = 
+        resolution === 'FULL_RELEASE' ? `Resolved in favor of seller - funds released` :
+        resolution === 'PARTIAL_REFUND' ? `Partially refunded ${rift.currency} ${refundAmount.toFixed(2)}` :
+        `Fully refunded ${rift.currency} ${refundAmount.toFixed(2)}`
+
+      // Activity for buyer
+      await createActivity(
+        rift.buyerId,
+        'DISPUTE_RESOLVED',
+        `Dispute resolved for rift #${rift.riftNumber} - ${rift.itemTitle}: ${resolutionText}`,
+        resolution === 'FULL_RELEASE' ? undefined : refundAmount,
+        { transactionId: id, riftNumber: rift.riftNumber, resolution, refundAmount, adminNotes }
+      )
+
+      // Activity for seller
+      await createActivity(
+        rift.sellerId,
+        'DISPUTE_RESOLVED',
+        `Dispute resolved for rift #${rift.riftNumber} - ${rift.itemTitle}: ${resolutionText}`,
+        resolution === 'FULL_RELEASE' ? rift.subtotal ?? undefined : undefined,
+        { transactionId: id, riftNumber: rift.riftNumber, resolution, refundAmount, adminNotes }
+      )
+    } catch (error) {
+      console.error('Failed to create activity (non-critical):', error)
+      // Non-critical - continue
+    }
 
     // Send email notification
     if (resolution === 'FULL_RELEASE' && rift.sellerNet) {

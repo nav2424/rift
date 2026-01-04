@@ -357,6 +357,36 @@ export async function POST(request: NextRequest) {
       requestMeta
     )
 
+    // Create activity for both buyer and seller
+    try {
+      const { createActivity } = await import('@/lib/activity')
+      const creatorRole = isCreatorBuyer ? 'buyer' : 'seller'
+      const otherPartyRole = isCreatorBuyer ? 'seller' : 'buyer'
+      const otherPartyName = isCreatorBuyer ? sellerUser?.name || sellerUser?.email?.split('@')[0] : buyerUser?.name || buyerUser?.email?.split('@')[0]
+      
+      // Activity for creator
+      await createActivity(
+        auth.userId,
+        'RIFT_CREATED',
+        `Created rift #${riftNumber} with ${otherPartyName} for ${itemTitle}`,
+        subtotal,
+        { transactionId: rift.id, riftNumber, role: creatorRole, otherPartyId: isCreatorBuyer ? seller.id : buyer.id }
+      )
+      
+      // Activity for other party
+      const otherPartyId = isCreatorBuyer ? seller.id : buyer.id
+      await createActivity(
+        otherPartyId,
+        'RIFT_CREATED',
+        `Rift #${riftNumber} created by ${creatorRole} for ${itemTitle}`,
+        subtotal,
+        { transactionId: rift.id, riftNumber, role: otherPartyRole, otherPartyId: auth.userId }
+      )
+    } catch (error) {
+      console.error('Failed to create activity (non-critical):', error)
+      // Non-critical - continue
+    }
+
     // Get buyer and seller info for email
     const buyerUser = await prisma.user.findUnique({
       where: { id: buyer.id },

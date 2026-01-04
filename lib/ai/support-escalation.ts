@@ -40,12 +40,24 @@ User Message: "${userMessage}"
 ${conversationHistory ? `Conversation History:\n${conversationHistory.map(m => `${m.role}: ${m.content}`).join('\n')}` : ''}
 
 Determine if this requires human escalation. Consider:
-- Technical issues that need investigation
-- Account access problems
-- Payment/dispute issues
-- Complex questions the bot cannot answer
-- User frustration or confusion
-- Security concerns
+
+REQUIRES ESCALATION (shouldEscalate: true, requiresHuman: true):
+- Technical bugs or system errors
+- Account access problems or security issues
+- Complex situations requiring manual investigation
+- User is clearly distressed and needs human empathy
+- Issues that cannot be resolved through automated processes
+
+DO NOT ESCALATE (shouldEscalate: false, requiresHuman: false):
+- Questions about how Rift works (payments, deadlines, processes)
+- General information requests about transaction status
+- Questions about proof requirements or submission processes
+- Questions about fund release timelines or conditions
+- Questions about dispute processes (informational)
+- Normal operational questions
+- Questions about deadlines, payment times, or transaction flows
+
+The chatbot should answer informational questions about payments, deadlines, and Rift processes directly. Only escalate when there is a genuine technical issue, account problem, or situation requiring manual intervention.
 
 Respond with JSON:
 {

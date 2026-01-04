@@ -468,6 +468,21 @@ export async function getConnectAccountStatus(
       disabledReason,
     }
   } catch (error: any) {
+    // Handle test/live key mismatch gracefully
+    // This happens when a test account is used with a live key or vice versa
+    if (error.message && error.message.includes('test account') && error.message.includes('testmode key')) {
+      console.warn(`Stripe account retrieval: Test/live key mismatch for account ${accountId}. Skipping status check.`)
+      // Return a default status indicating the account needs to be reconnected with the correct key mode
+      return {
+        accountId,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        status: 'pending',
+        statusMessage: 'Account key mismatch - please reconnect your Stripe account',
+      }
+    }
+    
     console.error('Stripe account retrieval error:', error)
     throw new Error(`Failed to retrieve account status: ${error.message}`)
   }

@@ -5,6 +5,7 @@ import { createPaymentIntent, stripe } from '@/lib/stripe'
 import { transitionRiftState } from '@/lib/rift-state'
 import { calculateBuyerTotal } from '@/lib/fees'
 import { randomUUID } from 'crypto'
+import { createActivity } from '@/lib/activity'
 
 /**
  * Pay for a rift (buyer pays)
@@ -263,6 +264,43 @@ export async function PUT(
     } catch (timelineError: any) {
       // Log but don't fail the request if timeline event creation fails
       console.error('Timeline event creation error:', timelineError)
+    }
+
+    // Create activity for both buyer and seller
+    try {
+      const riftWithDetails = await prisma.riftTransaction.findUnique({
+        where: { id: rift.id },
+        include: {
+          buyer: { select: { name: true, email: true } },
+          seller: { select: { name: true, email: true } },
+        },
+      })
+
+      if (riftWithDetails) {
+        const buyerName = riftWithDetails.buyer.name || riftWithDetails.buyer.email.split('@')[0]
+        const sellerName = riftWithDetails.seller.name || riftWithDetails.seller.email.split('@')[0]
+
+        // Activity for buyer
+        await createActivity(
+          rift.buyerId,
+          'RIFT_PAID',
+          `Paid for rift #${riftWithDetails.riftNumber} - ${riftWithDetails.itemTitle}`,
+          riftValue,
+          { transactionId: rift.id, riftNumber: riftWithDetails.riftNumber, currency: rift.currency }
+        )
+
+        // Activity for seller
+        await createActivity(
+          rift.sellerId,
+          'PAYMENT_RECEIVED',
+          `Payment received for rift #${riftWithDetails.riftNumber} - ${riftWithDetails.itemTitle} from ${buyerName}`,
+          riftValue,
+          { transactionId: rift.id, riftNumber: riftWithDetails.riftNumber, currency: rift.currency, buyerId: rift.buyerId }
+        )
+      }
+    } catch (error) {
+      console.error('Failed to create activity (non-critical):', error)
+      // Non-critical - continue
     }
 
     return NextResponse.json({ success: true, status: 'FUNDED' })

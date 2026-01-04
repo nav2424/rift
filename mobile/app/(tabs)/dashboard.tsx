@@ -469,6 +469,15 @@ export default function DashboardScreen() {
                     </Text>
                   )}
                 </View>
+                {/* Create Rift Button - Top Right */}
+                <TouchableOpacity
+                  style={styles.createRiftButton}
+                  onPress={() => router.push('/(tabs)/create')}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add-circle" size={20} color={Colors.text} />
+                  <Text style={styles.createRiftButtonText}>Create Rift</Text>
+                </TouchableOpacity>
               </View>
             </Animated.View>
 
@@ -736,9 +745,31 @@ const styles = StyleSheet.create({
   headerContent: {
     paddingHorizontal: Spacing.xl + 4,
     paddingBottom: Spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   headerTextContainer: {
     flex: 1,
+    paddingRight: Spacing.md,
+  },
+  createRiftButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    marginTop: 4,
+  },
+  createRiftButtonText: {
+    fontSize: 13,
+    color: Colors.text,
+    fontWeight: '500',
+    letterSpacing: 0.2,
   },
   headerGreeting: {
     fontSize: 12,

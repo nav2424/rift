@@ -6,7 +6,15 @@
 import { prisma } from './prisma'
 
 export type ActivityType = 
+  | 'RIFT_CREATED'
+  | 'RIFT_PAID'
   | 'PAYMENT_RECEIVED'
+  | 'PROOF_SUBMITTED'
+  | 'PROOF_APPROVED'
+  | 'PROOF_REJECTED'
+  | 'DISPUTE_OPENED'
+  | 'DISPUTE_RESOLVED'
+  | 'FUNDS_RELEASED'
   | 'DEAL_CLOSED'
   | 'REPEATED_SALES_DAY'
   | 'MILESTONE_ACHIEVED'
@@ -83,6 +91,40 @@ export async function getActivityFeed(limit: number = 50) {
       type: activity.type,
       summary: `${userName} ${summary}`,
       amount: activity.User.showAmountsInFeed ? activity.amount : null,
+      createdAt: activity.createdAt,
+    }
+  })
+}
+
+/**
+ * Get user activities (for personal activity feed)
+ * Returns all activities for a specific user
+ */
+export async function getUserActivities(userId: string, limit: number = 100) {
+  const activities = await prisma.activity.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: limit,
+  })
+
+  return activities.map((activity: any) => {
+    let metadata = {}
+    try {
+      metadata = activity.metadata ? JSON.parse(activity.metadata) : {}
+    } catch (e) {
+      // Invalid JSON, ignore
+    }
+
+    return {
+      id: activity.id,
+      type: activity.type,
+      summary: activity.summary,
+      amount: activity.amount,
+      metadata,
       createdAt: activity.createdAt,
     }
   })

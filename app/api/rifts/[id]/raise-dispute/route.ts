@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { canTransition, getUserRole } from '@/lib/rules'
 import { sendDisputeRaisedEmail } from '@/lib/email'
+import { createActivity } from '@/lib/activity'
 
 export async function POST(
   request: NextRequest,
@@ -136,6 +137,35 @@ export async function POST(
         createdById: auth.userId,
       },
     })
+
+    // Create activity for both buyer and seller
+    try {
+      if (escrowWithUsers) {
+        const buyerName = escrowWithUsers.buyer.name || escrowWithUsers.buyer.email.split('@')[0]
+        const sellerName = escrowWithUsers.seller.name || escrowWithUsers.seller.email.split('@')[0]
+
+        // Activity for buyer (dispute raiser)
+        await createActivity(
+          auth.userId,
+          'DISPUTE_OPENED',
+          `Dispute opened for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
+          escrowWithUsers.subtotal ?? undefined,
+          { transactionId: id, riftNumber: escrowWithUsers.riftNumber, disputeId: dispute?.id, disputeType: disputeType }
+        )
+
+        // Activity for seller
+        await createActivity(
+          escrowWithUsers.sellerId,
+          'DISPUTE_OPENED',
+          `Dispute opened by ${buyerName} for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
+          escrowWithUsers.subtotal ?? undefined,
+          { transactionId: id, riftNumber: escrowWithUsers.riftNumber, disputeId: dispute?.id, disputeType: disputeType, raisedBy: auth.userId }
+        )
+      }
+    } catch (error) {
+      console.error('Failed to create activity (non-critical):', error)
+      // Non-critical - continue
+    }
 
     // Get dispute details for email
     const dispute = await prisma.dispute.findFirst({

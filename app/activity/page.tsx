@@ -32,10 +32,20 @@ interface RiftTransaction {
 
 type ActivityFilter = 'all' | 'active' | 'completed' | 'pending' | 'cancelled'
 
+interface ActivityRecord {
+  id: string
+  type: string
+  summary: string
+  amount: number | null
+  createdAt: string
+  metadata?: Record<string, any>
+}
+
 export default function ActivityPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { showToast } = useToast()
+  const [activities, setActivities] = useState<ActivityRecord[]>([])
   const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,9 +58,28 @@ export default function ActivityPage() {
     }
   }, [status, router])
 
-  const loadRifts = async (pageNum: number = 1) => {
+  const loadActivities = async () => {
     try {
       setLoading(true)
+      const response = await fetch('/api/activity?limit=200', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setActivities(data.activities || [])
+      } else {
+        showToast('Failed to load activity. Please try again.', 'error')
+      }
+    } catch (error) {
+      console.error('Error loading activities:', error)
+      showToast('Failed to load activity. Please check your connection.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadRifts = async (pageNum: number = 1) => {
+    try {
       // Build query params with server-side filtering
       const params = new URLSearchParams({
         page: pageNum.toString(),
@@ -81,113 +110,101 @@ export default function ActivityPage() {
         // Handle paginated format
         const items = data.data || []
         setRifts(items)
-      } else {
-        showToast('Failed to load activity. Please try again.', 'error')
       }
     } catch (error) {
       console.error('Error loading rifts:', error)
-      showToast('Failed to load activity. Please check your connection.', 'error')
-    } finally {
-      setLoading(false)
     }
   }
   
   useEffect(() => {
     if (status === 'authenticated') {
+      loadActivities()
       loadRifts(1)
     }
   }, [filter, searchQuery, status])
 
   const getAllActivity = useMemo(() => {
-    let filtered = [...rifts]
+    // Combine activities and rifts for comprehensive activity feed
+    const allActivityItems: Array<{
+      id: string
+      type: string
+      message: string
+      status?: string
+      amount?: number | null
+      currency?: string
+      createdAt: string
+      metadata?: any
+    }> = []
 
-    // Apply status filter
-    if (filter === 'active') {
-      filtered = filtered.filter(e => 
-        ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(e.status)
-      )
-    } else if (filter === 'completed') {
-      filtered = filtered.filter(e => e.status === 'RELEASED')
-    } else if (filter === 'pending') {
-      filtered = filtered.filter(e => {
-        if (e.buyerId === session?.user?.id) {
-          return e.status === 'AWAITING_PAYMENT'
-        } else {
-          return e.status === 'AWAITING_SHIPMENT' || e.status === 'DELIVERED_PENDING_RELEASE'
-        }
+    // Add activities from Activity model
+    activities.forEach(activity => {
+      allActivityItems.push({
+        id: activity.id,
+        type: activity.type,
+        message: activity.summary,
+        amount: activity.amount,
+        createdAt: activity.createdAt,
+        metadata: activity.metadata,
       })
-    } else if (filter === 'cancelled') {
-      filtered = filtered.filter(e => e.status === 'CANCELLED' || e.status === 'REFUNDED')
-    }
+    })
 
-    // Apply search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(rift => {
+    // Add rifts as activity items (for backward compatibility and comprehensive view)
+    rifts.forEach(rift => {
+      const isBuyer = rift.buyerId === session?.user?.id
+      const otherParty = isBuyer ? rift.seller : rift.buyer
+      const name = otherParty.name || otherParty.email.split('@')[0]
+      
+      // Only include rifts that match the filter
+      let include = true
+      if (filter === 'active') {
+        include = ['AWAITING_PAYMENT', 'AWAITING_SHIPMENT', 'IN_TRANSIT', 'DELIVERED_PENDING_RELEASE', 'FUNDED', 'PROOF_SUBMITTED'].includes(rift.status)
+      } else if (filter === 'completed') {
+        include = rift.status === 'RELEASED' || rift.status === 'PAID_OUT'
+      } else if (filter === 'pending') {
+        include = (isBuyer && rift.status === 'AWAITING_PAYMENT') || (!isBuyer && (rift.status === 'AWAITING_SHIPMENT' || rift.status === 'DELIVERED_PENDING_RELEASE'))
+      } else if (filter === 'cancelled') {
+        include = rift.status === 'CANCELLED' || rift.status === 'REFUNDED'
+      }
+
+      if (include) {
+        const query = searchQuery.toLowerCase().trim()
         const riftNumber = rift.riftNumber?.toString() || rift.id.slice(-4)
         const itemTitle = rift.itemTitle?.toLowerCase() || ''
         const buyerName = (rift.buyer.name || rift.buyer.email || '').toLowerCase()
         const sellerName = (rift.seller.name || rift.seller.email || '').toLowerCase()
         
-        return (
-          riftNumber.includes(query) ||
-          itemTitle.includes(query) ||
-          buyerName.includes(query) ||
-          sellerName.includes(query)
-        )
-      })
-    }
+        // Apply search query
+        if (!searchQuery.trim() || 
+            riftNumber.includes(query) ||
+            itemTitle.includes(query) ||
+            buyerName.includes(query) ||
+            sellerName.includes(query)) {
+          
+          const riftMessage = isBuyer
+            ? `Rift #${riftNumber} — ${name} — ${rift.status === 'AWAITING_PAYMENT' ? 'awaiting payment' : rift.status.replace(/_/g, ' ').toLowerCase()}`
+            : `Rift #${riftNumber} — ${name} — ${rift.status === 'AWAITING_SHIPMENT' ? 'awaiting shipment' : rift.status.replace(/_/g, ' ').toLowerCase()}`
+          
+          allActivityItems.push({
+            id: rift.id,
+            type: 'RIFT',
+            message: riftMessage,
+            status: rift.status,
+            amount: rift.subtotal || rift.amount,
+            currency: rift.currency,
+            createdAt: rift.createdAt,
+            metadata: { riftId: rift.id, riftNumber: rift.riftNumber },
+          })
+        }
+      }
+    })
 
     // Sort by date (most recent first)
-    const sorted = filtered.sort((a, b) => 
+    const sorted = allActivityItems.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
 
-    // Map to activity format
-    return sorted.map(rift => {
-      const isBuyer = rift.buyerId === session?.user?.id
-      const otherParty = isBuyer ? rift.seller : rift.buyer
-      const name = otherParty.name || otherParty.email.split('@')[0]
-
-      const riftNumber = rift.riftNumber ?? rift.id.slice(-4)
-      let message = ''
-      switch (rift.status) {
-        case 'AWAITING_PAYMENT':
-          message = isBuyer 
-            ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
-            : `Rift #${riftNumber} — ${name} created a rift — awaiting payment`
-          break
-        case 'AWAITING_SHIPMENT':
-          message = isBuyer
-            ? `Rift #${riftNumber} — Payment received — awaiting shipment`
-            : `Rift #${riftNumber} — Payment received — upload proof of shipment`
-          break
-        case 'IN_TRANSIT':
-          message = `Rift #${riftNumber} — Shipment in transit`
-          break
-        case 'DELIVERED_PENDING_RELEASE':
-          message = isBuyer
-            ? `Rift #${riftNumber} — Shipment delivered — waiting for your confirmation`
-            : `Rift #${riftNumber} — Shipment delivered — waiting for buyer confirmation`
-          break
-        case 'RELEASED':
-          message = `Rift #${riftNumber} — Transaction completed`
-          break
-        case 'FUNDED':
-          message = isBuyer
-            ? `Rift #${riftNumber} — Waiting for seller proof`
-            : `Rift #${riftNumber} — Submit proof of delivery`
-          break
-        case 'DISPUTED':
-          message = `Rift #${riftNumber}`
-          break
-        default:
-          message = `Rift #${riftNumber} — ${rift.status.replace(/_/g, ' ').toLowerCase()}`
-      }
-
-      return { ...rift, message, name }
-    })
-  }, [rifts, filter, searchQuery, session?.user?.id])
+    return sorted
+  }, [activities, rifts, filter, searchQuery, session?.user?.id])
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {

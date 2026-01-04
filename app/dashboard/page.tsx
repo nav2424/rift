@@ -367,8 +367,35 @@ export default function Dashboard() {
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12" data-onboarding="dashboard">
         {/* Enhanced Header */}
-        <div className="mb-8">
-          <div className="flex items-start justify-between mb-6">
+        <div className="mb-8 relative">
+          {/* Top Right Actions - Positioned at top right of header */}
+          <div className="absolute top-0 right-0 flex items-center gap-3">
+            {/* Notifications Badge */}
+            {unreadCount > 0 && (
+              <Link href="/wallet" className="relative group">
+                <button className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white/70 hover:text-white backdrop-blur-sm">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-medium flex items-center justify-center shadow-lg shadow-red-500/50">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                </button>
+              </Link>
+            )}
+            <Link href="/rifts/new" className="group" data-onboarding="create-rift">
+              <button className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-sm backdrop-blur-sm shadow-lg">
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Rift
+                </span>
+              </button>
+            </Link>
+          </div>
+          
+          <div className="flex items-start justify-between mb-6 pr-48">
             <div className="flex-1">
               <div className="flex items-start gap-4">
                 <div className="flex-1">
@@ -392,31 +419,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {/* Notifications Badge */}
-              {unreadCount > 0 && (
-                <Link href="/wallet" className="relative group">
-                  <button className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white/70 hover:text-white backdrop-blur-sm">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-medium flex items-center justify-center shadow-lg shadow-red-500/50">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  </button>
-                </Link>
-              )}
-              <Link href="/rifts/new" className="group" data-onboarding="create-rift">
-                <button className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-sm backdrop-blur-sm shadow-lg">
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create Rift
-                  </span>
-                </button>
-              </Link>
-            </div>
+            {/* Removed old button container - now positioned above */}
           </div>
         </div>
 

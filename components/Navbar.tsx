@@ -26,28 +26,28 @@ export default function Navbar() {
     <>
       <Link 
         href="/dashboard" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
       >
         Dashboard
       </Link>
       <Link 
         href="/rifts" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
       >
         Rifts
       </Link>
       <Link 
         href="/activity" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
       >
         Activity
       </Link>
       <Link 
         href="/messages" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
         data-onboarding="messages"
       >
@@ -55,7 +55,7 @@ export default function Navbar() {
       </Link>
       <Link 
         href="/account" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
         data-onboarding="account"
       >
@@ -65,28 +65,28 @@ export default function Navbar() {
         <>
         <Link 
           href="/admin" 
-          className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+          className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
           onClick={() => setMobileMenuOpen(false)}
         >
           Admin
         </Link>
           <Link 
             href="/admin/disputes" 
-            className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+            className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
             onClick={() => setMobileMenuOpen(false)}
           >
             Disputes
           </Link>
         </>
       )}
-      <div className="p-4 border-t border-white/10 mt-4">
-        <p className="text-white/60 text-sm mb-2 px-4">{session.user.email}</p>
+      <div className="p-4 border-t border-white/10 mt-4 w-full">
+        <p className="text-white/60 text-sm mb-2 px-6 text-right">{session.user.email}</p>
         <button
           onClick={() => {
             setMobileMenuOpen(false)
             signOut()
           }}
-          className="w-full text-left py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base rounded-lg"
+          className="w-full text-right py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base rounded-lg"
         >
           Sign Out
         </button>
@@ -96,29 +96,29 @@ export default function Navbar() {
     <>
       <Link 
         href="/" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
       >
         Home
       </Link>
       <Link 
         href="/pricing" 
-        className="block py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+        className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 text-right w-full"
         onClick={() => setMobileMenuOpen(false)}
       >
         Pricing
       </Link>
-      <div className="p-4 border-t border-white/10 mt-4 space-y-2">
+      <div className="p-4 border-t border-white/10 mt-4 space-y-2 w-full">
         <Link 
           href="/auth/signin" 
-          className="block w-full text-center py-3 px-4 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base rounded-lg"
+          className="block w-full text-right py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base rounded-lg"
           onClick={() => setMobileMenuOpen(false)}
         >
           Sign In
         </Link>
         <Link 
           href="/auth/signup" 
-          className="block w-full text-center py-3 px-4 bg-white/10 hover:bg-white/20 text-white transition-colors duration-200 font-medium text-base rounded-lg border border-white/20"
+          className="block w-full text-right py-3 px-6 bg-white/10 hover:bg-white/20 text-white transition-colors duration-200 font-medium text-base rounded-lg border border-white/20"
           onClick={() => setMobileMenuOpen(false)}
         >
           Get Started
@@ -246,21 +246,40 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay - Full Screen with Right-Aligned Options */}
       {mobileMenuOpen && (
         <div 
           className="fixed inset-0 z-40 bg-black/95 backdrop-blur-sm md:hidden"
           onClick={() => setMobileMenuOpen(false)}
+          style={{
+            animation: 'slideInRight 0.3s ease-out',
+          }}
         >
           <div 
-            className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-black border-l border-white/8 overflow-y-auto"
-            style={{
-              animation: 'slideInRight 0.3s ease-out',
-            }}
+            className="fixed inset-0 bg-black overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="pt-20 pb-4">
-              {navLinks}
+            {/* Header with close button */}
+            <div className="flex justify-between items-center p-4 border-b border-white/8">
+              <div className="flex items-center">
+                <RiftLogo size="md" />
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 text-white/80 hover:text-white transition-colors"
+                aria-label="Close menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Navigation Links - Right Aligned */}
+            <div className="flex flex-col items-end pt-8 px-4">
+              <div className="w-full max-w-sm flex flex-col items-end">
+                {navLinks}
+              </div>
             </div>
           </div>
         </div>

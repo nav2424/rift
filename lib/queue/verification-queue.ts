@@ -3,17 +3,17 @@
  * Handles asynchronous proof verification
  */
 
-import { getQueue, QUEUE_NAMES } from './config'
+import { getQueue, QUEUE_NAMES, redisSafe, redisSafeCheck } from './config'
 import { VerificationJobData, VerificationJobResult } from './jobs'
 import { verifyRiftProofs } from '../vault-verification'
 import { prisma } from '../prisma'
 import { EscrowStatus } from '@prisma/client'
 import { transitionRiftState } from '../rift-state'
-
-const queue = getQueue<VerificationJobData>(QUEUE_NAMES.VERIFICATION)
+import { Queue } from 'bullmq'
 
 /**
  * Add verification job to queue
+ * Returns null if Redis is unavailable (non-blocking failure)
  */
 export async function queueVerificationJob(
   riftId: string,
@@ -23,28 +23,57 @@ export async function queueVerificationJob(
     triggeredByUserId?: string
     priority?: number
   }
-): Promise<string> {
-  const job = await queue.add(
-    'verify-rift-proofs',
-    {
-      riftId,
-      assetIds,
-      triggeredBy: options?.triggeredBy || 'proof-submission',
-      triggeredByUserId: options?.triggeredByUserId,
-    },
-    {
-      priority: options?.priority || 0,
-      jobId: `verification-${riftId}-${Date.now()}`, // Unique job ID
+): Promise<string | null> {
+  // Use safe wrapper - if Redis is unavailable, return null gracefully
+  return await redisSafe(async () => {
+    // Check if Redis is available before attempting to queue
+    const isAvailable = await redisSafeCheck()
+    if (!isAvailable) {
+      return null
     }
-  )
+    
+    // Lazy-load queue to avoid connection attempts if Redis is unavailable
+    const queue = getQueue<VerificationJobData>(QUEUE_NAMES.VERIFICATION)
+    
+    if (!queue) {
+      // Redis not configured or unavailable - skip queueing
+      return null
+    }
+    
+    // Add job with timeout
+    const job = await Promise.race([
+      queue.add(
+        'verify-rift-proofs',
+        {
+          riftId,
+          assetIds,
+          triggeredBy: options?.triggeredBy || 'proof-submission',
+          triggeredByUserId: options?.triggeredByUserId,
+        },
+        {
+          priority: options?.priority || 0,
+          jobId: `verification-${riftId}-${Date.now()}`, // Unique job ID
+        }
+      ),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Queue add timeout')), 5000)
+      )
+    ])
 
-  return job.id!
+    return job.id!
+  }, null, 'queueVerificationJob')
 }
 
 /**
- * Get verification job status
+ * Get verification job status (internal - not wrapped, called from wrapped functions)
  */
-export async function getVerificationJobStatus(jobId: string) {
+async function _getVerificationJobStatus(jobId: string) {
+  const queue = getQueue<VerificationJobData>(QUEUE_NAMES.VERIFICATION)
+  
+  if (!queue) {
+    return null
+  }
+  
   const job = await queue.getJob(jobId)
   
   if (!job) {
@@ -69,22 +98,37 @@ export async function getVerificationJobStatus(jobId: string) {
 }
 
 /**
+ * Get verification job status (public API with safe wrapper)
+ */
+export async function getVerificationJobStatus(jobId: string) {
+  return await redisSafe(() => _getVerificationJobStatus(jobId), null, 'getVerificationJobStatus')
+}
+
+/**
  * Get verification status for a Rift
  */
 export async function getRiftVerificationStatus(riftId: string) {
-  const jobs = await queue.getJobs(['active', 'waiting', 'completed', 'failed'], 0, -1)
-  
-  // Find the most recent job for this rift
-  const riftJobs = jobs
-    .filter((job) => job.data.riftId === riftId)
-    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+  return await redisSafe(async () => {
+    const queue = getQueue<VerificationJobData>(QUEUE_NAMES.VERIFICATION)
+    
+    if (!queue) {
+      return null
+    }
+    
+    const jobs = await queue.getJobs(['active', 'waiting', 'completed', 'failed'], 0, -1)
+    
+    // Find the most recent job for this rift
+    const riftJobs = jobs
+      .filter((job) => job.data.riftId === riftId)
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
 
-  if (riftJobs.length === 0) {
-    return null
-  }
+    if (riftJobs.length === 0) {
+      return null
+    }
 
-  const latestJob = riftJobs[0]
-  return getVerificationJobStatus(latestJob.id!)
+    const latestJob = riftJobs[0]
+    return _getVerificationJobStatus(latestJob.id!)
+  }, null, 'getRiftVerificationStatus')
 }
 
 /**

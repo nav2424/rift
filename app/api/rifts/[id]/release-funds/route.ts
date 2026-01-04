@@ -223,14 +223,49 @@ export async function POST(
       }
     }
 
-    // Create activity for deal closed
-    await createActivity(
-      rift.sellerId,
-      'DEAL_CLOSED',
-      `Closed deal: ${rift.itemTitle}`,
-      rift.subtotal,
-      { transactionId: id }
-    )
+    // Create activity for both buyer and seller
+    try {
+      const riftWithDetails = await prisma.riftTransaction.findUnique({
+        where: { id: rift.id },
+        include: {
+          buyer: { select: { name: true, email: true } },
+        },
+      })
+
+      if (riftWithDetails) {
+        const buyerName = riftWithDetails.buyer.name || riftWithDetails.buyer.email.split('@')[0]
+
+        // Activity for seller (funds released)
+        await createActivity(
+          rift.sellerId,
+          'FUNDS_RELEASED',
+          `Funds released for rift #${riftWithDetails.riftNumber} - ${riftWithDetails.itemTitle}`,
+          rift.subtotal ?? undefined,
+          { transactionId: id, riftNumber: riftWithDetails.riftNumber, currency: rift.currency, payoutId, buyerId: rift.buyerId }
+        )
+
+        // Activity for buyer (payment completed/released)
+        await createActivity(
+          rift.buyerId,
+          'FUNDS_RELEASED',
+          `Payment completed for rift #${riftWithDetails.riftNumber} - ${riftWithDetails.itemTitle}`,
+          rift.subtotal ?? undefined,
+          { transactionId: id, riftNumber: riftWithDetails.riftNumber, currency: rift.currency, sellerId: rift.sellerId }
+        )
+
+        // Also create DEAL_CLOSED for seller
+        await createActivity(
+          rift.sellerId,
+          'DEAL_CLOSED',
+          `Deal completed: ${riftWithDetails.itemTitle}`,
+          rift.subtotal ?? undefined,
+          { transactionId: id, riftNumber: riftWithDetails.riftNumber }
+        )
+      }
+    } catch (error) {
+      console.error('Failed to create activity (non-critical):', error)
+      // Non-critical - continue
+    }
 
     // Create timeline event - check for duplicates first
     // Only create if no FUNDS_RELEASED event exists for this rift

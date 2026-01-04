@@ -124,7 +124,7 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-20 w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
+          className="fixed bottom-4 right-4 z-20 w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
           aria-label="Open chatbot"
         >
           <MessageCircle className="w-6 h-6" />
@@ -140,7 +140,7 @@ export default function Chatbot() {
             onClick={() => setIsOpen(false)}
           />
           {/* Chat Window Container - Centered on mobile, bottom-right on desktop */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:inset-auto md:bottom-6 md:right-6 md:z-20 md:p-0">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:inset-auto md:bottom-4 md:right-4 md:z-20 md:p-0">
             <div className="w-full max-w-lg h-[85vh] max-h-[700px] md:w-96 md:h-[600px] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
