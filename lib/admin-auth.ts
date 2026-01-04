@@ -4,7 +4,25 @@
  */
 
 import { prisma } from './prisma'
-import { AdminRole, AdminPermission, AdminUser } from '@prisma/client'
+import { AdminRole, AdminPermission, Prisma } from '@prisma/client'
+
+type AdminUser = Prisma.admin_usersGetPayload<{
+  include: {
+    admin_user_roles: {
+      include: {
+        admin_roles: {
+          include: {
+            admin_role_permissions: {
+              include: {
+                admin_permissions: true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}>
 import { createHash } from 'crypto'
 import { cookies } from 'next/headers'
 import { compare, hash } from 'bcryptjs'
@@ -67,16 +85,16 @@ export async function verifyAdminCredentials(
   password: string,
   totpCode?: string
 ): Promise<{ success: boolean; adminUser?: AdminUser; error?: string }> {
-  const adminUser = await prisma.adminUser.findUnique({
+  const adminUser = await prisma.admin_users.findUnique({
     where: { email },
     include: {
-      roles: {
+      admin_user_roles: {
         include: {
-          role: {
+          admin_roles: {
             include: {
-              permissions: {
+              admin_role_permissions: {
                 include: {
-                  permission: true,
+                  admin_permissions: true,
                 },
               },
             },
@@ -106,7 +124,7 @@ export async function verifyAdminCredentials(
     const newAttempts = adminUser.failedLoginAttempts + 1
     const lockUntil = newAttempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null // Lock for 15 min after 5 attempts
     
-    await prisma.adminUser.update({
+    await prisma.admin_users.update({
       where: { id: adminUser.id },
       data: {
         failedLoginAttempts: newAttempts,
@@ -134,7 +152,7 @@ export async function verifyAdminCredentials(
   }
 
   // Reset failed attempts on successful login
-  await prisma.adminUser.update({
+  await prisma.admin_users.update({
     where: { id: adminUser.id },
     data: {
       failedLoginAttempts: 0,
@@ -155,7 +173,7 @@ export async function createAdminSession(
   userAgent: string,
   deviceFingerprint?: string
 ): Promise<string> {
-  const adminUser = await prisma.adminUser.findUnique({
+  const adminUser = await prisma.admin_users.findUnique({
     where: { id: adminUserId },
   })
 
