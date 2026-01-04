@@ -177,7 +177,7 @@ export async function createAdminSession(
   expiresAt.setHours(expiresAt.getHours() + adminUser.sessionDurationHours)
 
   // Create session
-  const session = await prisma.adminSession.create({
+  const session = await prisma.admin_sessions.create({
     data: {
       adminUserId,
       sessionToken,
@@ -197,7 +197,7 @@ export async function createAdminSession(
 export async function getAdminSession(
   sessionToken: string
 ): Promise<AdminSession | null> {
-  const session = await prisma.adminSession.findUnique({
+  const session = await prisma.admin_sessions.findUnique({
     where: { sessionToken },
     include: {
       adminUser: {
@@ -226,7 +226,7 @@ export async function getAdminSession(
 
   if (session.expiresAt < new Date()) {
     // Expire session
-    await prisma.adminSession.update({
+    await prisma.admin_sessions.update({
       where: { id: session.id },
       data: { isActive: false },
     })
@@ -234,7 +234,7 @@ export async function getAdminSession(
   }
 
   // Update last activity
-  await prisma.adminSession.update({
+  await prisma.admin_sessions.update({
     where: { id: session.id },
     data: { lastActivityAt: new Date() },
   })
