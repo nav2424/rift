@@ -137,7 +137,7 @@ function getUpstashRedisConfig() {
 
 // Create Redis connection lazily - only when needed
 // This prevents blocking on module load if Redis is unavailable
-let redisConnection: Redis | null = null
+let redisConnectionInstance: Redis | null = null
 let redisConnectionFailed = false // Track if connection has permanently failed
 let redisNotConfigured = false // Track if Redis env vars are missing
 
@@ -182,19 +182,19 @@ function createNoOpRedisConnection(): Redis {
 function getRedisConnection(): Redis {
   // If Redis is not configured, return no-op connection immediately
   if (!isRedisConfigured()) {
-    if (!redisConnection) {
-      redisConnection = createNoOpRedisConnection()
+    if (!redisConnectionInstance) {
+      redisConnectionInstance = createNoOpRedisConnection()
       redisNotConfigured = true
     }
-    return redisConnection
+    return redisConnectionInstance
   }
   
   // If connection already failed, return a no-op connection immediately
-  if (redisConnectionFailed && redisConnection) {
-    return redisConnection
+  if (redisConnectionFailed && redisConnectionInstance) {
+    return redisConnectionInstance
   }
   
-  if (!redisConnection) {
+  if (!redisConnectionInstance) {
     try {
       const config = getUpstashRedisConfig()
       const redisUrl = process.env.UPSTASH_REDIS_URL || process.env.REDIS_URL || ''
@@ -202,7 +202,7 @@ function getRedisConnection(): Redis {
       // Determine if TLS should be used
       const useTls = redisUrl.startsWith('rediss://') || config.tls
       
-      redisConnection = new Redis({
+      redisConnectionInstance = new Redis({
         ...config,
         // Force correct TLS behavior
         tls: useTls ? {
@@ -235,7 +235,7 @@ function getRedisConnection(): Redis {
       })
       
       // Set up error handlers
-      redisConnection.on('error', (error) => {
+      redisConnectionInstance.on('error', (error) => {
         // Suppress ETIMEDOUT errors - they're expected when Redis is unreachable
         if (error.code === 'ETIMEDOUT' || error.message?.includes('connect ETIMEDOUT')) {
           redisConnectionFailed = true
@@ -253,7 +253,7 @@ function getRedisConnection(): Redis {
       })
       
       // Handle connection close/timeout
-      redisConnection.on('close', () => {
+      redisConnectionInstance.on('close', () => {
         redisConnectionFailed = true
       })
       
@@ -266,10 +266,10 @@ function getRedisConnection(): Redis {
         console.warn('[Redis] Failed to create connection (will fail gracefully):', error.message || error)
       }
       // Create a no-op connection that will fail gracefully
-      redisConnection = createNoOpRedisConnection()
+      redisConnectionInstance = createNoOpRedisConnection()
     }
   }
-  return redisConnection
+  return redisConnectionInstance
 }
 
 // Export the getter function instead of the connection directly
@@ -365,7 +365,7 @@ export async function isRedisAvailable(): Promise<boolean> {
 
 // Default queue options - use getter to avoid connection on module load
 const defaultQueueOptions: QueueOptions = {
-  connection: redisConnection as any, // Will be resolved lazily
+  connection: redisConnectionInstance as any, // Will be resolved lazily
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -384,7 +384,7 @@ const defaultQueueOptions: QueueOptions = {
 
 // Default worker options - use getter to avoid connection on module load
 export const defaultWorkerOptions: WorkerOptions = {
-  connection: redisConnection as any, // Will be resolved lazily
+  connection: redisConnectionInstance as any, // Will be resolved lazily
   concurrency: 5, // Process 5 jobs concurrently
   limiter: {
     max: 10, // Max 10 jobs
@@ -451,8 +451,8 @@ export function getQueue<T = any>(name: string): Queue<T> | null {
 export async function closeQueues(): Promise<void> {
   try {
     await Promise.all(Array.from(queues.values()).map((queue) => queue.close()))
-    if (redisConnection) {
-      await redisConnection.quit().catch(() => {
+    if (redisConnectionInstance) {
+      await redisConnectionInstance.quit().catch(() => {
         // Ignore errors during shutdown
       })
     }

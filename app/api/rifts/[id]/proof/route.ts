@@ -479,7 +479,7 @@ export async function POST(
     
     // Return response IMMEDIATELY after transaction
     // All validation and background processing happens after response
-    const finalStatus = newStatus || 'PROOF_SUBMITTED'
+    const transactionStatus = newStatus || 'PROOF_SUBMITTED'
     
     // Run all validation and background processing AFTER response is sent
     // This ensures the user sees immediate success
@@ -683,12 +683,12 @@ export async function POST(
 
     // Return response IMMEDIATELY - all critical operations are complete
     // Status is already updated to PROOF_SUBMITTED in transaction
-    const finalStatus = newStatus || 'PROOF_SUBMITTED'
+    const responseStatus = newStatus || 'PROOF_SUBMITTED'
     
     // Determine status message
-    const statusMessage = finalStatus === 'UNDER_REVIEW'
+    const statusMessage = responseStatus === 'UNDER_REVIEW'
       ? 'Proof submitted successfully. It has been routed for manual review.'
-      : finalStatus === 'DELIVERED_PENDING_RELEASE'
+      : responseStatus === 'DELIVERED_PENDING_RELEASE'
       ? 'Proof submitted successfully. Transfer marked as sent.'
       : 'Proof submitted successfully. Verification in progress.'
     
@@ -793,7 +793,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       proofId: proof.id,
-      status: finalStatus, // Already updated to PROOF_SUBMITTED in transaction
+      status: responseStatus, // Already updated to PROOF_SUBMITTED in transaction
       proofStatus: 'PENDING', // Always PENDING until verification completes
       verificationJobId, // May be null if queue unavailable, that's OK
       vaultAssetIds, // Return uploaded asset IDs for reference
