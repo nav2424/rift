@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest) {
     if (sessionToken) {
       // Get session to log logout
       const { prisma } = await import('@/lib/prisma')
-      const session = await prisma.adminSession.findUnique({
+      const session = await prisma.admin_sessions.findUnique({
         where: { sessionToken },
       })
 
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
         })
 
         // Invalidate session
-        await prisma.adminSession.update({
+        await prisma.admin_sessions.update({
           where: { id: session.id },
           data: { isActive: false },
         })

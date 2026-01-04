@@ -200,15 +200,15 @@ export async function getAdminSession(
   const session = await prisma.admin_sessions.findUnique({
     where: { sessionToken },
     include: {
-      adminUser: {
+      admin_users: {
         include: {
-          roles: {
+          admin_user_roles: {
             include: {
-              role: {
+              admin_roles: {
                 include: {
-                  permissions: {
+                  admin_role_permissions: {
                     include: {
-                      permission: true,
+                      admin_permissions: true,
                     },
                   },
                 },
@@ -241,19 +241,19 @@ export async function getAdminSession(
 
   // Collect all permissions from roles
   const permissions = new Set<AdminPermission>()
-  for (const userRole of session.adminUser.roles) {
-    for (const rolePerm of userRole.role.permissions) {
-      permissions.add(rolePerm.permission.name)
+  for (const userRole of session.admin_users.admin_user_roles) {
+    for (const rolePerm of userRole.admin_roles.admin_role_permissions) {
+      permissions.add(rolePerm.admin_permissions.name)
     }
   }
 
   return {
-    adminUserId: session.adminUser.id,
-    email: session.adminUser.email,
-    name: session.adminUser.name,
-    roles: session.adminUser.roles.map((ur) => ur.role.name),
+    adminUserId: session.admin_users.id,
+    email: session.admin_users.email,
+    name: session.admin_users.name,
+    roles: session.admin_users.admin_user_roles.map((ur) => ur.admin_roles.name),
     permissions: Array.from(permissions),
-    isBreakGlass: session.adminUser.isBreakGlass,
+    isBreakGlass: session.admin_users.isBreakGlass,
     sessionId: session.id,
   }
 }
