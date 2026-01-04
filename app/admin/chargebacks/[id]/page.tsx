@@ -31,7 +31,7 @@ export default async function AdminChargebackDetailPage({
   // Get rift if available
   let rift = null
   if (dispute.rift_id) {
-    rift = await prisma.escrowTransaction.findUnique({
+    rift = await prisma.riftTransaction.findUnique({
       where: { id: dispute.rift_id },
       select: {
         id: true,

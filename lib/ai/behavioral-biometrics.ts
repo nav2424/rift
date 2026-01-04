@@ -28,7 +28,7 @@ export async function analyzeBehavioralPatterns(
   let takeoverRisk = 0
 
   // Get login/activity history from events
-  const recentEvents = await prisma.riftEvent.findMany({
+  const recentEvents = await prisma.rift_events.findMany({
     where: { actorId: userId },
     select: {
       ipHash: true,

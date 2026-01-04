@@ -15,7 +15,7 @@ interface Proof {
   validatedAt: string | null
   validatedBy: string | null
   rejectionReason: string | null
-  rift: {
+  RiftTransaction: {
     id: string
     riftNumber: number | null
     itemTitle: string
@@ -69,7 +69,7 @@ export default function AdminProofsPage() {
       const data = await response.json()
       setProofs(data.proofs || [])
     } catch (error) {
-      console.error('Error fetching proofs:', error)
+      console.error('Error fetching Proof:', error)
     } finally {
       setLoading(false)
     }
@@ -310,10 +310,10 @@ export default function AdminProofsPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-light text-white mb-2">
-                          Rift #{proof.rift.riftNumber || 'N/A'}: {proof.rift.itemTitle}
+                          Rift #{proof.RiftTransaction.riftNumber || 'N/A'}: {proof.RiftTransaction.itemTitle}
                         </h3>
                         <p className="text-sm text-white/60 font-light">
-                          {proof.rift.itemType} • {proof.rift.currency} {proof.rift.subtotal?.toFixed(2) || '0.00'}
+                          {proof.RiftTransaction.itemType} • {proof.RiftTransaction.currency} {proof.RiftTransaction.subtotal?.toFixed(2) || '0.00'}
                         </p>
                       </div>
                       <span className={`px-3 py-1 rounded-lg text-xs font-light border ${getStatusColor(proof.status)}`}>
@@ -325,8 +325,8 @@ export default function AdminProofsPage() {
                     </div>
 
                     <div className="space-y-2 text-sm text-white/70 font-light">
-                      <p><span className="text-white/50">Seller:</span> {proof.rift.seller.name || proof.rift.seller.email}</p>
-                      <p><span className="text-white/50">Buyer:</span> {proof.rift.buyer.name || proof.rift.buyer.email}</p>
+                      <p><span className="text-white/50">Seller:</span> {proof.RiftTransaction.seller.name || proof.RiftTransaction.seller.email}</p>
+                      <p><span className="text-white/50">Buyer:</span> {proof.RiftTransaction.buyer.name || proof.RiftTransaction.buyer.email}</p>
                       <p><span className="text-white/50">Submitted:</span> {new Date(proof.submittedAt).toLocaleString()}</p>
                       {proof.validatedAt && (
                         <p><span className="text-white/50">Validated:</span> {new Date(proof.validatedAt).toLocaleString()}</p>
@@ -382,13 +382,13 @@ export default function AdminProofsPage() {
 
                       <div>
                         <p className="text-xs text-white/50 font-light uppercase mb-1">Rift Status</p>
-                        <p className="text-white font-light">{selectedProof.rift.status}</p>
+                        <p className="text-white font-light">{selectedProof.RiftTransaction.status}</p>
                       </div>
 
                       <div>
                         <p className="text-xs text-white/50 font-light uppercase mb-1">View Rift</p>
                         <a
-                          href={`/rifts/${selectedProof.rift.id}`}
+                          href={`/rifts/${selectedProof.RiftTransaction.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-400 hover:text-blue-300 text-sm font-light"

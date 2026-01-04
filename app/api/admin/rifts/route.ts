@@ -62,8 +62,8 @@ export const GET = withAdminPermission(AdminPermission.RIFT_READ, async (
           },
           _count: {
             select: {
-              disputes: true,
-              vaultAssets: true,
+              Dispute: true,
+              vault_assets: true,
             },
           },
         },

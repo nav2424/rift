@@ -127,6 +127,8 @@ export async function POST(
     // Create shipment proof with verification status
     const shipmentProof = await prisma.shipmentProof.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         escrowId: id,
         trackingNumber: trackingNumber || null,
         shippingCarrier: shippingCarrier || null,
@@ -172,6 +174,7 @@ export async function POST(
 
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: id,
         type: trackingVerified ? 'PROOF_VERIFIED' : 'PROOF_UPLOADED',
         message: verificationMessage + (deliveryStatus === 'DELIVERED' && deliveryDate ? `. Grace period ends ${gracePeriodEndsAt.toLocaleString()}` : ''),

@@ -84,7 +84,7 @@ export async function generateEvidencePacket(
   const timelineEvents = await prisma.timelineEvent.findMany({
     where: { escrowId: riftId },
     include: {
-      createdBy: { select: { name: true, email: true } },
+        User: { select: { name: true, email: true } },
     },
     orderBy: { createdAt: 'asc' },
   })
@@ -93,11 +93,11 @@ export async function generateEvidencePacket(
     timestamp: e.createdAt,
     type: e.type,
     message: e.message,
-    actor: e.createdBy?.name || e.createdBy?.email || 'System',
+    actor: e.User?.name || e.User?.email || 'System',
   }))
 
   // Gather vault assets
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { riftId },
     orderBy: { createdAt: 'asc' },
   })
@@ -113,7 +113,7 @@ export async function generateEvidencePacket(
   }))
 
   // Gather access logs
-  const vaultEvents = await prisma.vaultEvent.findMany({
+  const vaultEvents = await prisma.vault_events.findMany({
     where: { riftId },
     // Note: VaultEvent doesn't have an 'actor' relation - actorId is just a string
     orderBy: { timestampUtc: 'asc' },
@@ -288,7 +288,7 @@ export async function summarizeVaultContent(
   completeness: number // 0-100
   recommendations: string[]
 }> {
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { riftId },
   })
 
@@ -356,7 +356,7 @@ export async function detectSensitiveData(
   types: string[]
   warnings: string[]
 }> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
     select: {
       fileName: true,

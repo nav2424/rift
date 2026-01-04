@@ -133,9 +133,15 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-20 w-[90vw] sm:w-96 h-[600px] max-h-[80vh] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
-          {/* Chat bubble tail pointing right (away from button) */}
-          <div className="absolute -bottom-3 left-6 w-6 h-6 bg-black/95 backdrop-blur-xl border-r border-b border-white/20 transform rotate-45"></div>
+        <>
+          {/* Backdrop - click to close on mobile */}
+          <div 
+            className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Chat Window Container - Centered on mobile, bottom-right on desktop */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:inset-auto md:bottom-6 md:right-6 md:z-20 md:p-0">
+            <div className="w-full max-w-lg h-[85vh] max-h-[700px] md:w-96 md:h-[600px] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -215,7 +221,9 @@ export default function Chatbot() {
               AI responses may be inaccurate. For critical issues, contact support.
             </p>
           </form>
-        </div>
+            </div>
+          </div>
+        </>
       )}
     </>
   )

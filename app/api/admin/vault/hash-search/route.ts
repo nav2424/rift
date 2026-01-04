@@ -29,17 +29,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Find all assets with this hash
-    const assets = await prisma.vaultAsset.findMany({
+    const assets = await prisma.vault_assets.findMany({
       where: { sha256: hash },
       include: {
-        rift: {
+        RiftTransaction: {
           include: {
             buyer: { select: { id: true, email: true, name: true } },
             seller: { select: { id: true, email: true, name: true } },
-            proofs: { where: { status: 'VALID' }, take: 1 },
+            Proof: { where: { status: 'VALID' }, take: 1 },
           },
         },
-        uploader: { select: { id: true, email: true, name: true } },
+        User: { select: { id: true, email: true, name: true } },
       },
       orderBy: { createdAt: 'asc' },
     })
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       const riftId = asset.riftId
       if (!riftsMap.has(riftId)) {
         riftsMap.set(riftId, {
-          rift: asset.rift,
+          rift: asset.RiftTransaction,
           assets: [],
         })
       }
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         assetType: asset.assetType,
         fileName: asset.fileName,
         createdAt: asset.createdAt,
-        uploader: asset.uploader,
+        uploader: asset.User,
       })
     }
 

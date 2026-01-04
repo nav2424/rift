@@ -74,7 +74,7 @@ export async function GET(
       for (const asset of assets) {
         if (asset.assetType === 'LICENSE_KEY') {
           // Check if license key has been revealed
-          const revealEvent = await prisma.vaultEvent.findFirst({
+          const revealEvent = await prisma.vault_events.findFirst({
             where: {
               assetId: asset.id,
               actorId: session.user.id,

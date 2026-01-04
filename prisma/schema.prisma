@@ -45,99 +45,101 @@ model Dispute {
   resolvedAt                      DateTime?
   createdAt                       DateTime           @default(now())
   updatedAt                       DateTime
-  EscrowTransaction               EscrowTransaction  @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  RiftTransaction                 RiftTransaction    @relation(fields: [escrowId], references: [id], onDelete: Cascade)
   User_Dispute_raisedByIdToUser   User               @relation("Dispute_raisedByIdToUser", fields: [raisedById], references: [id])
   User_Dispute_resolvedByIdToUser User?              @relation("Dispute_resolvedByIdToUser", fields: [resolvedById], references: [id])
 }
 
-model EscrowTransaction {
-  id                                    String             @id
-  riftNumber                            Int                @unique
-  itemTitle                             String
-  itemDescription                       String
-  itemType                              ItemType           @default(PHYSICAL)
-  amount                                Float?
-  currency                              String             @default("CAD")
-  status                                EscrowStatus       @default(DRAFT)
-  buyerId                               String
-  sellerId                              String
-  shippingAddress                       String?
-  notes                                 String?
-  paymentReference                      String?
-  stripePaymentIntentId                 String?
-  shipmentVerifiedAt                    DateTime?
-  trackingVerified                      Boolean            @default(false)
-  deliveryVerifiedAt                    DateTime?
-  gracePeriodEndsAt                     DateTime?
-  autoReleaseScheduled                  Boolean            @default(false)
-  eventDate                             String?
-  venue                                 String?
-  transferMethod                        String?
-  downloadLink                          String?
-  licenseKey                            String?
-  serviceDate                           String?
-  createdAt                             DateTime           @default(now())
-  updatedAt                             DateTime
-  platformFee                           Float?
-  sellerPayoutAmount                    Float?
-  subtotal                              Float
-  buyerFee                              Float
-  sellerFee                             Float
-  sellerNet                             Float?
-  stripeChargeId                        String?
-  autoReleaseAt                         DateTime?
-  proofSubmittedAt                      DateTime?
-  fundedAt                              DateTime?
-  releasedAt                            DateTime?
-  version                               Int                @default(0)
-  allowsPartialRelease                  Boolean            @default(false)
-  completionCriteria                    String?
-  fileStorageType                       String?
-  licenseKeyRevealed                    Boolean            @default(false)
-  licenseKeyType                        String?
-  licensePlatform                       String?
-  milestones                            Json?
-  quantity                              Int?
-  seatDetails                           String?
-  serviceDeliverables                   String?
-  serviceScope                          String?
-  requiresManualReview                  Boolean            @default(false)
-  eventDateTz                           DateTime?
-  holdUntil                             DateTime?
-  riskScore                             Int                @default(0)
-  releaseEligibleAt                     DateTime?
-  requiresBuyerConfirmation             Boolean            @default(false)
-  stripeCustomerId                      String?
-  paidAt                                DateTime?
-  Dispute                               Dispute[]
-  buyer                                 User               @relation("EscrowBuyer", fields: [buyerId], references: [id])
-  seller                                User               @relation("EscrowSeller", fields: [sellerId], references: [id])
-  MilestoneRelease                      MilestoneRelease[]
-  Payout                                Payout[]
-  Proof                                 Proof[]
-  ShipmentProof                         ShipmentProof[]
-  TimelineEvent                         TimelineEvent[]
-  admin_reviews                         admin_reviews[]
-  rift_events                           rift_events[]
-  vault_assets                          vault_assets[]
-  vault_events                          vault_events[]
+model RiftTransaction {
+  id                        String             @id
+  riftNumber                Int                @unique
+  itemTitle                 String
+  itemDescription           String
+  itemType                  ItemType           @default(PHYSICAL)
+  amount                    Float?
+  currency                  String             @default("CAD")
+  status                    EscrowStatus       @default(DRAFT)
+  buyerId                   String
+  sellerId                  String
+  shippingAddress           String?
+  notes                     String?
+  paymentReference          String?
+  stripePaymentIntentId     String?
+  shipmentVerifiedAt        DateTime?
+  trackingVerified          Boolean            @default(false)
+  deliveryVerifiedAt        DateTime?
+  gracePeriodEndsAt         DateTime?
+  autoReleaseScheduled      Boolean            @default(false)
+  eventDate                 String?
+  venue                     String?
+  transferMethod            String?
+  downloadLink              String?
+  licenseKey                String?
+  serviceDate               String?
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime
+  platformFee               Float?
+  sellerPayoutAmount        Float?
+  subtotal                  Float
+  buyerFee                  Float
+  sellerFee                 Float
+  sellerNet                 Float?
+  stripeChargeId            String?
+  autoReleaseAt             DateTime?
+  proofSubmittedAt          DateTime?
+  fundedAt                  DateTime?
+  releasedAt                DateTime?
+  version                   Int                @default(0)
+  allowsPartialRelease      Boolean            @default(false)
+  completionCriteria        String?
+  fileStorageType           String?
+  licenseKeyRevealed        Boolean            @default(false)
+  licenseKeyType            String?
+  licensePlatform           String?
+  milestones                Json?
+  quantity                  Int?
+  seatDetails               String?
+  serviceDeliverables       String?
+  serviceScope              String?
+  requiresManualReview      Boolean            @default(false)
+  eventDateTz               DateTime?
+  holdUntil                 DateTime?
+  riskScore                 Int                @default(0)
+  releaseEligibleAt         DateTime?
+  requiresBuyerConfirmation Boolean            @default(false)
+  stripeCustomerId          String?
+  paidAt                    DateTime?
+  Dispute                   Dispute[]
+  buyer                     User               @relation("EscrowBuyer", fields: [buyerId], references: [id])
+  seller                    User               @relation("EscrowSeller", fields: [sellerId], references: [id])
+  MilestoneRelease          MilestoneRelease[]
+  Payout                    Payout[]
+  Proof                     Proof[]
+  ShipmentProof             ShipmentProof[]
+  TimelineEvent             TimelineEvent[]
+  admin_reviews             admin_reviews[]
+  rift_events               rift_events[]
+  vault_assets              vault_assets[]
+  vault_events              vault_events[]
+
+  @@map("EscrowTransaction")
 }
 
 model MilestoneRelease {
-  id                String            @id
-  riftId            String
-  milestoneIndex    Int
-  milestoneTitle    String
-  milestoneAmount   Float
-  releasedAmount    Float
-  sellerFee         Float
-  sellerNet         Float
-  releasedBy        String
-  releasedAt        DateTime          @default(now())
-  status            String            @default("RELEASED")
-  payoutId          String?
-  notes             String?
-  EscrowTransaction EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  id              String          @id
+  riftId          String
+  milestoneIndex  Int
+  milestoneTitle  String
+  milestoneAmount Float
+  releasedAmount  Float
+  sellerFee       Float
+  sellerNet       Float
+  releasedBy      String
+  releasedAt      DateTime        @default(now())
+  status          String          @default("RELEASED")
+  payoutId        String?
+  notes           String?
+  RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([releasedAt])
   @@index([releasedBy])
@@ -145,22 +147,22 @@ model MilestoneRelease {
 }
 
 model Payout {
-  id                String             @id
-  userId            String
-  riftId            String?
-  amount            Float
-  currency          String             @default("CAD")
-  status            PayoutStatus       @default(PENDING)
-  scheduledAt       DateTime?
-  processedAt       DateTime?
-  stripePayoutId    String?
-  stripeTransferId  String?
-  failureReason     String?
-  metadata          Json?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime
-  EscrowTransaction EscrowTransaction? @relation(fields: [riftId], references: [id])
-  User              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String           @id
+  userId           String
+  riftId           String?
+  amount           Float
+  currency         String           @default("CAD")
+  status           PayoutStatus     @default(PENDING)
+  scheduledAt      DateTime?
+  processedAt      DateTime?
+  stripePayoutId   String?
+  stripeTransferId String?
+  failureReason    String?
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  RiftTransaction  RiftTransaction? @relation(fields: [riftId], references: [id])
+  User             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([riftId])
   @@index([status, scheduledAt])
@@ -168,92 +170,92 @@ model Payout {
 }
 
 model Proof {
-  id                String            @id
-  riftId            String
-  proofType         ProofType
-  proofPayload      Json
-  uploadedFiles     String[]
-  status            ProofStatus       @default(PENDING)
-  submittedAt       DateTime          @default(now())
-  validatedAt       DateTime?
-  validatedBy       String?
-  rejectionReason   String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime
-  EscrowTransaction EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  id              String          @id
+  riftId          String
+  proofType       ProofType
+  proofPayload    Json
+  uploadedFiles   String[]
+  status          ProofStatus     @default(PENDING)
+  submittedAt     DateTime        @default(now())
+  validatedAt     DateTime?
+  validatedBy     String?
+  rejectionReason String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([riftId])
   @@index([status])
 }
 
 model ShipmentProof {
-  id                String            @id
-  escrowId          String
-  trackingNumber    String?
-  shippingCarrier   String?
-  filePath          String?
-  notes             String?
-  verified          Boolean           @default(false)
-  deliveryStatus    String?
-  deliveryDate      DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime
-  EscrowTransaction EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  id              String          @id
+  escrowId        String
+  trackingNumber  String?
+  shippingCarrier String?
+  filePath        String?
+  notes           String?
+  verified        Boolean         @default(false)
+  deliveryStatus  String?
+  deliveryDate    DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  RiftTransaction RiftTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
 }
 
 model TimelineEvent {
-  id                String            @id
-  escrowId          String
-  type              String
-  message           String
-  createdById       String?
-  createdAt         DateTime          @default(now())
-  User              User?             @relation(fields: [createdById], references: [id])
-  EscrowTransaction EscrowTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  id              String          @id
+  escrowId        String
+  type            String
+  message         String
+  createdById     String?
+  createdAt       DateTime        @default(now())
+  User            User?           @relation(fields: [createdById], references: [id])
+  RiftTransaction RiftTransaction @relation(fields: [escrowId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id                                                 String              @id
-  name                                               String?
-  email                                              String              @unique
-  phone                                              String?             @unique
-  passwordHash                                       String
-  role                                               String              @default("USER")
-  createdAt                                          DateTime            @default(now())
-  updatedAt                                          DateTime
-  totalProcessedAmount                               Float               @default(0)
-  availableBalance                                   Float               @default(0)
-  pendingBalance                                     Float               @default(0)
-  numCompletedTransactions                           Int                 @default(0)
-  averageRating                                      Float?
-  responseTimeMs                                     Int?
-  level                                              String              @default("ROOKIE")
-  xp                                                 Int                 @default(0)
-  showInActivityFeed                                 Boolean             @default(true)
-  showAmountsInFeed                                  Boolean             @default(true)
-  idVerified                                         Boolean             @default(false)
-  bankVerified                                       Boolean             @default(false)
-  emailVerified                                      Boolean             @default(false)
-  phoneVerified                                      Boolean             @default(false)
-  stripeConnectAccountId                             String?
-  stripeIdentityVerified                             Boolean             @default(false)
-  riftUserId                                         String?             @unique
-  Activity                                           Activity[]
-  Dispute_Dispute_raisedByIdToUser                   Dispute[]           @relation("Dispute_raisedByIdToUser")
-  Dispute_Dispute_resolvedByIdToUser                 Dispute[]           @relation("Dispute_resolvedByIdToUser")
-  buyerTransactions                                  EscrowTransaction[] @relation("EscrowBuyer")
-  sellerTransactions                                 EscrowTransaction[] @relation("EscrowSeller")
-  Payout                                             Payout[]
-  TimelineEvent                                      TimelineEvent[]
-  UserBadge                                          UserBadge[]
-  UserBlock_UserBlock_blockedByIdToUser              UserBlock[]         @relation("UserBlock_blockedByIdToUser")
-  UserBlock_UserBlock_userIdToUser                   UserBlock[]         @relation("UserBlock_userIdToUser")
-  UserMilestone                                      UserMilestone[]
-  UserRiskProfile                                    UserRiskProfile?
-  VerificationCode                                   VerificationCode[]
-  WalletAccount                                      WalletAccount?
-  admin_reviews                                      admin_reviews[]
-  vault_assets                                       vault_assets[]
+  id                                    String             @id
+  name                                  String?
+  email                                 String             @unique
+  phone                                 String?            @unique
+  passwordHash                          String
+  role                                  String             @default("USER")
+  createdAt                             DateTime           @default(now())
+  updatedAt                             DateTime
+  totalProcessedAmount                  Float              @default(0)
+  availableBalance                      Float              @default(0)
+  pendingBalance                        Float              @default(0)
+  numCompletedTransactions              Int                @default(0)
+  averageRating                         Float?
+  responseTimeMs                        Int?
+  level                                 String             @default("ROOKIE")
+  xp                                    Int                @default(0)
+  showInActivityFeed                    Boolean            @default(true)
+  showAmountsInFeed                     Boolean            @default(true)
+  idVerified                            Boolean            @default(false)
+  bankVerified                          Boolean            @default(false)
+  emailVerified                         Boolean            @default(false)
+  phoneVerified                         Boolean            @default(false)
+  stripeConnectAccountId                String?
+  stripeIdentityVerified                Boolean            @default(false)
+  riftUserId                            String?            @unique
+  Activity                              Activity[]
+  Dispute_Dispute_raisedByIdToUser      Dispute[]          @relation("Dispute_raisedByIdToUser")
+  Dispute_Dispute_resolvedByIdToUser    Dispute[]          @relation("Dispute_resolvedByIdToUser")
+  buyerTransactions                     RiftTransaction[]  @relation("EscrowBuyer")
+  sellerTransactions                    RiftTransaction[]  @relation("EscrowSeller")
+  Payout                                Payout[]
+  TimelineEvent                         TimelineEvent[]
+  UserBadge                             UserBadge[]
+  UserBlock_UserBlock_blockedByIdToUser UserBlock[]        @relation("UserBlock_blockedByIdToUser")
+  UserBlock_UserBlock_userIdToUser      UserBlock[]        @relation("UserBlock_userIdToUser")
+  UserMilestone                         UserMilestone[]
+  UserRiskProfile                       UserRiskProfile?
+  VerificationCode                      VerificationCode[]
+  WalletAccount                         WalletAccount?
+  admin_reviews                         admin_reviews[]
+  vault_assets                          vault_assets[]
 
   @@index([riftUserId])
 }
@@ -401,16 +403,16 @@ model admin_permissions {
 }
 
 model admin_reviews {
-  id                String            @id
-  riftId            String
-  reviewerId        String?
-  status            AdminReviewStatus @default(OPEN)
-  reasonsJson       Json?
-  notes             String?
-  createdAt         DateTime          @default(now())
-  resolvedAt        DateTime?
-  User              User?             @relation(fields: [reviewerId], references: [id])
-  EscrowTransaction EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  id              String            @id
+  riftId          String
+  reviewerId      String?
+  status          AdminReviewStatus @default(OPEN)
+  reasonsJson     Json?
+  notes           String?
+  createdAt       DateTime          @default(now())
+  resolvedAt      DateTime?
+  User            User?             @relation(fields: [reviewerId], references: [id])
+  RiftTransaction RiftTransaction   @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([reviewerId])
   @@index([riftId])
@@ -512,7 +514,7 @@ model rift_events {
   deviceFingerprint String?
   userAgent         String?
   createdAt         DateTime           @default(now())
-  EscrowTransaction EscrowTransaction  @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  RiftTransaction   RiftTransaction    @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([actorType, actorId])
   @@index([eventType])
@@ -554,7 +556,7 @@ model stripe_webhook_events {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model vault_assets {
-  id                 String            @id
+  id                 String          @id
   riftId             String
   uploaderId         String
   assetType          VaultAssetType
@@ -562,7 +564,7 @@ model vault_assets {
   fileName           String?
   sha256             String
   mimeDetected       String?
-  scanStatus         VaultScanStatus   @default(PENDING)
+  scanStatus         VaultScanStatus @default(PENDING)
   qualityScore       Int?
   metadataJson       Json?
   supersedesAssetId  String?
@@ -570,14 +572,14 @@ model vault_assets {
   url                String?
   trackingNumber     String?
   textContent        String?
-  createdAt          DateTime          @default(now())
+  createdAt          DateTime        @default(now())
   canonicalSha256    String?
   perceptualHash     String?
   averageHash        String?
-  EscrowTransaction  EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
-  vault_assets       vault_assets?     @relation("vault_assetsTovault_assets", fields: [supersedesAssetId], references: [id])
-  other_vault_assets vault_assets[]    @relation("vault_assetsTovault_assets")
-  User               User              @relation(fields: [uploaderId], references: [id])
+  RiftTransaction    RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  vault_assets       vault_assets?   @relation("vault_assetsTovault_assets", fields: [supersedesAssetId], references: [id])
+  other_vault_assets vault_assets[]  @relation("vault_assetsTovault_assets")
+  User               User            @relation(fields: [uploaderId], references: [id])
   vault_events       vault_events[]
 
   @@index([averageHash])
@@ -590,13 +592,13 @@ model vault_assets {
 }
 
 model vault_events {
-  id                String            @id
+  id                String          @id
   riftId            String
   assetId           String?
   actorId           String?
   actorRole         VaultActorRole
   eventType         VaultEventType
-  timestampUtc      DateTime          @default(now())
+  timestampUtc      DateTime        @default(now())
   ipHash            String?
   userAgentHash     String?
   sessionId         String?
@@ -605,8 +607,8 @@ model vault_events {
   prevLogHash       String?
   logHash           String
   metadata          Json?
-  vault_assets      vault_assets?     @relation(fields: [assetId], references: [id])
-  EscrowTransaction EscrowTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  vault_assets      vault_assets?   @relation(fields: [assetId], references: [id])
+  RiftTransaction   RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
   @@index([actorId, actorRole])
   @@index([assetId])

@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Account created successfully',
       userId: user.id,
-      user: {
+      User: {
         id: user.id,
         email: user.email,
         name: user.name,

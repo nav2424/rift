@@ -30,7 +30,7 @@ export async function processAutoReleases() {
       status: {
         in: ['PROOF_SUBMITTED', 'UNDER_REVIEW'],
       },
-      disputes: {
+      Dispute: {
         none: {
           status: 'OPEN',
         },
@@ -39,10 +39,10 @@ export async function processAutoReleases() {
     include: {
       seller: true,
       buyer: true,
-      disputes: {
+      Dispute: {
         where: { status: 'OPEN' },
       },
-      proofs: {
+      Proof: {
         where: { status: 'VALID' },
         take: 1,
       },
@@ -54,13 +54,13 @@ export async function processAutoReleases() {
   for (const rift of riftsToAutoRelease) {
     try {
       // Double-check no disputes were raised
-      if (rift.disputes.length > 0) {
+      if (rift.Dispute.length > 0) {
         console.log(`Skipping auto-release for ${rift.id}: open disputes exist`)
         continue
       }
 
       // Verify proof is valid (must be VALID status, not just PENDING)
-      const validProofs = rift.proofs.filter(p => p.status === 'VALID')
+      const validProofs = rift.Proof.filter(p => p.status === 'VALID')
       if (validProofs.length === 0) {
         console.log(`Skipping auto-release for ${rift.id}: no valid proof (proofs are PENDING or REJECTED)`)
         continue
@@ -81,6 +81,7 @@ export async function processAutoReleases() {
       const riftValue = rift.subtotal ?? 0
       await prisma.timelineEvent.create({
         data: {
+          id: crypto.randomUUID(),
           escrowId: rift.id,
           type: 'FUNDS_AUTO_RELEASED',
           message: `Funds automatically released. Amount: ${rift.currency} ${riftValue.toFixed(2)}`,
@@ -169,14 +170,14 @@ export async function updateDeliveryStatus() {
       shipmentVerifiedAt: { not: null },
       deliveryVerifiedAt: null, // Not yet delivered
       status: 'IN_TRANSIT',
-      shipmentProofs: {
+        ShipmentProof: {
         some: {
           trackingNumber: { not: null },
         },
       },
     },
     include: {
-      shipmentProofs: {
+        ShipmentProof: {
         where: { trackingNumber: { not: null } },
         orderBy: { createdAt: 'desc' },
         take: 1,
@@ -187,7 +188,7 @@ export async function updateDeliveryStatus() {
   const results = []
 
   for (const rift of rifts) {
-    const latestProof = rift.shipmentProofs[0]
+    const latestProof = rift.ShipmentProof[0]
     if (!latestProof || !latestProof.trackingNumber) continue
 
     try {

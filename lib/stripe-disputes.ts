@@ -184,6 +184,7 @@ export async function handleStripeDisputeCreated(
   // Create timeline event
   await prisma.timelineEvent.create({
     data: {
+        id: crypto.randomUUID(),
       escrowId: rift.id,
       type: 'CHARGEBACK',
       message: `Stripe dispute created: ${rift.currency} ${(amountCents / 100).toFixed(2)}. Status: ${status}`,
@@ -382,6 +383,7 @@ export async function handleStripeDisputeClosed(
   // Create timeline event
   await prisma.timelineEvent.create({
     data: {
+        id: crypto.randomUUID(),
       escrowId: existing.rift_id,
       type: outcome === 'won' ? 'DISPUTE_RESOLVED' : 'CHARGEBACK',
       message: `Stripe dispute ${outcome === 'won' ? 'resolved in favor of seller' : 'lost - refund processed'}`,

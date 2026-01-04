@@ -48,14 +48,14 @@ export async function GET(
             riftUserId: true,
           },
         },
-        vaultAssets: {
+        vault_assets: {
           orderBy: { createdAt: 'asc' },
         },
-        vaultEvents: {
+        vault_events: {
           orderBy: { timestampUtc: 'desc' },
           take: 50,
           include: {
-            asset: {
+            vault_assets: {
               select: {
                 id: true,
                 assetType: true,
@@ -64,11 +64,11 @@ export async function GET(
             },
           },
         },
-        adminReviews: {
+        admin_reviews: {
           orderBy: { createdAt: 'desc' },
           take: 10,
           include: {
-            reviewer: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -86,8 +86,8 @@ export async function GET(
 
     // Get buyer access history for each asset
     const assetsWithHistory = await Promise.all(
-      rift.vaultAssets.map(async (asset) => {
-        const buyerEvents = await prisma.vaultEvent.findMany({
+      rift.vault_assets.map(async (asset) => {
+        const buyerEvents = await prisma.vault_events.findMany({
           where: {
             assetId: asset.id,
             actorRole: 'BUYER',
@@ -127,8 +127,8 @@ export async function GET(
         seller: rift.seller,
       },
       assets: assetsWithHistory,
-      events: rift.vaultEvents,
-      reviews: rift.adminReviews,
+      events: rift.vault_events,
+      reviews: rift.admin_reviews,
     })
   } catch (error: any) {
     console.error('Admin vault GET error:', error)
@@ -161,7 +161,7 @@ export async function POST(
       return NextResponse.json({ error: 'Asset ID required' }, { status: 400 })
     }
 
-    const asset = await prisma.vaultAsset.findUnique({
+    const asset = await prisma.vault_assets.findUnique({
       where: { id: assetId },
     })
 

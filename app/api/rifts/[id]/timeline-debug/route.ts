@@ -22,7 +22,7 @@ export async function GET(
     const events = await prisma.timelineEvent.findMany({
       where: { escrowId: id },
       include: {
-        createdBy: {
+          User: {
           select: {
             name: true,
             email: true,
@@ -36,7 +36,7 @@ export async function GET(
     const rift = await prisma.riftTransaction.findUnique({
       where: { id },
       include: {
-        proofs: {
+        Proof: {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
@@ -46,14 +46,14 @@ export async function GET(
     return NextResponse.json({
       riftId: id,
       riftStatus: rift?.status,
-      latestProofStatus: rift?.proofs[0]?.status,
+      latestProofStatus: rift?.Proof[0]?.status,
       totalEvents: events.length,
       events: events.map(e => ({
         id: e.id,
         type: e.type,
         message: e.message,
         createdAt: e.createdAt,
-        createdBy: e.createdBy?.name || e.createdBy?.email || 'System',
+        createdBy: e.User?.name || e.User?.email || 'System',
       })),
     })
   } catch (error: any) {

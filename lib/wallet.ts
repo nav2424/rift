@@ -62,6 +62,7 @@ export async function creditSellerOnRelease(
     // Create ledger entry
     await tx.walletLedgerEntry.create({
       data: {
+        id: crypto.randomUUID(),
         walletAccountId: wallet.id,
         type: WalletLedgerType.CREDIT_RELEASE,
         amount,
@@ -102,6 +103,7 @@ export async function debitSellerOnWithdrawal(
   await prisma.$transaction(async (tx) => {
     await tx.walletLedgerEntry.create({
       data: {
+        id: crypto.randomUUID(),
         walletAccountId: wallet.id,
         type: WalletLedgerType.DEBIT_WITHDRAWAL,
         amount: -amount, // Negative for debit
@@ -137,6 +139,7 @@ export async function debitSellerOnChargeback(
   await prisma.$transaction(async (tx) => {
     await tx.walletLedgerEntry.create({
       data: {
+        id: crypto.randomUUID(),
         walletAccountId: wallet.id,
         type: WalletLedgerType.DEBIT_CHARGEBACK,
         amount: -amount,
@@ -173,6 +176,7 @@ export async function debitSellerOnRefund(
   await prisma.$transaction(async (tx) => {
     await tx.walletLedgerEntry.create({
       data: {
+        id: crypto.randomUUID(),
         walletAccountId: wallet.id,
         type: WalletLedgerType.DEBIT_REFUND,
         amount: -amount,

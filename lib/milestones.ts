@@ -99,6 +99,7 @@ export async function checkAndAwardMilestones(
       // @ts-ignore - Prisma client will be generated after migration
       await prisma.userMilestone.create({
         data: {
+          id: crypto.randomUUID(),
           userId,
           type: definition.type,
           title: definition.title,

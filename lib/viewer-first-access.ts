@@ -30,10 +30,10 @@ export async function getViewerOnlyAssetUrl(
   rawUrl?: never // Never return raw URL if forceViewer is true
   requiresViewer: boolean
 }> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
-    include: {
-      rift: {
+        include: {
+          RiftTransaction: {
         select: {
           id: true,
           riftNumber: true,
@@ -49,7 +49,7 @@ export async function getViewerOnlyAssetUrl(
   }
   
   // Verify viewer is the buyer
-  if (asset.rift.buyerId !== context.userId) {
+  if (asset.RiftTransaction.buyerId !== context.userId) {
     throw new Error('Unauthorized: Only buyer can access assets')
   }
   
@@ -85,7 +85,7 @@ export async function getViewerOnlyAssetUrl(
       const watermarkOverlay = await generateDynamicWatermarkOverlay(
         {
           transactionId: riftId,
-          riftNumber: asset.rift.riftNumber,
+          riftNumber: asset.RiftTransaction.riftNumber,
           buyerId: context.userId,
           timestamp: new Date(),
         },
@@ -126,7 +126,7 @@ export async function revealLicenseKeyOneTime(
   canRevealAgain: boolean
 }> {
   // Check if already revealed
-  const existingReveal = await prisma.vaultEvent.findFirst({
+  const existingReveal = await prisma.vault_events.findFirst({
     where: {
       riftId,
       assetId,
@@ -141,7 +141,7 @@ export async function revealLicenseKeyOneTime(
   if (!isFirstReveal) {
     // Already revealed - require admin override to reveal again
     // Check if admin override exists
-    const adminOverride = await prisma.vaultEvent.findFirst({
+    const adminOverride = await prisma.vault_events.findFirst({
       where: {
         riftId,
         assetId,
@@ -160,7 +160,7 @@ export async function revealLicenseKeyOneTime(
   }
   
   // Get asset
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
   })
   
@@ -198,7 +198,7 @@ export async function revealLicenseKeyOneTime(
   // Check for admin override if not first reveal
   let hasAdminOverride = false
   if (!isFirstReveal) {
-    const adminOverrideCheck = await prisma.vaultEvent.findFirst({
+    const adminOverrideCheck = await prisma.vault_events.findFirst({
       where: {
         riftId,
         assetId,

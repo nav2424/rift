@@ -28,7 +28,7 @@ export async function generateDailyRoot(date: Date): Promise<DailyRoot | null> {
   endOfDay.setHours(23, 59, 59, 999)
   
   // Get all events for the day (from all Rifts)
-  const events = await prisma.vaultEvent.findMany({
+  const events = await prisma.vault_events.findMany({
     where: {
       timestampUtc: {
         gte: startOfDay,
@@ -168,7 +168,7 @@ export async function verifyCompleteAuditChain(riftId: string): Promise<{
   const warnings: string[] = []
   
   // Get all events for this Rift
-  const events = await prisma.vaultEvent.findMany({
+  const events = await prisma.vault_events.findMany({
     where: { riftId },
     orderBy: { timestampUtc: 'asc' },
   })

@@ -114,6 +114,8 @@ export async function POST(request: NextRequest) {
     // Create payout record
     const payout = await prisma.payout.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         userId: auth.userId,
         amount,
         currency,

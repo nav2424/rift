@@ -197,6 +197,7 @@ export async function createAdminSession(
   // Create session
   const session = await prisma.admin_sessions.create({
     data: {
+      id: crypto.randomUUID(),
       adminUserId,
       sessionToken,
       ipHash: hashIp(ip),
@@ -368,7 +369,7 @@ export async function requireReAuth(
   session: AdminSession,
   password: string
 ): Promise<boolean> {
-  const adminUser = await prisma.adminUser.findUnique({
+  const adminUser = await prisma.admin_users.findUnique({
     where: { id: session.adminUserId },
   })
 

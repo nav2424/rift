@@ -205,6 +205,8 @@ async function testLicenseKeyFormatValidation() {
     
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999999,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -319,6 +321,8 @@ async function testVaultAssetUpload() {
     
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999998,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -341,7 +345,7 @@ async function testVaultAssetUpload() {
         licenseKey: 'TEST-KEY-12345',
       })
       
-      const asset = await prisma.vaultAsset.findUnique({
+      const asset = await prisma.vault_assets.findUnique({
         where: { id: assetId },
       })
       
@@ -377,7 +381,7 @@ async function testVaultAssetUpload() {
         url: 'https://example.com/download',
       })
       
-      const asset = await prisma.vaultAsset.findUnique({
+      const asset = await prisma.vault_assets.findUnique({
         where: { id: assetId },
       })
       
@@ -401,7 +405,7 @@ async function testVaultAssetUpload() {
         trackingNumber: '1Z999AA10123456784',
       })
       
-      const asset = await prisma.vaultAsset.findUnique({
+      const asset = await prisma.vault_assets.findUnique({
         where: { id: assetId },
       })
       
@@ -425,7 +429,7 @@ async function testVaultAssetUpload() {
         textContent: 'Download instructions: Go to example.com and enter code ABC123',
       })
       
-      const asset = await prisma.vaultAsset.findUnique({
+      const asset = await prisma.vault_assets.findUnique({
         where: { id: assetId },
       })
       
@@ -491,6 +495,8 @@ async function testVaultAssetUpload() {
     // Test 7: Cannot upload in wrong status
     const wrongStatusRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999997,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -527,7 +533,7 @@ async function testVaultAssetUpload() {
     // Cleanup
     await prisma.riftTransaction.delete({ where: { id: testRift.id } }).catch(() => {})
     await prisma.riftTransaction.delete({ where: { id: wrongStatusRift.id } }).catch(() => {})
-    await prisma.vaultAsset.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_assets.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
     
   } catch (error: any) {
     logTest('Vault Asset Upload Tests', false, error.message)
@@ -546,6 +552,8 @@ async function testLicenseKeyDecryption() {
     
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999996,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -630,8 +638,8 @@ async function testLicenseKeyDecryption() {
     
     // Cleanup
     await prisma.riftTransaction.delete({ where: { id: testRift.id } }).catch(() => {})
-    await prisma.vaultAsset.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
-    await prisma.vaultEvent.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_assets.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_events.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
     
   } catch (error: any) {
     logTest('License Key Decryption Tests', false, error.message)
@@ -650,6 +658,8 @@ async function testVerificationPipeline() {
     
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999995,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -688,7 +698,7 @@ async function testVerificationPipeline() {
       )
       
       // Test 2: Asset updated with results
-      const asset = await prisma.vaultAsset.findUnique({
+      const asset = await prisma.vault_assets.findUnique({
         where: { id: assetId },
       })
       
@@ -736,8 +746,8 @@ async function testVerificationPipeline() {
     
     // Cleanup
     await prisma.riftTransaction.delete({ where: { id: testRift.id } }).catch(() => {})
-    await prisma.vaultAsset.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
-    await prisma.vaultEvent.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_assets.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_events.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
     
   } catch (error: any) {
     logTest('Verification Pipeline Tests', false, error.message)
@@ -757,6 +767,8 @@ async function testStateTransitions() {
     // Test 1: FUNDED -> PROOF_SUBMITTED
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999994,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',
@@ -792,7 +804,7 @@ async function testStateTransitions() {
     
     // Cleanup
     await prisma.riftTransaction.delete({ where: { id: testRift.id } }).catch(() => {})
-    await prisma.vaultAsset.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
+    await prisma.vault_assets.deleteMany({ where: { riftId: testRift.id } }).catch(() => {})
     
   } catch (error: any) {
     logTest('State Transitions Tests', false, error.message)
@@ -859,6 +871,8 @@ async function testErrorHandling() {
     
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999993,
         itemTitle: 'Test Rift',
         itemDescription: 'Test',

@@ -49,12 +49,12 @@ export async function POST(
           : 'ESCALATED'
 
     // Check if review already exists
-    const existingReview = await prisma.adminReview.findFirst({
+    const existingReview = await prisma.admin_reviews.findFirst({
       where: { riftId },
     })
 
     const review = existingReview
-      ? await prisma.adminReview.update({
+      ? await prisma.admin_reviews.update({
           where: { id: existingReview.id },
           data: {
             reviewerId: session.user.id,
@@ -64,8 +64,9 @@ export async function POST(
             resolvedAt: action === 'APPROVE' || action === 'REJECT' ? new Date() : null,
           },
         })
-      : await prisma.adminReview.create({
+      : await prisma.admin_reviews.create({
           data: {
+            id: crypto.randomUUID(),
             riftId,
             reviewerId: session.user.id,
             status: reviewStatus,

@@ -450,7 +450,7 @@ export async function predictChargebackProbability(
   // Check buyer's chargeback history
   const buyerChargebacks = await prisma.walletLedgerEntry.count({
     where: {
-      walletAccount: {
+      WalletAccount: {
         userId: rift.buyerId,
       },
       type: 'DEBIT_CHARGEBACK',
@@ -492,7 +492,7 @@ export async function predictChargebackProbability(
     }
   } catch (supabaseError) {
     // If Supabase is not configured, skip dispute count
-    console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+    console.warn('Supabase not configured or error fetching Dispute:', supabaseError)
   }
 
   if (buyerDisputes >= 3) {

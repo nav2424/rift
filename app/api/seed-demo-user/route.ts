@@ -49,7 +49,7 @@ export async function POST() {
       userId: user.id,
     })
   } catch (error) {
-    console.error('Error creating demo user:', error)
+    console.error('Error creating demo User:', error)
     return NextResponse.json(
       { error: 'Failed to create demo user' },
       { status: 500 }

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         status: status as any,
       },
       include: {
-        rift: {
+        RiftTransaction: {
           include: {
             buyer: {
               select: {

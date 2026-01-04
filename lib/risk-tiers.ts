@@ -32,6 +32,8 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
   if (!riskProfile) {
     riskProfile = await prisma.userRiskProfile.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         userId,
         tier: RiskTier.TIER0_NEW,
         completedRifts: 0,
@@ -67,7 +69,7 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
   
   const recentChargebacks = await prisma.walletLedgerEntry.count({
     where: {
-      walletAccount: { userId },
+      WalletAccount: { userId },
       type: 'DEBIT_CHARGEBACK',
       createdAt: { gte: sixtyDaysAgo },
     },
@@ -103,7 +105,7 @@ export async function calculateRiskTier(userId: string): Promise<RiskTier> {
     }
   } catch (supabaseError) {
     // If Supabase is not configured, skip dispute count
-    console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+    console.warn('Supabase not configured or error fetching Dispute:', supabaseError)
   }
 
   // Update risk profile
@@ -240,6 +242,8 @@ export async function schedulePayout(
 
   const payout = await prisma.payout.create({
     data: {
+        updatedAt: new Date(),
+        id: crypto.randomUUID(),
       userId: sellerId,
       riftId,
       amount,

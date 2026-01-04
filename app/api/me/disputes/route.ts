@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
     // Filter out disputes where rift is null (shouldn't happen, but safety check)
     const validDisputes = enrichedDisputes.filter(d => d.rift !== null);
 
-    return NextResponse.json({ disputes: validDisputes });
+    return NextResponse.json({ Dispute: validDisputes });
   } catch (error) {
     console.error('Get user disputes error:', error);
     return NextResponse.json(

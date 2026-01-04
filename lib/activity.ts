@@ -26,6 +26,7 @@ export async function createActivity(
   // @ts-ignore - Prisma client will be generated after migration
   return prisma.activity.create({
     data: {
+      id: crypto.randomUUID(),
       userId,
       type,
       summary,
@@ -43,12 +44,12 @@ export async function getActivityFeed(limit: number = 50) {
   // @ts-ignore - Prisma client will be generated after migration
   const activities = await prisma.activity.findMany({
     where: {
-      user: {
+      User: {
         showInActivityFeed: true,
       },
     },
     include: {
-      user: {
+      User: {
         select: {
           id: true,
           name: true,
@@ -68,20 +69,20 @@ export async function getActivityFeed(limit: number = 50) {
     let summary = activity.summary
 
     // Mask amounts if user has disabled amount display
-    if (!activity.user.showAmountsInFeed && activity.amount) {
+    if (!activity.User.showAmountsInFeed && activity.amount) {
       // Remove amount from summary if present
       summary = summary.replace(/\$[\d,]+\.?\d*/g, 'an amount')
       summary = summary.replace(/for \$[\d,]+\.?\d*/g, 'for an amount')
     }
 
     // Format user name (first name + last initial)
-    const userName = formatUserName(activity.user.name || activity.user.email)
+    const userName = formatUserName(activity.User.name || activity.User.email)
 
     return {
       id: activity.id,
       type: activity.type,
       summary: `${userName} ${summary}`,
-      amount: activity.user.showAmountsInFeed ? activity.amount : null,
+      amount: activity.User.showAmountsInFeed ? activity.amount : null,
       createdAt: activity.createdAt,
     }
   })

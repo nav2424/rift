@@ -62,7 +62,7 @@ export default function DisputesPage() {
         setDisputes(data.disputes || [])
       }
     } catch (error) {
-      console.error('Error loading disputes:', error)
+      console.error('Error loading Dispute:', error)
     } finally {
       setLoading(false)
     }

@@ -67,18 +67,21 @@ export default function EscrowDetailScreen() {
       setEscrow(data);
     } catch (error: any) {
       // Don't navigate away on errors - just show error and keep current state
-      // Only navigate back if it's a 404 (rift not found)
-      if (error.message?.includes('404') || error.message?.includes('not found')) {
-        Alert.alert('Error', error.message || 'Rift not found');
-        router.back();
-      } else {
+      // Only navigate back if it's a 404 (rift not found) AND we're not in a refresh cycle
+      // This prevents showing "Rift not found" immediately after creating a rift
+      if ((error.message?.includes('404') || error.message?.includes('not found')) && !refreshing) {
+        // Only show error if we're not in a refresh cycle (which happens after creation)
+        // Wait a bit to see if it's just a timing issue
+        setTimeout(() => {
+          Alert.alert('Error', error.message || 'Rift not found');
+          router.back();
+        }, 1000);
+      } else if (!refreshing) {
         // For other errors (including auth errors), just show message
         // Don't log user out - let them retry
         console.error('Error loading rift:', error);
-        if (!refreshing) {
-          // Only show alert if not refreshing (to avoid spam)
-          Alert.alert('Error', error.message || 'Failed to load rift. Please try again.');
-        }
+        // Only show alert if not refreshing (to avoid spam)
+        Alert.alert('Error', error.message || 'Failed to load rift. Please try again.');
       }
     } finally {
       setLoading(false);

@@ -69,7 +69,7 @@ async function detectCoordinatedFraud(
 
   // Check for other users with same device fingerprint
   if (deviceFingerprint) {
-    const eventsWithSameDevice = await prisma.riftEvent.findMany({
+    const eventsWithSameDevice = await prisma.rift_events.findMany({
       where: {
         deviceFingerprint,
         actorId: { not: userId },
@@ -95,7 +95,7 @@ async function detectCoordinatedFraud(
   if (user && ipHash) {
     // This is simplified - in production, you'd store IP hashes in a separate table
     // For now, we'll check vault events which store ipHash
-    const recentAccounts = await prisma.vaultEvent.findMany({
+    const recentAccounts = await prisma.vault_events.findMany({
       where: {
         ipHash,
         timestampUtc: {
@@ -207,7 +207,7 @@ async function analyzeIPGeolocation(
   let risk = 0
 
   // Get user's location history from events
-  const userEvents = await prisma.riftEvent.findMany({
+  const userEvents = await prisma.rift_events.findMany({
     where: { actorId: userId },
     select: { ipHash: true, createdAt: true },
     orderBy: { createdAt: 'desc' },

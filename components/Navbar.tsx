@@ -253,10 +253,13 @@ export default function Navbar() {
           onClick={() => setMobileMenuOpen(false)}
         >
           <div 
-            className="fixed top-16 left-0 right-0 bottom-0 bg-black border-t border-white/8 overflow-y-auto"
+            className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-black border-l border-white/8 overflow-y-auto"
+            style={{
+              animation: 'slideInRight 0.3s ease-out',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="py-2">
+            <div className="pt-20 pb-4">
               {navLinks}
             </div>
           </div>

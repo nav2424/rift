@@ -441,6 +441,8 @@ async function testRiftAPI() {
       // Create wallet if it doesn't exist
       wallet = await prisma.walletAccount.create({
         data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
           userId: seller.id,
           currency: 'CAD',
           availableBalance: 0,
@@ -520,7 +522,7 @@ async function testRiftAPI() {
       await prisma.timelineEvent.deleteMany({ where: { escrowId: riftId } })
       await prisma.payout.deleteMany({ where: { riftId } })
       await prisma.walletLedgerEntry.deleteMany({
-        where: { walletAccount: { userId: seller.id } },
+        where: { WalletAccount: { userId: seller.id } },
       })
       if (wallet) {
         await prisma.walletAccount.update({

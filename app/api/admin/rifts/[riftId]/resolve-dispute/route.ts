@@ -157,6 +157,7 @@ export async function POST(
 
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: id,
         type: 'DISPUTE_RESOLVED',
         message: `${resolutionMessage}. ${adminNotes ? `Note: ${adminNotes}` : ''}`,

@@ -39,7 +39,7 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
       prisma.user.findMany({
         where,
         include: {
-          riskProfile: true,
+          UserRiskProfile: true,
           _count: {
             select: {
               sellerTransactions: true,
@@ -68,7 +68,7 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
         email: u.email,
         name: u.name,
         riftUserId: u.riftUserId,
-        riskProfile: u.riskProfile,
+        riskProfile: u.UserRiskProfile,
         stats: {
           sellerTransactions: u._count.sellerTransactions,
           buyerTransactions: u._count.buyerTransactions,

@@ -14,7 +14,7 @@ function createTransporter() {
 
   // Only log in development, and never log passwords
   if (process.env.NODE_ENV === 'development') {
-    console.log('📧 Creating SMTP transporter:', { host, port, secure, user: user ? `${user.substring(0, 3)}***` : 'NOT SET' })
+    console.log('📧 Creating SMTP transporter:', { host, port, secure, User: user ? `${user.substring(0, 3)}***` : 'NOT SET' })
   }
 
   return nodemailer.createTransport({

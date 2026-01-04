@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   // Fix 3: Add idempotency / replay protection
   // Process each Stripe event ID once, even if Stripe retries
   try {
-    await prisma.stripeWebhookEvent.create({
+    await prisma.stripe_webhook_events.create({
       data: {
         id: event.id,
         type: event.type,
@@ -239,6 +239,7 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
       // Fallback: create a simple message without amounts
       await prisma.timelineEvent.create({
         data: {
+        id: crypto.randomUUID(),
           escrowId: riftId,
           type: 'PAYMENT_RECEIVED',
           message: 'Payment confirmed',
@@ -250,6 +251,7 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
       
       await prisma.timelineEvent.create({
         data: {
+        id: crypto.randomUUID(),
           escrowId: riftId,
           type: 'PAYMENT_RECEIVED',
           message,
@@ -295,6 +297,7 @@ async function handlePaymentFailed(paymentIntent: any) {
   // Create timeline event
   await prisma.timelineEvent.create({
     data: {
+        id: crypto.randomUUID(),
       escrowId: riftId,
       type: 'PAYMENT_FAILED',
       message: 'Payment failed',
@@ -343,6 +346,7 @@ async function handleChargebackCreated(dispute: any) {
   // Create timeline event
   await prisma.timelineEvent.create({
     data: {
+        id: crypto.randomUUID(),
       escrowId: rift.id,
       type: 'CHARGEBACK',
       message: `Chargeback created: ${rift.currency} ${chargebackAmount.toFixed(2)}`,

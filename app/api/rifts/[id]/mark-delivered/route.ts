@@ -119,6 +119,8 @@ export async function POST(
     // For non-physical items, we don't need tracking number or carrier
     const proof = await prisma.shipmentProof.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         escrowId: id,
         filePath,
         notes: notes || null,
@@ -155,6 +157,7 @@ export async function POST(
 
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: id,
         type: 'ITEM_DELIVERED',
         message: deliveryMessage,

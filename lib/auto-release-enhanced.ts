@@ -12,7 +12,7 @@ import { ItemType } from '@prisma/client'
  * Get first buyer access timestamp for a Rift
  */
 export async function getFirstBuyerAccess(riftId: string): Promise<Date | null> {
-  const firstAccessEvent = await prisma.vaultEvent.findFirst({
+  const firstAccessEvent = await prisma.vault_events.findFirst({
     where: {
       riftId,
       actorRole: 'BUYER',
@@ -90,10 +90,10 @@ export async function checkAutoReleaseEligibility(riftId: string): Promise<{
   const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
     include: {
-      disputes: {
+      Dispute: {
         where: { status: 'OPEN' },
       },
-      proofs: {
+      Proof: {
         where: { status: 'VALID' },
         take: 1,
       },
@@ -110,12 +110,12 @@ export async function checkAutoReleaseEligibility(riftId: string): Promise<{
   }
   
   // Must have valid proof
-  if (rift.proofs.length === 0) {
+  if (rift.Proof.length === 0) {
     return { eligible: false, reason: 'No valid proof', canAutoReleaseNow: false, autoReleaseAt: null }
   }
   
   // No open disputes
-  if (rift.disputes.length > 0) {
+  if (rift.Dispute.length > 0) {
     return { eligible: false, reason: 'Open dispute exists', canAutoReleaseNow: false, autoReleaseAt: null }
   }
   

@@ -41,7 +41,7 @@ export async function POST(
             stripeConnectAccountId: true,
           },
         },
-        milestoneReleases: true,
+        MilestoneRelease: true,
       },
     })
 
@@ -101,7 +101,7 @@ export async function POST(
     const milestone = milestones[milestoneIndex]
 
     // Check if this milestone has already been released
-    const existingRelease = rift.milestoneReleases.find(
+    const existingRelease = rift.MilestoneRelease.find(
       (r) => r.milestoneIndex === milestoneIndex && r.status === 'RELEASED'
     )
 
@@ -120,6 +120,7 @@ export async function POST(
     // Create milestone release record
     const milestoneRelease = await prisma.milestoneRelease.create({
       data: {
+        id: crypto.randomUUID(),
         riftId: id,
         milestoneIndex,
         milestoneTitle: milestone.title,
@@ -192,6 +193,7 @@ export async function POST(
     // Create timeline event
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: id,
         type: 'MILESTONE_RELEASED',
         message: `Milestone "${milestone.title}" released. Amount: ${rift.currency} ${milestoneAmount.toFixed(2)}`,
@@ -200,7 +202,7 @@ export async function POST(
     })
 
     // Check if all milestones have been released
-    const releasedMilestones = rift.milestoneReleases.filter((r) => r.status === 'RELEASED').length + 1
+    const releasedMilestones = rift.MilestoneRelease.filter((r) => r.status === 'RELEASED').length + 1
     const allMilestonesReleased = releasedMilestones >= milestones.length
 
     // If all milestones are released, update rift status to RELEASED
@@ -216,7 +218,8 @@ export async function POST(
       // Create final release timeline event
       await prisma.timelineEvent.create({
         data: {
-          escrowId: id,
+        id: crypto.randomUUID(),
+        escrowId: id,
           type: 'FUNDS_RELEASED',
           message: `All milestones completed. Full payment released.`,
           createdById: auth.userId,

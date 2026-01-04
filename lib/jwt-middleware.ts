@@ -30,7 +30,7 @@ export async function verifyJWT(request: NextRequest): Promise<JWTPayload | null
       console.warn('JWT_SECRET not properly configured. Using default secret.')
     }
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
-    console.log('JWT: Verification successful for user:', decoded.id)
+    console.log('JWT: Verification successful for User:', decoded.id)
     return decoded
   } catch (error: any) {
     console.error('JWT verification failed:', error.message, error.name)

@@ -64,9 +64,10 @@ async function seedAdminRoles() {
 
   // Create all permissions
   for (const permission of Object.values(AdminPermission)) {
-    await prisma.adminPermissionModel.upsert({
+    await prisma.admin_permissions.upsert({
       where: { name: permission },
       create: {
+        id: crypto.randomUUID(),
         name: permission,
         description: `Permission: ${permission}`,
       },
@@ -78,9 +79,11 @@ async function seedAdminRoles() {
 
   // Create roles with permissions
   for (const [roleName, permissions] of Object.entries(ROLE_PERMISSIONS)) {
-    const role = await prisma.adminRoleModel.upsert({
+    const role = await prisma.admin_roles.upsert({
       where: { name: roleName as AdminRole },
       create: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         name: roleName as AdminRole,
         description: `${roleName} role`,
       },
@@ -89,12 +92,12 @@ async function seedAdminRoles() {
 
     // Assign permissions to role
     for (const permission of permissions) {
-      const perm = await prisma.adminPermissionModel.findUnique({
+      const perm = await prisma.admin_permissions.findUnique({
         where: { name: permission },
       })
 
       if (perm) {
-        await prisma.adminRolePermission.upsert({
+        await prisma.admin_role_permissions.upsert({
           where: {
             roleId_permissionId: {
               roleId: role.id,
@@ -102,6 +105,7 @@ async function seedAdminRoles() {
             },
           },
           create: {
+            id: crypto.randomUUID(),
             roleId: role.id,
             permissionId: perm.id,
           },

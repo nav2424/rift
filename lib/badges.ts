@@ -10,7 +10,7 @@ export interface BadgeDefinition {
   label: string
   description: string
   icon?: string
-  check: (user: {
+  check: (User: {
     idVerified: boolean
     bankVerified: boolean
     numCompletedTransactions: number
@@ -78,7 +78,7 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
 export async function ensureBadgesExist() {
   for (const definition of BADGE_DEFINITIONS) {
     // @ts-ignore - Prisma client will be generated after migration
-    await prisma.badge.upsert({
+    await prisma.Badge.upsert({
       where: { code: definition.code },
       update: {
         label: definition.label,
@@ -86,6 +86,7 @@ export async function ensureBadgesExist() {
         icon: definition.icon,
       },
       create: {
+        id: crypto.randomUUID(),
         code: definition.code,
         label: definition.label,
         description: definition.description,
@@ -124,10 +125,10 @@ export async function checkAndAwardBadges(userId: string): Promise<string[]> {
   // @ts-ignore - Prisma client will be generated after migration
   const existingBadges = await prisma.userBadge.findMany({
     where: { userId },
-    include: { badge: true },
+    include: { Badge: true },
   })
 
-  const existingCodes = new Set(existingBadges.map((ub: any) => ub.badge.code))
+  const existingCodes = new Set(existingBadges.map((ub: any) => ub.Badge.code))
   const newlyAwarded: string[] = []
 
   // Check each badge definition
@@ -141,7 +142,7 @@ export async function checkAndAwardBadges(userId: string): Promise<string[]> {
     if (definition.check(user)) {
       // Get badge
       // @ts-ignore - Prisma client will be generated after migration
-      const badge = await prisma.badge.findUnique({
+      const badge = await prisma.Badge.findUnique({
         where: { code: definition.code },
       })
 
@@ -150,6 +151,7 @@ export async function checkAndAwardBadges(userId: string): Promise<string[]> {
         // @ts-ignore - Prisma client will be generated after migration
         await prisma.userBadge.create({
           data: {
+            id: crypto.randomUUID(),
             userId,
             badgeId: badge.id,
           },
@@ -171,7 +173,7 @@ export async function getUserBadges(userId: string) {
   return prisma.userBadge.findMany({
     where: { userId },
     include: {
-      badge: true,
+      Badge: true,
     },
     orderBy: {
       awardedAt: 'desc',

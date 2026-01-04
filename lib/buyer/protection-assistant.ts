@@ -153,7 +153,7 @@ export async function autoFillFromProof(
   deliveryMethod?: string
   confidence: number
 }> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
     select: {
       fileName: true,

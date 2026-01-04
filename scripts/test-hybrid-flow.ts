@@ -82,6 +82,8 @@ async function main() {
     
     const rift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber,
         itemTitle: 'Test Item - Hybrid Protection',
         itemDescription: 'Testing the hybrid protection system',
@@ -118,6 +120,8 @@ async function main() {
     const trackingNumber = '1Z999AA10123456784' // Valid UPS format
     const shipmentProof = await prisma.shipmentProof.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         escrowId: rift.id,
         trackingNumber,
         shippingCarrier: 'UPS',

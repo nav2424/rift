@@ -106,7 +106,7 @@ export async function POST(
       // Otherwise, go to RELEASED if eligible
       if (rift.status === 'DISPUTED') {
         // Check if proof exists
-        const proofCount = await prisma.vaultAsset.count({
+        const proofCount = await prisma.vault_assets.count({
           where: { riftId: dispute.rift_id },
         })
         

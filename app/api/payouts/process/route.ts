@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         scheduledAt: { lte: now },
       },
       include: {
-        user: {
+        User: {
           select: {
             stripeConnectAccountId: true,
           },
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     for (const payout of payouts) {
       try {
-        if (!payout.user.stripeConnectAccountId) {
+        if (!payout.User.stripeConnectAccountId) {
           await prisma.payout.update({
             where: { id: payout.id },
             data: {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           const transfer = await stripe.transfers.create({
             amount: Math.round(payout.amount * 100),
             currency: payout.currency.toLowerCase(),
-            destination: payout.user.stripeConnectAccountId,
+            destination: payout.User.stripeConnectAccountId,
             metadata: {
               payoutId: payout.id,
               riftId: payout.riftId || '',

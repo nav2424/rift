@@ -50,7 +50,7 @@ export async function triageDispute(
   const sellerEvidenceStrength = evidence.forSeller.length
 
   // Get vault access logs
-  const accessLogs = await prisma.vaultEvent.findMany({
+  const accessLogs = await prisma.vault_events.findMany({
     where: {
       riftId,
       eventType: 'BUYER_OPENED_ASSET',
@@ -82,7 +82,7 @@ export async function triageDispute(
     }
   } else if (disputeReason === 'not_as_described') {
     // Check proof quality and type matching
-    const proofAssets = await prisma.vaultAsset.findMany({
+    const proofAssets = await prisma.vault_assets.findMany({
       where: { riftId },
     })
 
@@ -129,7 +129,7 @@ async function gatherEvidence(
   const forSeller: string[] = []
 
   // Check vault access logs
-  const buyerAccess = await prisma.vaultEvent.findMany({
+  const buyerAccess = await prisma.vault_events.findMany({
     where: {
       riftId,
       actorRole: 'BUYER',
@@ -144,7 +144,7 @@ async function gatherEvidence(
   }
 
   // Check proof submission
-  const proofAssets = await prisma.vaultAsset.findMany({
+  const proofAssets = await prisma.vault_assets.findMany({
     where: { riftId },
   })
 
@@ -204,7 +204,7 @@ async function gatherEvidence(
       }
     } catch (supabaseError) {
       // If Supabase is not configured, skip dispute count
-      console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+      console.warn('Supabase not configured or error fetching Dispute:', supabaseError)
     }
 
     if (pastDisputes >= 3) {

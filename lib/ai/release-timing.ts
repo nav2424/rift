@@ -163,7 +163,7 @@ async function getBuyerEngagement(riftId: string, buyerId: string): Promise<{
 
   const hasDownloaded = views?.downloaded || false
   const hasViewed = (views?.seconds_viewed || 0) > 0
-  const hasConfirmed = !!(await prisma.riftEvent.findFirst({
+  const hasConfirmed = !!(await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_RECEIPT',

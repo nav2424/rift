@@ -4,7 +4,6 @@
  */
 
 import { prisma } from './prisma'
-import { VaultAsset, VaultScanStatus, VaultAssetType } from '@prisma/client'
 import { createHash } from 'crypto'
 import { createServerClient } from './supabase'
 import { logVaultEvent } from './vault-logging'
@@ -12,7 +11,7 @@ import { analyzeImageWithAI } from './vault-ai-analysis'
 
 export interface VerificationResult {
   passed: boolean
-  scanStatus: VaultScanStatus
+  scanStatus: any
   qualityScore: number // 0-100
   metadata: {
     pageCount?: number
@@ -81,10 +80,10 @@ export interface VerificationResult {
  * Step A: Integrity & Safety Checks (automatic, required)
  */
 async function performIntegrityChecks(
-  asset: VaultAsset
+  asset: any
 ): Promise<{
   passed: boolean
-  scanStatus: VaultScanStatus
+  scanStatus: any
   issues: string[]
 }> {
   const issues: string[] = []
@@ -212,7 +211,7 @@ async function performIntegrityChecks(
  * Step B: Proof Quality Checks (automatic, required)
  */
 async function performQualityChecks(
-  asset: VaultAsset
+  asset: any
 ): Promise<{
   qualityScore: number
   metadata: VerificationResult['metadata']
@@ -277,7 +276,7 @@ async function performQualityChecks(
   // License key quality
   if (asset.assetType === 'LICENSE_KEY') {
     // Check for duplicates across platform
-    const duplicateCount = await prisma.vaultAsset.count({
+    const duplicateCount = await prisma.vault_assets.count({
       where: {
         sha256: asset.sha256,
         id: { not: asset.id },
@@ -377,14 +376,14 @@ async function performQualityChecks(
     try {
       // Get the Rift to determine item type
       const rift = await prisma.riftTransaction.findUnique({
-        where: { id: asset.riftId },
+        where: { id: asset.RiftTransaction.id },
         select: { itemType: true },
       })
       
       if (rift) {
         // Get full Rift data for validation
         const fullRift = await prisma.riftTransaction.findUnique({
-          where: { id: asset.riftId },
+          where: { id: asset.RiftTransaction.id },
           select: {
             subtotal: true,
             currency: true,
@@ -492,9 +491,9 @@ async function performQualityChecks(
  * Main verification pipeline
  */
 export async function verifyVaultAsset(assetId: string): Promise<VerificationResult> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
-    include: { rift: true },
+    include: { RiftTransaction: true },
   })
 
   if (!asset) {
@@ -525,7 +524,7 @@ export async function verifyVaultAsset(assetId: string): Promise<VerificationRes
   let aiTags = null
   try {
     const { tagVaultAsset } = await import('@/lib/ai/vault-tagging')
-    aiTags = await tagVaultAsset(asset, asset.rift.itemType)
+    aiTags = await tagVaultAsset(asset, asset.RiftTransaction.itemType)
     
     // Add tags to metadata
     if (qualityResult.metadata && aiTags) {
@@ -537,7 +536,7 @@ export async function verifyVaultAsset(assetId: string): Promise<VerificationRes
   }
 
   // Update asset with results
-  await prisma.vaultAsset.update({
+  await prisma.vault_assets.update({
     where: { id: assetId },
     data: {
       scanStatus,
@@ -548,7 +547,7 @@ export async function verifyVaultAsset(assetId: string): Promise<VerificationRes
 
   // Log verification completion
   await logVaultEvent({
-    riftId: asset.riftId,
+    riftId: asset.RiftTransaction.id,
     assetId: asset.id,
     actorRole: 'SYSTEM',
     eventType: 'SYSTEM_QUALITY_CHECK_COMPLETED',
@@ -577,7 +576,7 @@ export async function verifyRiftProofs(riftId: string): Promise<{
   shouldRouteToReview: boolean
   results: VerificationResult[]
 }> {
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { riftId },
   })
 
@@ -613,7 +612,7 @@ export async function checkDuplicateContent(sha256: string, uploaderId: string):
   count: number
   riftIds: string[]
 }> {
-  const duplicates = await prisma.vaultAsset.findMany({
+  const duplicates = await prisma.vault_assets.findMany({
     where: {
       sha256,
       uploaderId,

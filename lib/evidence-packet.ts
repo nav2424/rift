@@ -55,7 +55,7 @@ export async function generateEvidencePacket(
           createdAt: true,
         },
       },
-      riftEvents: {
+        rift_events: {
         orderBy: { createdAt: 'asc' },
         select: {
           id: true,
@@ -66,7 +66,7 @@ export async function generateEvidencePacket(
           createdAt: true,
         },
       },
-      timelineEvents: {
+      TimelineEvent: {
         orderBy: { createdAt: 'asc' },
         select: {
           id: true,
@@ -145,10 +145,10 @@ export async function generateEvidencePacket(
     }
   } else if (rift.itemType === 'SERVICES') {
     // Find service delivery events
-    const serviceDelivered = rift.riftEvents.find(
+    const serviceDelivered = rift.rift_events.find(
       e => e.eventType === 'SERVICE_MARKED_DELIVERED' || e.eventType === 'SERVICE_DELIVERED'
     )
-    const serviceConfirmed = rift.riftEvents.find(
+    const serviceConfirmed = rift.rift_events.find(
       e => e.eventType === 'SERVICE_CONFIRMED' || e.eventType === 'BUYER_CONFIRMED_COMPLETION'
     )
 
@@ -245,7 +245,7 @@ export async function generateEvidencePacket(
   }
 
   // Build event timeline (safe subset of events)
-  const eventTimeline = rift.riftEvents.map((e: any) => ({
+  const eventTimeline = rift.rift_events.map((e: any) => ({
     event_type: e.eventType,
     actor_type: e.actorType,
     actor_id: e.actorId,

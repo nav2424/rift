@@ -9,11 +9,11 @@ async function main() {
     console.log('Checking rift events...\n')
     
     // Get recent events
-    const recentEvents = await prisma.riftEvent.findMany({
+    const recentEvents = await prisma.rift_events.findMany({
       take: 10,
       orderBy: { createdAt: 'desc' },
       include: {
-        rift: {
+        RiftTransaction: {
           select: {
             id: true,
             riftNumber: true,
@@ -34,7 +34,7 @@ async function main() {
     
     recentEvents.forEach((event, i) => {
       console.log(`${i + 1}. ${event.eventType}`)
-      console.log(`   Rift: #${event.rift.riftNumber} - ${event.rift.itemTitle}`)
+      console.log(`   Rift: #${event.RiftTransaction.riftNumber} - ${event.RiftTransaction.itemTitle}`)
       console.log(`   Actor: ${event.actorType}${event.actorId ? ` (${event.actorId})` : ''}`)
       console.log(`   Time: ${event.createdAt.toISOString()}`)
       console.log(`   Payload:`, JSON.stringify(event.payload, null, 2))
@@ -42,7 +42,7 @@ async function main() {
     })
     
     // Get event counts by type
-    const eventCounts = await prisma.riftEvent.groupBy({
+    const eventCounts = await prisma.rift_events.groupBy({
       by: ['eventType'],
       _count: {
         eventType: true,

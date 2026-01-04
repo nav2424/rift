@@ -76,7 +76,7 @@ You must never:
 
 ## Risk-Sensitive Language Rules
 
-If a user:
+If a User:
 - Mentions disputes
 - Mentions chargebacks
 - Mentions refunds
@@ -150,7 +150,7 @@ Good ✅
 
 ## Escalation Rule
 
-If a user:
+If a User:
 - Is confused
 - Is emotional
 - Is repeating risky questions
@@ -274,7 +274,7 @@ Always mention deadlines when relevant.
 
 ## User Intent Handling
 
-If a user:
+If a User:
 - Asks "what if" questions
 - Pushes edge cases
 - Mentions disputes or chargebacks
@@ -420,8 +420,10 @@ export async function POST(request: NextRequest) {
       }))
     )
 
-    // If escalation is needed, return escalation info
-    if (escalationAnalysis.shouldEscalate && escalationAnalysis.requiresHuman) {
+    // Only escalate if both conditions are met and urgency is high/critical
+    // This prevents the AI from defaulting to human assistance for every question
+    if (escalationAnalysis.shouldEscalate && escalationAnalysis.requiresHuman && 
+        (escalationAnalysis.urgency === 'high' || escalationAnalysis.urgency === 'critical')) {
       const ticket = userId 
         ? await generateSupportTicket(userId, message, escalationAnalysis.category)
         : null

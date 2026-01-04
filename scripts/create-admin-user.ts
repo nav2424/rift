@@ -29,7 +29,7 @@ async function main() {
 
   try {
     // Check if AdminUser already exists
-    const existingAdmin = await prisma.adminUser.findUnique({
+    const existingAdmin = await prisma.admin_users.findUnique({
       where: { email },
     })
 
@@ -40,13 +40,13 @@ async function main() {
       console.log(`   Active: ${existingAdmin.isActive}`)
       
       // Check roles
-      const userRoles = await prisma.adminUserRole.findMany({
+      const userRoles = await prisma.admin_user_roles.findMany({
         where: { userId: existingAdmin.id },
-        include: { role: true },
+        include: { admin_roles: true },
       })
       
       if (userRoles.length > 0) {
-        console.log(`   Roles: ${userRoles.map(ur => ur.role.name).join(', ')}`)
+        console.log(`   Roles: ${userRoles.map(ur => ur.admin_roles.name).join(', ')}`)
       } else {
         console.log('   ⚠️  No roles assigned!')
       }
@@ -58,8 +58,10 @@ async function main() {
     const passwordHash = await hash(password, 10)
 
     // Create AdminUser
-    const adminUser = await prisma.adminUser.create({
+    const adminUser = await prisma.admin_users.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         email,
         name,
         passwordHash,
@@ -73,7 +75,7 @@ async function main() {
     console.log(`   ID: ${adminUser.id}`)
 
     // Find or create the role
-    let role = await prisma.adminRoleModel.findUnique({
+    let role = await prisma.admin_roles.findUnique({
       where: { name: roleName },
     })
 
@@ -85,8 +87,9 @@ async function main() {
     }
 
     // Assign role to admin user
-    await prisma.adminUserRole.create({
+    await prisma.admin_user_roles.create({
       data: {
+        id: crypto.randomUUID(),
         userId: adminUser.id,
         roleId: role.id,
       },
@@ -95,15 +98,15 @@ async function main() {
     console.log(`✅ Assigned role '${roleName}' to admin user`)
 
     // Show permissions
-    const rolePermissions = await prisma.adminRolePermission.findMany({
+    const rolePermissions = await prisma.admin_role_permissions.findMany({
       where: { roleId: role.id },
-      include: { permission: true },
+      include: { admin_permissions: true },
     })
 
     if (rolePermissions.length > 0) {
       console.log(`\n📋 Permissions for ${roleName}:`)
       rolePermissions.forEach(rp => {
-        console.log(`   - ${rp.permission.name}`)
+        console.log(`   - ${rp.admin_permissions.name}`)
       })
     }
 

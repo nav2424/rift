@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        rift: {
+        RiftTransaction: {
           select: {
             id: true,
             riftNumber: true,

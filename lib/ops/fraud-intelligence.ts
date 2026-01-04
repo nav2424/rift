@@ -32,7 +32,7 @@ export async function getTopFraudPatterns(
   const patterns: FraudPattern[] = []
 
   // Pattern 1: Duplicate proof reuse
-  const duplicateProofs = await prisma.vaultAsset.groupBy({
+  const duplicateProofs = await prisma.vault_assets.groupBy({
     by: ['sha256'],
     where: {
       createdAt: { gte: since },
@@ -84,7 +84,7 @@ export async function getTopFraudPatterns(
     }
   } catch (supabaseError) {
     // If Supabase is not configured, skip this pattern
-    console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+    console.warn('Supabase not configured or error fetching Dispute:', supabaseError)
   }
 
   if (sellersWithDisputes.length > 0) {
@@ -191,12 +191,12 @@ export async function predictChurn(
     }
   } catch (supabaseError) {
     // If Supabase is not configured, skip dispute count
-    console.warn('Supabase not configured or error fetching disputes:', supabaseError)
+    console.warn('Supabase not configured or error fetching Dispute:', supabaseError)
   }
 
   const chargebacks = await prisma.walletLedgerEntry.count({
     where: {
-      walletAccount: { userId },
+      WalletAccount: { userId },
       type: 'DEBIT_CHARGEBACK',
     },
   })

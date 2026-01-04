@@ -24,7 +24,7 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        riskProfile: true,
+        UserRiskProfile: true,
         sellerTransactions: {
           take: 10,
           orderBy: { createdAt: 'desc' },
@@ -47,7 +47,7 @@ export const GET = withAdminPermission(AdminPermission.USER_READ, async (
             createdAt: true,
           },
         },
-        disputesRaised: {
+        Dispute_Dispute_raisedByIdToUser: {
           take: 10,
           orderBy: { createdAt: 'desc' },
         },
@@ -240,7 +240,7 @@ export async function DELETE(
     if (!isAdminUser) {
       // Find any AdminUser to use for audit logging
       // This is a workaround since AdminAuditLog requires an AdminUser ID
-      const anyAdminUser = await prisma.adminUser.findFirst({
+      const anyAdminUser = await prisma.admin_users.findFirst({
         select: { id: true, email: true },
       })
       
@@ -300,7 +300,7 @@ export async function DELETE(
     // Handle foreign key constraint violations
     if (error.code === 'P2003') {
       return NextResponse.json(
-        { error: 'Cannot delete user: user has associated records that must be removed first' },
+        { error: 'Cannot delete User: user has associated records that must be removed first' },
         { status: 400 }
       )
     }

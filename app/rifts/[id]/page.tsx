@@ -76,7 +76,7 @@ interface RiftTransaction {
       email: string
     } | null
   }>
-  disputes: Array<{
+  Dispute: Array<{
     id: string
     type: string
     status: string
@@ -423,11 +423,11 @@ export default function RiftDetailPage() {
             )}
 
             {/* Disputes */}
-            {rift.disputes && rift.disputes.length > 0 && (
+            {rift.Dispute && rift.Dispute.length > 0 && (
               <GlassCard className="p-8">
                 <h2 className="text-sm font-light text-white/60 mb-6 tracking-wider uppercase">Disputes</h2>
                 <div className="space-y-4">
-                  {rift.disputes.map((dispute) => {
+                  {rift.Dispute.map((dispute) => {
                     const isDraft = dispute.status === 'draft' || dispute.status === 'needs_info'
                     // Check if current user raised the dispute (by email or ID)
                     const userRaisedDispute = dispute.raisedBy?.id === session?.user?.id || 

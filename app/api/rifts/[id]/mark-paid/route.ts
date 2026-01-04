@@ -74,6 +74,7 @@ export async function POST(
     // Create timeline event
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: rift.id,
         type: 'PAYMENT_MARKED',
         message: `Payment processed. Reference: ${paymentReference}. Awaiting shipment.`,

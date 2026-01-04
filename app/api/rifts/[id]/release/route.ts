@@ -24,7 +24,7 @@ export async function POST(
     const rift = await prisma.riftTransaction.findUnique({
       where: { id },
       include: {
-        milestoneReleases: {
+        MilestoneRelease: {
           where: { status: 'RELEASED' },
         },
       },
@@ -43,7 +43,7 @@ export async function POST(
     // Buyers must release milestones individually
     if (rift.itemType === 'SERVICES' && rift.allowsPartialRelease) {
       const milestones = (rift.milestones as Array<{ amount: number }>) || []
-      const releasedCount = rift.milestoneReleases.length
+      const releasedCount = rift.MilestoneRelease.length
       
       if (releasedCount < milestones.length) {
         return NextResponse.json(
@@ -92,6 +92,7 @@ export async function POST(
     try {
       await prisma.timelineEvent.create({
         data: {
+        id: crypto.randomUUID(),
           escrowId: rift.id,
           type: 'BUYER_RELEASED',
           message: 'Buyer released funds',

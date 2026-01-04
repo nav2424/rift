@@ -55,7 +55,7 @@ export async function GET(
     const timelineEvents = await prisma.timelineEvent.findMany({
         where: { escrowId: id },
         include: {
-          createdBy: {
+          User: {
             select: {
               name: true,
               email: true,
@@ -107,13 +107,20 @@ export async function GET(
       }
     } catch (supabaseError: any) {
       // If Supabase is not configured, just return empty disputes array
-      console.warn('Supabase not configured or error fetching disputes:', supabaseError?.message)
+      console.warn('Supabase not configured or error fetching Dispute:', supabaseError?.message)
       disputes = []
     }
 
     return NextResponse.json({
       ...rift,
-      timelineEvents,
+      timelineEvents: timelineEvents.map(e => ({
+        ...e,
+        createdBy: e.User ? {
+          name: e.User.name ?? null,
+          email: e.User.email ?? null,
+        } : null,
+        User: undefined, // Remove User from response
+      })),
       disputes,
     })
   } catch (error: any) {

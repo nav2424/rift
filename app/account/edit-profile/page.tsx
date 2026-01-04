@@ -30,9 +30,10 @@ export default function EditProfilePage() {
       })
         .then(res => res.json())
         .then(data => {
-          if (data.user) {
-            setName(data.user.name || '')
-            setPhone(data.user.phone || '')
+          const userData = data.user || data.User || data
+          if (userData) {
+            setName(userData.name || '')
+            setPhone(userData.phone || '')
           } else {
             setName(session?.user?.name || '')
           }
@@ -95,11 +96,17 @@ export default function EditProfilePage() {
       }
 
       const data = await response.json()
+      // API returns { user: {...} } (lowercase 'user')
+      const userData = data.user
+      
+      if (!userData) {
+        throw new Error('Invalid response from server')
+      }
       
       // Update the session - this will trigger the JWT callback with trigger='update'
       // NextAuth will automatically refresh all components using useSession
       await updateSession({
-        name: data.user.name,
+        name: userData.name || null,
       })
 
       router.push('/account')

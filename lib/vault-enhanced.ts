@@ -258,7 +258,7 @@ export async function uploadVaultAsset(
   }
 
   // Create vault asset record
-  const asset = await prisma.vaultAsset.create({
+  const asset = await prisma.vault_assets.create({
     data: {
       id: randomUUID(),
       riftId,
@@ -326,7 +326,7 @@ export async function getVaultAssets(
   }
 
   // Get assets
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { riftId },
     orderBy: { createdAt: 'asc' },
   })
@@ -414,7 +414,7 @@ export async function buyerOpenAsset(
     throw new Error('Vault not yet accessible')
   }
 
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
   })
 
@@ -495,7 +495,7 @@ export async function buyerRevealLicenseKey(
     throw new Error('Unauthorized: Not the buyer')
   }
 
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
   })
 
@@ -504,7 +504,7 @@ export async function buyerRevealLicenseKey(
   }
 
   // Check if already revealed (check events)
-  const existingReveal = await prisma.vaultEvent.findFirst({
+  const existingReveal = await prisma.vault_events.findFirst({
     where: {
       riftId,
       assetId,
@@ -582,7 +582,7 @@ export async function buyerDownloadFile(
     throw new Error('Unauthorized: Not the buyer')
   }
 
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
   })
 

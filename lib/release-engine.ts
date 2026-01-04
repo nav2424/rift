@@ -123,7 +123,7 @@ async function checkDigitalGoodsEligibility(
   const supabase = createServerClient()
 
   // Check if buyer confirmed receipt (via event log)
-  const confirmedEvent = await prisma.riftEvent.findFirst({
+  const confirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_RECEIPT',
@@ -202,7 +202,7 @@ async function checkServicesEligibility(
   rift: { id: string; riskScore: number; fundedAt: Date | null }
 ): Promise<ReleaseEligibilityResult> {
   // Check if buyer confirmed completion
-  const confirmedEvent = await prisma.riftEvent.findFirst({
+  const confirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_RECEIPT',
@@ -219,7 +219,7 @@ async function checkServicesEligibility(
   }
 
   // Check when seller marked delivered
-  const markedDeliveredEvent = await prisma.riftEvent.findFirst({
+  const markedDeliveredEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'SELLER_MARKED_DELIVERED',
@@ -276,7 +276,7 @@ async function checkTicketsEligibility(
   }
 ): Promise<ReleaseEligibilityResult> {
   // Check if buyer confirmed receipt
-  const confirmedEvent = await prisma.riftEvent.findFirst({
+  const confirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_TICKET_RECEIPT',
@@ -388,7 +388,7 @@ export async function releaseFunds(
     }
 
     // Log RELEASE_ELIGIBLE event if not already logged
-    const existingEvent = await prisma.riftEvent.findFirst({
+    const existingEvent = await prisma.rift_events.findFirst({
       where: {
         riftId,
         eventType: 'RELEASE_ELIGIBLE',

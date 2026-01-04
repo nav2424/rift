@@ -71,7 +71,7 @@ function computeLogHash(eventData: {
  */
 export async function logVaultEvent(input: VaultEventInput): Promise<string> {
   // Get the previous log entry for this Rift to chain hashes
-  const previousEvent = await prisma.vaultEvent.findFirst({
+  const previousEvent = await prisma.vault_events.findFirst({
     where: { riftId: input.riftId },
     orderBy: { timestampUtc: 'desc' },
     select: { logHash: true },
@@ -100,7 +100,7 @@ export async function logVaultEvent(input: VaultEventInput): Promise<string> {
   })
 
   // Create the event with computed hash
-  const event = await prisma.vaultEvent.create({
+  const event = await prisma.vault_events.create({
     data: {
       id: randomUUID(),
       riftId: input.riftId,
@@ -131,7 +131,7 @@ export async function verifyLogChain(riftId: string): Promise<{
   valid: boolean
   events: Array<{ id: string; valid: boolean; expectedHash: string; actualHash: string }>
 }> {
-  const events = await prisma.vaultEvent.findMany({
+  const events = await prisma.vault_events.findMany({
     where: { riftId },
     orderBy: { timestampUtc: 'asc' },
   })
@@ -197,7 +197,7 @@ export async function getVaultEventHistory(
     limit?: number
   }
 ): Promise<any[]> {
-  const events = await prisma.vaultEvent.findMany({
+  const events = await prisma.vault_events.findMany({
     where: {
       riftId,
       assetId: options?.assetId,
@@ -207,7 +207,7 @@ export async function getVaultEventHistory(
     orderBy: { timestampUtc: 'desc' },
     take: options?.limit || 100,
     include: {
-      asset: {
+      vault_assets: {
         select: {
           id: true,
           assetType: true,
@@ -223,7 +223,7 @@ export async function getVaultEventHistory(
     actorRole: event.actorRole,
     timestampUtc: event.timestampUtc,
     assetId: event.assetId,
-    asset: event.asset,
+    asset: event.vault_assets,
     metadata: event.metadata,
   }))
 }

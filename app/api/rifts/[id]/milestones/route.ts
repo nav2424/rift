@@ -20,7 +20,7 @@ export async function GET(
     const rift = await prisma.riftTransaction.findUnique({
       where: { id },
       include: {
-        milestoneReleases: {
+        MilestoneRelease: {
           orderBy: {
             milestoneIndex: 'asc',
           },
@@ -60,7 +60,7 @@ export async function GET(
 
     // Map milestones with release status
     const milestonesWithStatus = milestones.map((milestone, index) => {
-      const release = rift.milestoneReleases.find(
+      const release = rift.MilestoneRelease.find(
         (r) => r.milestoneIndex === index && r.status === 'RELEASED'
       )
 

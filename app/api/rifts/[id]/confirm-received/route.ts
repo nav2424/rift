@@ -267,6 +267,7 @@ export async function POST(
           const riftValue = updatedEscrow.subtotal ?? 0
           await prisma.timelineEvent.create({
             data: {
+        id: crypto.randomUUID(),
               escrowId: id,
               type: 'FUNDS_RELEASED',
               message: `Funds released. Amount: ${updatedEscrow.currency} ${riftValue.toFixed(2)}${payoutId ? ` (Payout ID: ${payoutId})` : ''}`,
@@ -297,6 +298,7 @@ export async function POST(
     if (newStatus !== 'RELEASED') {
       await prisma.timelineEvent.create({
         data: {
+        id: crypto.randomUUID(),
           escrowId: id,
           type: 'ITEM_CONFIRMED',
           message,

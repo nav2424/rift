@@ -152,7 +152,7 @@ export async function getImageFingerprint(assetId: string): Promise<{
   features: any
 } | null> {
   try {
-    const asset = await prisma.vaultAsset.findUnique({
+    const asset = await prisma.vault_assets.findUnique({
       where: { id: assetId },
       select: {
         id: true,
@@ -185,7 +185,7 @@ export async function getImageFingerprint(assetId: string): Promise<{
     const fingerprint = await generateImageFingerprint(buffer)
     
     // Cache fingerprint in metadata
-    await prisma.vaultAsset.update({
+    await prisma.vault_assets.update({
       where: { id: assetId },
       data: {
         metadataJson: {
@@ -220,7 +220,7 @@ export async function findSimilarImages(
       return []
     }
     
-    const currentAsset = await prisma.vaultAsset.findUnique({
+    const currentAsset = await prisma.vault_assets.findUnique({
       where: { id: assetId },
       select: { uploaderId: true, riftId: true },
     })
@@ -230,7 +230,7 @@ export async function findSimilarImages(
     }
     
     // Get all other image assets
-    const allAssets = await prisma.vaultAsset.findMany({
+    const allAssets = await prisma.vault_assets.findMany({
       where: {
         assetType: { in: ['FILE', 'TICKET_PROOF'] },
         mimeDetected: { startsWith: 'image/' },
@@ -300,7 +300,7 @@ export async function analyzeSellerImageStyle(
     }
     
     // Get seller's previous image assets
-    const previousAssets = await prisma.vaultAsset.findMany({
+    const previousAssets = await prisma.vault_assets.findMany({
       where: {
         uploaderId,
         id: { not: currentAssetId },

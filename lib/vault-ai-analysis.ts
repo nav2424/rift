@@ -5,7 +5,6 @@
 
 import OpenAI from 'openai'
 import { createServerClient } from './supabase'
-import { VaultAsset, VaultAssetType } from '@prisma/client'
 import { prisma } from './prisma'
 import sharp from 'sharp'
 import { findSimilarImages, analyzeSellerImageStyle } from './image-similarity'
@@ -334,7 +333,7 @@ async function validateExtractedData(
  */
 async function analyzeSellerHistory(
   uploaderId: string,
-  currentAsset: VaultAsset
+  currentAsset: any
 ): Promise<{
   previousSubmissions: number
   similarBackgrounds: number
@@ -370,7 +369,7 @@ async function analyzeSellerHistory(
     }
     
     // Fallback for non-image assets
-    const previousAssets = await prisma.vaultAsset.findMany({
+    const previousAssets = await prisma.vault_assets.findMany({
       where: {
         uploaderId,
         id: { not: currentAsset.id },
@@ -406,7 +405,7 @@ async function analyzeSellerHistory(
  */
 async function analyzeMultiImageConsistency(
   riftId: string,
-  currentAsset: VaultAsset
+  currentAsset: any
 ): Promise<{
   totalImages: number
   isConsistent: boolean
@@ -415,7 +414,7 @@ async function analyzeMultiImageConsistency(
   issues: string[]
 }> {
   try {
-    const allAssets = await prisma.vaultAsset.findMany({
+    const allAssets = await prisma.vault_assets.findMany({
       where: {
         riftId,
         assetType: { in: ['FILE', 'TICKET_PROOF'] },
@@ -473,7 +472,7 @@ async function analyzeMultiImageConsistency(
  * Analyze image using OpenAI Vision API with comprehensive feature set
  */
 export async function analyzeImageWithAI(
-  asset: VaultAsset,
+  asset: any,
   itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES',
   riftData?: {
     subtotal: number

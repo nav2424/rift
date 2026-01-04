@@ -83,7 +83,7 @@ export async function analyzeDisputeText(
     .select('*')
     .eq('dispute_id', disputeId)
 
-  const vaultAssets = await prisma.vaultAsset.findMany({
+  const vaultAssets = await prisma.vault_assets.findMany({
     where: { riftId },
     select: {
       assetType: true,

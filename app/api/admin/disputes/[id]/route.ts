@@ -77,7 +77,7 @@ export async function GET(
             bankVerified: true,
           },
         },
-        riftEvents: {
+        rift_events: {
           orderBy: { createdAt: 'asc' },
         },
       },

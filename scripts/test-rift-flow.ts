@@ -94,6 +94,8 @@ async function testRiftFlow() {
     const riftNumber = await generateNextRiftNumber()
     const rift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber,
         itemTitle: 'Test Item',
         itemDescription: 'End-to-end test item',
@@ -168,6 +170,8 @@ async function testRiftFlow() {
     if (!wallet) {
       wallet = await prisma.walletAccount.create({
         data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
           userId: seller.id,
           currency: 'CAD',
           availableBalance: 0,
@@ -221,6 +225,8 @@ async function testRiftFlow() {
     console.log('Step 9: Testing payout scheduling...')
     const payout = await prisma.payout.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         userId: seller.id,
         riftId: releasedRift.id,
         amount: sellerNet,

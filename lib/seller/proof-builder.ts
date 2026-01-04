@@ -45,7 +45,7 @@ export async function scoreProofQuality(
     throw new Error(`Rift not found: ${riftId}`)
   }
 
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { id: { in: assetIds } },
   })
 

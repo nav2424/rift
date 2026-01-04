@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         include: {
           buyer: { select: { id: true, email: true, name: true } },
           seller: { select: { id: true, email: true, name: true } },
-          proofs: { where: { status: 'VALID' }, take: 1 },
+          Proof: { where: { status: 'VALID' }, take: 1 },
         },
       })
 

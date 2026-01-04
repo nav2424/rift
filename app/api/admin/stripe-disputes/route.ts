@@ -35,14 +35,14 @@ export async function GET(request: NextRequest) {
     const { data: disputes, error } = await query
 
     if (error) {
-      console.error('Error fetching Stripe disputes:', error)
+      console.error('Error fetching Stripe Dispute:', error)
       return NextResponse.json(
         { error: 'Failed to fetch disputes' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ disputes: disputes || [] })
+    return NextResponse.json({ Dispute: disputes || [] })
   } catch (error: any) {
     console.error('Get Stripe disputes error:', error)
     return NextResponse.json(

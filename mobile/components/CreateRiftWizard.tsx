@@ -260,7 +260,11 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
       }
 
       const result = await api.createEscrow(payload);
-      router.push(`/rifts/${result.escrowId}`);
+      
+      // Small delay to ensure the rift is fully created before navigating
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      router.push(`/rifts/escrows/${result.escrowId}`);
     } catch (error: any) {
       console.error('Create rift error:', error);
       // Show more detailed error message
@@ -1002,32 +1006,34 @@ export default function CreateEscrowWizard({ users, itemType, onBack }: CreateEs
                   <Ionicons name="close" size={24} color={Colors.text} />
                 </TouchableOpacity>
               </View>
-              {Platform.OS === 'ios' ? (
-                <DateTimePicker
-                  value={selectedDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  minimumDate={new Date()}
-                  textColor={Colors.text}
-                />
-              ) : (
-                <View style={styles.androidDatePickerContainer}>
+              <View style={styles.datePickerContainer}>
+                {Platform.OS === 'ios' ? (
                   <DateTimePicker
                     value={selectedDate}
                     mode="date"
-                    display="default"
+                    display="spinner"
                     onChange={handleDateChange}
                     minimumDate={new Date()}
+                    textColor={Colors.text}
                   />
-                  <TouchableOpacity
-                    style={styles.datePickerButton}
-                    onPress={() => setShowDatePicker(false)}
-                  >
-                    <Text style={styles.datePickerButtonText}>Done</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                ) : (
+                  <>
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="date"
+                      display="default"
+                      onChange={handleDateChange}
+                      minimumDate={new Date()}
+                    />
+                    <TouchableOpacity
+                      style={styles.datePickerButton}
+                      onPress={() => setShowDatePicker(false)}
+                    >
+                      <Text style={styles.datePickerButtonText}>Done</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
             </View>
           </View>
         </Modal>
@@ -1439,7 +1445,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0C0C0C',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    maxHeight: '50%',
+    maxHeight: '70%',
+    minHeight: 400,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
@@ -1447,6 +1454,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 20,
     elevation: 20,
+    paddingBottom: 40,
+  },
+  datePickerContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 350,
   },
   datePickerHeader: {
     flexDirection: 'row',

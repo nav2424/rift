@@ -62,8 +62,9 @@ export async function logEvent(
     const ipHash = requestMeta?.ip ? hashIP(requestMeta.ip) : null
 
     // Create immutable event record
-    await prisma.riftEvent.create({
+    await prisma.rift_events.create({
       data: {
+        id: crypto.randomUUID(),
         riftId,
         actorType,
         actorId: actorId || null,
@@ -136,7 +137,7 @@ export function extractRequestMetadata(request: {
  * Get all events for a Rift (for admin/internal use)
  */
 export async function getRiftEvents(riftId: string) {
-  return prisma.riftEvent.findMany({
+  return prisma.rift_events.findMany({
     where: { riftId },
     orderBy: { createdAt: 'asc' },
   })

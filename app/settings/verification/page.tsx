@@ -47,13 +47,13 @@ export default function VerificationPage() {
       
       if (response.ok) {
         const data = await response.json()
-        // Handle both { user: {...} } and direct user object formats
+        // Handle both { User: {...} } and direct user object formats
         const userData = data.user || data
         setUser(userData)
         setPhone(userData.phone || '')
       }
     } catch (error) {
-      console.error('Error fetching user:', error)
+      console.error('Error fetching User:', error)
     } finally {
       setLoading(false)
     }

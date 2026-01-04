@@ -72,7 +72,7 @@ export default function AccountPage() {
         setDisputes(data.disputes || [])
       }
     } catch (error) {
-      console.error('Error loading disputes:', error)
+      console.error('Error loading Dispute:', error)
       // Silent failure for disputes - not critical
     }
   }
@@ -88,7 +88,7 @@ export default function AccountPage() {
       })
       if (response.ok) {
         const data = await response.json()
-        // Handle both { user: {...} } and direct user object formats
+        // Handle both { User: {...} } and direct user object formats
         const userData = data.user || data
         
         // If Rift ID is missing, try multiple times to get it (ensureRiftUserId might need time)

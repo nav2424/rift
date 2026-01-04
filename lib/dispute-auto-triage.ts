@@ -58,7 +58,7 @@ export async function autoTriageDispute(
   }
 
   // Check if buyer confirmed receipt
-  const buyerConfirmedEvent = await prisma.riftEvent.findFirst({
+  const buyerConfirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_RECEIPT',
@@ -165,7 +165,7 @@ async function triageServices(
   signals: AutoTriageResult['signals']
 ): Promise<AutoTriageResult> {
   // Check if buyer confirmed completion
-  const confirmedEvent = await prisma.riftEvent.findFirst({
+  const confirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_RECEIPT',
@@ -227,7 +227,7 @@ async function triageTickets(
   }
 
   // Check if buyer confirmed ticket receipt
-  const confirmedEvent = await prisma.riftEvent.findFirst({
+  const confirmedEvent = await prisma.rift_events.findFirst({
     where: {
       riftId,
       eventType: 'BUYER_CONFIRMED_TICKET_RECEIPT',

@@ -65,6 +65,8 @@ async function testProofSubmissionAPI() {
     // Create a test rift
     const testRift = await prisma.riftTransaction.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         riftNumber: 999992,
         itemTitle: 'API Test Rift',
         itemDescription: 'Test',

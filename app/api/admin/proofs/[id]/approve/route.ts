@@ -27,7 +27,7 @@ export async function POST(
     const proof = await prisma.proof.findUnique({
       where: { id },
       include: {
-        rift: true,
+        RiftTransaction: true,
       },
     })
 
@@ -128,6 +128,7 @@ export async function POST(
       try {
         await prisma.timelineEvent.create({
           data: {
+            id: crypto.randomUUID(),
             escrowId: proof.riftId,
             type: 'PROOF_APPROVED',
             message: `Proof approved by admin${adminNotes ? `. Note: ${adminNotes}` : ''}`,

@@ -79,13 +79,14 @@ Respond with JSON:
   } catch (error) {
     console.error('Support escalation analysis failed:', error)
     
-    // Conservative fallback - escalate if unclear
+    // Less aggressive fallback - only escalate if truly unclear
+    // Default to false to allow chatbot to handle more questions
     return {
-      shouldEscalate: true,
-      urgency: 'medium',
-      category: 'unknown',
-      confidence: 0,
-      requiresHuman: true,
+      shouldEscalate: false,
+      urgency: 'low',
+      category: 'general',
+      confidence: 50,
+      requiresHuman: false,
       contextSummary: userMessage.substring(0, 200),
     }
   }
@@ -173,7 +174,7 @@ export async function generateSupportTicket(
   })
 
   const context = {
-    user: {
+    User: {
       email: user?.email,
       name: user?.name,
       accountAge: user ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 0,

@@ -29,7 +29,7 @@ export async function classifyProof(
   assetId: string,
   expectedItemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
 ): Promise<ProofClassification> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
     select: {
       id: true,
@@ -175,7 +175,7 @@ async function checkAuthenticitySignals(
 
   // Check for template reuse (would need perceptual hashing - simplified)
   // In production, compare SHA-256 against known templates
-  const duplicateCheck = await prisma.vaultAsset.findFirst({
+  const duplicateCheck = await prisma.vault_assets.findFirst({
     where: {
       sha256: asset.sha256,
       id: { not: asset.id },
@@ -254,7 +254,7 @@ export async function extractTicketInfo(
   matches: boolean
   mismatches: string[]
 }> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
     select: {
       textContent: true,
@@ -320,7 +320,7 @@ export async function validateServiceDeliverables(
 
   const criteria = rift.completionCriteria || ''
 
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { id: { in: assetIds } },
     select: {
       id: true,

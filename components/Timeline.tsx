@@ -191,7 +191,7 @@ export default function Timeline({ events, isBuyer, isSeller, riftValue, currenc
                   </div>
                   {event.createdBy && (
                     <p className="text-xs text-white/50 font-light mt-2">
-                      by {event.createdBy.name || event.createdBy.email.split('@')[0]}
+                      by {event.createdBy?.name || event.createdBy?.email.split('@')[0]}
                     </p>
                   )}
                 </div>

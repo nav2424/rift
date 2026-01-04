@@ -110,6 +110,8 @@ export async function POST(
     // Create dispute with type
     await prisma.dispute.create({
       data: {
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
         escrowId: id,
         raisedById: auth.userId,
         reason: reason.trim(),
@@ -127,6 +129,7 @@ export async function POST(
     // Create timeline event
     await prisma.timelineEvent.create({
       data: {
+        id: crypto.randomUUID(),
         escrowId: id,
         type: 'DISPUTE_RAISED',
         message: `Dispute raised: ${reason.substring(0, 100)}${reason.length > 100 ? '...' : ''}`,

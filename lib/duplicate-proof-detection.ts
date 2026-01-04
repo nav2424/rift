@@ -36,7 +36,7 @@ export async function checkDuplicateProofs(
   }
   
   // Find other Rifts with same asset hashes (exact SHA-256 match)
-  const duplicateAssets = await prisma.vaultAsset.findMany({
+  const duplicateAssets = await prisma.vault_assets.findMany({
     where: {
       sha256: { in: assetHashes },
       riftId: { not: currentRiftId }, // Exclude current Rift
@@ -192,7 +192,7 @@ export async function flagSellerForDuplicateProofs(sellerId: string): Promise<{
   const riftIds = sellerRifts.map(r => r.id)
   
   // Find all assets for these Rifts
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: { riftId: { in: riftIds } },
     select: { sha256: true, riftId: true },
   })

@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
     const rift = await prisma.riftTransaction.create({
       data: {
         id: randomUUID(),
+        updatedAt: new Date(),
         riftNumber,
         itemTitle,
         itemDescription,

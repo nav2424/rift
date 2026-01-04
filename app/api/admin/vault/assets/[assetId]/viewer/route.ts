@@ -42,10 +42,10 @@ export async function GET(
     const ip = request.headers.get('x-forwarded-for') || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
-    const asset = await prisma.vaultAsset.findUnique({
+    const asset = await prisma.vault_assets.findUnique({
       where: { id: assetId },
       include: {
-        rift: {
+        RiftTransaction: {
           select: {
             id: true,
             riftNumber: true,
@@ -91,7 +91,7 @@ export async function GET(
         metadataJson: asset.metadataJson,
         sha256: asset.sha256,
         createdAt: asset.createdAt,
-        rift: asset.rift,
+        rift: asset.RiftTransaction,
       },
       viewerUrl,
       textContent: asset.textContent,

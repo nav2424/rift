@@ -25,8 +25,9 @@ export interface AuditLogInput {
  * Log an admin action
  */
 export async function logAdminAction(input: AuditLogInput): Promise<string> {
-  const auditLog = await prisma.adminAuditLog.create({
+  const auditLog = await prisma.admin_audit_logs.create({
     data: {
+      id: crypto.randomUUID(),
       adminUserId: input.adminUserId,
       action: input.action,
       objectType: input.objectType,
@@ -43,7 +44,7 @@ export async function logAdminAction(input: AuditLogInput): Promise<string> {
   })
 
   // If break-glass account, trigger alerts
-  const adminUser = await prisma.adminUser.findUnique({
+  const adminUser = await prisma.admin_users.findUnique({
     where: { id: input.adminUserId },
     select: { isBreakGlass: true, email: true },
   })
@@ -69,7 +70,7 @@ export async function getAuditLogs(filters: {
   limit?: number
   offset?: number
 }) {
-  const logs = await prisma.adminAuditLog.findMany({
+  const logs = await prisma.admin_audit_logs.findMany({
     where: {
       adminUserId: filters.adminUserId,
       action: filters.action,
@@ -80,8 +81,8 @@ export async function getAuditLogs(filters: {
         lte: filters.endDate,
       },
     },
-    include: {
-      adminUser: {
+      include: {
+        admin_users: {
         select: {
           id: true,
           email: true,

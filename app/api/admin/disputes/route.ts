@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    return NextResponse.json({ disputes: enrichedDisputes })
+    return NextResponse.json({ Dispute: enrichedDisputes })
   } catch (error: any) {
     console.error('Get admin disputes error:', error)
     return NextResponse.json(

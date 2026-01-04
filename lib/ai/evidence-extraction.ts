@@ -66,7 +66,7 @@ export async function extractAndSummarizeEvidence(
     },
   })
 
-  const vaultAssets = await prisma.vaultAsset.findMany({
+  const vaultAssets = await prisma.vault_assets.findMany({
     where: { riftId },
     select: {
       assetType: true,
@@ -87,7 +87,7 @@ export async function extractAndSummarizeEvidence(
       .eq('transaction_id', riftId)
       .single()).data?.id || '')
 
-  const events = await prisma.riftEvent.findMany({
+  const events = await prisma.rift_events.findMany({
     where: { riftId },
     select: {
       eventType: true,

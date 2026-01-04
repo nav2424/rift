@@ -9,7 +9,7 @@
 
 import { prisma } from '../prisma'
 import OpenAI from 'openai'
-import { VaultAsset } from '@prisma/client'
+import { vault_assets } from '@prisma/client'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -33,7 +33,7 @@ export interface AssetTags {
  * Auto-tag a vault asset with AI
  */
 export async function tagVaultAsset(
-  asset: VaultAsset,
+  asset: any,
   itemType: string
 ): Promise<AssetTags> {
   // Get asset content for analysis
@@ -127,10 +127,10 @@ Generate tags and metadata in JSON:
  * Update asset metadata with tags (stores in metadataJson field)
  */
 export async function updateAssetTags(assetId: string): Promise<void> {
-  const asset = await prisma.vaultAsset.findUnique({
+  const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
     include: {
-      rift: {
+      RiftTransaction: {
         select: { itemType: true },
       },
     },
@@ -140,13 +140,13 @@ export async function updateAssetTags(assetId: string): Promise<void> {
     throw new Error('Asset not found')
   }
 
-  const tags = await tagVaultAsset(asset, asset.rift.itemType)
+  const tags = await tagVaultAsset(asset, asset.RiftTransaction.itemType)
 
   // Update metadata with tags
   const currentMetadata = (asset.metadataJson || {}) as any
   currentMetadata.aiTags = tags
 
-  await prisma.vaultAsset.update({
+  await prisma.vault_assets.update({
     where: { id: assetId },
     data: {
       metadataJson: currentMetadata,
@@ -162,7 +162,7 @@ export async function searchAssetsByTags(
   riftId?: string
 ): Promise<string[]> {
   // Search in metadataJson for matching tags
-  const assets = await prisma.vaultAsset.findMany({
+  const assets = await prisma.vault_assets.findMany({
     where: riftId ? { riftId } : undefined,
     select: {
       id: true,
