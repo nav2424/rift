@@ -67,25 +67,24 @@ export async function POST(
       }
     }
 
-    // For manual releases (buyer action), allow if status allows it and proof is valid
-    // All rifts are eligible for manual release as long as there's valid proof
-    const hasValidProof = await prisma.proof.findFirst({
+    // For manual releases (buyer action), allow early release if proof exists (any status)
+    // Buyers can release funds early without waiting for admin approval
+    const hasProof = await prisma.proof.findFirst({
       where: {
         riftId: rift.id,
-        status: 'VALID',
       },
     })
 
-    if (!hasValidProof) {
+    if (!hasProof) {
       return NextResponse.json(
         { 
-          error: 'Cannot release funds: Proof must be approved by admin before funds can be released. Please wait for proof review.',
+          error: 'Cannot release funds: Seller has not submitted proof yet.',
         },
         { status: 400 }
       )
     }
     
-    // For manual releases, we don't need to check full eligibility - if there's valid proof and status allows it, buyer can release
+    // For manual early releases, buyer can release as soon as proof is submitted (no need to wait for admin approval)
 
     // For legacy compatibility, also check state machine rules
     if (!canBuyerRelease(rift.status)) {

@@ -102,7 +102,7 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
   // DIGITAL GOODS AND LICENSE KEYS
   if (rift.itemType === 'DIGITAL' || rift.itemType === 'LICENSE_KEYS') {
 
-    // Buyer: Confirm Receipt - Only if proof has been submitted
+    // Buyer: View Proof - Only if proof has been submitted
     // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
     if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCESS_VAULT')) {
       // Show vault access link as a subtle action
@@ -116,24 +116,6 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
             View Proof →
           </PremiumButton>
       )
-
-      if (isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
-        actions.push(
-          <PremiumButton
-            key="confirm-receipt-digital"
-            variant="outline"
-            onClick={() => {
-              if (confirm('Confirm you have received the digital delivery? This will release payment to the seller.')) {
-                handleAction('confirm-receipt', 'delivery/confirm-receipt')
-              }
-            }}
-            disabled={loading === 'confirm-receipt'}
-            className="w-full"
-          >
-            {loading === 'confirm-receipt' ? 'Processing...' : 'I Received It'}
-          </PremiumButton>
-        )
-      }
     }
   }
 
@@ -163,32 +145,9 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
   }
 
   // TICKETS
+  // Note: Tickets use the same "Release Payment" button as other item types (handled below)
   if (rift.itemType === 'TICKETS') {
-    // Buyer: Confirm Receipt - Only show if proof has been submitted and buyer can accept
-    // This automatically releases funds - no separate "Release Funds" button needed
-    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
-    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
-      // Permission check is sufficient - it handles PROOF_SUBMITTED, UNDER_REVIEW, and DELIVERED_PENDING_RELEASE
-      actions.push(
-        <PremiumButton
-            key="confirm-ticket-receipt"
-            variant="outline"
-            onClick={() => {
-              if (confirm(
-                'Confirm you received the ticket?\n\n' +
-                '⚠️ This confirmation is final and automatically releases payment to the seller.'
-              )) {
-                handleAction('confirm-ticket-receipt', 'tickets/confirm-receipt')
-              }
-            }}
-            disabled={loading === 'confirm-ticket-receipt'}
-            className="w-full"
-          >
-            {loading === 'confirm-ticket-receipt' ? 'Processing...' : 'I Received It'}
-          </PremiumButton>
-      )
-    }
-    // Note: No "Release Funds" button for tickets - "I Received It" handles everything
+    // No special ticket handling needed - use the standard "Release Payment" button
   }
 
   // ============================================
@@ -230,16 +189,14 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
       )
     }
 
-    // Release funds - Only if allowed by permissions
+    // Release funds early - Only if allowed by permissions
     // Don't show if already RELEASED, PAYOUT_SCHEDULED, or PAID_OUT
     // Don't show for service rifts with milestone-based releases (use MilestoneCard instead)
-    // Don't show for TICKETS - "I Received It" handles everything for tickets
     // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
     const canReleaseFunds = 
       isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF') &&
       !['RELEASED', 'PAYOUT_SCHEDULED', 'PAID_OUT', 'RESOLVED', 'CANCELED', 'CANCELLED'].includes(rift.status) &&
-      !(rift.itemType === 'SERVICES' && rift.allowsPartialRelease) &&
-      rift.itemType !== 'TICKETS' // Tickets use "I Received It" which auto-releases
+      !(rift.itemType === 'SERVICES' && rift.allowsPartialRelease)
     
     if (canReleaseFunds) {
       actions.push(
@@ -290,19 +247,6 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
           </PremiumButton>
         )
       }
-      
-      // For all items, show confirm received button
-      actions.push(
-        <PremiumButton
-          key="confirm-received"
-          variant="outline"
-          onClick={() => handleAction('confirm-received', 'confirm-received')}
-          disabled={loading === 'confirm-received'}
-          className="w-full"
-        >
-          {loading === 'confirm-received' ? 'Processing...' : 'I Received It'}
-        </PremiumButton>
-      )
     }
 
     // Legacy status: DELIVERED_PENDING_RELEASE
