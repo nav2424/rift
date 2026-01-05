@@ -80,11 +80,17 @@ export async function POST(
       )
     }
 
+    // For manual releases, directly transition to RELEASED without eligibility checks
+    // Buyers can release funds early at any time
+    
+    // Transition to RELEASED (handles wallet credit, payout scheduling, status update)
+    await transitionRiftState(rift.id, 'RELEASED', { userId: auth.userId })
+
     // Create timeline event for buyer releasing funds
     try {
       await prisma.timelineEvent.create({
         data: {
-        id: crypto.randomUUID(),
+          id: crypto.randomUUID(),
           escrowId: rift.id,
           type: 'BUYER_RELEASED',
           message: 'Buyer released funds',
@@ -97,21 +103,33 @@ export async function POST(
       // Don't fail the release if timeline event creation fails
     }
 
-    // Use release engine to release funds (includes eligibility check and event logging)
-    const requestMeta = extractRequestMetadata(request)
-    const releaseResult = await releaseFunds(rift.id, requestMeta)
+    // Log RELEASE_ELIGIBLE event if not already logged (for tracking)
+    try {
+      const existingEvent = await prisma.rift_events.findFirst({
+        where: {
+          riftId: rift.id,
+          eventType: 'RELEASE_ELIGIBLE',
+        },
+      })
 
-    if (!releaseResult.success) {
-      return NextResponse.json(
-        { error: releaseResult.error || 'Failed to release funds' },
-        { status: 500 }
-      )
+      if (!existingEvent) {
+        const requestMeta = extractRequestMetadata(request)
+        await logEvent(
+          rift.id,
+          RiftEventActorType.SYSTEM,
+          null,
+          'RELEASE_ELIGIBLE',
+          {
+            reason: 'Buyer manually released funds early',
+            category: rift.itemType,
+          },
+          requestMeta
+        )
+      }
+    } catch (error: any) {
+      console.error('Error logging RELEASE_ELIGIBLE event:', error)
+      // Don't fail the release if event logging fails
     }
-
-    // Transition to RELEASED (handles wallet credit, payout scheduling)
-    // Note: releaseFunds already updates status to RELEASED, but transitionRiftState
-    // handles wallet operations, so we still need to call it
-    await transitionRiftState(rift.id, 'RELEASED', { userId: auth.userId })
 
     return NextResponse.json({
       success: true,
