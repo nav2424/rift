@@ -135,7 +135,6 @@ export async function POST(
       success: true,
       status: 'RELEASED',
       sellerNet: rift.sellerNet,
-      details: releaseResult.details,
     })
   } catch (error: any) {
     console.error('Release funds error:', error)
