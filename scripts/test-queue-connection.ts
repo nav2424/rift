@@ -20,6 +20,9 @@ async function testConnection() {
     // Test queue creation
     console.log('\nTesting queue creation...')
     const queue = getQueue<VerificationJobData>(QUEUE_NAMES.VERIFICATION)
+    if (!queue) {
+      throw new Error('Queue creation returned null - Redis may not be configured')
+    }
     console.log('✅ Queue created successfully!')
     
     // Test adding a job (will fail if Redis not working)
