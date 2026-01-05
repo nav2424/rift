@@ -169,7 +169,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
   // Calculate seller net if not already set
   let sellerNet = rift.sellerNet
   if (!sellerNet && rift.subtotal) {
-    sellerNet = calculateSellerNet(rift.subtotal, rift.currency)
+    sellerNet = calculateSellerNet(rift.subtotal)
     
     // Update the rift with calculated sellerNet
     await prisma.riftTransaction.update({
