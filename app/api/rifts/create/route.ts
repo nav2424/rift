@@ -357,6 +357,14 @@ export async function POST(request: NextRequest) {
       requestMeta
     )
 
+    // Get buyer and seller info for email and activities
+    const buyerUser = await prisma.user.findUnique({
+      where: { id: buyer.id },
+    })
+    const sellerUser = await prisma.user.findUnique({
+      where: { id: seller.id },
+    })
+
     // Create activity for both buyer and seller
     try {
       const { createActivity } = await import('@/lib/activity')
@@ -386,14 +394,6 @@ export async function POST(request: NextRequest) {
       console.error('Failed to create activity (non-critical):', error)
       // Non-critical - continue
     }
-
-    // Get buyer and seller info for email
-    const buyerUser = await prisma.user.findUnique({
-      where: { id: buyer.id },
-    })
-    const sellerUser = await prisma.user.findUnique({
-      where: { id: seller.id },
-    })
 
     // Send email notifications
     if (buyerUser && sellerUser) {
