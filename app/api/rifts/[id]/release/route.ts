@@ -67,30 +67,10 @@ export async function POST(
       }
     }
 
-    // For manual releases (buyer action), allow early release if status indicates proof was submitted
-    // PROOF_SUBMITTED or UNDER_REVIEW status means proof exists - no need to query
-    // Buyers can release funds early without waiting for admin approval
-    
-    // If status is PROOF_SUBMITTED or UNDER_REVIEW, proof was submitted, so allow release
-    if (rift.status !== 'PROOF_SUBMITTED' && rift.status !== 'UNDER_REVIEW' && rift.status !== 'DELIVERED_PENDING_RELEASE') {
-      // For other statuses, check if proof exists (legacy support)
-      const hasProof = await prisma.proof.findFirst({
-        where: {
-          riftId: rift.id,
-        },
-      })
-
-      if (!hasProof) {
-        return NextResponse.json(
-          { 
-            error: 'Cannot release funds: Seller has not submitted proof yet.',
-          },
-          { status: 400 }
-        )
-      }
-    }
-    
-    // For manual early releases, buyer can release as soon as proof is submitted (no need to wait for admin approval)
+    // For manual releases (buyer action), allow early release without any proof requirement
+    // Buyers can release funds early at any time - no proof needed
+    // If status is PROOF_SUBMITTED or UNDER_REVIEW, that means proof was submitted, so release is allowed
+    // But even without proof, buyers should be able to release funds early if they want
 
     // For legacy compatibility, also check state machine rules
     if (!canBuyerRelease(rift.status)) {
