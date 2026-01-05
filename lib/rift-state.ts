@@ -186,7 +186,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
   await creditSellerOnRelease(
     riftId,
     rift.sellerId,
-    rift.sellerNet,
+    sellerNet,
     rift.currency,
     {
       riftNumber: rift.riftNumber,
@@ -195,7 +195,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
   )
 
   // Schedule payout
-  await schedulePayout(riftId, rift.sellerId, rift.sellerNet, rift.currency)
+  await schedulePayout(riftId, rift.sellerId, sellerNet, rift.currency)
 
   // Update user stats
   await prisma.user.update({
