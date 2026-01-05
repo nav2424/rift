@@ -162,8 +162,24 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     include: { seller: true },
   })
 
-  if (!rift || !rift.sellerNet) {
-    throw new Error('Rift not found or seller net not calculated')
+  if (!rift) {
+    throw new Error('Rift not found')
+  }
+
+  // Calculate seller net if not already set
+  let sellerNet = rift.sellerNet
+  if (!sellerNet && rift.subtotal) {
+    sellerNet = calculateSellerNet(rift.subtotal, rift.currency)
+    
+    // Update the rift with calculated sellerNet
+    await prisma.riftTransaction.update({
+      where: { id: riftId },
+      data: { sellerNet },
+    })
+  }
+
+  if (!sellerNet) {
+    throw new Error('Seller net could not be calculated - subtotal is missing')
   }
 
   // Credit seller wallet
