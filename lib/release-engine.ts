@@ -102,6 +102,10 @@ export async function computeReleaseEligibility(
     case 'DIGITAL':
       return await checkDigitalGoodsEligibility(riftId, rift)
     
+    case 'LICENSE_KEYS':
+      // License keys use the same eligibility logic as digital goods
+      return await checkDigitalGoodsEligibility(riftId, rift)
+    
     case 'SERVICES':
       return await checkServicesEligibility(riftId, rift)
     

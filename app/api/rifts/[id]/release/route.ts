@@ -67,8 +67,8 @@ export async function POST(
       }
     }
 
-    // For manual releases (buyer action), be more lenient - allow if status allows it and proof is valid
-    // Check if there's valid proof first (more lenient than full eligibility check)
+    // For manual releases (buyer action), allow if status allows it and proof is valid
+    // All rifts are eligible for manual release as long as there's valid proof
     const hasValidProof = await prisma.proof.findFirst({
       where: {
         riftId: rift.id,
@@ -77,19 +77,15 @@ export async function POST(
     })
 
     if (!hasValidProof) {
-      // Only check full eligibility if no valid proof exists
-      const eligibility = await computeReleaseEligibility(rift.id)
-      
-      if (!eligibility.eligible) {
-        return NextResponse.json(
-          { 
-            error: eligibility.reason || 'Not eligible for release',
-            details: eligibility.details,
-          },
-          { status: 400 }
-        )
-      }
+      return NextResponse.json(
+        { 
+          error: 'Cannot release funds: Proof must be approved by admin before funds can be released. Please wait for proof review.',
+        },
+        { status: 400 }
+      )
     }
+    
+    // For manual releases, we don't need to check full eligibility - if there's valid proof and status allows it, buyer can release
 
     // For legacy compatibility, also check state machine rules
     if (!canBuyerRelease(rift.status)) {
