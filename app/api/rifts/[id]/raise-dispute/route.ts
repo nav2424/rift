@@ -165,7 +165,7 @@ export async function POST(
           // Create activity for buyer
           await createActivity(
             escrowWithUsers.buyerId,
-            'DISPUTE_RAISED',
+            'DISPUTE_OPENED',
             `Dispute raised for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
             escrowWithUsers.subtotal ?? undefined,
             {
@@ -179,7 +179,7 @@ export async function POST(
           // Create activity for seller
           await createActivity(
             escrowWithUsers.sellerId,
-            'DISPUTE_RAISED',
+            'DISPUTE_OPENED',
             `Dispute raised for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
             escrowWithUsers.subtotal ?? undefined,
             {
