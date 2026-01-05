@@ -13,6 +13,7 @@ interface RiftTransaction {
   itemTitle: string
   itemType: string
   amount: number
+  subtotal?: number | null
   currency: string
   status: string
   buyerId: string
