@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { transitionRiftState } from '@/lib/rift-state'
 import { canBuyerRelease } from '@/lib/state-machine'
-import { computeReleaseEligibility, releaseFunds } from '@/lib/release-engine'
-import { extractRequestMetadata } from '@/lib/rift-events'
+import { extractRequestMetadata, logEvent } from '@/lib/rift-events'
+import { RiftEventActorType } from '@prisma/client'
 
 /**
  * Release funds (buyer action)
