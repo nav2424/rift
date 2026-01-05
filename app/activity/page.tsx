@@ -37,9 +37,12 @@ interface ActivityRecord {
   id: string
   type: string
   summary: string
+  status?: string
   amount: number | null
+  currency?: string
   createdAt: string
   metadata?: Record<string, any>
+  message?: string
 }
 
 export default function ActivityPage() {
@@ -216,7 +219,10 @@ export default function ActivityPage() {
     }).format(amount)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
+    if (!status) {
+      return { text: 'text-white/60', bg: 'bg-white/5', border: 'border-white/10' }
+    }
     switch (status) {
       case 'RELEASED': return { text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30' }
       case 'REFUNDED': return { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }
@@ -231,7 +237,8 @@ export default function ActivityPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status?: string) => {
+    if (!status) return null
     switch (status) {
       case 'RELEASED':
         return (
@@ -401,11 +408,13 @@ export default function ActivityPage() {
                           <div className="flex items-center gap-4 flex-wrap">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-light border ${statusColors.bg} ${statusColors.border} ${statusColors.text}`}>
                               {getStatusIcon(activity.status)}
-                              {activity.status === 'FUNDED' ? 'Paid' : activity.status.replace(/_/g, ' ')}
+                              {activity.status ? (activity.status === 'FUNDED' ? 'Paid' : activity.status.replace(/_/g, ' ')) : 'Active'}
                             </span>
-                            <span className="text-white/70 font-light text-sm font-mono">
-                              {formatCurrency(activity.amount, activity.currency)}
-                            </span>
+                            {activity.amount !== null && activity.amount !== undefined && (
+                              <span className="text-white/70 font-light text-sm font-mono">
+                                {formatCurrency(activity.amount, activity.currency || 'CAD')}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
