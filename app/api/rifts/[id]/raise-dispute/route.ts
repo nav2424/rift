@@ -138,42 +138,13 @@ export async function POST(
       },
     })
 
-    // Create activity for both buyer and seller
-    try {
-      if (escrowWithUsers) {
-        const buyerName = escrowWithUsers.buyer.name || escrowWithUsers.buyer.email.split('@')[0]
-        const sellerName = escrowWithUsers.seller.name || escrowWithUsers.seller.email.split('@')[0]
-
-        // Activity for buyer (dispute raiser)
-        await createActivity(
-          auth.userId,
-          'DISPUTE_OPENED',
-          `Dispute opened for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
-          escrowWithUsers.subtotal ?? undefined,
-          { transactionId: id, riftNumber: escrowWithUsers.riftNumber, disputeId: dispute?.id, disputeType: disputeType }
-        )
-
-        // Activity for seller
-        await createActivity(
-          escrowWithUsers.sellerId,
-          'DISPUTE_OPENED',
-          `Dispute opened by ${buyerName} for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
-          escrowWithUsers.subtotal ?? undefined,
-          { transactionId: id, riftNumber: escrowWithUsers.riftNumber, disputeId: dispute?.id, disputeType: disputeType, raisedBy: auth.userId }
-        )
-      }
-    } catch (error) {
-      console.error('Failed to create activity (non-critical):', error)
-      // Non-critical - continue
-    }
-
-    // Get dispute details for email
+    // Get dispute details and escrow with users (needed for activities and emails)
     const dispute = await prisma.dispute.findFirst({
       where: { escrowId: id },
       orderBy: { createdAt: 'desc' },
     })
 
-    // Send email notifications with comprehensive details
+    // Get escrow with user details for activities and emails
     const escrowWithUsers = await prisma.riftTransaction.findUnique({
       where: { id },
       include: {
@@ -187,31 +158,72 @@ export async function POST(
       where: { role: 'ADMIN' },
     })
 
-    if (escrowWithUsers && admin) {
-      await sendDisputeRaisedEmail(
-        escrowWithUsers.buyer.email,
-        escrowWithUsers.seller.email,
-        admin.email,
-        id,
-        escrowWithUsers.itemTitle,
-        reason,
-        {
-          disputeType: disputeType,
-          disputeId: dispute?.id,
-          riftNumber: escrowWithUsers.riftNumber,
-          subtotal: escrowWithUsers.subtotal,
-          currency: escrowWithUsers.currency,
-          itemDescription: escrowWithUsers.itemDescription,
-          itemType: escrowWithUsers.itemType,
-          shippingAddress: escrowWithUsers.shippingAddress,
-          buyerName: escrowWithUsers.buyer.name,
-          sellerName: escrowWithUsers.seller.name,
-          buyerEmail: escrowWithUsers.buyer.email,
-          sellerEmail: escrowWithUsers.seller.email,
-          createdAt: dispute?.createdAt || new Date(),
+    // Create activities and send emails in background (non-blocking)
+    Promise.resolve().then(async () => {
+      try {
+        if (escrowWithUsers) {
+          // Create activity for buyer
+          await createActivity(
+            escrowWithUsers.buyerId,
+            'DISPUTE_RAISED',
+            `Dispute raised for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
+            escrowWithUsers.subtotal ?? undefined,
+            {
+              transactionId: id,
+              riftNumber: escrowWithUsers.riftNumber,
+              sellerId: escrowWithUsers.sellerId,
+              disputeId: dispute?.id,
+            }
+          )
+
+          // Create activity for seller
+          await createActivity(
+            escrowWithUsers.sellerId,
+            'DISPUTE_RAISED',
+            `Dispute raised for rift #${escrowWithUsers.riftNumber} - ${escrowWithUsers.itemTitle}`,
+            escrowWithUsers.subtotal ?? undefined,
+            {
+              transactionId: id,
+              riftNumber: escrowWithUsers.riftNumber,
+              buyerId: escrowWithUsers.buyerId,
+              disputeId: dispute?.id,
+            }
+          )
+
+          // Send email if admin exists
+          if (admin) {
+            await sendDisputeRaisedEmail(
+              escrowWithUsers.buyer.email,
+              escrowWithUsers.seller.email,
+              admin.email,
+              id,
+              escrowWithUsers.itemTitle,
+              reason,
+              {
+                disputeType: disputeType,
+                disputeId: dispute?.id,
+                riftNumber: escrowWithUsers.riftNumber,
+                subtotal: escrowWithUsers.subtotal,
+                currency: escrowWithUsers.currency,
+                itemDescription: escrowWithUsers.itemDescription,
+                itemType: escrowWithUsers.itemType,
+                shippingAddress: escrowWithUsers.shippingAddress,
+                buyerName: escrowWithUsers.buyer.name,
+                sellerName: escrowWithUsers.seller.name,
+                buyerEmail: escrowWithUsers.buyer.email,
+                sellerEmail: escrowWithUsers.seller.email,
+                createdAt: dispute?.createdAt || new Date(),
+              }
+            )
+          }
         }
-      )
-    }
+      } catch (error) {
+        console.error('Failed to create activities/send email (non-critical):', error)
+        // Non-critical - activities can be added later
+      }
+    }).catch(() => {
+      // Ignore errors
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
