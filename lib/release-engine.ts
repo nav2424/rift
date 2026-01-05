@@ -139,15 +139,38 @@ async function checkDigitalGoodsEligibility(
     }
   }
 
-  // Check delivery upload time
+  // Check delivery upload time (license keys may not have digital_deliveries, they're in Vault)
   const { data: delivery } = await supabase
     .from('digital_deliveries')
     .select('uploaded_at')
     .eq('rift_id', riftId)
     .single()
 
+  // For license keys stored in Vault, check if there's proof instead
+  // License keys don't have digital_deliveries but should still be eligible
+  const hasProof = await prisma.proof.findFirst({
+    where: {
+      riftId,
+      status: 'VALID',
+    },
+  })
+
+  if (!delivery && !hasProof) {
+    return { eligible: false, reason: 'No delivery or proof uploaded yet' }
+  }
+
+  // If no delivery record (license keys), check proof instead
   if (!delivery) {
-    return { eligible: false, reason: 'No delivery uploaded yet' }
+    // License keys are eligible if there's valid proof
+    if (hasProof) {
+      return {
+        eligible: true,
+        reason: 'Valid proof submitted (license key)',
+        category: 'DIGITAL',
+        details: { hasProof: true },
+      }
+    }
+    return { eligible: false, reason: 'No delivery or proof uploaded yet' }
   }
 
   const uploadTime = new Date(delivery.uploaded_at)

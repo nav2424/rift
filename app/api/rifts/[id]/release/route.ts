@@ -67,17 +67,28 @@ export async function POST(
       }
     }
 
-    // Check eligibility using release engine
-    const eligibility = await computeReleaseEligibility(rift.id)
-    
-    if (!eligibility.eligible) {
-      return NextResponse.json(
-        { 
-          error: eligibility.reason || 'Not eligible for release',
-          details: eligibility.details,
-        },
-        { status: 400 }
-      )
+    // For manual releases (buyer action), be more lenient - allow if status allows it and proof is valid
+    // Check if there's valid proof first (more lenient than full eligibility check)
+    const hasValidProof = await prisma.proof.findFirst({
+      where: {
+        riftId: rift.id,
+        status: 'VALID',
+      },
+    })
+
+    if (!hasValidProof) {
+      // Only check full eligibility if no valid proof exists
+      const eligibility = await computeReleaseEligibility(rift.id)
+      
+      if (!eligibility.eligible) {
+        return NextResponse.json(
+          { 
+            error: eligibility.reason || 'Not eligible for release',
+            details: eligibility.details,
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // For legacy compatibility, also check state machine rules
