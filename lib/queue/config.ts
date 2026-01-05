@@ -239,20 +239,22 @@ function getRedisConnection(): Redis {
       })
       
       // Set up error handlers
-      redisConnectionInstance.on('error', (error) => {
+      redisConnectionInstance.on('error', (error: unknown) => {
+        const err = error as { code?: string; message?: string }
+        
         // Suppress ETIMEDOUT errors - they're expected when Redis is unreachable
-        if (error.code === 'ETIMEDOUT' || error.message?.includes('connect ETIMEDOUT')) {
-          redisConnectionFailed = true
+        if (err.code === 'ETIMEDOUT' || err.message?.includes('connect ETIMEDOUT')) {
           // Only log the first timeout to avoid spam
           if (!redisConnectionFailed) {
-            console.error('[Redis] Connection timeout - Redis unreachable. Queue operations will fail gracefully.')
+            redisConnectionFailed = true
+            console.warn('[redis] connection timed out (ETIMEDOUT) — continuing without Redis')
           }
           return
         }
         
-        // Log other errors (but only once)
-        if (!redisConnectionFailed && error.message && !error.message.includes('connect')) {
-          console.error('[Redis] Connection error (non-fatal):', error.message)
+        // Log other redis errors once (but only if not already failed)
+        if (!redisConnectionFailed && err.message && !err.message.includes('connect')) {
+          console.error('[redis] connection error:', err.message ?? error)
         }
       })
       
