@@ -230,7 +230,11 @@ function getRedisConnection(): Redis {
         // Suppress automatic reconnection attempts
         autoResubscribe: false,
         autoResendUnfulfilledCommands: false,
-        reconnectOnError: false, // Don't auto-reconnect on error
+        // reconnectOnError can be boolean or function - use false to disable
+        reconnectOnError: (err: Error) => {
+          // Don't auto-reconnect on error
+          return false
+        },
         keepAlive: 10000, // Keep connection alive for 10 seconds
       })
       
