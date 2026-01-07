@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import MarketingLayout from '@/components/layouts/MarketingLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
 
@@ -27,8 +26,7 @@ export default function About() {
   }
 
   return (
-    <MarketingLayout>
-      <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
+    <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
         {/* Hero */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
           <div className="text-center">
@@ -150,6 +148,5 @@ export default function About() {
           </div>
         </section>
       </div>
-    </MarketingLayout>
   )
 }

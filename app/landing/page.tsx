@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import MarketingLayout from '@/components/layouts/MarketingLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
 
@@ -207,7 +206,6 @@ export default function LandingPage() {
           </div>
         </section>
       </div>
-    </MarketingLayout>
   )
 }
 

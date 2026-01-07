@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import MarketingLayout from '@/components/layouts/MarketingLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
 import Tabs from '@/components/ui/Tabs'
@@ -82,7 +81,6 @@ export default function Pricing() {
   ]
 
   return (
-    <MarketingLayout>
     <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
         {/* Hero */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
@@ -303,6 +301,5 @@ export default function Pricing() {
             </div>
         </section>
       </div>
-    </MarketingLayout>
   )
 }

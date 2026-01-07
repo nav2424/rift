@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import MarketingLayout from '@/components/layouts/MarketingLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
 
@@ -32,7 +31,6 @@ export default function Home() {
   }
 
   return (
-    <MarketingLayout>
     <div className="min-h-screen relative overflow-hidden bg-black">
       {/* Hero Section */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 lg:pt-32 lg:pb-24">
@@ -326,8 +324,7 @@ export default function Home() {
                 </PremiumButton>
               </Link>
           </div>
-      </section>
-    </div>
-    </MarketingLayout>
+        </section>
+      </div>
   )
 }
