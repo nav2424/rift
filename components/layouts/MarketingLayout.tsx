@@ -63,11 +63,10 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                   >
                     Sign In
                   </Link>
-                  <Link
-                    href="/auth/signup"
-                    className="px-4 py-2 rounded-lg bg-white text-black hover:bg-white/90 transition-colors text-sm font-medium"
-                  >
-                    Create a Rift
+                  <Link href="/auth/signup">
+                    <button className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition duration-200 bg-white text-black shadow-[0_14px_40px_rgba(255,255,255,0.12)] hover:shadow-[0_18px_60px_rgba(255,255,255,0.18)] active:scale-[0.99]">
+                      Create a Rift
+                    </button>
                   </Link>
                 </>
               )}
@@ -87,7 +86,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main>{children}</main>
+      <main className="pt-20">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">

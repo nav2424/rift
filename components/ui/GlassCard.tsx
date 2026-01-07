@@ -15,13 +15,13 @@ export default function GlassCard({
   className = '',
   ...props 
 }: GlassCardProps) {
-  const baseStyles = 'rounded-2xl transition-all duration-400'
+  const baseStyles = 'rounded-2xl transition-all duration-300'
   
   const variants = {
     glass: 'glass',
     strong: 'glass-strong',
     light: 'glass-light',
-    liquid: 'liquid-glass',
+    liquid: 'liquid-glass glass liquid',
   }
   
   const hoverEffect = hover 
