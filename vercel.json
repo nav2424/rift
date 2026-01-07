@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/admin/stripe-balance",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
