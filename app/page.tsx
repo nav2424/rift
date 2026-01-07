@@ -68,18 +68,21 @@ export default function Home() {
       </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="mb-20">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight text-center">
+        <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+          <div className="mb-24 text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
               How it works
             </h2>
-                </div>
+            <p className="text-white/50 font-light text-sm mt-4">
+              Five simple steps to secure any deal
+            </p>
+          </div>
 
           <div className="relative">
-            {/* Connector line */}
-            <div className="hidden md:block absolute top-12 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            {/* Connector line - desktop only */}
+            <div className="hidden lg:block absolute top-16 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/8 to-transparent" />
             
-            <div className="flex flex-col md:flex-row md:items-start gap-8 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-6 lg:gap-8">
               {[
                 { step: '01', title: 'Create', description: 'Set terms and counterparty' },
                 { step: '02', title: 'Secure', description: 'Funds are locked' },
@@ -87,22 +90,37 @@ export default function Home() {
                 { step: '04', title: 'Verify', description: 'Buyer confirms' },
                 { step: '05', title: 'Release', description: 'Funds move instantly' }
               ].map((item, index) => (
-                <div key={item.step} className="flex-1 text-center md:text-left">
-                  <div className="relative">
-                    {index < 4 && (
-                      <div className="hidden md:block absolute top-6 left-full w-full h-px bg-white/10 transform -translate-x-1/2" style={{ width: 'calc(100% + 1rem)' }} />
-                    )}
-                    <div className="text-5xl md:text-6xl font-bold text-white/20 mb-2 leading-none font-mono">
-                      {item.step}
-                    </div>
-                    <div className="text-lg font-medium text-white mb-1">{item.title}</div>
-                    <div className="text-sm text-white/55 leading-relaxed">{item.description}</div>
+                <div key={item.step} className="relative text-center md:text-left group">
+                  {/* Connector dots */}
+                  {index < 4 && (
+                    <>
+                      <div className="hidden lg:block absolute top-16 left-full w-full h-[1px] bg-gradient-to-r from-white/8 via-white/10 to-white/8" style={{ width: 'calc(100% + 0.5rem)', transform: 'translateX(-50%)' }} />
+                      <div className="hidden lg:block absolute top-[63px] right-[-12px] w-2 h-2 rounded-full bg-white/10 group-hover:bg-emerald-400/30 transition-colors" />
+                    </>
+                  )}
+                  
+                  {/* Step number - large and subtle */}
+                  <div className="text-6xl md:text-7xl lg:text-8xl font-bold text-white/8 mb-4 leading-none font-mono tracking-tight group-hover:text-white/12 transition-colors">
+                    {item.step}
                   </div>
-              </div>
-            ))}
+                  
+                  {/* Title - prominent */}
+                  <div className="text-xl md:text-2xl font-medium text-white mb-3 tracking-tight group-hover:text-emerald-400/30 transition-colors">
+                    {item.title}
+                  </div>
+                  
+                  {/* Description - subtle */}
+                  <div className="text-sm md:text-base text-white/55 leading-relaxed max-w-xs mx-auto md:mx-0">
+                    {item.description}
+                  </div>
+                  
+                  {/* Decorative dot */}
+                  <div className="hidden md:block absolute top-16 left-1/2 md:left-0 lg:left-auto lg:right-[-12px] w-1.5 h-1.5 rounded-full bg-emerald-400/40 opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-1/2 md:translate-x-0" />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
         {/* Interactive Demo */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
