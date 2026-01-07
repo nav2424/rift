@@ -33,7 +33,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
-        {/* Hero Section */}
+      {/* Hero Section */}
         <section className="mx-auto max-w-6xl px-6 pt-28 pb-16">
           <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-4 py-2 text-xs text-white/60 mb-8">
@@ -68,7 +68,7 @@ export default function Home() {
       </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-0">
+        <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
           <div className="mb-24 text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
               How it works
@@ -177,7 +177,7 @@ export default function Home() {
         </section>
 
         {/* Interactive Demo */}
-        <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-32">
+        <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-32">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-light text-white/70 mb-2 tracking-tight">
               See it in action
