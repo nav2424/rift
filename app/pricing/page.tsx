@@ -27,50 +27,32 @@ export default function Pricing() {
     )
   }
 
-  const tiers = [
-    {
-      name: 'Personal',
-      description: 'For casual deals',
-      buyerFee: '3%',
-      sellerFee: '5%',
-      features: [
-        'Standard verification window',
-        'Basic vault storage',
-        'Email support',
-        'Standard review time',
-      ],
-      cta: 'Get Started',
-    },
-    {
-      name: 'Pro',
-      description: 'For creators and power sellers',
-      buyerFee: '3%',
-      sellerFee: '5%',
-      features: [
-        'Extended verification window',
-        'Enhanced vault storage',
-        'Priority review',
-        'Priority support',
-      ],
-      cta: 'Get Started',
-      popular: true,
-    },
-    {
-      name: 'Business',
-      description: 'For agencies and teams',
-      buyerFee: '3%',
-      sellerFee: '5%',
-      features: [
-        'Extended verification window',
-        'Unlimited vault storage',
-        'Priority review',
-        'Team accounts',
-        'API access (coming soon)',
-        'Dedicated support',
-      ],
-      cta: 'Contact Sales',
-    },
-  ]
+  const buyerCard = {
+    title: 'Buyer',
+    description: 'Secure your payments',
+    fee: '3%',
+    feeLabel: 'Payment processing fee',
+    benefits: [
+      'Funds secured until delivery verified',
+      'Automatic release after verification window',
+      'Issue resolution support',
+      'Full refund if terms not met',
+    ],
+  }
+
+  const sellerCard = {
+    title: 'Seller',
+    description: 'Get paid with confidence',
+    fee: '5%',
+    feeLabel: 'Platform fee',
+    benefits: [
+      'Payment secured before delivery',
+      'Fast payout after verification',
+      'Dispute resolution support',
+      'Vault storage for proof of delivery',
+    ],
+    popular: true,
+  }
 
   const faqs = [
     {
@@ -93,77 +75,90 @@ export default function Pricing() {
 
   return (
     <MarketingLayout>
-      <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
+    <div className="min-h-screen relative overflow-hidden bg-black pt-8 pb-32">
         {/* Hero */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-white mb-6 tracking-tight">
               Simple, transparent pricing
-            </h1>
+          </h1>
             <p className="text-xl text-white/80 max-w-2xl mx-auto font-light">
               One fee structure. No hidden costs. No monthly subscriptions.
             </p>
-          </div>
+            </div>
         </section>
 
-        {/* Pricing Tiers */}
+        {/* Pricing Cards */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-            {tiers.map((tier, index) => (
-              <GlassCard
-                key={index}
-                className={`p-8 relative ${tier.popular ? 'border-white/20 bg-white/5' : ''}`}
-              >
-                {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="px-4 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-light">
-                      Most Popular
-                    </span>
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            {/* Buyer Card */}
+            <GlassCard className="p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-light text-white mb-2">{buyerCard.title}</h3>
+                <p className="text-white/60 font-light text-sm mb-6">{buyerCard.description}</p>
+                <div>
+                  <div className="text-3xl font-light text-white mb-1">{buyerCard.fee}</div>
+                  <div className="text-sm text-white/60 font-light">{buyerCard.feeLabel}</div>
+        </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {buyerCard.benefits.map((benefit, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-white/70 font-light text-sm">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/auth/signup" className="block">
+                <PremiumButton
+                  size="lg"
+                  className="w-full"
+                  variant="outline"
+                >
+                  Get Started as Buyer
+                </PremiumButton>
+              </Link>
+            </GlassCard>
+
+            {/* Seller Card */}
+            <GlassCard className="p-8 relative border-white/20 bg-white/5">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="px-4 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-light">
+                  Most Popular
+                </span>
                   </div>
-                )}
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-light text-white mb-2">{tier.name}</h3>
-                  <p className="text-white/60 font-light text-sm mb-6">{tier.description}</p>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="text-sm text-white/60 font-light mb-1">Buyer pays</div>
-                      <div className="text-2xl font-light text-white">
-                        <span className="text-white">{tier.buyerFee}</span>
-                        <span className="text-sm text-white/60 font-light ml-2">payment processing</span>
-                      </div>
-                    </div>
-                    <div className="border-t border-white/10 pt-3">
-                      <div className="text-sm text-white/60 font-light mb-1">Seller pays</div>
-                      <div className="text-2xl font-light text-white">
-                        <span className="text-white">{tier.sellerFee}</span>
-                        <span className="text-sm text-white/60 font-light ml-2">platform fee</span>
-                      </div>
-                    </div>
-                  </div>
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-light text-white mb-2">{sellerCard.title}</h3>
+                <p className="text-white/60 font-light text-sm mb-6">{sellerCard.description}</p>
+                <div>
+                  <div className="text-3xl font-light text-white mb-1">{sellerCard.fee}</div>
+                  <div className="text-sm text-white/60 font-light">{sellerCard.feeLabel}</div>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {tier.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-white/70 font-light text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href={tier.name === 'Business' ? '/contact' : '/auth/signup'} className="block">
-                  <PremiumButton
-                    size="lg"
-                    className="w-full"
-                    variant={tier.popular ? 'primary' : 'outline'}
-                    glow={tier.popular}
-                  >
-                    {tier.cta}
-                  </PremiumButton>
-                </Link>
-              </GlassCard>
-            ))}
-          </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {sellerCard.benefits.map((benefit, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-white/70 font-light text-sm">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/auth/signup" className="block">
+                <PremiumButton
+                  size="lg"
+                  className="w-full"
+                  variant="primary"
+                  glow
+                >
+                  Get Started as Seller
+                </PremiumButton>
+              </Link>
+            </GlassCard>
+                  </div>
         </section>
 
         {/* Fee Explanation */}
@@ -171,7 +166,7 @@ export default function Pricing() {
           <GlassCard className="p-8 lg:p-12">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-light text-white mb-4">Understanding fees</h2>
-            </div>
+                  </div>
             <div className="space-y-6 text-white/70 font-light text-sm">
               <div>
                 <h3 className="text-white font-light mb-2">Payment processing fee (3% - paid by buyer)</h3>
@@ -179,7 +174,7 @@ export default function Pricing() {
                   Covers payment processing costs, card network fees, and payment provider charges. 
                   This is standard for all card transactions and is paid by the buyer when they secure funds.
                 </p>
-              </div>
+                    </div>
               <div>
                 <h3 className="text-white font-light mb-2">Platform fee (5% - paid by seller)</h3>
                 <p className="text-white/60">
@@ -216,12 +211,12 @@ export default function Pricing() {
         {/* Final CTA */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <Link href="/auth/signup">
+              <Link href="/auth/signup">
               <PremiumButton size="lg" className="min-w-[200px]" glow>
                 Create a Rift
-              </PremiumButton>
-            </Link>
-          </div>
+                </PremiumButton>
+              </Link>
+            </div>
         </section>
       </div>
     </MarketingLayout>
