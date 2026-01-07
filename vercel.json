@@ -1,12 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/rifts/auto-release",
+      "path": "/api/cron/process",
       "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/payouts/process",
-      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/admin/stripe-balance",
