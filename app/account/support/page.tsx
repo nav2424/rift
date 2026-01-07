@@ -154,6 +154,10 @@ function SupportContent() {
                   {
                     question: 'Is Rift safe to use?',
                     answer: 'Yes! Rift uses bank-level encryption and secure payment processing through Stripe. Your funds are held securely until transactions are completed, and we never store your full payment card information.'
+                  },
+                  {
+                    question: 'Why is my first withdrawal slower?',
+                    answer: 'Your first withdrawal includes a one-time verification for safety and compliance. This helps us verify your account and protect both buyers and sellers. After this, future withdrawals are processed faster automatically.'
                   }
                 ].map((item, idx) => {
                   const isOpen = openFaq === idx

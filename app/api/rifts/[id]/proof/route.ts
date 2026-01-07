@@ -140,9 +140,6 @@ export async function POST(
           try {
             // Determine asset type based on item type
             let assetType: VaultAssetType = 'FILE'
-            if (rift.itemType === 'TICKETS') {
-              assetType = 'TICKET_PROOF'
-            }
             
             // Upload with timeout protection
             const uploadPromise = uploadVaultAsset(rift.id, auth.userId, {
@@ -454,8 +451,7 @@ export async function POST(
       // For TICKETS: Automatically transition to DELIVERED_PENDING_RELEASE when proof is uploaded
       let newStatus = currentRift.status
       if (currentRift.status === 'FUNDED' || currentRift.status === 'UNDER_REVIEW') {
-        // For tickets, proof upload means transfer is sent, so mark as delivered
-        const targetStatus = rift.itemType === 'TICKETS' ? 'DELIVERED_PENDING_RELEASE' : 'PROOF_SUBMITTED'
+        const targetStatus = 'PROOF_SUBMITTED'
         await tx.riftTransaction.update({
           where: { 
             id: rift.id,
@@ -620,66 +616,6 @@ export async function POST(
     
     const verificationJobId = vaultAssetIds.length > 0 ? 'queued' : null
 
-    // For TICKETS: Automatically mark transfer as sent when proof is uploaded (in background)
-    if (rift.itemType === 'TICKETS') {
-      Promise.resolve().then(async () => {
-        try {
-          const supabase = createServerClient()
-          const buyer = await prisma.user.findUnique({
-            where: { id: rift.buyerId },
-            select: { email: true },
-          })
-
-          // Check if transfer record already exists
-          const { data: existingTransfer } = await supabase
-            .from('ticket_transfers')
-            .select('*')
-            .eq('rift_id', rift.id)
-            .single()
-
-          if (existingTransfer) {
-            // Update existing transfer
-            await supabase
-              .from('ticket_transfers')
-              .update({
-                seller_claimed_sent_at: new Date().toISOString(),
-                status: 'seller_sent',
-              })
-              .eq('rift_id', rift.id)
-          } else {
-            // Create new transfer record
-            await supabase
-              .from('ticket_transfers')
-              .insert({
-                rift_id: rift.id,
-                provider: 'other',
-                transfer_to_email: buyer?.email || '',
-                seller_claimed_sent_at: new Date().toISOString(),
-                status: 'seller_sent',
-              })
-          }
-
-          // Log event
-          const requestMeta = extractRequestMetadata(request)
-          await logEvent(
-            rift.id,
-            RiftEventActorType.SELLER,
-            auth.userId,
-            'SELLER_CLAIMED_TRANSFER_SENT',
-            {
-              provider: 'other',
-              autoClaimed: true, // Mark as auto-claimed via proof upload
-            },
-            requestMeta
-          )
-        } catch (ticketTransferError: any) {
-          // Don't fail proof submission if ticket transfer creation fails
-          console.error('Auto-claim ticket transfer error (non-critical):', ticketTransferError)
-        }
-      }).catch(() => {
-        // Ignore errors
-      })
-    }
 
     // Return response IMMEDIATELY - all critical operations are complete
     // Status is already updated to PROOF_SUBMITTED in transaction

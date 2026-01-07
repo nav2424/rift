@@ -14,8 +14,91 @@ export const stripe = process.env.STRIPE_SECRET_KEY
     })
   : null
 
+// Fee calculation helpers
+type CreateRiftPIInput = {
+  subtotal: number;        // in dollars
+  currency: string;
+  riftId: string;
+  buyerEmail: string;
+};
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+
+export function calculateFees(subtotal: number) {
+  const buyerFee = round2(subtotal * 0.03);   // 3%
+  const sellerFee = round2(subtotal * 0.05);  // 5%
+  const buyerTotal = round2(subtotal + buyerFee);
+  const sellerPayout = round2(subtotal - sellerFee); // 95% of subtotal
+
+  return { buyerFee, sellerFee, buyerTotal, sellerPayout };
+}
+
 /**
- * Create a payment intent for an rift transaction
+ * Create a payment intent for a Rift transaction
+ * Funds stay on platform (no transfer_data) - we'll transfer to seller on release
+ */
+export async function createRiftPaymentIntent({
+  subtotal,
+  currency,
+  riftId,
+  buyerEmail,
+}: CreateRiftPIInput): Promise<{ clientSecret: string; paymentIntentId: string } | null> {
+  if (!stripe) {
+    return {
+      clientSecret: "mock_client_secret_" + riftId,
+      paymentIntentId: "pi_mock_" + riftId,
+    };
+  }
+
+  if (!buyerEmail || !buyerEmail.includes("@")) {
+    throw new Error("Valid buyer email is required for payment intent");
+  }
+
+  const { buyerFee, sellerFee, buyerTotal, sellerPayout } = calculateFees(subtotal);
+
+  const amountCents = Math.round(buyerTotal * 100);
+
+  // Generate idempotency key for PaymentIntent creation
+  const { getPaymentIntentIdempotencyKey } = await import('./stripe-idempotency')
+  const idempotencyKey = getPaymentIntentIdempotencyKey(riftId)
+
+  const pi = await stripe.paymentIntents.create(
+    {
+      amount: amountCents,
+      currency: currency.toLowerCase(),
+      receipt_email: buyerEmail,
+      description: `Rift payment for transaction ${riftId}`,
+      automatic_payment_methods: { enabled: true },
+
+      // IMPORTANT: funds stay on PLATFORM because we are NOT using transfer_data here.
+      // We'll transfer to seller later when a milestone is released.
+
+      metadata: {
+        escrowId: riftId, // keep name for now to avoid breaking downstream
+        type: "rift",
+
+        subtotal: subtotal.toString(),
+        buyerFee: buyerFee.toString(),
+        sellerFee: sellerFee.toString(),
+        buyerTotal: buyerTotal.toString(),
+        sellerPayout: sellerPayout.toString(),
+      },
+    },
+    {
+      idempotencyKey: idempotencyKey,
+    }
+  );
+
+  if (!pi.client_secret) throw new Error("Payment intent created but no client secret returned");
+
+  return { clientSecret: pi.client_secret, paymentIntentId: pi.id };
+}
+
+/**
+ * @deprecated Use createRiftPaymentIntent instead
+ * Legacy function kept for backward compatibility
  */
 export async function createPaymentIntent(
   amount: number,
@@ -23,49 +106,15 @@ export async function createPaymentIntent(
   escrowId: string,
   buyerEmail: string
 ): Promise<{ clientSecret: string; paymentIntentId: string } | null> {
-  if (!stripe) {
-    // In development without Stripe, return a mock
-    return {
-      clientSecret: 'mock_client_secret_' + escrowId,
-      paymentIntentId: 'pi_mock_' + escrowId,
-    }
-  }
-
-  try {
-    // Validate inputs
-    if (!buyerEmail || !buyerEmail.includes('@')) {
-      throw new Error('Valid buyer email is required for payment intent')
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: currency.toLowerCase(),
-      metadata: {
-        escrowId,
-        type: 'rift',
-      },
-      receipt_email: buyerEmail,
-      description: `Rift payment for transaction ${escrowId}`,
-      // Only allow card payments - this disables Link and all other payment methods
-      payment_method_types: ['card'],
-    })
-
-    if (!paymentIntent.client_secret) {
-      throw new Error('Payment intent created but no client secret returned')
-    }
-
-    return {
-      clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id,
-    }
-  } catch (error: any) {
-    console.error('Stripe payment intent creation error:', error)
-    // Provide more detailed error message
-    if (error.type === 'StripeInvalidRequestError') {
-      throw new Error(`Payment processing error: ${error.message}`)
-    }
-    throw error
-  }
+  // For backward compatibility, treat amount as buyerTotal and calculate subtotal
+  // This is a rough approximation - new code should use createRiftPaymentIntent
+  const subtotal = amount / 1.03; // Reverse calculate subtotal from buyerTotal
+  return createRiftPaymentIntent({
+    subtotal,
+    currency,
+    riftId: escrowId,
+    buyerEmail,
+  });
 }
 
 /**
@@ -131,7 +180,101 @@ export async function confirmPaymentIntent(
 }
 
 /**
+ * Create a Stripe transfer to seller's connected account
+ * Used when releasing funds after milestone approval
+ * Includes idempotency to prevent double transfers
+ * 
+ * @param sellerPayoutAmount - Amount to transfer (subtotal * 0.95)
+ * @param currency - Currency code
+ * @param sellerStripeAccountId - Seller's Stripe Connect account ID
+ * @param riftId - Rift transaction ID
+ * @param milestoneId - Optional milestone ID for milestone releases
+ * @param existingTransferId - Optional existing transfer ID to check (for idempotency)
+ */
+export async function createRiftTransfer(
+  sellerPayoutAmount: number,
+  currency: string,
+  sellerStripeAccountId: string,
+  riftId: string,
+  milestoneId?: string,
+  existingTransferId?: string | null
+): Promise<string | null> {
+  if (!stripe) {
+    console.log(`[MOCK] Transfer: ${sellerPayoutAmount} ${currency} to seller for rift ${riftId}`)
+    return 'tr_mock_' + riftId + (milestoneId ? '_' + milestoneId : '')
+  }
+
+  // Idempotency: if transfer already exists, return it
+  if (existingTransferId) {
+    try {
+      const existingTransfer = await stripe.transfers.retrieve(existingTransferId)
+      if (existingTransfer) {
+        console.log(`Transfer ${existingTransferId} already exists for rift ${riftId}`)
+        return existingTransferId
+      }
+    } catch (error: any) {
+      // Transfer doesn't exist or was deleted, continue to create new one
+      if (error.code !== 'resource_missing') {
+        console.warn(`Error checking existing transfer ${existingTransferId}:`, error.message)
+      }
+    }
+  }
+
+  // Check balance availability before transfer
+  const { checkBalanceAvailability } = await import('./stripe-balance')
+  const balance = await checkBalanceAvailability(sellerPayoutAmount, currency)
+  
+  if (!balance.sufficient) {
+    console.error(`Insufficient Stripe balance for transfer: need ${sellerPayoutAmount} ${currency}, available ${balance.available} ${currency}`)
+    throw new Error(`Insufficient Stripe balance. Available: ${balance.available} ${currency}, Required: ${sellerPayoutAmount} ${currency}`)
+  }
+
+  try {
+    // Generate idempotency key
+    const { getFullReleaseTransferIdempotencyKey, getMilestoneTransferIdempotencyKey } = await import('./stripe-idempotency')
+    const idempotencyKey = milestoneId
+      ? getMilestoneTransferIdempotencyKey(riftId, parseInt(milestoneId.split('_').pop() || '0'))
+      : getFullReleaseTransferIdempotencyKey(riftId)
+
+    const transfer = await stripe.transfers.create(
+      {
+        amount: Math.round(sellerPayoutAmount * 100), // Convert to cents
+        currency: currency.toLowerCase(),
+        destination: sellerStripeAccountId,
+        metadata: {
+          riftId,
+          type: 'rift_payout',
+          ...(milestoneId && { milestoneId }),
+        },
+      },
+      {
+        idempotencyKey: idempotencyKey,
+      }
+    )
+
+    return transfer.id
+  } catch (error: any) {
+    console.error('Stripe transfer error:', error)
+    
+    // Handle idempotency key conflict (means transfer already exists)
+    if (error.code === 'idempotency_key_in_use') {
+      // This shouldn't happen if we check existingTransferId, but handle gracefully
+      console.warn(`Idempotency key conflict for transfer - transfer may already exist`)
+      // Could try to retrieve by metadata, but for now return null
+      return null
+    }
+    
+    // If seller doesn't have payment account set up, return null
+    // The release can still proceed (funds stay in wallet)
+    return null
+  }
+}
+
+/**
  * Create a payout to seller
+ * 
+ * @deprecated Use createRiftTransfer instead for Rift releases
+ * This function is kept for backward compatibility with wallet withdrawals
  * 
  * IMPORTANT: Payment Processing Fee Handling
  * - Payment processing fees (2.9% + $0.30) are automatically deducted from the payment
@@ -187,7 +330,92 @@ export async function createPayout(
 }
 
 /**
- * Refund a payment
+ * Refund a payment with policy enforcement
+ * 
+ * @param paymentIntentId - Stripe PaymentIntent ID
+ * @param riftId - Rift transaction ID (for policy enforcement)
+ * @param amount - Optional refund amount (if not provided, refunds full amount)
+ * @param refundRecordId - Optional refund record ID for idempotency
+ */
+export async function refundRiftPayment(
+  paymentIntentId: string,
+  riftId: string,
+  amount?: number,
+  refundRecordId?: string
+): Promise<{ refundId: string | null; error?: string }> {
+  if (!stripe) {
+    return { refundId: 're_mock_' + paymentIntentId }
+  }
+
+  // Enforce refund policy
+  const { validateRefundAmount } = await import('./refund-policy')
+  
+  if (amount) {
+    const validation = await validateRefundAmount(riftId, amount)
+    if (!validation.valid) {
+      return {
+        refundId: null,
+        error: validation.error || 'Refund validation failed',
+      }
+    }
+  } else {
+    // Full refund - check eligibility
+    const { checkRefundEligibility } = await import('./refund-policy')
+    const eligibility = await checkRefundEligibility(riftId)
+    if (!eligibility.canRefundFull) {
+      return {
+        refundId: null,
+        error: eligibility.reason || 'Full refund not allowed',
+      }
+    }
+  }
+
+  try {
+    // Generate idempotency key
+    const { getRefundIdempotencyKey } = await import('./stripe-idempotency')
+    const idempotencyKey = getRefundIdempotencyKey(
+      riftId,
+      refundRecordId || crypto.randomUUID()
+    )
+
+    const refund = await stripe.refunds.create(
+      {
+        payment_intent: paymentIntentId,
+        amount: amount ? Math.round(amount * 100) : undefined,
+        metadata: {
+          riftId,
+          type: 'rift_refund',
+        },
+      },
+      {
+        idempotencyKey: idempotencyKey,
+      }
+    )
+
+    return { refundId: refund.id }
+  } catch (error: any) {
+    console.error('Stripe refund error:', error)
+    
+    // Handle idempotency key conflict
+    if (error.code === 'idempotency_key_in_use') {
+      console.warn(`Idempotency key conflict for refund - refund may already exist`)
+      // Could try to retrieve by metadata, but for now return error
+      return {
+        refundId: null,
+        error: 'Refund may already be in progress',
+      }
+    }
+    
+    return {
+      refundId: null,
+      error: error.message || 'Refund failed',
+    }
+  }
+}
+
+/**
+ * Refund a payment (legacy function - no policy enforcement)
+ * @deprecated Use refundRiftPayment instead for policy enforcement
  */
 export async function refundPayment(
   paymentIntentId: string,

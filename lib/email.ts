@@ -3,6 +3,7 @@
  */
 
 import nodemailer from 'nodemailer'
+import { BalanceAlert } from './stripe-balance-monitor'
 
 // Create transporter function (creates new transporter each time to pick up env changes)
 function createTransporter() {
@@ -607,6 +608,112 @@ export async function sendStripeStatusChangeEmail(
   await sendEmail(
     userEmail,
     `Stripe Account ${label} - Rift`,
+    html
+  )
+}
+
+/**
+ * Send balance alert email to admins
+ */
+export async function sendBalanceAlertEmail(
+  alerts: BalanceAlert[],
+  balances: Array<{ currency: string; available: number; pending: number }>
+): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER
+
+  if (!adminEmail) {
+    console.warn('No admin email configured for balance alerts')
+    return
+  }
+
+  const criticalAlerts = alerts.filter(a => a.alert === 'critical')
+  const warningAlerts = alerts.filter(a => a.alert === 'warning')
+
+  const alertRows = alerts.map(alert => `
+    <tr style="background-color: ${alert.alert === 'critical' ? '#fee2e2' : alert.alert === 'warning' ? '#fef3c7' : '#dbeafe'};">
+      <td style="padding: 8px; border: 1px solid #ddd;">${alert.currency}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">$${alert.available.toFixed(2)}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">$${alert.threshold.toFixed(2)}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">${alert.percentage.toFixed(1)}%</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">
+        <span style="color: ${alert.alert === 'critical' ? '#dc2626' : alert.alert === 'warning' ? '#d97706' : '#2563eb'}; font-weight: bold;">
+          ${alert.alert.toUpperCase()}
+        </span>
+      </td>
+    </tr>
+  `).join('')
+
+  const balanceRows = balances.map(balance => `
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;">${balance.currency}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">$${balance.available.toFixed(2)}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">$${balance.pending.toFixed(2)}</td>
+    </tr>
+  `).join('')
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: ${criticalAlerts.length > 0 ? '#dc2626' : '#d97706'};">
+        ${criticalAlerts.length > 0 ? '🚨 CRITICAL' : '⚠️ WARNING'}: Stripe Balance Alert
+      </h2>
+      
+      ${criticalAlerts.length > 0 ? `
+        <div style="background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 12px; margin: 16px 0;">
+          <p style="margin: 0; font-weight: bold; color: #dc2626;">
+            ${criticalAlerts.length} critical balance alert(s) detected!
+          </p>
+          <p style="margin: 8px 0 0 0;">
+            Immediate action required to prevent transfer failures.
+          </p>
+        </div>
+      ` : ''}
+
+      <h3 style="margin-top: 24px;">Balance Alerts</h3>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <thead>
+          <tr style="background-color: #f3f4f6;">
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Currency</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Available</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Threshold</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">% of Threshold</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Alert Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${alertRows}
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: 24px;">Current Balances</h3>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <thead>
+          <tr style="background-color: #f3f4f6;">
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Currency</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Available</th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Pending</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${balanceRows}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 24px; padding: 16px; background-color: #f9fafb; border-radius: 8px;">
+        <p style="margin: 0; font-size: 14px; color: #6b7280;">
+          <strong>Action Required:</strong> Add funds to your Stripe account to ensure transfers can be processed.
+          Visit <a href="https://dashboard.stripe.com/balance/overview">Stripe Dashboard</a> to add funds.
+        </p>
+      </div>
+
+      <p style="margin-top: 24px; color: #6b7280; font-size: 14px;">
+        This is an automated alert from the Rift balance monitoring system.
+      </p>
+    </div>
+  `
+
+  await sendEmail(
+    adminEmail,
+    `${criticalAlerts.length > 0 ? '🚨 CRITICAL' : '⚠️ WARNING'}: Stripe Balance Alert - Rift`,
     html
   )
 }

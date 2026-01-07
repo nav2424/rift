@@ -39,6 +39,7 @@ export default function WalletPage() {
   const [connectingStripe, setConnectingStripe] = useState(false)
   const [payouts, setPayouts] = useState<any[]>([])
   const [loadingPayouts, setLoadingPayouts] = useState(false)
+  const [isFirstWithdrawal, setIsFirstWithdrawal] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -231,9 +232,22 @@ export default function WalletPage() {
       }
 
       const data = await response.json()
-      showToast(`Withdrawal request submitted! Payout ID: ${data.payoutId}`, 'success')
+      
+      // Check if this is a first withdrawal
+      const isFirst = data.isFirstWithdrawal !== false // Default to true if not specified
+      
+      if (isFirst) {
+        showToast(
+          'Withdrawal requested. This is your first withdrawal, so it may take up to 7 business days to process. You\'ll receive updates as it moves through review.',
+          'success'
+        )
+      } else {
+        showToast(`Withdrawal request submitted! Payout ID: ${data.payoutId}`, 'success')
+      }
+      
       setWithdrawAmount('')
       loadWallet()
+      loadPayoutHistory() // Reload to update isFirstWithdrawal state
     } catch (error) {
       console.error('Withdraw error:', error)
       showToast('Withdrawal failed. Please try again.', 'error')
@@ -278,6 +292,9 @@ export default function WalletPage() {
       if (response.ok) {
         const data = await response.json()
         setPayouts(data.data || [])
+        // Check if this is a first withdrawal (no completed payouts)
+        const completedPayouts = (data.data || []).filter((p: any) => p.status === 'COMPLETED')
+        setIsFirstWithdrawal(completedPayouts.length === 0)
       }
     } catch (error) {
       console.error('Error loading payout history:', error)
@@ -286,7 +303,23 @@ export default function WalletPage() {
     }
   }
 
-  const getPayoutStatusLabel = (status: string) => {
+  const getPayoutStatusLabel = (status: string, payout: any) => {
+    // For first withdrawal, show more detailed status
+    // Check if this payout is the first one (no completed payouts exist)
+    const completedPayouts = payouts.filter((p: any) => p.status === 'COMPLETED')
+    const isFirst = completedPayouts.length === 0 && payout
+    
+    if (isFirst) {
+      const labels: Record<string, string> = {
+        PENDING: 'Verification in progress',
+        SCHEDULED: 'Scheduled for release',
+        PROCESSING: 'Security review',
+        COMPLETED: 'Funds sent',
+        FAILED: 'Failed',
+      }
+      return labels[status] || status
+    }
+    
     const labels: Record<string, string> = {
       PENDING: 'Pending',
       SCHEDULED: 'Scheduled',
@@ -582,6 +615,26 @@ export default function WalletPage() {
             {wallet.wallet.availableBalance > 0 && (
               <div className="pt-6 border-t border-white/10">
                 <h3 className="text-lg font-light text-white mb-4">Request Withdrawal</h3>
+                
+                {/* First-time withdrawal info */}
+                {isFirstWithdrawal && canWithdraw && (
+                  <div className="mb-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <p className="text-blue-400/90 font-light text-sm mb-1">
+                          <strong className="text-blue-300">First-time sellers:</strong> Your initial withdrawal takes up to 7 business days. Future withdrawals are faster.
+                        </p>
+                        <p className="text-blue-400/70 font-light text-xs">
+                          This one-time delay helps us verify your account and protect both buyers and sellers. We'll notify you at every step.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {!canWithdraw && withdrawReason && (
                   <div className="mb-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
                     <p className="text-yellow-400/90 font-light text-sm mb-3">
@@ -677,12 +730,21 @@ export default function WalletPage() {
                       <div className="flex items-center gap-3 mb-1">
                         <p className="text-white/90 font-light">Withdrawal</p>
                         <span className={`px-2 py-1 rounded-full text-xs font-light border ${getPayoutStatusColor(payout.status)}`}>
-                          {getPayoutStatusLabel(payout.status)}
+                          {getPayoutStatusLabel(payout.status, payout)}
                         </span>
                       </div>
                       <p className="text-xs text-white/50 font-light mt-1">
                         {new Date(payout.createdAt).toLocaleString()}
                       </p>
+                      {(() => {
+                        const completedPayouts = payouts.filter((p: any) => p.status === 'COMPLETED')
+                        const isFirst = completedPayouts.length === 0 && payout.status !== 'COMPLETED'
+                        return isFirst ? (
+                          <p className="text-xs text-blue-400/80 font-light mt-1">
+                            First withdrawal: Processing may take up to 7 business days. We'll keep you updated.
+                          </p>
+                        ) : null
+                      })()}
                       {payout.failureReason && (
                         <p className="text-xs text-red-400 font-light mt-1">
                           {payout.failureReason}

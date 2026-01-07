@@ -153,9 +153,9 @@ export default function DisputeQueue() {
               className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:border-white/30"
             >
               <option value="">All</option>
-              <option value="DIGITAL">Digital</option>
+              <option value="DIGITAL_GOODS">Digital Goods</option>
               <option value="SERVICES">Services</option>
-              <option value="TICKETS">Tickets</option>
+              <option value="OWNERSHIP_TRANSFER">Ownership Transfer</option>
             </select>
           </div>
           <div>

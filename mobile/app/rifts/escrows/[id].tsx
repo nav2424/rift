@@ -332,8 +332,8 @@ export default function EscrowDetailScreen() {
 
     // Determine proof type based on item type
     const proofType = 
-      rift.itemType === 'DIGITAL' ? 'proof of digital product transfer (screenshot, license key, etc.)' :
-      rift.itemType === 'TICKETS' ? 'proof of ticket transfer (screenshot of transfer confirmation, email, etc.)' :
+      rift.itemType === 'DIGITAL_GOODS' ? 'proof of digital goods transfer (screenshot, license key, etc.)' :
+      rift.itemType === 'OWNERSHIP_TRANSFER' ? 'proof of ownership transfer (screenshot of transfer confirmation, email, etc.)' :
       'proof of service completion (photos, completion certificate, etc.)';
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -640,7 +640,7 @@ export default function EscrowDetailScreen() {
             </>
           )}
           
-          {rift.itemType === 'DIGITAL' && rift.downloadLink && (
+          {rift.itemType === 'DIGITAL_GOODS' && rift.downloadLink && (
             <>
               <View style={styles.detailDivider} />
               <View style={styles.detailRow}>
@@ -817,7 +817,7 @@ export default function EscrowDetailScreen() {
                 } else {
                   // Non-physical items: Submit delivery proof
                   const deliverButtonTitle = 
-                    rift.itemType === 'DIGITAL' ? 'Submit Delivery Proof' :
+                    rift.itemType === 'DIGITAL_GOODS' ? 'Submit Delivery Proof' :
                     rift.itemType === 'TICKETS' ? 'Submit Transfer Proof' :
                     'Submit Completion Proof';
                   

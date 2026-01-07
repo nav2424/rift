@@ -1,195 +1,187 @@
-# Test Suite Fixes - Summary
+# Test Fixes Summary
 
-## ✅ All Launch Contradictions Fixed
+## ✅ Fixed Prisma Import Issues
 
-### 1. Removed PHYSICAL and TRACKING References
+### 1. Added Default Export to `lib/prisma.ts`
 
-**Changes:**
-- ✅ Removed PHYSICAL from all test files
-- ✅ Removed TRACKING asset type references
-- ✅ Updated test to reject TRACKING as unknown asset type (not just "wrong for tickets")
-- ✅ Updated TEST_MATRIX.md to remove PHYSICAL category
+**Before**:
+```typescript
+export const prisma = ...
+// No default export
+```
 
-**Files Updated:**
-- `tests/unit/proof-type-validation.test.ts` - Added test for TRACKING rejection
-- `tests/unit/proof-deadlines.test.ts` - Removed PHYSICAL default deadline test
-- `TEST_MATRIX.md` - Removed PHYSICAL references
+**After**:
+```typescript
+export const prisma = ...
+export default prisma  // ✅ Added
+```
 
-### 2. Replaced FUNDED with PAID
+This allows both import styles:
+- `import { prisma } from '@/lib/prisma'` (named)
+- `import prisma from '@/lib/prisma'` (default)
 
-**Changes:**
-- ✅ All test factories now use `paidAt` instead of `fundedAt`
-- ✅ All test factories use `PAID` status instead of `FUNDED`
-- ✅ All deadline tests reference "from PAID" instead of "from FUNDED"
-- ✅ Updated TEST_MATRIX.md to use PAID terminology
+### 2. Fixed Test File Imports
 
-**Files Updated:**
-- `tests/factories/riftFactory.ts` - Changed `fundedAt` → `paidAt`, `FUNDED` → `PAID`
-- `tests/unit/proof-deadlines.test.ts` - All tests use `paidAt`
-- `tests/integration/proof-submission.test.ts` - All tests use `PAID` status
-- `TEST_MATRIX.md` - Updated all deadline references
+**Before**:
+```typescript
+import { prisma } from '@/lib/prisma'  // @/ alias might not resolve
+```
 
----
+**After**:
+```typescript
+import { prisma } from '../../lib/prisma'  // ✅ Relative import (more reliable)
+```
 
-## ✅ New Critical Tests Added
+### 3. Updated Test Setup
 
-### 1. Dispute Blocking Based on Access Logs
+**Added**:
+- Test database safety checks
+- Better error messages
+- Default test database URL fallback
+- Connection verification in `beforeAll`
 
-**File:** `tests/security/dispute-blocking.test.ts`
+**File**: `tests/setup.ts`
 
-**Tests:**
-- ✅ Buyer reveals key → "never received" dispute blocked
-- ✅ Buyer downloads file → "never received" dispute blocked
-- ✅ Buyer opens asset → "never opened" claim provably false (admin timeline)
+### 4. Fixed Stripe Mocking
 
-**Impact:** Prevents false "never received" disputes when access logs prove delivery.
+**Before**: Incomplete mocking, undefined references
 
-### 2. Authorization Tests Per Endpoint
+**After**: 
+- Complete mock Stripe instance
+- Deterministic return values
+- Properly scoped mocks accessible in tests
 
-**File:** `tests/security/authorization.test.ts`
+### 5. Added Database Connection Verification
 
-**Tests:**
-- ✅ Buyer cannot submit proof (seller-only)
-- ✅ Seller cannot access buyer-only reveal endpoints
-- ✅ User not in rift cannot access vault/proof/viewer/reveal
-- ✅ Admin can access everything, actions reason-logged
+**In test file**:
+```typescript
+beforeAll(async () => {
+  if (!process.env.DATABASE_URL && !process.env.TEST_DATABASE_URL) {
+    throw new Error('DATABASE_URL or TEST_DATABASE_URL must be set')
+  }
+  
+  await prisma.$connect()
+  console.log('✅ Prisma connected successfully')
+})
+```
 
-**Impact:** Ensures proper role-based access control on all endpoints.
+## ✅ Database Unique Constraint
 
-### 3. Idempotency + Double-Submit Safety
+### Added to Schema
 
-**File:** `tests/security/idempotency.test.ts`
+**File**: `prisma/schema.prisma`
+```prisma
+model MilestoneRelease {
+  // ... fields ...
+  
+  @@unique([riftId, milestoneIndex]) // ✅ Prevents duplicates
+}
+```
 
-**Tests:**
-- ✅ Same proof payload twice doesn't create duplicate DB rows
-- ✅ Download/reveal endpoints don't create duplicate AccessEvents on retry storms
-- ✅ Concurrent download requests handled gracefully
+### Migration Created
 
-**Impact:** Prevents duplicate records from retries and concurrent requests.
+**File**: `prisma/migrations/20250125000000_add_milestone_release_unique_constraint/migration.sql`
 
-### 4. Concurrency / Race Conditions
+**To Apply**:
+```bash
+npx prisma migrate deploy
+```
 
-**File:** `tests/security/concurrency.test.ts`
+## ✅ Balance Monitoring
 
-**Tests:**
-- ✅ Buyer disputes at same moment auto-release runs → auto-release blocked
-- ✅ Admin sets UNDER_REVIEW while buyer accepting → final state consistent
-- ✅ Database-level locking prevents race conditions
+### Files Created
 
-**Impact:** Ensures system maintains consistency under concurrent operations.
+1. **`lib/stripe-balance-monitor.ts`**
+   - `monitorStripeBalance()` - Monitors all currencies
+   - `checkBalanceForTransfer()` - Checks specific amount
+   - `getBalanceSummary()` - Dashboard summary
 
-### 5. Vault URL Leakage Prevention
+2. **`app/api/admin/stripe-balance/route.ts`**
+   - GET endpoint for balance summary
+   - POST endpoint for monitoring with thresholds
+   - Supports cron job execution
 
-**File:** `tests/security/vault-url-leakage.test.ts`
+3. **`workers/stripe-balance-monitor.ts`**
+   - Cron job worker
+   - Sends email alerts
 
-**Tests:**
-- ✅ Direct storage URLs never returned to client
-- ✅ Viewer endpoints use short-lived signed access and enforce rift membership
-- ✅ Attempt to reuse viewer URL after expiry fails
+4. **`lib/email.ts`**
+   - Added `sendBalanceAlertEmail()` function
 
-**Impact:** Prevents direct access to storage, enforces viewer-first design.
+### Cron Configuration
 
----
+**File**: `vercel.json`
+```json
+{
+  "path": "/api/admin/stripe-balance",
+  "schedule": "*/30 * * * *"  // Every 30 minutes
+}
+```
 
-## ✅ Watermarking Expectations Updated
+## Running Tests
 
-**File:** `tests/unit/watermarking.test.ts`
+### Prerequisites
 
-**Changes:**
-- ✅ Reframed tests to focus on viewer-first design
-- ✅ Tests verify overlay appears in viewer output
-- ✅ Tests verify watermark text includes txId + userId + timestamp
-- ✅ Tests verify original stored file remains unmodified
-- ✅ Tests verify viewer output cannot be retrieved as raw storage URL
+1. **Set Test Database**:
+   ```bash
+   export TEST_DATABASE_URL="postgresql://user:pass@host:port/rift_test"
+   ```
 
-**Removed:**
-- ❌ Reliance on `extractWatermark` for security (EXIF/LSB are fragile)
+2. **Apply Migrations**:
+   ```bash
+   DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy
+   ```
 
-**New Focus:**
-- ✅ Viewer-first delivery + access logs + audit chain (primary protection)
-- ✅ Watermark overlays as backup layer only
+3. **Run Tests**:
+   ```bash
+   npm test tests/integration/refund-dispute-stress.test.ts
+   ```
 
----
+### Expected Test Results
 
-## ✅ Acceptance Criteria Tightened
+All scenarios from `REFUND_DISPUTE_STRESS_TEST.md` should pass:
+- ✅ Refund before release
+- ✅ Partial refund before release
+- ✅ Refund after milestone (should fail)
+- ✅ Dispute freeze enforcement
+- ✅ Concurrent release prevention
+- ✅ Balance insufficient handling
+- ✅ Unique constraint enforcement
 
-**File:** `TEST_MATRIX.md`
+## Files Modified
 
-**Old Criteria:**
-- Unit tests: 95%+ pass rate
-- Integration tests: 90%+ pass rate
-
-**New Criteria:**
-- **Critical tests: 100% pass required**
-  - Tags: `critical`, `security`, `authorization`, `audit_chain`, `auto_release`, `type_lock`
-- Non-critical tests can temporarily fail (UI cosmetics only)
-- **Nothing that affects disputes, access control, or fund release can fail**
-
-**Impact:** Ensures launch safety - all critical systems must work perfectly.
-
----
-
-## ✅ Performance Benchmarks Added
-
-**File:** `TEST_MATRIX.md`
-
-**New Benchmarks:**
-- ✅ Vault access logging throughput: Handle 100 concurrent opens without bottleneck
-- ✅ Audit chain under load: Maintain integrity with batching/queueing if needed
-
-**Impact:** Ensures system performs under production load.
-
----
-
-## ✅ Dates Fixed
-
-**Files Updated:**
-- `TEST_MATRIX.md` - 2025-01-28 → 2025-12-28
-- `TEST_SUITE_SUMMARY.md` - 2025-01-28 → 2025-12-28
-- `LAUNCH_READINESS_TEST_SUITE.md` - 2025-01-28 → 2025-12-28
-
----
-
-## Test Count
-
-**Before:** 238 test cases  
-**After:** 280+ test cases (238 original + 42 new critical tests)
-
-**New Test Files:**
-1. `tests/security/dispute-blocking.test.ts` - 6 tests
-2. `tests/security/authorization.test.ts` - 8 tests
-3. `tests/security/idempotency.test.ts` - 6 tests
-4. `tests/security/concurrency.test.ts` - 6 tests
-5. `tests/security/vault-url-leakage.test.ts` - 6 tests
-6. `tests/unit/watermarking.test.ts` - 5 tests
-
-**Total New:** 37 tests (plus updates to existing tests)
-
----
+1. ✅ `lib/prisma.ts` - Added default export
+2. ✅ `tests/setup.ts` - Added DB safety checks
+3. ✅ `tests/integration/refund-dispute-stress.test.ts` - Fixed imports, added connection checks
+4. ✅ `prisma/schema.prisma` - Added unique constraint
+5. ✅ `lib/stripe-balance-monitor.ts` - Created
+6. ✅ `app/api/admin/stripe-balance/route.ts` - Created
+7. ✅ `workers/stripe-balance-monitor.ts` - Created
+8. ✅ `lib/email.ts` - Added balance alert function
+9. ✅ `vercel.json` - Added cron job
 
 ## Next Steps
 
-1. **Run Tests:**
+1. **Apply Migration**:
    ```bash
-   npm install
-   npm test
+   npx prisma migrate deploy
    ```
 
-2. **Verify Critical Tests Pass:**
+2. **Set Test Database**:
    ```bash
-   npm run test:security
-   npm run test:unit
+   export TEST_DATABASE_URL="your-test-db-url"
    ```
 
-3. **Check Acceptance Criteria:**
-   - All critical tests must pass (100%)
-   - All security tests must pass (100%)
-   - All authorization tests must pass (100%)
+3. **Run Tests**:
+   ```bash
+   npm test tests/integration/refund-dispute-stress.test.ts
+   ```
 
-4. **Ready for Launch!** 🚀
+4. **Verify Balance Monitoring**:
+   - Check `/api/admin/stripe-balance` endpoint
+   - Verify cron job runs (in production)
+   - Test email alerts
 
----
+## Troubleshooting
 
-**Last Updated:** 2025-12-28  
-**Status:** ✅ All fixes complete
-
+See `TEST_SETUP_GUIDE.md` for detailed troubleshooting steps.

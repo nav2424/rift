@@ -154,9 +154,31 @@ export async function transitionRiftState(
 }
 
 /**
- * Handle release state - credit seller wallet and schedule payout
+ * Handle release state - credit seller wallet and create Stripe transfer
  */
 async function handleRelease(riftId: string, userId?: string): Promise<void> {
+  // Check dispute freeze before releasing
+  const { checkDisputeFreeze } = await import('./dispute-freeze')
+  const freezeCheck = await checkDisputeFreeze(riftId)
+  
+  if (freezeCheck.frozen) {
+    throw new Error(`Cannot release funds: ${freezeCheck.reason}`)
+  }
+
+  // Acquire concurrency lock
+  const { acquireFullReleaseLock } = await import('./release-concurrency')
+  const lock = await acquireFullReleaseLock(riftId)
+  
+  if (!lock) {
+    throw new Error('Failed to acquire release lock')
+  }
+
+  // If already released, return early
+  if (lock.status === 'CREATED' && lock.releaseId !== 'already_released') {
+    console.log(`Rift ${riftId} already released with transfer ${lock.releaseId}`)
+    return
+  }
+
   const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
     include: { seller: true },
@@ -166,8 +188,45 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     throw new Error('Rift not found')
   }
 
-  // Calculate seller net if not already set
-  let sellerNet = rift.sellerNet
+  // Get sellerPayout from PaymentIntent metadata (source of truth)
+  let sellerPayout: number | null = null
+  let stripeTransferId: string | null = null
+
+  if (rift.stripePaymentIntentId) {
+    try {
+      const { stripe } = await import('./stripe')
+      if (stripe) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(rift.stripePaymentIntentId)
+        sellerPayout = parseFloat(paymentIntent.metadata?.sellerPayout || '0')
+        
+        // Create Stripe transfer to seller's connected account
+        if (sellerPayout > 0 && rift.seller.stripeConnectAccountId) {
+          const { createRiftTransfer } = await import('./stripe')
+          stripeTransferId = await createRiftTransfer(
+            sellerPayout,
+            rift.currency,
+            rift.seller.stripeConnectAccountId,
+            riftId,
+            undefined, // No milestone ID for full release
+            rift.stripeTransferId || null // Check for existing transfer (idempotency)
+          )
+        }
+      }
+    } catch (error: any) {
+      console.error(`Error creating Stripe transfer for rift ${riftId}:`, error)
+      
+      // If balance insufficient, throw error (don't silently fail)
+      if (error.message?.includes('Insufficient Stripe balance')) {
+        throw new Error(`Cannot release funds: ${error.message}`)
+      }
+      
+      // Continue with release even if transfer fails (funds stay in wallet)
+      // But log the error for monitoring
+    }
+  }
+
+  // Fallback: Calculate seller net if not available from metadata
+  let sellerNet = sellerPayout || rift.sellerNet
   if (!sellerNet && rift.subtotal) {
     sellerNet = calculateSellerNet(rift.subtotal)
     
@@ -194,7 +253,15 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     }
   )
 
-  // Schedule payout
+  // Store transfer ID if created
+  if (stripeTransferId) {
+    await prisma.riftTransaction.update({
+      where: { id: riftId },
+      data: { stripeTransferId },
+    })
+  }
+
+  // Schedule payout (for wallet withdrawals if transfer wasn't created)
   await schedulePayout(riftId, rift.sellerId, sellerNet, rift.currency)
 
   // Update user stats
@@ -279,8 +346,8 @@ export function calculateAutoReleaseDeadline(
   // Default review window: 72 hours
   let reviewWindowHours = 72
 
-  // Tickets/digital keys: 24-48 hours
-  if (itemType === 'TICKETS' || itemType === 'DIGITAL') {
+  // Digital goods: 24-48 hours
+  if (itemType === 'DIGITAL_GOODS') {
     reviewWindowHours = 48
   }
 

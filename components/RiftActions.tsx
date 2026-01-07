@@ -99,26 +99,22 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
   // PHASE 3: Category-specific actions
   // ============================================
 
-  // DIGITAL GOODS AND LICENSE KEYS
-  if (rift.itemType === 'DIGITAL' || rift.itemType === 'LICENSE_KEYS') {
+  // DIGITAL GOODS
+  if (rift.itemType === 'DIGITAL_GOODS') {
 
     // Buyer: View Proof - Only if proof has been submitted
     // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
     if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCESS_VAULT')) {
-      // For DIGITAL, route to delivery page. For LICENSE_KEYS, vault assets are shown on the rift page via DeliveryStatus
-      if (rift.itemType === 'DIGITAL') {
-        actions.push(
-          <PremiumButton
-              key="view-proof"
-              variant="ghost"
-              onClick={() => router.push(`/rifts/${rift.id}/delivery`)}
-              className="w-full text-sm"
-            >
-              View Proof →
-            </PremiumButton>
-        )
-      }
-      // For LICENSE_KEYS, vault assets are displayed on the main page via DeliveryStatus component, so no separate button needed
+      actions.push(
+        <PremiumButton
+            key="view-proof"
+            variant="ghost"
+            onClick={() => router.push(`/rifts/${rift.id}/delivery`)}
+            className="w-full text-sm"
+          >
+            View Proof →
+          </PremiumButton>
+      )
     }
   }
 
@@ -147,10 +143,10 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
     }
   }
 
-  // TICKETS
-  // Note: Tickets use the same "Release Payment" button as other item types (handled below)
-  if (rift.itemType === 'TICKETS') {
-    // No special ticket handling needed - use the standard "Release Payment" button
+  // OWNERSHIP TRANSFER
+  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
+    // Ownership transfers use standard proof submission and release flow
+    // No special handling needed - use the standard "Release Payment" button
   }
 
   // ============================================

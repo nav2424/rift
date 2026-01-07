@@ -8,12 +8,17 @@ const globalForPrisma = globalThis as unknown as {
 // Connection pooling parameters should be in DATABASE_URL:
 // ?connection_limit=10&pool_timeout=20&connect_timeout=10&pgbouncer=true
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === 'development' 
+  log: process.env.NODE_ENV === 'test' 
+    ? [] 
+    : process.env.NODE_ENV === 'development' 
     ? ['query', 'error', 'warn']
     : ['error'],
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+// Export default for tests that use default import
+export default prisma
 
 // Handle graceful shutdown
 const disconnect = async () => {
@@ -32,30 +37,36 @@ if (process.env.NODE_ENV === 'production') {
 
 // Handle connection errors - log but don't disconnect
 // Prisma will automatically retry connections
-prisma.$on('error' as never, (e: any) => {
-  // Only log non-connection-closed errors to reduce noise
-  if (!e.message?.includes('Closed') && !e.message?.includes('connection')) {
-    console.error('Prisma error:', e)
-  }
-  // Don't disconnect on error - let Prisma handle reconnection
-})
+// Only set up event listener if $on method is available (not in all test environments)
+if (typeof prisma.$on === 'function') {
+  prisma.$on('error' as never, (e: any) => {
+    // Only log non-connection-closed errors to reduce noise
+    if (!e.message?.includes('Closed') && !e.message?.includes('connection')) {
+      console.error('Prisma error:', e)
+    }
+    // Don't disconnect on error - let Prisma handle reconnection
+  })
+}
 
 // Add connection health check
+// Only set up middleware if $use method is available (not in all test environments)
 let connectionHealthy = true
-prisma.$use(async (params, next) => {
-  try {
-    const result = await next(params)
-    connectionHealthy = true
-    return result
-  } catch (error: any) {
-    // If connection is closed, mark as unhealthy and let Prisma retry
-    if (error.message?.includes('Closed') || error.message?.includes('connection')) {
-      connectionHealthy = false
-      // Prisma will automatically retry, so we just throw to let it handle it
+if (typeof prisma.$use === 'function') {
+  prisma.$use(async (params, next) => {
+    try {
+      const result = await next(params)
+      connectionHealthy = true
+      return result
+    } catch (error: any) {
+      // If connection is closed, mark as unhealthy and let Prisma retry
+      if (error.message?.includes('Closed') || error.message?.includes('connection')) {
+        connectionHealthy = false
+        // Prisma will automatically retry, so we just throw to let it handle it
+      }
+      throw error
     }
-    throw error
-  }
-})
+  })
+}
 
 /**
  * Retry wrapper for Prisma operations that might fail due to connection issues

@@ -84,9 +84,24 @@ export async function POST(
         )
       }
 
-      // Refund buyer
+      // Refund buyer (with policy enforcement)
       if (rift.stripePaymentIntentId) {
-        refundId = await refundPayment(rift.stripePaymentIntentId, refundAmount)
+        const { refundRiftPayment } = await import('@/lib/stripe')
+        const refundResult = await refundRiftPayment(
+          rift.stripePaymentIntentId,
+          id,
+          refundAmount,
+          crypto.randomUUID() // Generate refund record ID
+        )
+        
+        if (refundResult.error) {
+          return NextResponse.json(
+            { error: `Refund failed: ${refundResult.error}` },
+            { status: 400 }
+          )
+        }
+        
+        refundId = refundResult.refundId
       }
 
       // Debit seller wallet for refund
@@ -115,13 +130,28 @@ export async function POST(
         await transitionRiftState(id, 'CANCELED', { userId: session.user.id })
       }
     } else if (resolution === 'FULL_REFUND') {
-      // Full refund to buyer, seller gets nothing
+      // Full refund to buyer, seller gets nothing (with policy enforcement)
       const buyerTotal = rift.subtotal + rift.buyerFee
       refundAmount = buyerTotal
 
-      // Refund buyer
+      // Refund buyer (with policy enforcement)
       if (rift.stripePaymentIntentId) {
-        refundId = await refundPayment(rift.stripePaymentIntentId, refundAmount)
+        const { refundRiftPayment } = await import('@/lib/stripe')
+        const refundResult = await refundRiftPayment(
+          rift.stripePaymentIntentId,
+          id,
+          refundAmount,
+          crypto.randomUUID() // Generate refund record ID
+        )
+        
+        if (refundResult.error) {
+          return NextResponse.json(
+            { error: `Refund failed: ${refundResult.error}` },
+            { status: 400 }
+          )
+        }
+        
+        refundId = refundResult.refundId
       }
 
       // Debit seller wallet for full refund

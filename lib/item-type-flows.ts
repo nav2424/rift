@@ -15,24 +15,9 @@ export interface ItemTypeConfig {
 
 /**
  * Item type configs for launch scope
- * LAUNCH ITEM TYPES: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS
- * PHYSICAL removed from launch scope
+ * LAUNCH ITEM TYPES: SERVICES, OWNERSHIP_TRANSFER, DIGITAL_GOODS
  */
 export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
-  DIGITAL: {
-    gracePeriodHours: 24, // 24-hour protection window - auto-release if no dispute
-    requiresShipmentProof: false,
-    requiresTracking: false,
-    allowsAutoRelease: true, // Auto-release after seller submits proof + 24 hours
-    description: 'Seller submits proof → 24-hour protection window → Auto-release (unless buyer disputes)',
-  },
-  TICKETS: {
-    gracePeriodHours: 24, // 24-hour protection window - auto-release if no dispute
-    requiresShipmentProof: false,
-    requiresTracking: false,
-    allowsAutoRelease: true, // Auto-release after seller submits proof + 24 hours
-    description: 'Seller submits proof → 24-hour protection window → Auto-release (unless buyer disputes)',
-  },
   SERVICES: {
     gracePeriodHours: 72, // 72-hour protection window for services
     requiresShipmentProof: false,
@@ -40,7 +25,14 @@ export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
     allowsAutoRelease: true, // Auto-release after seller submits proof + 72 hours
     description: 'Seller submits proof → 72-hour protection window → Auto-release (unless buyer disputes)',
   },
-  LICENSE_KEYS: {
+  OWNERSHIP_TRANSFER: {
+    gracePeriodHours: 48, // 48-hour protection window for ownership transfers
+    requiresShipmentProof: false,
+    requiresTracking: false,
+    allowsAutoRelease: true, // Auto-release after seller submits proof + 48 hours
+    description: 'Seller submits proof → 48-hour protection window → Auto-release (unless buyer disputes)',
+  },
+  DIGITAL_GOODS: {
     gracePeriodHours: 24, // 24-hour protection window - auto-release if no dispute
     requiresShipmentProof: false,
     requiresTracking: false,
@@ -55,8 +47,14 @@ export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
 export function getItemTypeConfig(itemType: ItemType): ItemTypeConfig {
   const config = ITEM_TYPE_CONFIGS[itemType]
   if (!config) {
-    // Fallback to DIGITAL config for LICENSE_KEYS if not defined
-    return ITEM_TYPE_CONFIGS[itemType === 'LICENSE_KEYS' ? 'DIGITAL' : 'PHYSICAL'] || ITEM_TYPE_CONFIGS.PHYSICAL!
+    // Fallback to DIGITAL_GOODS config if not defined
+    return ITEM_TYPE_CONFIGS.DIGITAL_GOODS || {
+      gracePeriodHours: 24,
+      requiresShipmentProof: false,
+      requiresTracking: false,
+      allowsAutoRelease: true,
+      description: 'Default configuration',
+    }
   }
   return config
 }
@@ -96,4 +94,3 @@ export function getGracePeriodHours(itemType: ItemType): number {
 export function allowsAutoRelease(itemType: ItemType): boolean {
   return getItemTypeConfig(itemType).allowsAutoRelease
 }
-

@@ -84,15 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Type-specific validation
-    if (itemType === 'TICKETS') {
-      if (!eventDate || !venue || !seatDetails || !transferMethod) {
-        return NextResponse.json(
-          { error: 'Event date, venue, seat details, and transfer method are required for tickets' },
-          { status: 400 }
-        )
-      }
-    }
-    if (itemType === 'DIGITAL') {
+    if (itemType === 'DIGITAL_GOODS') {
       // File storage type is optional during creation - seller will provide proof after payment
       // Only validate if they've provided a storage type
       if (fileStorageType === 'EXTERNAL_LINK' && !downloadLink) {
@@ -108,6 +100,10 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+    }
+    if (itemType === 'OWNERSHIP_TRANSFER') {
+      // Ownership transfer validation can be added here if needed
+      // For now, no specific fields are required at creation time
     }
     if (itemType === 'SERVICES') {
       if (!serviceDate || !serviceScope || !serviceDeliverables || !completionCriteria) {

@@ -193,9 +193,9 @@ export default function UserRiskView({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="TICKETS">Tickets</SelectItem>
-                <SelectItem value="DIGITAL">Digital</SelectItem>
+                <SelectItem value="DIGITAL_GOODS">Digital Goods</SelectItem>
                 <SelectItem value="SERVICES">Services</SelectItem>
+                <SelectItem value="OWNERSHIP_TRANSFER">Ownership Transfer</SelectItem>
                 <SelectItem value="PHYSICAL">Physical</SelectItem>
               </SelectContent>
             </Select>

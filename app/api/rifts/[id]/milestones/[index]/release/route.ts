@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { calculateSellerFee, calculateSellerNet, roundCurrency } from '@/lib/fees'
-import { createPayout } from '@/lib/stripe'
+import { createRiftTransfer } from '@/lib/stripe'
 import { creditSellerOnRelease } from '@/lib/wallet'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { RiftEventActorType } from '@prisma/client'
@@ -100,6 +100,17 @@ export async function POST(
 
     const milestone = milestones[milestoneIndex]
 
+    // Check dispute freeze before releasing
+    const { checkDisputeFreeze } = await import('@/lib/dispute-freeze')
+    const freezeCheck = await checkDisputeFreeze(id)
+    
+    if (freezeCheck.frozen) {
+      return NextResponse.json(
+        { error: `Cannot release funds: ${freezeCheck.reason}` },
+        { status: 400 }
+      )
+    }
+
     // Check if this milestone has already been released
     const existingRelease = rift.MilestoneRelease.find(
       (r) => r.milestoneIndex === milestoneIndex && r.status === 'RELEASED'
@@ -112,10 +123,126 @@ export async function POST(
       )
     }
 
+    // Acquire concurrency lock for milestone release
+    const { acquireMilestoneReleaseLock, completeReleaseLock, releaseFailedLock } = await import('@/lib/release-concurrency')
+    const lock = await acquireMilestoneReleaseLock(id, milestoneIndex)
+    
+    if (!lock) {
+      return NextResponse.json(
+        { error: 'Failed to acquire release lock' },
+        { status: 500 }
+      )
+    }
+
+    // If already released, return existing result
+    if (lock.status === 'CREATED') {
+      return NextResponse.json({
+        success: true,
+        milestoneRelease: {
+          id: lock.releaseId,
+          milestoneIndex,
+          alreadyReleased: true,
+        },
+      })
+    }
+
     // Calculate fees for this milestone
     const milestoneAmount = milestone.amount
     const sellerFee = calculateSellerFee(milestoneAmount)
     const sellerNet = calculateSellerNet(milestoneAmount)
+
+    // Get sellerPayout from PaymentIntent metadata (proportional to milestone)
+    let milestoneSellerPayout: number = sellerNet
+    let stripeTransferId: string | null = null
+
+    if (rift.stripePaymentIntentId && rift.subtotal && rift.subtotal > 0) {
+      try {
+        const { stripe } = await import('@/lib/stripe')
+        if (stripe) {
+          const paymentIntent = await stripe.paymentIntents.retrieve(rift.stripePaymentIntentId)
+          const totalSellerPayout = parseFloat(paymentIntent.metadata?.sellerPayout || '0')
+          
+          // Calculate proportional sellerPayout for this milestone
+          // If milestone is X% of total, sellerPayout is X% of total sellerPayout
+          const milestoneRatio = milestoneAmount / rift.subtotal
+          milestoneSellerPayout = roundCurrency(totalSellerPayout * milestoneRatio)
+        }
+      } catch (error) {
+        console.error(`Error retrieving PaymentIntent for milestone ${milestoneIndex} of rift ${id}:`, error)
+        // Fall back to calculated sellerNet
+      }
+    }
+
+    // Update the lock record with actual data (it was created with placeholder values)
+    const milestoneRelease = await prisma.milestoneRelease.update({
+      where: { id: lock.releaseId },
+      data: {
+        milestoneTitle: milestone.title,
+        milestoneAmount: roundCurrency(milestoneAmount),
+        releasedAmount: roundCurrency(milestoneAmount),
+        sellerFee: roundCurrency(sellerFee),
+        sellerNet: roundCurrency(sellerNet),
+        releasedBy: auth.userId,
+        status: 'CREATING', // Will be updated to RELEASED after transfer
+      },
+    })
+
+    // Create Stripe transfer to seller's connected account (if seller has account)
+    if (milestoneSellerPayout > 0 && rift.seller.stripeConnectAccountId) {
+      try {
+        stripeTransferId = await createRiftTransfer(
+          milestoneSellerPayout,
+          rift.currency,
+          rift.seller.stripeConnectAccountId,
+          id,
+          milestoneRelease.id, // milestoneId for tracking
+          null // Don't check existing - lock prevents duplicates
+        )
+        
+        // Complete the lock with transfer ID
+        if (stripeTransferId) {
+          await completeReleaseLock(lock, stripeTransferId, {
+            milestoneTitle: milestone.title,
+            milestoneAmount: roundCurrency(milestoneAmount),
+            releasedAmount: roundCurrency(milestoneAmount),
+            sellerFee: roundCurrency(sellerFee),
+            sellerNet: roundCurrency(sellerNet),
+            releasedBy: auth.userId,
+          })
+        } else {
+          // Transfer failed but release can continue (funds stay in wallet)
+          await prisma.milestoneRelease.update({
+            where: { id: milestoneRelease.id },
+            data: { status: 'RELEASED' }, // Release without transfer
+          })
+        }
+      } catch (error: any) {
+        console.error(`Error creating Stripe transfer for milestone ${milestoneIndex} of rift ${id}:`, error)
+        
+        // Release failed lock on error
+        await releaseFailedLock(lock)
+        
+        // If balance insufficient, return error
+        if (error.message?.includes('Insufficient Stripe balance')) {
+          return NextResponse.json(
+            { error: `Cannot release funds: ${error.message}` },
+            { status: 400 }
+          )
+        }
+        
+        // Continue with release even if transfer fails (funds stay in wallet)
+        await prisma.milestoneRelease.update({
+          where: { id: milestoneRelease.id },
+          data: { status: 'RELEASED' }, // Release without transfer
+        })
+      }
+    } else {
+      // No Stripe account - just mark as released
+      await prisma.milestoneRelease.update({
+        where: { id: milestoneRelease.id },
+        data: { status: 'RELEASED' },
+      })
+    }
 
     // Create milestone release record
     const milestoneRelease = await prisma.milestoneRelease.create({
@@ -130,6 +257,7 @@ export async function POST(
         sellerNet: roundCurrency(sellerNet),
         releasedBy: auth.userId,
         status: 'RELEASED',
+        payoutId: stripeTransferId, // Store transfer ID as payoutId for tracking
       },
     })
 
@@ -146,32 +274,6 @@ export async function POST(
       }
     )
 
-    // Process payout if seller has Stripe account
-    let payoutId: string | null = null
-    const sellerStripeAccountId = rift.seller.stripeConnectAccountId
-
-    if (sellerStripeAccountId) {
-      try {
-        payoutId = await createPayout(
-          sellerNet,
-          milestoneAmount,
-          sellerFee,
-          rift.currency,
-          sellerStripeAccountId,
-          id
-        )
-        
-        // Update milestone release with payout ID
-        await prisma.milestoneRelease.update({
-          where: { id: milestoneRelease.id },
-          data: { payoutId },
-        })
-      } catch (error) {
-        console.error(`Payout failed for milestone ${milestoneIndex} of rift ${id}:`, error)
-        // Continue - payout can be retried later
-      }
-    }
-
     // Log event
     const requestMeta = extractRequestMetadata(request)
     await logEvent(
@@ -185,7 +287,7 @@ export async function POST(
         milestoneAmount,
         sellerFee,
         sellerNet,
-        payoutId,
+        stripeTransferId,
       },
       requestMeta
     )

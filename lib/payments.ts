@@ -6,7 +6,7 @@
  */
 
 import { prisma } from './prisma'
-import { createPaymentIntent, confirmPaymentIntent } from './stripe'
+import { createRiftPaymentIntent, confirmPaymentIntent } from './stripe'
 import { sendPaymentReceivedEmail } from './email'
 
 export async function processPayment(
@@ -60,7 +60,8 @@ export async function processPayment(
 }
 
 /**
- * Create a payment intent for an rift
+ * Create a payment intent for a Rift transaction
+ * ✅ Always uses subtotal, let stripe.ts compute buyerTotal + metadata breakdown
  */
 export async function createEscrowPaymentIntent(transactionId: string) {
   const rift = await prisma.riftTransaction.findUnique({
@@ -74,16 +75,16 @@ export async function createEscrowPaymentIntent(transactionId: string) {
     throw new Error('Rift not found')
   }
 
-  if (!rift.buyer || !rift.buyer.email) {
+  if (!rift.buyer?.email) {
     throw new Error('Buyer email is required for payment intent')
   }
 
-  const amount = rift.subtotal
-  return await createPaymentIntent(
-    amount,
-    rift.currency,
-    transactionId,
-    rift.buyer.email
-  )
+  // ✅ Always use subtotal, let stripe.ts compute buyerTotal + metadata breakdown
+  return await createRiftPaymentIntent({
+    subtotal: rift.subtotal,
+    currency: rift.currency,
+    riftId: rift.id,
+    buyerEmail: rift.buyer.email,
+  })
 }
 

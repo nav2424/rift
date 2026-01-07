@@ -12,3 +12,4 @@ CHECK (
   ("userId" IS NOT NULL) OR ("sessionId" IS NOT NULL)
 );
 
+

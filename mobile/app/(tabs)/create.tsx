@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CreateEscrowScreen() {
-  const [itemType, setItemType] = useState<'PHYSICAL' | 'TICKETS' | 'DIGITAL' | 'SERVICES' | null>(null);
+  const [itemType, setItemType] = useState<'SERVICES' | 'OWNERSHIP_TRANSFER' | 'DIGITAL_GOODS' | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
@@ -46,6 +46,7 @@ export default function CreateEscrowScreen() {
             <View style={styles.heroContent}>
               <Text style={styles.heroTitle}>Create a Rift</Text>
               <Text style={styles.heroSubtitle}>Start a protected transaction</Text>
+              <Text style={styles.trustText}>Funds are released only when delivery is confirmed.</Text>
             </View>
           </View>
 
@@ -53,22 +54,22 @@ export default function CreateEscrowScreen() {
           <View style={styles.typeCardsContainer}>
             {[
               { 
-                type: 'TICKETS', 
-                label: 'Tickets', 
-                description: 'PDF, QR, mobile tickets',
-                icon: 'ticket' as const, 
-              },
-              { 
-                type: 'DIGITAL', 
-                label: 'Digital Item', 
-                description: 'Accounts, codes, software keys',
-                icon: 'download' as const, 
-              },
-              { 
                 type: 'SERVICES', 
                 label: 'Service', 
-                description: 'Work done, freelance tasks, repairs',
+                description: 'Consulting, freelance work, professional services',
                 icon: 'construct' as const, 
+              },
+              { 
+                type: 'OWNERSHIP_TRANSFER', 
+                label: 'Ownership Transfer', 
+                description: 'Domains, websites, social accounts, online businesses',
+                icon: 'swap-horizontal' as const, 
+              },
+              { 
+                type: 'DIGITAL_GOODS', 
+                label: 'Digital Goods', 
+                description: 'Software, licenses, downloads, and digital assets',
+                icon: 'download' as const, 
               },
             ].map((item, index) => (
               <TouchableOpacity
@@ -147,6 +148,15 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     opacity: 0.65,
     lineHeight: 22,
+    letterSpacing: 0,
+    marginBottom: Spacing.xs,
+  },
+  trustText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '400',
+    opacity: 0.5,
+    lineHeight: 20,
     letterSpacing: 0,
   },
   typeCardsContainer: {

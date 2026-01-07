@@ -106,6 +106,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if this is a first withdrawal (no completed payouts)
+    const completedPayoutsCount = await prisma.payout.count({
+      where: {
+        userId: auth.userId,
+        status: 'COMPLETED',
+      },
+    })
+    const isFirstWithdrawal = completedPayoutsCount === 0
+
     // Debit wallet (this will throw if insufficient balance)
     await debitSellerOnWithdrawal(auth.userId, amount, currency, {
       requestedAt: new Date().toISOString(),
@@ -192,6 +201,7 @@ export async function POST(request: NextRequest) {
       stripeTransferId,
       amount,
       currency,
+      isFirstWithdrawal,
     })
   } catch (error: any) {
     logError('Withdraw', error)

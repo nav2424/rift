@@ -57,9 +57,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Create account link for onboarding or identity verification
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-    const returnUrl = `${baseUrl}/wallet?stripe_return=true`
-    const refreshUrl = `${baseUrl}/wallet?stripe_refresh=true`
+    // Use NEXT_PUBLIC_APP_URL to ensure redirects go to Rift domain, not Vercel
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+    if (!APP_URL) {
+      throw new Error('Missing NEXT_PUBLIC_APP_URL or APP_URL environment variable')
+    }
+
+    const returnUrl = `${APP_URL}/connect/stripe/return?account=${accountId}`
+    const refreshUrl = `${APP_URL}/connect/stripe/refresh?account=${accountId}`
+
+    // Log URLs to confirm they use Rift domain (not Vercel)
+    console.log('[Stripe Connect] Creating account link with URLs:', {
+      returnUrl,
+      refreshUrl,
+      accountId,
+      linkType: forIdentityVerification ? 'account_update' : 'account_onboarding',
+    })
 
     const onboardingUrl = await createAccountLink(accountId, returnUrl, refreshUrl, forIdentityVerification)
 
