@@ -240,26 +240,21 @@ export async function POST(
       // No Stripe account - just mark as released
       await prisma.milestoneRelease.update({
         where: { id: milestoneRelease.id },
-        data: { status: 'RELEASED' },
+        data: { 
+          status: 'RELEASED',
+          payoutId: stripeTransferId, // Store transfer ID as payoutId for tracking
+        },
       })
     }
 
-    // Create milestone release record
-    const milestoneRelease = await prisma.milestoneRelease.create({
-      data: {
-        id: crypto.randomUUID(),
-        riftId: id,
-        milestoneIndex,
-        milestoneTitle: milestone.title,
-        milestoneAmount: roundCurrency(milestoneAmount),
-        releasedAmount: roundCurrency(milestoneAmount),
-        sellerFee: roundCurrency(sellerFee),
-        sellerNet: roundCurrency(sellerNet),
-        releasedBy: auth.userId,
-        status: 'RELEASED',
-        payoutId: stripeTransferId, // Store transfer ID as payoutId for tracking
-      },
-    })
+    // milestoneRelease record already exists (created/updated above)
+    // Update it with final transfer ID if not already set
+    if (stripeTransferId && !milestoneRelease.payoutId) {
+      await prisma.milestoneRelease.update({
+        where: { id: milestoneRelease.id },
+        data: { payoutId: stripeTransferId },
+      })
+    }
 
     // Credit seller wallet for this milestone
     await creditSellerOnRelease(
