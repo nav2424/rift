@@ -221,14 +221,14 @@ export default function Home() {
               )
             }
           ].map((item, index) => (
-              <div key={index} className="group glass liquid stroke rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-white/6">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass stroke">
+              <div key={index} className="rounded-2xl glass-soft glass-highlight p-6 transition hover:bg-white/[0.035] hover:-translate-y-0.5">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass-soft">
                   {item.icon}
                 </div>
-                <div className="text-white text-base font-semibold">{item.title}</div>
-                <p className="mt-2 text-sm text-white/60 leading-relaxed">
+                <div className="text-white font-medium">{item.title}</div>
+                <p className="mt-2 text-sm text-white/55 leading-relaxed">
                   {item.description}
-                </p>
+                </div>
               </div>
           ))}
         </div>
@@ -286,14 +286,14 @@ export default function Home() {
               )
             }
           ].map((item, index) => (
-              <div key={index} className="group glass liquid stroke rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-white/6">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass stroke">
+              <div key={index} className="rounded-2xl glass-soft glass-highlight p-6 transition hover:bg-white/[0.035] hover:-translate-y-0.5">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass-soft">
                   {item.icon}
                 </div>
-                <div className="text-white text-base font-semibold">{item.title}</div>
-                <p className="mt-2 text-sm text-white/60 leading-relaxed">
+                <div className="text-white font-medium">{item.title}</div>
+                <p className="mt-2 text-sm text-white/55 leading-relaxed">
                   {item.description}
-                </p>
+                </div>
               </div>
           ))}
         </div>
@@ -318,7 +318,7 @@ export default function Home() {
                 <div>
                   <p className="text-white/80 font-light mb-2 italic">
                     "Rift transformed how we handle client payments. The verification process gives everyone confidence, and disputes are resolved quickly."
-                  </p>
+                  </div>
                   <p className="text-white/50 font-light text-sm">— Creator, Digital Services</p>
                 </div>
               </div>
