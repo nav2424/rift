@@ -33,58 +33,61 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Hero Section */}
-        <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 lg:pt-32 lg:pb-24">
-          <div className={`text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full glass stroke px-4 py-2 text-xs text-white/70">
-              <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
+        {/* Hero Section */}
+        <section className="mx-auto max-w-6xl px-6 pt-28 pb-16">
+          <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-4 py-2 text-xs text-white/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
               TRUST LAYER • DIGITAL DEALS
-          </div>
-          
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mb-6 leading-[1.1]">
-              The execution layer for online deals.
+            </div>
+
+            <h1 className="mt-8 text-5xl md:text-6xl font-semibold tracking-tight text-white">
+              The execution layer for online{" "}
+              <span className="text-white/60">deals.</span>
             </h1>
-            
-            <p className="mx-auto mt-6 max-w-xl text-base text-white/60 leading-relaxed mb-8">
+
+            <p className="mx-auto mt-5 max-w-xl text-base text-white/55 leading-relaxed">
               Create a Rift, secure payment, verify delivery, and release funds — without trust.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link href="/auth/signup">
-                <PremiumButton size="lg" variant="primary" className="min-w-[220px]">
-                  Create a Rift
-              </PremiumButton>
-            </Link>
-              <Link href="#how-it-works">
-                <PremiumButton size="lg" variant="outline" className="min-w-[220px]">
-                  See how it works
-              </PremiumButton>
-            </Link>
-          </div>
+
+            <div className="mt-8 flex items-center justify-center gap-3">
+              <Link
+                href="/auth/signup"
+                className="rounded-xl bg-white px-6 py-3 text-sm font-medium text-black hover:opacity-90 transition"
+              >
+                Create a Rift
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition"
+              >
+                See how it works
+              </Link>
+            </div>
 
             {/* Hero Product Panel */}
-            <div className="mx-auto mt-12 max-w-5xl rounded-3xl glass liquid stroke p-6">
-              <div className="rounded-2xl bg-black/40 stroke p-6">
+            <div className="mx-auto mt-12 max-w-5xl rounded-2xl glass glass-highlight p-6">
+              <div className="rounded-xl bg-black/40 border border-white/6 p-6">
                 <div className="text-sm text-white/70">Rift Status</div>
                 <div className="mt-2 text-2xl font-semibold text-white">Verification pending</div>
                 <div className="mt-6 grid grid-cols-3 gap-4">
-                  <div className="rounded-2xl glass stroke p-4">
+                  <div className="rounded-xl glass-soft p-4">
                     <div className="text-xs text-white/60">Payment</div>
                     <div className="mt-2 text-white font-medium">Secured</div>
-              </div>
-                  <div className="rounded-2xl glass stroke p-4">
+                  </div>
+                  <div className="rounded-xl glass-soft p-4">
                     <div className="text-xs text-white/60">Vault</div>
                     <div className="mt-2 text-white font-medium">Proof uploaded</div>
                   </div>
-                  <div className="rounded-2xl glass stroke p-4">
+                  <div className="rounded-xl glass-soft p-4">
                     <div className="text-xs text-white/60">Release</div>
                     <div className="mt-2 text-white font-medium">Locked</div>
                   </div>
                 </div>
               </div>
             </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
         {/* Section Separator */}
         <div className="mx-auto max-w-6xl px-6">
@@ -152,14 +155,14 @@ export default function Home() {
                 )
               }
             ].map((item) => (
-              <div key={item.step} className="group glass liquid stroke rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-white/6">
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass stroke">
-                            {item.icon}
-                          </div>
-                <div className="text-white text-base font-semibold">{item.title}</div>
-                <p className="mt-2 text-sm text-white/60 leading-relaxed">
+              <div key={item.step} className="rounded-2xl glass-soft glass-highlight p-6 transition hover:bg-white/[0.035] hover:-translate-y-0.5">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl glass-soft">
+                  {item.icon}
+                </div>
+                <div className="text-white font-medium">{item.title}</div>
+                <div className="mt-2 text-sm text-white/55 leading-relaxed">
                   {item.description}
-                </p>
+                </div>
               </div>
             ))}
         </div>

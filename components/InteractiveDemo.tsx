@@ -117,56 +117,49 @@ export default function InteractiveDemo() {
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Step Cards */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {steps.map((step, index) => (
-            <div
+            <button
               key={step.id}
-              className={`group glass liquid stroke rounded-2xl p-6 transition-all duration-300 cursor-pointer ${
-                step.status === 'active'
-                  ? 'bg-white/6 -translate-y-1 border-white/20'
-                  : step.status === 'completed'
-                  ? 'bg-white/4 opacity-80'
-                  : 'opacity-60 hover:opacity-80'
-              }`}
               onClick={() => setCurrentStep(index)}
+              className={`w-full rounded-xl px-4 py-3 text-left glass-soft hover:bg-white/[0.035] transition ${
+                step.status === 'active'
+                  ? 'bg-white/[0.035] border-white/12'
+                  : step.status === 'completed'
+                  ? 'opacity-70'
+                  : ''
+              }`}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-center gap-3">
                 <div
-                  className={`flex-shrink-0 w-12 h-12 rounded-xl glass stroke flex items-center justify-center transition-all ${
+                  className={`flex-shrink-0 w-8 h-8 rounded-lg glass-soft flex items-center justify-center text-sm ${
                     step.status === 'active'
-                      ? 'bg-white/10 text-white scale-110'
+                      ? 'text-white'
                       : step.status === 'completed'
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      ? 'text-emerald-400'
                       : 'text-white/60'
                   }`}
                 >
                   {step.status === 'completed' ? (
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    step.icon
+                    <div className="w-2 h-2 rounded-full bg-current" />
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-base font-semibold text-white">{step.title}</h3>
-                    {step.status === 'active' && (
-                      <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-xs border border-blue-500/30">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-white/60 leading-relaxed">{step.description}</p>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white">{step.title}</div>
+                  <div className="text-xs text-white/55 mt-0.5">{step.description}</div>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
         {/* Active Step Details */}
         <div className="sticky top-24">
-          <GlassCard className="glass liquid stroke rounded-2xl p-8 h-full">
+          <div className="rounded-2xl glass glass-highlight p-6 h-full">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl glass stroke flex items-center justify-center bg-white/10 text-white">
@@ -223,10 +216,11 @@ export default function InteractiveDemo() {
                 Step {currentStep + 1} of {steps.length}
               </p>
             </div>
-          </GlassCard>
+          </div>
         </div>
       </div>
     </div>
   )
 }
+
 

@@ -19,58 +19,43 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50">
+      <header className="fixed top-0 z-50 w-full">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="mt-4 flex items-center justify-between rounded-2xl glass liquid stroke px-4 py-3">
+          <div className="mt-4 flex h-14 items-center justify-between rounded-2xl glass glass-highlight px-4">
             {/* Logo */}
-            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <RiftLogo size="md" />
+            <Link href="/" className="text-white font-semibold tracking-tight hover:opacity-80 transition-opacity">
+              RIFT
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <Link
-                href="/"
-                className="text-white/60 hover:text-white transition-colors text-sm font-light"
-              >
+            <nav className="hidden md:flex items-center gap-8 text-sm text-white/60">
+              <Link href="/" className="hover:text-white transition">
                 Product
               </Link>
-              <Link
-                href="/pricing"
-                className="text-white/60 hover:text-white transition-colors text-sm font-light"
-              >
+              <Link href="/pricing" className="hover:text-white transition">
                 Pricing
               </Link>
-              <Link
-                href="/about"
-                className="text-white/60 hover:text-white transition-colors text-sm font-light"
-              >
+              <Link href="/about" className="hover:text-white transition">
                 About
               </Link>
-
               {session ? (
-                <Link
-                  href="/dashboard"
-                  className="text-white/60 hover:text-white transition-colors text-sm font-light"
-                >
+                <Link href="/dashboard" className="hover:text-white transition">
                   Dashboard
                 </Link>
               ) : (
                 <>
-                  <Link
-                    href="/auth/signin"
-                    className="text-white/60 hover:text-white transition-colors text-sm font-light"
-                  >
+                  <Link href="/auth/signin" className="hover:text-white transition">
                     Sign In
                   </Link>
-                  <Link href="/auth/signup">
-                    <button className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition duration-200 bg-white text-black shadow-[0_14px_40px_rgba(255,255,255,0.12)] hover:shadow-[0_18px_60px_rgba(255,255,255,0.18)] active:scale-[0.99]">
-                      Create a Rift
-                    </button>
+                  <Link
+                    href="/auth/signup"
+                    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
+                  >
+                    Create a Rift
                   </Link>
                 </>
               )}
-            </div>
+            </nav>
 
             {/* Mobile Menu Button */}
             <button
@@ -86,7 +71,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="pt-20">{children}</main>
+      <main className="pt-28">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">
