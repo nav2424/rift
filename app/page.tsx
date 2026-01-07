@@ -67,11 +67,6 @@ export default function Home() {
         </div>
       </section>
 
-        {/* Section Separator */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
         {/* How It Works */}
         <section id="how-it-works" className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="mb-20">
@@ -109,11 +104,6 @@ export default function Home() {
         </div>
       </section>
 
-        {/* Section Separator */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
         {/* Interactive Demo */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center mb-8">
@@ -128,11 +118,6 @@ export default function Home() {
             <InteractiveDemo />
           </div>
         </section>
-
-        {/* Section Separator */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
 
         {/* Use Cases */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
@@ -175,11 +160,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Section Separator */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
         {/* Trust Layer Features */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="mb-20 text-center">
@@ -214,11 +194,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-
-        {/* Section Separator */}
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
 
         {/* Social Proof */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32">

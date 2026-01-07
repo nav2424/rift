@@ -150,10 +150,10 @@ export default function InteractiveDemo() {
 
         {/* Active Step Details */}
         <div className="sticky top-24">
-          <div className="rounded-2xl glass glass-highlight p-6 h-full">
+          <div className="rounded-2xl glass-soft p-6 h-full opacity-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl glass stroke flex items-center justify-center bg-white/10 text-white">
+                <div className="w-10 h-10 rounded-lg glass-soft flex items-center justify-center text-white/70">
                   {activeStep.icon}
                 </div>
                 <div>
@@ -164,8 +164,8 @@ export default function InteractiveDemo() {
             </div>
 
             {activeStep.details && (
-              <div className="mt-6 p-4 rounded-xl bg-black/40 border border-white/10">
-                <pre className="text-xs text-white/70 font-mono whitespace-pre-line leading-relaxed">
+              <div className="mt-6 p-4 rounded-xl glass-soft">
+                <pre className="text-xs text-white/60 font-mono whitespace-pre-line leading-relaxed">
                   {activeStep.details}
                 </pre>
               </div>
