@@ -104,15 +104,7 @@ export default function InteractiveDemo() {
   const activeStep = steps[currentStep]
 
   return (
-    <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
-          See it in action
-        </h2>
-        <p className="text-white/60 font-light text-sm max-w-xl mx-auto">
-          Interactive walkthrough of a Rift transaction
-        </p>
-      </div>
+    <div className="relative max-w-6xl mx-auto">
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Step Cards */}
