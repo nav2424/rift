@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
+import InteractiveDemo from '@/components/InteractiveDemo'
 
 export default function Home() {
   const { data: session, status } = useSession()
