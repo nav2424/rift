@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import PremiumButton from '@/components/ui/PremiumButton'
 import GlassCard from '@/components/ui/GlassCard'
-import RiftLogo from '@/components/RiftLogo'
 
 function SignInForm() {
   const router = useRouter()
@@ -94,25 +93,15 @@ function SignInForm() {
   const passwordReset = searchParams?.get('passwordReset')
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 pt-24 pb-16">
+    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 py-24">
       <div className="w-full max-w-md">
-        {/* Logo & Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center mb-6">
-            <RiftLogo size="lg" />
-          </div>
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
-            <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
-              Sign In
-            </span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-medium text-white mb-3 tracking-tight">
-            Welcome back
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-medium text-white mb-4 tracking-tight">
+            Sign in
           </h1>
-          <p className="text-white/60 font-light text-sm">
-            Sign in to your account to continue
+          <p className="text-white/50 font-light text-base">
+            Enter your credentials to access your account
           </p>
         </div>
 
@@ -151,59 +140,45 @@ function SignInForm() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-3">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 Email
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-white/40 group-focus-within:text-emerald-400/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                  </svg>
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-12 pr-4 py-4 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
-                  placeholder="you@example.com"
-                />
-              </div>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
+                placeholder="you@example.com"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-3">
+              <label className="block text-sm font-medium text-white/70 mb-2">
                 Password
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-white/40 group-focus-within:text-emerald-400/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-12 pr-4 py-4 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
-                  placeholder="••••••••"
-                />
-              </div>
+              <input
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
+                placeholder="••••••••"
+              />
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center justify-between pt-1">
               <Link 
                 href="/auth/forgot-password" 
-                className="text-white/60 hover:text-emerald-400/60 text-sm font-light transition-colors"
+                className="text-white/50 hover:text-emerald-400/60 text-sm font-light transition-colors"
               >
-                Forgot Password?
+                Forgot password?
               </Link>
             </div>
 
-            <PremiumButton type="submit" className="w-full" variant="primary" disabled={loading} glow>
+            <PremiumButton type="submit" className="w-full mt-6" variant="primary" disabled={loading} glow>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -219,13 +194,13 @@ function SignInForm() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-center text-white/60 text-sm font-light">
+            <p className="text-center text-white/50 text-sm font-light">
               Don't have an account?{' '}
               <Link 
                 href="/auth/signup" 
-                className="text-emerald-400/80 hover:text-emerald-400 font-medium transition-colors"
+                className="text-emerald-400/70 hover:text-emerald-400 font-medium transition-colors"
               >
-                Sign Up
+                Sign up
               </Link>
             </p>
           </div>
