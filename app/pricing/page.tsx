@@ -272,28 +272,55 @@ export default function Pricing() {
 
         {/* Fee Explanation */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <GlassCard className="p-8 lg:p-12">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-light text-white mb-4">Understanding fees</h2>
-                  </div>
-            <div className="space-y-6 text-white/70 font-light text-sm">
-              <div>
-                <h3 className="text-white font-light mb-2">Payment processing fee (3% - paid by buyer)</h3>
-                <p className="text-white/60">
-                  Covers payment processing costs, card network fees, and payment provider charges. 
-                  This is standard for all card transactions and is paid by the buyer when they secure funds.
-                </p>
-                    </div>
-              <div>
-                <h3 className="text-white font-light mb-2">Platform fee (5% - paid by seller)</h3>
-                <p className="text-white/60">
-                  Covers platform services, dispute resolution, fraud prevention, secure fund holding, and Vault storage. 
-                  This fee is deducted from the seller's payout when funds are released.
-                </p>
+          <GlassCard className="p-8 lg:p-12 glass-highlight">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 mb-6">
+                <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
+                <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
+                  Details
+                </span>
+                <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
               </div>
-              <div className="pt-6 border-t border-white/10">
-                <p className="text-white/80 font-light">
-                  <strong>No monthly fees.</strong> No setup costs. No hidden charges. 
+              <h2 className="text-3xl sm:text-4xl font-medium text-white mb-6 tracking-tight">
+                Understanding <span className="text-emerald-400/40">fees</span>
+              </h2>
+            </div>
+            <div className="space-y-8">
+              <div className="rounded-xl glass-soft p-6 border border-white/5 hover:border-white/10 transition-all">
+                <div className="flex items-start gap-4 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-400/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-medium text-lg mb-2">Payment processing fee (3% - paid by buyer)</h3>
+                    <p className="text-white/60 font-light text-sm leading-relaxed">
+                      Covers payment processing costs, card network fees, and payment provider charges. 
+                      This is standard for all card transactions and is paid by the buyer when they secure funds.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl glass-soft p-6 border border-white/5 hover:border-white/10 transition-all">
+                <div className="flex items-start gap-4 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-400/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-white font-medium text-lg mb-2">Platform fee (5% - paid by seller)</h3>
+                    <p className="text-white/60 font-light text-sm leading-relaxed">
+                      Covers platform services, dispute resolution, fraud prevention, secure fund holding, and Vault storage. 
+                      This fee is deducted from the seller's payout when funds are released.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-white/10 rounded-xl glass-soft p-6">
+                <p className="text-white/80 font-light text-base text-center">
+                  <strong className="text-white font-medium">No monthly fees.</strong> No setup costs. No hidden charges. 
                   You only pay when you use Rift.
                 </p>
               </div>
@@ -303,29 +330,53 @@ export default function Pricing() {
 
         {/* FAQ */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-light text-white mb-4">Frequently asked questions</h2>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
+              <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
+                FAQ
+              </span>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-6 tracking-tight">
+              Frequently asked <span className="text-emerald-400/40">questions</span>
+            </h2>
           </div>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <GlassCard key={index} className="p-6">
-                <h3 className="text-lg font-light text-white mb-3">{faq.question}</h3>
-                <p className="text-white/60 font-light text-sm leading-relaxed">{faq.answer}</p>
+              <GlassCard key={index} className="p-6 lg:p-8 glass-highlight hover:bg-white/[0.02] transition-all">
+                <h3 className="text-lg font-medium text-white mb-3 group-hover:text-emerald-400/30 transition-colors">
+                  {faq.question}
+                </h3>
+                <p className="text-white/60 font-light text-sm leading-relaxed">
+                  {faq.answer}
+                </p>
               </GlassCard>
             ))}
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-              <Link href="/auth/signup">
-              <PremiumButton size="lg" className="min-w-[200px]" glow>
-                Create a Rift
-                </PremiumButton>
-              </Link>
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-emerald-400/30" />
+              <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
+                Ready to start
+              </span>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-emerald-400/30" />
             </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-8 tracking-tight leading-tight">
+              Stop negotiating trust.<br />
+              Execute the deal.
+            </h2>
+            <Link href="/auth/signup">
+              <PremiumButton size="lg" className="min-w-[220px]" glow>
+                Create a Rift
+              </PremiumButton>
+            </Link>
+          </div>
         </section>
       </div>
   )
