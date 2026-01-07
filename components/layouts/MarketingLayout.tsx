@@ -19,9 +19,9 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Top Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-white/8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <header className="sticky top-0 z-50">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mt-4 flex items-center justify-between rounded-2xl glass liquid stroke px-4 py-3">
             {/* Logo */}
             <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
               <RiftLogo size="md" />
@@ -84,7 +84,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             </button>
           </div>
         </div>
-      </nav>
+      </header>
 
       {/* Main Content */}
       <main>{children}</main>

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import MarketingLayout from './MarketingLayout'
 import AppLayout from './AppLayout'
+import { BackgroundLayer } from '@/components/BackgroundLayer'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -29,17 +30,25 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   // Render loading state if session is still loading
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
-      </div>
+      <>
+        <BackgroundLayer />
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+          <div className="text-white/60 font-light">Loading...</div>
+        </div>
+      </>
     )
   }
 
   // Conditionally render the appropriate layout
-  if (isAuthenticated && !isMarketingRoute) {
-    return <AppLayout>{children}</AppLayout>
-  }
-
-  return <MarketingLayout>{children}</MarketingLayout>
+  return (
+    <>
+      <BackgroundLayer />
+      {isAuthenticated && !isMarketingRoute ? (
+        <AppLayout>{children}</AppLayout>
+      ) : (
+        <MarketingLayout>{children}</MarketingLayout>
+      )}
+    </>
+  )
 }
 

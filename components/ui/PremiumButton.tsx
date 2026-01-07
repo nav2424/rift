@@ -17,12 +17,12 @@ export default function PremiumButton({
   className = '',
   ...props
 }: PremiumButtonProps) {
-  const baseStyles = 'font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/20 relative overflow-hidden group'
+  const baseStyles = 'inline-flex items-center justify-center rounded-xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 relative overflow-hidden group'
   
   const variants = {
-    primary: 'glass text-white border border-white/20 hover:border-white/30 hover:bg-white/5 focus:ring-white/20 active:scale-[0.98]',
-    outline: 'glass text-white border border-white/20 hover:border-white/30 hover:bg-white/5 focus:ring-white/20 active:scale-[0.98]',
-    ghost: 'text-white/80 hover:text-white hover:bg-white/5 focus:ring-white/20 active:scale-[0.98]',
+    primary: 'bg-white text-black shadow-[0_14px_40px_rgba(255,255,255,0.12)] hover:shadow-[0_18px_60px_rgba(255,255,255,0.18)] active:scale-[0.99]',
+    outline: 'glass stroke text-white/90 hover:bg-white/7 hover:text-white active:scale-[0.99]',
+    ghost: 'text-white/80 hover:text-white hover:bg-white/5 focus:ring-white/20 active:scale-[0.99]',
   }
   
   const sizes = {
