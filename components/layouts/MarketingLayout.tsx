@@ -88,6 +88,75 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
 
       {/* Main Content */}
       <main>{children}</main>
+      
+      {/* Footer */}
+      <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <RiftLogo size="md" />
+              <p className="mt-4 text-white/60 font-light text-sm">
+                The execution layer for online deals.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-white font-light mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    How it works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    About
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-light mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/terms" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    Privacy Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-light mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/support" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-white/60 hover:text-white transition-colors text-sm font-light">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-white/8 text-center">
+            <p className="text-white/60 font-light text-sm">
+              © {new Date().getFullYear()} Rift. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
