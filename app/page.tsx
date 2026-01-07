@@ -170,6 +170,16 @@ export default function Home() {
           <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
 
+        {/* Interactive Demo */}
+        <section className="relative">
+          <InteractiveDemo />
+        </section>
+
+        {/* Section Separator */}
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="my-20 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        </div>
+
         {/* Use Cases */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="text-center mb-16">
