@@ -71,7 +71,7 @@ export default function RootLayout({
         <Providers>
           <ScrollToTop />
           <Navbar />
-          <main className="flex-1 pt-4 sm:pt-8">{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
           <Chatbot />
         </Providers>
