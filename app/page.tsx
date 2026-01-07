@@ -37,9 +37,9 @@ export default function Home() {
         <section className="mx-auto max-w-6xl px-6 pt-28 pb-32">
           <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-4 py-2 text-xs text-white/60 mb-8">
-              <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               TRUST LAYER • DIGITAL DEALS
-          </div>
+            </div>
           
             <h1 className="text-5xl md:text-6xl font-medium tracking-tight text-white leading-[1.1]">
               The execution layer for online{" "}
