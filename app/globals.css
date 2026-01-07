@@ -244,20 +244,25 @@ img[alt="Rift"] {
   outline: none;
   box-shadow: none;
   vertical-align: middle;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Ensure logo container matches navbar background */
 nav img[alt="Rift"],
 nav a[href*="/"] img[alt="Rift"],
-nav a[href*="/dashboard"] img[alt="Rift"] {
+nav a[href*="/dashboard"] img[alt="Rift"],
+header img[alt="Rift"],
+header a img[alt="Rift"] {
   background: transparent !important;
   background-color: transparent !important;
 }
 
-/* Force black background matching for logo area */
-nav a:has(img[alt="Rift"]) {
-  background: #000000 !important;
-  background-color: #000000 !important;
+/* Remove black background from logo link */
+nav a:has(img[alt="Rift"]),
+header a:has(img[alt="Rift"]) {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Selection styling */

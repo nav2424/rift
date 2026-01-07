@@ -30,7 +30,9 @@ export default function RiftLogo({ size = 'md', className = '' }: RiftLogoProps)
           border: 'none',
           outline: 'none',
           boxShadow: 'none',
-          verticalAlign: 'middle'
+          verticalAlign: 'middle',
+          background: 'transparent',
+          backgroundColor: 'transparent'
         }}
       />
     </div>
