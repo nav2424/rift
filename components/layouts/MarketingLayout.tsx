@@ -23,8 +23,8 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
         <div className="mx-auto max-w-6xl px-6">
           <div className="mt-4 flex h-14 items-center justify-between rounded-2xl glass glass-highlight px-4">
             {/* Logo */}
-            <Link href="/" className="text-white font-semibold tracking-tight hover:opacity-80 transition-opacity">
-              RIFT
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <RiftLogo size="md" />
             </Link>
 
             {/* Desktop Navigation */}
