@@ -248,20 +248,18 @@ img[alt="Rift"] {
   background-color: transparent !important;
 }
 
-/* Remove any black background from logo image - if PNG has black bg, use CSS filters */
+/* Remove any black background from logo image - logo is JPEG with black background */
 header img[alt="Rift"],
-nav img[alt="Rift"] {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Alternative approach: if logo has black background, try these filters */
+nav img[alt="Rift"],
 header a[href="/"] img[alt="Rift"],
 nav a[href="/"] img[alt="Rift"] {
-  /* Option 1: Use mix-blend-mode to blend out black */
+  background: transparent !important;
+  background-color: transparent !important;
+  /* Use mix-blend-mode: screen to make black pixels transparent */
   mix-blend-mode: screen;
-  /* Option 2: If mix-blend-mode doesn't work, try brightness/contrast */
-  /* filter: brightness(1.2) contrast(1.1); */
+  /* Also ensure no box shadow or borders */
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* Ensure logo container matches navbar background */
