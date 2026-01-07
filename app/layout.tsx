@@ -1,5 +1,3 @@
-'use client'
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -8,10 +6,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import ScrollToTop from "@/components/ScrollToTop";
 import Chatbot from "@/components/Chatbot";
-import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import MarketingLayout from "@/components/layouts/MarketingLayout";
-import AppLayout from "@/components/layouts/AppLayout";
+import LayoutWrapper from "@/components/layouts/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,8 +18,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Metadata is now defined in individual page.tsx files or specific layout files
-// This root layout focuses on structural elements and global providers.
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  title: "Rift - Secure Buyer Protection for Marketplace Deals",
+  description: "Send money safely, receive goods, and release funds only when everything checks out.",
+  openGraph: {
+    title: "Rift - Secure Buyer Protection for Marketplace Deals",
+    description: "Send money safely, receive goods, and release funds only when everything checks out.",
+    images: [
+      {
+        url: '/rift-logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Rift Logo',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Rift - Secure Buyer Protection for Marketplace Deals",
+    description: "Send money safely, receive goods, and release funds only when everything checks out.",
+    images: ['/rift-logo.png'],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+  },
+};
 
 export const viewport = {
   width: 'device-width',
@@ -39,35 +60,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const { data: session, status } = useSession();
-
-  const isMarketingRoute = [
-    '/',
-    '/landing',
-    '/pricing',
-    '/about',
-    '/auth/signin',
-    '/auth/signup',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-  ].includes(pathname);
-
-  const isAuthenticated = status === 'authenticated';
-
-  // Render loading state if session is still loading
-  if (status === 'loading') {
-    return (
-      <html lang="en" className="dark" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen flex flex-col items-center justify-center`}
-        >
-          <div className="text-white/60 font-light">Loading...</div>
-        </body>
-      </html>
-    );
-  }
-
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
@@ -75,11 +67,7 @@ export default function RootLayout({
       >
         <Providers>
           <ScrollToTop />
-          {isAuthenticated && !isMarketingRoute ? (
-            <AppLayout>{children}</AppLayout>
-          ) : (
-            <MarketingLayout>{children}</MarketingLayout>
-          )}
+          <LayoutWrapper>{children}</LayoutWrapper>
           <Chatbot />
         </Providers>
         <Analytics />
