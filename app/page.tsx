@@ -186,10 +186,17 @@ export default function Home() {
         {/* Interactive Demo */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
-              See it in action
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
+              <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
+                Demo
+              </span>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
+            </div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-medium text-white mb-6 tracking-tight leading-tight">
+              See it in <span className="text-emerald-400/40">action</span>
             </h2>
-            <p className="text-base text-white/50 font-light">
+            <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
               Interactive walkthrough of a Rift transaction
             </p>
           </div>
