@@ -68,7 +68,7 @@ export default function Home() {
       </section>
 
         {/* How It Works */}
-        <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+        <section id="how-it-works" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
           <div className="mb-24 text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
               How it works
@@ -177,13 +177,13 @@ export default function Home() {
         </section>
 
         {/* Interactive Demo */}
-        <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-32">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-light text-white/70 mb-2 tracking-tight">
+        <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
               See it in action
             </h2>
-            <p className="text-sm text-white/40 font-light">
-              Interactive walkthrough
+            <p className="text-base text-white/50 font-light">
+              Interactive walkthrough of a Rift transaction
             </p>
           </div>
           <div className="opacity-90">

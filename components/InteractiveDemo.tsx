@@ -108,40 +108,48 @@ export default function InteractiveDemo() {
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Step Cards */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {steps.map((step, index) => (
             <button
               key={step.id}
               onClick={() => setCurrentStep(index)}
-              className={`w-full rounded-xl px-4 py-3 text-left glass-soft hover:bg-white/[0.035] transition ${
+              className={`w-full rounded-2xl px-5 py-4 text-left glass-soft hover:bg-white/[0.04] hover:border-white/15 transition-all duration-300 border ${
                 step.status === 'active'
-                  ? 'bg-white/[0.035] border-white/12'
+                  ? 'bg-white/[0.05] border-emerald-400/30 shadow-lg shadow-emerald-400/10'
                   : step.status === 'completed'
-                  ? 'opacity-70'
-                  : ''
+                  ? 'opacity-70 border-white/5 hover:opacity-90'
+                  : 'border-white/5'
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-4">
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-lg glass-soft flex items-center justify-center text-sm ${
+                  className={`flex-shrink-0 w-10 h-10 rounded-xl glass-soft flex items-center justify-center transition-all duration-300 ${
                     step.status === 'active'
-                      ? 'text-white'
+                      ? 'bg-emerald-400/20 border border-emerald-400/30 text-emerald-400 scale-110'
                       : step.status === 'completed'
-                      ? 'text-emerald-400'
-                      : 'text-white/60'
+                      ? 'bg-emerald-400/10 border border-emerald-400/20 text-emerald-400'
+                      : 'bg-white/5 border border-white/10 text-white/50'
                   }`}
                 >
                   {step.status === 'completed' ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <div className="w-2 h-2 rounded-full bg-current" />
+                    <span className="text-xs font-bold font-mono">{index + 1}</span>
                   )}
                 </div>
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-white">{step.title}</div>
-                  <div className="text-xs text-white/55 mt-0.5">{step.description}</div>
+                  <div className={`text-base font-medium mb-1 transition-colors ${
+                    step.status === 'active' ? 'text-white' : step.status === 'completed' ? 'text-white/90' : 'text-white/70'
+                  }`}>
+                    {step.title}
+                  </div>
+                  <div className={`text-sm leading-relaxed transition-colors ${
+                    step.status === 'active' ? 'text-white/60' : 'text-white/50'
+                  }`}>
+                    {step.description}
+                  </div>
                 </div>
               </div>
             </button>
