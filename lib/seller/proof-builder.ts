@@ -63,7 +63,7 @@ export async function scoreProofQuality(
   const warnings: string[] = []
   for (const asset of assets) {
     try {
-      const itemTypeForClassification = rift.itemType === 'LICENSE_KEYS' ? 'DIGITAL' : rift.itemType
+      const itemTypeForClassification = rift.itemType
       const classification = await classifyProof(asset.id, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
       if (!classification.itemTypeMatch) {
         relevance -= 20

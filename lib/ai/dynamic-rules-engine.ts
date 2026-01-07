@@ -172,7 +172,7 @@ export async function calculateHoldWindow(
 
   // Get adaptive thresholds
   // Map LICENSE_KEYS to DIGITAL for getAdaptiveThresholds function
-  const itemTypeForThresholds = rift.itemType === 'LICENSE_KEYS' ? 'DIGITAL' : rift.itemType
+  const itemTypeForThresholds = rift.itemType
   const thresholds = await getAdaptiveThresholds(itemTypeForThresholds as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
 
   // Calculate hold window
