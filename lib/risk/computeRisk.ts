@@ -197,7 +197,7 @@ export async function updateUserRiskScores(userId: string): Promise<void> {
  * Compute rift risk score (0-100) based on category, amount, and user risks
  * 
  * Category weights:
- * - TICKETS: +20
+ * - OWNERSHIP_TRANSFER: +20
  * - DIGITAL: +10
  * - SERVICES: +5
  * - PHYSICAL: +0
@@ -237,10 +237,10 @@ export async function computeRiftRisk(riftId: string): Promise<number> {
   // Category weight
   let categoryWeight = 0
   switch (rift.itemType) {
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       categoryWeight = 20
       break
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       categoryWeight = 10
       break
     case 'SERVICES':
@@ -338,7 +338,7 @@ export async function applyRiskPolicy(riftId: string): Promise<RiskPolicy> {
     }
   } else if (riskScore >= 60) {
     // High risk
-    const needsManualReview = rift.itemType === 'TICKETS' || (rift.subtotal || 0) >= 1000
+    const needsManualReview = rift.itemType === 'OWNERSHIP_TRANSFER' || (rift.subtotal || 0) >= 1000
     policy = {
       hold_until: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
       requires_buyer_confirmation: true,
@@ -354,7 +354,7 @@ export async function applyRiskPolicy(riftId: string): Promise<RiskPolicy> {
   } else {
     // Low risk
     // For services/digital (except tickets), no confirmation needed
-    const needsConfirmation = rift.itemType === 'TICKETS' || rift.itemType === 'PHYSICAL'
+    const needsConfirmation = rift.itemType === 'OWNERSHIP_TRANSFER' || rift.itemType === 'PHYSICAL'
     policy = {
       hold_until: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24 hours
       requires_buyer_confirmation: needsConfirmation,

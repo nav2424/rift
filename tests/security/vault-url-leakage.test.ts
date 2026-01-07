@@ -14,7 +14,7 @@ describe('Vault URL Leakage Prevention', () => {
 
   describe('Direct Storage URL Prevention', () => {
     it('should never return direct storage URLs to client', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       rift.buyerId = buyer.id
 
@@ -28,7 +28,7 @@ describe('Vault URL Leakage Prevention', () => {
     })
 
     it('should use short-lived signed URLs for viewer access', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       rift.buyerId = buyer.id
 
@@ -43,7 +43,7 @@ describe('Vault URL Leakage Prevention', () => {
 
   describe('Viewer URL Expiry', () => {
     it('should reject expired viewer URLs', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       rift.buyerId = buyer.id
 
@@ -65,7 +65,7 @@ describe('Vault URL Leakage Prevention', () => {
     })
 
     it('should enforce rift membership for viewer URLs', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       const stranger = createTestUser()
       rift.buyerId = buyer.id
@@ -87,7 +87,7 @@ describe('Vault URL Leakage Prevention', () => {
 
   describe('URL Reuse Prevention', () => {
     it('should prevent reuse of viewer URLs after expiry', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       rift.buyerId = buyer.id
 

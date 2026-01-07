@@ -17,7 +17,7 @@ describe('Concurrency and Race Conditions', () => {
 
   describe('Dispute vs Auto-Release Race Condition', () => {
     it('should prevent auto-release when dispute is opened concurrently', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       rift.buyerId = buyer.id
 
@@ -80,7 +80,7 @@ describe('Concurrency and Race Conditions', () => {
     })
 
     it('should use database-level locking to prevent race conditions', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       
       let updateCount = 0
       // Mock update to only allow first update to succeed
@@ -107,7 +107,7 @@ describe('Concurrency and Race Conditions', () => {
 
   describe('Admin Review vs Buyer Acceptance', () => {
     it('should maintain consistent final state when admin reviews while buyer accepts', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       const admin = createTestUser({ role: 'ADMIN' })
       rift.buyerId = buyer.id
@@ -144,7 +144,7 @@ describe('Concurrency and Race Conditions', () => {
 
   describe('Multiple Proof Submissions', () => {
     it('should handle concurrent proof submissions from same seller', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const seller = createTestUser()
       rift.sellerId = seller.id
 

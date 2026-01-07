@@ -152,10 +152,10 @@ function computeTransactionRisk(rift: any): number {
 
   // Category-based risk
   switch (rift.itemType) {
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       risk += 20
       break
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       risk += 10
       break
     case 'SERVICES':
@@ -410,7 +410,7 @@ function generateRecommendations(params: {
     recommendations.push('High-value transaction - require additional verification')
   }
 
-  if (rift.itemType === 'TICKETS') {
+  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
     flags.push('TICKET_CATEGORY')
     recommendations.push('Ticket transactions require extra verification')
   }
@@ -507,7 +507,7 @@ export async function predictChargebackProbability(
   }
 
   // Ticket category higher risk
-  if (rift.itemType === 'TICKETS') {
+  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
     probability += 15
     factors.push('Ticket category (higher chargeback risk)')
   }

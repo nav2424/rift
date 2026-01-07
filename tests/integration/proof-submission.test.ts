@@ -86,7 +86,7 @@ describe('Proof Submission API', () => {
       const seller = createTestUser()
       const sellerId = seller.id
       // Create rift with seller ID from the start
-      const rift = createTestRift({ itemType: 'TICKETS', status: 'PAID', sellerId })
+      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PAID', sellerId })
       // Ensure fundedAt is set for deadline check (within deadline)
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
       const riftId = rift.id
@@ -109,7 +109,7 @@ describe('Proof Submission API', () => {
           id: riftId,
           sellerId, // ✅ Must match auth.userId
           status: 'PAID',
-          itemType: 'TICKETS',
+          itemType: 'OWNERSHIP_TRANSFER',
           fundedAt: rift.fundedAt,
           proofSubmittedAt: null,
           serviceDate: null,
@@ -250,7 +250,7 @@ describe('Proof Submission API', () => {
       const seller = createTestUser()
       const sellerId = seller.id
       // Create rift with seller ID from the start to avoid mutation issues
-      const riftBase = createTestRiftPastDeadline('DIGITAL')
+      const riftBase = createTestRiftPastDeadline('DIGITAL_GOODS')
       const riftId = riftBase.id
       const fundedAt = riftBase.fundedAt
       // createTestRiftPastDeadline should already set fundedAt past deadline
@@ -273,7 +273,7 @@ describe('Proof Submission API', () => {
         id: riftId,
         sellerId: sellerId, // ✅ Explicitly use the variable to ensure it matches
         status: 'PAID',
-        itemType: 'DIGITAL',
+        itemType: 'DIGITAL_GOODS',
         fundedAt, // Past deadline
         proofSubmittedAt: null,
         serviceDate: null,
@@ -326,7 +326,7 @@ describe('Proof Submission API', () => {
     it('should reject invalid asset types', async () => {
       const { canSellerSubmitProof } = await import('@/lib/state-machine')
       const seller = createTestUser()
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID', sellerId: seller.id })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID', sellerId: seller.id })
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
       const riftId = rift.id
       const sellerId = seller.id
@@ -349,7 +349,7 @@ describe('Proof Submission API', () => {
           id: riftId,
           sellerId, // ✅ Must match auth.userId exactly
           status: 'PAID',
-          itemType: 'DIGITAL',
+          itemType: 'DIGITAL_GOODS',
           fundedAt: rift.fundedAt,
           proofSubmittedAt: null,
           serviceDate: null,
@@ -459,7 +459,7 @@ describe('Proof Submission API', () => {
     it('should reject proof with missing required fields', async () => {
       const { canSellerSubmitProof } = await import('@/lib/state-machine')
       const seller = createTestUser()
-      const rift = createTestRift({ itemType: 'TICKETS', status: 'PAID', sellerId: seller.id })
+      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PAID', sellerId: seller.id })
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
       const riftId = rift.id
       const sellerId = seller.id
@@ -483,7 +483,7 @@ describe('Proof Submission API', () => {
           id: riftId,
           sellerId: sellerId, // ✅ Explicitly use the variable to ensure it matches
           status: 'PAID',
-          itemType: 'TICKETS',
+          itemType: 'OWNERSHIP_TRANSFER',
           fundedAt: rift.fundedAt,
           proofSubmittedAt: null,
           serviceDate: null,
@@ -594,7 +594,7 @@ describe('Proof Submission API', () => {
       const { canSellerSubmitProof } = await import('@/lib/state-machine')
       const seller = createTestUser()
       const sellerId = seller.id
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID', sellerId })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID', sellerId })
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000)
       const riftId = rift.id
 

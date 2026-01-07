@@ -179,7 +179,7 @@ export async function getVerificationRecommendations(
   }
 
   // Tickets category
-  if (rift.itemType === 'TICKETS') {
+  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
     require3DS = true
     requirePhoneVerification = true
     reasoning.push('Ticket category requires extra verification')

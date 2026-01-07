@@ -7,7 +7,7 @@ import { useToast } from './ui/Toast'
 
 interface DeliveryProofFormProps {
   escrowId: string
-  itemType: 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  itemType: 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
 }
 
 export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofFormProps) {
@@ -19,9 +19,9 @@ export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofF
 
   const getProofTypeText = () => {
     switch (itemType) {
-      case 'DIGITAL':
+      case 'DIGITAL_GOODS':
         return 'proof of digital product transfer (screenshot, license key, etc.)'
-      case 'TICKETS':
+      case 'OWNERSHIP_TRANSFER':
         return 'proof of ticket transfer (screenshot of transfer confirmation, email, etc.)'
       case 'SERVICES':
         return 'proof of service completion (photos, completion certificate, etc.)'

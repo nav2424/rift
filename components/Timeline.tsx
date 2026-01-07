@@ -1,6 +1,7 @@
 interface TimelineEvent {
   id: string
-  escrowId: string
+  riftId: string
+  escrowId?: string // Legacy support
   type: string
   message: string
   createdById: string | null

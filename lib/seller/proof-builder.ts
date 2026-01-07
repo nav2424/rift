@@ -64,7 +64,7 @@ export async function scoreProofQuality(
   for (const asset of assets) {
     try {
       const itemTypeForClassification = rift.itemType
-      const classification = await classifyProof(asset.id, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
+      const classification = await classifyProof(asset.id, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES')
       if (!classification.itemTypeMatch) {
         relevance -= 20
         warnings.push(`${asset.fileName}: Type mismatch detected`)
@@ -133,7 +133,7 @@ export async function getProofBuilderGuide(
   const tips: string[] = []
 
   switch (itemType) {
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       requiredAssets.push('Ticket screenshot or PDF')
       recommendedAssets.push('Event confirmation email', 'Seat details')
       examples.push('Screenshot of ticket in app', 'PDF ticket from venue')
@@ -141,7 +141,7 @@ export async function getProofBuilderGuide(
       tips.push('Make sure ticket is clearly visible and not expired')
       break
 
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       requiredAssets.push('File or download link')
       recommendedAssets.push('Screenshot of file', 'License key (if applicable)')
       examples.push('ZIP file with digital goods', 'Google Drive link', 'License key text')

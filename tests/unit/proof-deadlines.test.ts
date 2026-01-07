@@ -27,7 +27,7 @@ describe('Proof Deadline Enforcement', () => {
   describe('calculateProofDeadline', () => {
     it('should calculate 48h deadline for TICKETS from PAID', () => {
       const paidAt = new Date('2025-01-15T10:00:00Z')
-      const deadline = calculateProofDeadline('TICKETS' as ItemType, paidAt)
+      const deadline = calculateProofDeadline('OWNERSHIP_TRANSFER' as ItemType, paidAt)
       
       const expected = new Date('2025-01-17T10:00:00Z') // 48 hours later
       expect(deadline.getTime()).toBe(expected.getTime())
@@ -35,7 +35,7 @@ describe('Proof Deadline Enforcement', () => {
 
     it('should calculate 24h deadline for DIGITAL from PAID', () => {
       const paidAt = new Date('2025-01-15T10:00:00Z')
-      const deadline = calculateProofDeadline('DIGITAL' as ItemType, paidAt)
+      const deadline = calculateProofDeadline('DIGITAL_GOODS' as ItemType, paidAt)
       
       const expected = new Date('2025-01-16T10:00:00Z') // 24 hours later
       expect(deadline.getTime()).toBe(expected.getTime())
@@ -71,14 +71,14 @@ describe('Proof Deadline Enforcement', () => {
   describe('isProofDeadlinePassed', () => {
     it('should return true if deadline has passed', () => {
       const paidAt = new Date('2025-01-13T10:00:00Z') // 2 days ago
-      const passed = isProofDeadlinePassed('DIGITAL' as ItemType, paidAt, null)
+      const passed = isProofDeadlinePassed('DIGITAL_GOODS' as ItemType, paidAt, null)
       
       expect(passed).toBe(true)
     })
 
     it('should return false if deadline has not passed', () => {
       const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const passed = isProofDeadlinePassed('DIGITAL' as ItemType, paidAt, null)
+      const passed = isProofDeadlinePassed('DIGITAL_GOODS' as ItemType, paidAt, null)
       
       expect(passed).toBe(false)
     })
@@ -86,21 +86,21 @@ describe('Proof Deadline Enforcement', () => {
     it('should return false if proof already submitted', () => {
       const paidAt = new Date('2025-01-13T10:00:00Z') // 2 days ago (past deadline)
       const proofSubmittedAt = new Date('2025-01-14T10:00:00Z') // 1 day ago
-      const passed = isProofDeadlinePassed('DIGITAL' as ItemType, paidAt, proofSubmittedAt)
+      const passed = isProofDeadlinePassed('DIGITAL_GOODS' as ItemType, paidAt, proofSubmittedAt)
       
       expect(passed).toBe(false) // Not passed because already submitted
     })
 
     it('should return true for TICKETS after 48h', () => {
       const paidAt = new Date('2025-01-13T10:00:00Z') // 2 days ago
-      const passed = isProofDeadlinePassed('TICKETS' as ItemType, paidAt, null)
+      const passed = isProofDeadlinePassed('OWNERSHIP_TRANSFER' as ItemType, paidAt, null)
       
       expect(passed).toBe(true)
     })
 
     it('should return false for TICKETS before 48h', () => {
       const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const passed = isProofDeadlinePassed('TICKETS' as ItemType, paidAt, null)
+      const passed = isProofDeadlinePassed('OWNERSHIP_TRANSFER' as ItemType, paidAt, null)
       
       expect(passed).toBe(false)
     })
@@ -109,7 +109,7 @@ describe('Proof Deadline Enforcement', () => {
   describe('getHoursUntilProofDeadline', () => {
     it('should return positive hours if deadline in future', () => {
       const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const hours = getHoursUntilProofDeadline('DIGITAL' as ItemType, paidAt)
+      const hours = getHoursUntilProofDeadline('DIGITAL_GOODS' as ItemType, paidAt)
       
       expect(hours).toBeGreaterThan(0)
       expect(hours).toBeLessThan(24)
@@ -117,14 +117,14 @@ describe('Proof Deadline Enforcement', () => {
 
     it('should return negative hours if deadline passed', () => {
       const paidAt = new Date('2025-01-13T10:00:00Z') // 2 days ago
-      const hours = getHoursUntilProofDeadline('DIGITAL' as ItemType, paidAt)
+      const hours = getHoursUntilProofDeadline('DIGITAL_GOODS' as ItemType, paidAt)
       
       expect(hours).toBeLessThan(0)
     })
 
     it('should return correct hours for TICKETS (48h deadline)', () => {
       const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const hours = getHoursUntilProofDeadline('TICKETS' as ItemType, paidAt)
+      const hours = getHoursUntilProofDeadline('OWNERSHIP_TRANSFER' as ItemType, paidAt)
       
       expect(hours).toBeCloseTo(47, 0) // ~47 hours remaining
     })
@@ -136,7 +136,7 @@ describe('Proof Deadline Enforcement', () => {
       const firstBuyerAccessAt = new Date('2025-01-15T11:00:00Z')
       
       const deadline = calculateAutoReleaseDeadlineFromAccess(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         proofSubmittedAt,
         firstBuyerAccessAt
       )
@@ -150,7 +150,7 @@ describe('Proof Deadline Enforcement', () => {
       const firstBuyerAccessAt = new Date('2025-01-15T11:00:00Z')
       
       const deadline = calculateAutoReleaseDeadlineFromAccess(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         proofSubmittedAt,
         firstBuyerAccessAt
       )
@@ -163,7 +163,7 @@ describe('Proof Deadline Enforcement', () => {
       const proofSubmittedAt = new Date('2025-01-15T10:00:00Z')
       
       const deadline = calculateAutoReleaseDeadlineFromAccess(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         proofSubmittedAt,
         null
       )
@@ -203,7 +203,7 @@ describe('Proof Deadline Enforcement', () => {
 
   describe('PROOF_DEADLINE_CONFIGS', () => {
     it('should have correct config for TICKETS', () => {
-      const config = PROOF_DEADLINE_CONFIGS['TICKETS']
+      const config = PROOF_DEADLINE_CONFIGS['OWNERSHIP_TRANSFER']
       expect(config).toBeDefined()
       expect(config?.deadlineHours).toBe(48)
       expect(config?.autoReleaseAfterAccessHours).toBe(24)
@@ -211,7 +211,7 @@ describe('Proof Deadline Enforcement', () => {
     })
 
     it('should have correct config for DIGITAL', () => {
-      const config = PROOF_DEADLINE_CONFIGS['DIGITAL']
+      const config = PROOF_DEADLINE_CONFIGS['DIGITAL_GOODS']
       expect(config).toBeDefined()
       expect(config?.deadlineHours).toBe(24)
       expect(config?.autoReleaseAfterAccessHours).toBe(24)

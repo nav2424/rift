@@ -34,15 +34,15 @@ export function createTestRift(options: RiftFactoryOptions = {}) {
   return {
     id: randomUUID(),
     riftNumber: Math.floor(Math.random() * 1000000),
-    itemTitle: options.itemType === 'TICKETS' 
+    itemTitle: options.itemType === 'OWNERSHIP_TRANSFER' 
       ? 'Concert Tickets' 
-      : options.itemType === 'DIGITAL'
+      : options.itemType === 'DIGITAL_GOODS'
       ? 'Digital Product'
       : options.itemType === 'SERVICES'
       ? 'Service Delivery'
       : 'License Key',
     itemDescription: 'Test item description',
-    itemType: options.itemType || 'DIGITAL',
+    itemType: options.itemType || 'DIGITAL_GOODS',
     subtotal: options.subtotal || 100,
     buyerFee: (options.subtotal || 100) * 0.03,
     sellerFee: (options.subtotal || 100) * 0.05,

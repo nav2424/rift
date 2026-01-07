@@ -225,7 +225,7 @@ export function validateFileType(file: File, allowedTypes?: string[]): boolean {
  */
 export function getAllowedFileTypes(itemType: string): string[] {
   switch (itemType) {
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       return [
         'application/pdf',
         'application/zip',

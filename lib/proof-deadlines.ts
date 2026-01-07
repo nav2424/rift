@@ -18,14 +18,14 @@ export interface ProofDeadlineConfig {
  * LAUNCH ITEM TYPES: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS
  */
 export const PROOF_DEADLINE_CONFIGS: Partial<Record<ItemType, ProofDeadlineConfig>> = {
-  TICKETS: {
+  OWNERSHIP_TRANSFER: {
     deadlineHours: 48, // 24-48 hours as per spec (using 48 as max)
     minHours: 24,
     maxHours: 48,
     autoReleaseAfterAccessHours: 24, // Auto-release 24h after buyer views QR/ticket
     autoReleaseAfterSubmissionHours: 48, // Fallback: 48h after submission
   },
-  DIGITAL: {
+  DIGITAL_GOODS: {
     deadlineHours: 24, // 24 hours for digital files
     minHours: 24,
     maxHours: 48,
@@ -38,13 +38,6 @@ export const PROOF_DEADLINE_CONFIGS: Partial<Record<ItemType, ProofDeadlineConfi
     maxHours: 168, // Up to 7 days for complex services
     autoReleaseAfterAccessHours: undefined, // Services don't have "access" concept
     autoReleaseAfterSubmissionHours: 72, // 72h after submission (3 days for buyer to review work)
-  },
-  LICENSE_KEYS: {
-    deadlineHours: 24, // 24 hours for license keys/software
-    minHours: 24,
-    maxHours: 48,
-    autoReleaseAfterAccessHours: 24, // Auto-release 24h after buyer reveals key/downloads
-    autoReleaseAfterSubmissionHours: 48, // Fallback: 48h after submission
   },
 }
 

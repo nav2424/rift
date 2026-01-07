@@ -29,13 +29,25 @@ export async function acquireFullReleaseLock(
     // Check if release already exists
     const existing = await prisma.riftTransaction.findUnique({
       where: { id: riftId },
-      select: { status: true, stripeTransferId: true },
+      select: { status: true },
     })
 
-    if (existing?.status === 'RELEASED' && existing.stripeTransferId) {
-      // Already released with transfer
+    if (existing?.status === 'RELEASED') {
+      // Already released - check for payout record
+      const payout = await prisma.payout.findFirst({
+        where: { riftId },
+        select: { stripeTransferId: true },
+      })
+      if (payout?.stripeTransferId) {
+        return {
+          releaseId: payout.stripeTransferId,
+          riftId,
+          status: 'CREATED',
+        }
+      }
+      // Already released but no transfer ID yet (shouldn't happen, but handle gracefully)
       return {
-        releaseId: existing.stripeTransferId,
+        releaseId: 'already-released',
         riftId,
         status: 'CREATED',
       }

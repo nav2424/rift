@@ -99,7 +99,7 @@ async function testRiftFlow() {
         riftNumber,
         itemTitle: 'Test Item',
         itemDescription: 'End-to-end test item',
-        itemType: 'DIGITAL',
+        itemType: 'DIGITAL_GOODS',
         subtotal,
         buyerFee,
         sellerFee,

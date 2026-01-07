@@ -49,7 +49,7 @@ export default function About() {
               Make online transactions executable.
             </p>
             <p className="text-white/70 font-light leading-relaxed">
-              We believe that trust shouldn't be a prerequisite for commerce. 
+              We believe that trust shouldn\'t be a prerequisite for commerce. 
               Rift provides the execution layer that makes deals happen without requiring 
               either party to trust the other first.
             </p>
@@ -70,7 +70,7 @@ export default function About() {
               },
               {
                 title: 'Neutrality',
-                description: 'We don't take sides. The protocol enforces fairness.',
+                description: 'We don\'t take sides. The protocol enforces fairness.',
               },
               {
                 title: 'Proof',
@@ -100,7 +100,7 @@ export default function About() {
               </p>
               <p>
                 Marketplaces take massive cuts and still leave users vulnerable. 
-                Banks aren't built for this use case.
+                Banks aren\'t built for this use case.
               </p>
               <p>
                 Rift fills the gap: a neutral execution layer that makes online deals 
@@ -124,7 +124,7 @@ export default function About() {
               },
               {
                 title: 'Least-privilege access',
-                description: 'Access is restricted to what's necessary. Admins only see what's needed for review.',
+                description: 'Access is restricted to what\'s necessary. Admins only see what\'s needed for review.',
               },
               {
                 title: 'Vault access restricted',

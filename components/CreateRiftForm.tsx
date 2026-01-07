@@ -132,7 +132,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         return ''
       // Digital file fields removed from creation - no validation needed
       case 'eventDate':
-        if (itemType === 'TICKETS' && !value) return 'Event date is required'
+        if ((itemType === 'OWNERSHIP_TRANSFER' || itemType === 'DIGITAL_GOODS') && !value) return 'Event date is required'
         if (value) {
           const selectedDate = new Date(value)
           const today = new Date()
@@ -141,19 +141,19 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         }
         return ''
       case 'venue':
-        if (itemType === 'TICKETS' && !value.trim()) return 'Venue is required'
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Venue is required'
         return ''
       case 'seatSection':
-        if (itemType === 'TICKETS' && !value.trim()) return 'Section is required'
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Section is required'
         return ''
       case 'seatRow':
-        if (itemType === 'TICKETS' && !value.trim()) return 'Row is required'
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Row is required'
         return ''
       case 'seatNumbers':
-        if (itemType === 'TICKETS' && !value.trim()) return 'Seat numbers are required'
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Seat numbers are required'
         return ''
       case 'transferMethod':
-        if (itemType === 'TICKETS' && !value) return 'Transfer method is required'
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value) return 'Transfer method is required'
         return ''
       // License key fields removed from creation - no validation needed
       case 'serviceDate':
@@ -307,13 +307,13 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     })
     
     // Type-specific validation
-    if (itemType === 'TICKETS') {
+    if (itemType === 'OWNERSHIP_TRANSFER') {
       const ticketFields = ['eventDate', 'venue', 'seatSection', 'seatRow', 'seatNumbers', 'transferMethod']
       ticketFields.forEach((key) => {
         const error = validateField(key, formData[key as keyof typeof formData] as string)
         if (error) allErrors[key] = error
       })
-    } else if (itemType === 'DIGITAL') {
+    } else if (itemType === 'DIGITAL_GOODS') {
       // No validation needed for digital items during creation
       // Proof of delivery (files, links, license keys) will be submitted after payment
     } else if (itemType === 'SERVICES') {
@@ -322,7 +322,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         const error = validateField(key, formData[key as keyof typeof formData] as string)
         if (error) allErrors[key] = error
       })
-    } else if (itemType === 'LICENSE_KEYS') {
+    } else if (itemType === 'DIGITAL_GOODS') {
       const licenseFields = ['softwareName', 'licenseType']
       licenseFields.forEach((key) => {
         const error = validateField(key, formData[key as keyof typeof formData] as string)
@@ -418,7 +418,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       }
 
       // Add type-specific fields
-      if (itemType === 'TICKETS') {
+      if (itemType === 'OWNERSHIP_TRANSFER') {
         payload.eventDate = formData.eventDate
         payload.venue = formData.venue
         // Construct seat details from separate fields
@@ -430,7 +430,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         }
         payload.transferMethod = formData.transferMethod
         payload.quantity = parseInt(formData.quantity) || 1
-      } else if (itemType === 'DIGITAL') {
+      } else if (itemType === 'DIGITAL_GOODS') {
         // No digital-specific fields during creation
         // Files, links, and license keys will be added during proof submission after payment
       } else if (itemType === 'SERVICES') {
@@ -540,7 +540,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         if (creatorRole === 'SELLER' && !hasBuyer) stepErrors.partner = 'Please select a buyer'
         break
       case 4: // Type-specific
-        if (itemType === 'TICKETS') {
+        if (itemType === 'OWNERSHIP_TRANSFER') {
           const dateError = validateField('eventDate', formData.eventDate)
           const venueError = validateField('venue', formData.venue)
           const sectionError = validateField('seatSection', formData.seatSection)
@@ -553,7 +553,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           if (rowError) stepErrors.seatRow = rowError
           if (seatNumbersError) stepErrors.seatNumbers = seatNumbersError
           if (methodError) stepErrors.transferMethod = methodError
-        } else if (itemType === 'DIGITAL') {
+        } else if (itemType === 'DIGITAL_GOODS') {
           // No validation needed for digital items during creation
           // Proof of delivery (files, links, license keys) will be submitted after payment
         } else if (itemType === 'SERVICES') {
@@ -565,7 +565,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           if (scopeError) stepErrors.serviceScope = scopeError
           if (deliverablesError) stepErrors.serviceDeliverables = deliverablesError
           if (criteriaError) stepErrors.completionCriteria = criteriaError
-        } else if (itemType === 'LICENSE_KEYS') {
+        } else if (itemType === 'DIGITAL_GOODS') {
           const softwareError = validateField('softwareName', formData.softwareName)
           const licenseTypeError = validateField('licenseType', formData.licenseType)
           if (softwareError) stepErrors.softwareName = softwareError
@@ -596,8 +596,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     'Basic Information',
     'Payment Details',
     'Partner Selection',
-    itemType === 'TICKETS' ? 'Event Details' 
-      : itemType === 'DIGITAL' ? 'Item Details' 
+    itemType === 'OWNERSHIP_TRANSFER' ? 'Event Details' 
+      : itemType === 'DIGITAL_GOODS' ? 'Item Details' 
       : itemType === 'SERVICES' ? 'Service Details'
       : 'License Details',
     'Review & Submit'
@@ -690,9 +690,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   : 'border-white/10 focus:ring-white/20 focus:border-white/20'
               }`}
               placeholder={
-                itemType === 'TICKETS' ? 'e.g., Taylor Swift Concert Tickets' :
-                itemType === 'DIGITAL' ? 'e.g., Premium Software License' :
-                itemType === 'LICENSE_KEYS' ? 'e.g., Adobe Creative Cloud License' :
+                itemType === 'OWNERSHIP_TRANSFER' ? 'e.g., Taylor Swift Concert Tickets' :
+                itemType === 'DIGITAL_GOODS' ? 'e.g., Premium Software License' :
                 'e.g., Web Development Service'
               }
             />
@@ -983,7 +982,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         {/* Step 4: Type-specific fields */}
         {currentStep === 4 && (
           <div>
-            {itemType === 'TICKETS' && (
+            {itemType === 'OWNERSHIP_TRANSFER' && (
               <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center">
@@ -1186,7 +1185,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
             )}
 
-            {itemType === 'DIGITAL' && (
+            {itemType === 'DIGITAL_GOODS' && (
               <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 flex items-center justify-center">
@@ -1213,7 +1212,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           </div>
             )}
 
-            {itemType === 'LICENSE_KEYS' && (
+            {itemType === 'DIGITAL_GOODS' && (
               <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/10 border border-emerald-500/30 flex items-center justify-center">
@@ -1702,7 +1701,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
               
               {/* Type-specific Details */}
-              {itemType === 'TICKETS' && (
+              {itemType === 'OWNERSHIP_TRANSFER' && (
                 <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center flex-shrink-0">
@@ -1743,7 +1742,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 </div>
               )}
               
-              {itemType === 'DIGITAL' && (
+              {itemType === 'DIGITAL_GOODS' && (
                 <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">

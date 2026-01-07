@@ -8,10 +8,10 @@ import { validateProofTypeLock, getProofTypeFromItemType } from '@/lib/proof-typ
 import { ItemType, VaultAssetType } from '@prisma/client'
 
 describe('Type-Locked Proof Validation', () => {
-  describe('TICKETS', () => {
+  describe('OWNERSHIP_TRANSFER', () => {
     it('should validate valid TICKETS proof with event details', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TICKET_PROOF'],
         {
           eventName: 'Concert',
@@ -26,7 +26,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should validate TICKETS proof with FILE asset', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['FILE'],
         {
           eventName: 'Concert',
@@ -40,7 +40,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject TICKETS proof without eventName', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TICKET_PROOF'],
         {
           eventDate: '2025-02-01',
@@ -54,7 +54,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject TICKETS proof without eventDate', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TICKET_PROOF'],
         {
           eventName: 'Concert',
@@ -68,7 +68,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject TICKETS proof without platform', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TICKET_PROOF'],
         {
           eventName: 'Concert',
@@ -83,7 +83,7 @@ describe('Type-Locked Proof Validation', () => {
     it('should reject unknown asset types for TICKETS', () => {
       // TRACKING doesn't exist in launch scope - should be rejected as unknown
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TRACKING' as any], // Unknown asset type
         {
           eventName: 'Concert',
@@ -98,7 +98,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject TICKETS proof with too few assets', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         [], // No assets
         {
           eventName: 'Concert',
@@ -113,7 +113,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject TICKETS proof with too many assets', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         Array(6).fill('TICKET_PROOF'), // 6 assets (max is 5)
         {
           eventName: 'Concert',
@@ -128,7 +128,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject empty string in required fields', () => {
       const result = validateProofTypeLock(
-        'TICKETS' as ItemType,
+        'OWNERSHIP_TRANSFER' as ItemType,
         ['TICKET_PROOF'],
         {
           eventName: '   ', // Empty string
@@ -142,10 +142,10 @@ describe('Type-Locked Proof Validation', () => {
     })
   })
 
-  describe('DIGITAL', () => {
+  describe('DIGITAL_GOODS', () => {
     it('should validate valid DIGITAL proof with FILE', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['FILE'],
         {}
       )
@@ -156,7 +156,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should validate DIGITAL proof with multiple files', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['FILE', 'FILE', 'FILE'],
         {}
       )
@@ -166,7 +166,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject DIGITAL proof with URL', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['URL'], // Not allowed for DIGITAL
         {}
       )
@@ -177,7 +177,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject DIGITAL proof with no assets', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         [],
         {}
       )
@@ -188,7 +188,7 @@ describe('Type-Locked Proof Validation', () => {
 
     it('should reject DIGITAL proof with too many assets', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         Array(11).fill('FILE'), // 11 assets (max is 10)
         {}
       )
@@ -376,7 +376,7 @@ describe('Type-Locked Proof Validation', () => {
     it('should reject TRACKING asset type (does not exist)', () => {
       // TRACKING is not a valid VaultAssetType in launch scope
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['TRACKING' as any], // Unknown asset type
         {}
       )
@@ -388,11 +388,11 @@ describe('Type-Locked Proof Validation', () => {
 
   describe('getProofTypeFromItemType', () => {
     it('should return DIGITAL for TICKETS', () => {
-      expect(getProofTypeFromItemType('TICKETS' as ItemType)).toBe('DIGITAL')
+      expect(getProofTypeFromItemType('OWNERSHIP_TRANSFER' as ItemType)).toBe('DIGITAL_GOODS')
     })
 
     it('should return DIGITAL for DIGITAL', () => {
-      expect(getProofTypeFromItemType('DIGITAL' as ItemType)).toBe('DIGITAL')
+      expect(getProofTypeFromItemType('DIGITAL_GOODS' as ItemType)).toBe('DIGITAL_GOODS')
     })
 
     it('should return SERVICE for SERVICES', () => {
@@ -400,7 +400,7 @@ describe('Type-Locked Proof Validation', () => {
     })
 
     it('should return DIGITAL for LICENSE_KEYS', () => {
-      expect(getProofTypeFromItemType('LICENSE_KEYS' as ItemType)).toBe('DIGITAL')
+      expect(getProofTypeFromItemType('LICENSE_KEYS' as ItemType)).toBe('DIGITAL_GOODS')
     })
   })
 })

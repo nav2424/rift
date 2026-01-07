@@ -68,13 +68,13 @@ export async function autoTriageDispute(
 
   // Category-specific checks
   switch (category) {
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       return await triageDigitalGoods(riftId, reason, signals)
     
     case 'SERVICES':
       return await triageServices(riftId, reason, signals)
     
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       return await triageTickets(riftId, reason, signals, rift.eventDateTz)
     
     default:

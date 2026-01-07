@@ -15,7 +15,7 @@ describe('Security/Abuse Tests', () => {
     it('should reject "other" asset type bypass attempt', () => {
       // Try to submit invalid asset type
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['OTHER' as any], // Invalid type
         {}
       )
@@ -27,7 +27,7 @@ describe('Security/Abuse Tests', () => {
     it('should reject free-form upload bypass', () => {
       // Try to submit without proper validation
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         [], // No assets
         {}
       )
@@ -37,7 +37,7 @@ describe('Security/Abuse Tests', () => {
 
     it('should reject external URL for DIGITAL items', () => {
       const result = validateProofTypeLock(
-        'DIGITAL' as ItemType,
+        'DIGITAL_GOODS' as ItemType,
         ['URL' as any], // Not allowed
         {}
       )

@@ -70,7 +70,7 @@ async function testProofSubmissionAPI() {
         riftNumber: 999992,
         itemTitle: 'API Test Rift',
         itemDescription: 'Test',
-        itemType: 'DIGITAL',
+        itemType: 'DIGITAL_GOODS',
         subtotal: 100,
         buyerFee: 3,
         sellerFee: 5,

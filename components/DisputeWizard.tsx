@@ -107,7 +107,7 @@ export default function DisputeWizard({ riftId, itemType, eventDateTz, onClose }
 
   const checkCooldown = async () => {
     // Check tickets: block if event passed
-    if (itemType === 'TICKETS' && eventDateTz) {
+    if (itemType === 'OWNERSHIP_TRANSFER' && eventDateTz) {
       const eventDate = new Date(eventDateTz)
       const now = new Date()
       if (now >= eventDate) {
@@ -128,7 +128,7 @@ export default function DisputeWizard({ riftId, itemType, eventDateTz, onClose }
     }
 
     // For digital goods: Check if delivery was just uploaded (1 hour cooldown)
-    if (itemType === 'DIGITAL') {
+    if (itemType === 'DIGITAL_GOODS') {
       try {
         const response = await fetch(`/api/rifts/${riftId}/delivery/viewer`, {
           method: 'POST',
@@ -539,7 +539,7 @@ export default function DisputeWizard({ riftId, itemType, eventDateTz, onClose }
             ))}
           </div>
 
-            {itemType === 'TICKETS' && eventDateTz && (
+            {itemType === 'OWNERSHIP_TRANSFER' && eventDateTz && (
               <GlassCard variant="light" className="p-3 bg-gradient-to-br from-yellow-500/10 to-amber-500/5 border-yellow-400/30 shadow-lg shadow-yellow-500/10">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500/30 to-amber-500/30 flex items-center justify-center border border-yellow-400/40 shadow-md">
@@ -595,12 +595,12 @@ export default function DisputeWizard({ riftId, itemType, eventDateTz, onClose }
 
                 <div className="space-y-4 max-w-2xl mx-auto">
                   {[
-                    ...(itemType === 'TICKETS' && eventDateTz ? [{
+                    ...(itemType === 'OWNERSHIP_TRANSFER' && eventDateTz ? [{
                       type: 'info' as const,
                       icon: '🎫',
                       text: `Event date: ${new Date(eventDateTz).toLocaleDateString()}. Disputes are not allowed after the event date.`,
                     }] : []),
-                    ...(itemType === 'DIGITAL' && reason === 'not_received' ? [{
+                    ...(itemType === 'DIGITAL_GOODS' && reason === 'not_received' ? [{
                       type: 'info' as const,
                       icon: '💾',
                       text: 'For digital goods, please ensure you have attempted to access the delivery before disputing.',

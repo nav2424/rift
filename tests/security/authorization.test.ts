@@ -17,7 +17,7 @@ describe('Authorization and Access Control', () => {
 
   describe('Proof Submission (Seller-Only)', () => {
     it('should allow seller to submit proof', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const seller = createTestSeller()
       
       // Ensure seller ID matches rift sellerId
@@ -32,7 +32,7 @@ describe('Authorization and Access Control', () => {
     })
 
     it('should block buyer from submitting proof', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const buyer = createTestBuyer()
       
       vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValue(rift as any)
@@ -45,7 +45,7 @@ describe('Authorization and Access Control', () => {
     })
 
     it('should block user not in rift from submitting proof', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const stranger = createTestBuyer() // Use factory function
       
       // Ensure stranger is NOT the seller or buyer
@@ -64,7 +64,7 @@ describe('Authorization and Access Control', () => {
 
   describe('Vault Access (Buyer-Only Endpoints)', () => {
     it('should allow buyer to access vault', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestBuyer()
       rift.buyerId = buyer.id
       
@@ -76,7 +76,7 @@ describe('Authorization and Access Control', () => {
     })
 
     it('should block seller from accessing buyer-only vault endpoints', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const seller = createTestSeller()
       rift.sellerId = seller.id
       
@@ -89,7 +89,7 @@ describe('Authorization and Access Control', () => {
     })
 
     it('should block user not in rift from accessing vault', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const stranger = createTestBuyer() // Use factory function
       
       // Ensure stranger is NOT the buyer
@@ -133,7 +133,7 @@ describe('Authorization and Access Control', () => {
 
   describe('Admin Access', () => {
     it('should allow admin to access all endpoints', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const admin = createTestAdmin()
       
       vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValue(rift as any)
@@ -145,7 +145,7 @@ describe('Authorization and Access Control', () => {
     })
 
     it('should log all admin actions', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const admin = createTestAdmin()
       
       const action = await logAdminAction(rift.id, admin.id, 'VIEWED_VAULT')

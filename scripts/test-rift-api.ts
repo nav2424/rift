@@ -178,7 +178,7 @@ async function testRiftAPI() {
       body: {
         itemTitle: 'API Test Item',
         itemDescription: 'Testing API endpoint',
-        itemType: 'DIGITAL',
+        itemType: 'DIGITAL_GOODS',
         amount: 100,
         currency: 'CAD',
         creatorRole: 'BUYER',

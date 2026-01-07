@@ -39,7 +39,7 @@ interface RiftTransaction {
   riftNumber: number | null
   itemTitle: string
   itemDescription: string
-  itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  itemType: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
   subtotal: number
   amount?: number
   buyerFee: number
@@ -66,7 +66,8 @@ interface RiftTransaction {
   }
   timelineEvents: Array<{
     id: string
-    riftId: string
+    riftId?: string
+    escrowId?: string
     type: string
     message: string
     createdById: string | null
@@ -412,6 +413,7 @@ export default function RiftDetailPage() {
                 <Timeline 
                   events={rift.timelineEvents.map(e => ({
                     ...e,
+                    riftId: e.riftId || e.escrowId || rift.id,
                     createdAt: new Date(e.createdAt)
                   }))}
                   isBuyer={isBuyer}

@@ -107,7 +107,7 @@ export async function generateEvidencePacket(
 
   // Get delivery proof (category-specific)
   let deliveryProof: any = null
-  if (rift.itemType === 'DIGITAL') {
+  if (rift.itemType === 'DIGITAL_GOODS') {
     const { data: digitalDeliveries } = await supabase
       .from('digital_deliveries')
       .select('*')
@@ -157,7 +157,7 @@ export async function generateEvidencePacket(
       seller_marked_delivered_at: serviceDelivered?.createdAt.toISOString() || null,
       buyer_confirmed_at: serviceConfirmed?.createdAt.toISOString() || null,
     }
-  } else if (rift.itemType === 'TICKETS') {
+  } else if (rift.itemType === 'OWNERSHIP_TRANSFER') {
     const { data: ticketTransfers } = await supabase
       .from('ticket_transfers')
       .select('*')

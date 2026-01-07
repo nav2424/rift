@@ -99,17 +99,17 @@ export async function computeReleaseEligibility(
 
   // Category-specific rules
   switch (rift.itemType) {
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       return await checkDigitalGoodsEligibility(riftId, rift)
     
-    case 'LICENSE_KEYS':
+    case 'DIGITAL_GOODS':
       // License keys use the same eligibility logic as digital goods
       return await checkDigitalGoodsEligibility(riftId, rift)
     
     case 'SERVICES':
       return await checkServicesEligibility(riftId, rift)
     
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       return await checkTicketsEligibility(riftId, rift)
     
     default:
@@ -138,7 +138,7 @@ async function checkDigitalGoodsEligibility(
     return {
       eligible: true,
       reason: 'Buyer confirmed receipt',
-      category: 'DIGITAL',
+      category: 'DIGITAL_GOODS',
       details: { confirmedAt: confirmedEvent.createdAt },
     }
   }
@@ -170,7 +170,7 @@ async function checkDigitalGoodsEligibility(
       return {
         eligible: true,
         reason: 'Valid proof submitted (license key)',
-        category: 'DIGITAL',
+        category: 'DIGITAL_GOODS',
         details: { hasProof: true },
       }
     }
@@ -198,7 +198,7 @@ async function checkDigitalGoodsEligibility(
     return {
       eligible: true,
       reason: '48h after upload with engagement and low risk',
-      category: 'DIGITAL',
+      category: 'DIGITAL_GOODS',
       details: {
         hoursSinceUpload: Math.round(hoursSinceUpload),
         hasDownloaded,
@@ -211,7 +211,7 @@ async function checkDigitalGoodsEligibility(
   return {
     eligible: false,
     reason: 'Conditions not met for auto-release',
-    category: 'DIGITAL',
+    category: 'DIGITAL_GOODS',
     details: {
       hoursSinceUpload: Math.round(hoursSinceUpload),
       hasDownloaded,
@@ -314,7 +314,7 @@ async function checkTicketsEligibility(
     return {
       eligible: true,
       reason: 'Buyer confirmed ticket receipt',
-      category: 'TICKETS',
+      category: 'OWNERSHIP_TRANSFER',
       details: { confirmedAt: confirmedEvent.createdAt },
     }
   }
@@ -341,7 +341,7 @@ async function checkTicketsEligibility(
       return {
         eligible: true,
         reason: 'Event date passed with seller_sent and low risk',
-        category: 'TICKETS',
+        category: 'OWNERSHIP_TRANSFER',
         details: {
           eventDate: eventDate.toISOString(),
           riskScore: rift.riskScore,
@@ -353,7 +353,7 @@ async function checkTicketsEligibility(
     return {
       eligible: false,
       reason: 'Event date has not passed yet',
-      category: 'TICKETS',
+      category: 'OWNERSHIP_TRANSFER',
       details: {
         eventDate: eventDate.toISOString(),
         now: now.toISOString(),
@@ -365,7 +365,7 @@ async function checkTicketsEligibility(
   return {
     eligible: false,
     reason: 'Buyer confirmation required (no event date set)',
-    category: 'TICKETS',
+    category: 'OWNERSHIP_TRANSFER',
   }
 }
 

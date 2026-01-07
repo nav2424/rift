@@ -18,14 +18,14 @@ export interface ProofRequirement {
  * LAUNCH SCOPE: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS only
  */
 export const PROOF_REQUIREMENTS: Partial<Record<ItemType, ProofRequirement>> = {
-  TICKETS: {
+  OWNERSHIP_TRANSFER: {
     allowedAssetTypes: ['TICKET_PROOF', 'FILE'], // Platform transfer confirmation OR QR asset
     requiredFields: ['eventName', 'eventDate', 'platform'], // Must declare these
     minAssets: 1,
     maxAssets: 5, // Allow multiple views/angles of ticket
     description: 'Must include event details and one of: platform transfer confirmation OR QR asset',
   },
-  DIGITAL: {
+  DIGITAL_GOODS: {
     allowedAssetTypes: ['FILE'], // Vault file upload only (no external links)
     requiredFields: [], // No mandatory fields, file itself is proof
     minAssets: 1,
@@ -38,13 +38,6 @@ export const PROOF_REQUIREMENTS: Partial<Record<ItemType, ProofRequirement>> = {
     minAssets: 0, // Services might not require files
     maxAssets: 20,
     description: 'Must provide completion summary and deliverables (snapshot required for URLs)',
-  },
-  LICENSE_KEYS: {
-    allowedAssetTypes: ['LICENSE_KEY', 'FILE', 'URL'], // Masked key entry OR account invite proof OR vault-hosted download
-    requiredFields: ['softwareName', 'licenseType'], // Must declare software and license type
-    minAssets: 1,
-    maxAssets: 5, // Allow multiple keys or download links
-    description: 'Must provide: masked key entry OR account invite proof OR vault-hosted download',
   },
 }
 
@@ -119,9 +112,8 @@ export function getProofTypeFromItemType(itemType: ItemType): ProofType {
   switch (itemType) {
     case 'SERVICES':
       return 'SERVICE'
-    case 'DIGITAL':
-    case 'TICKETS':
-    case 'LICENSE_KEYS':
+    case 'DIGITAL_GOODS':
+    case 'OWNERSHIP_TRANSFER':
       return 'DIGITAL'
     default:
       // Launch scope: default to DIGITAL for unsupported types

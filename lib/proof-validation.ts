@@ -140,8 +140,8 @@ export function getProofTypeFromItemType(itemType: string): ProofType {
       return ProofType.PHYSICAL
     case 'SERVICES':
       return ProofType.SERVICE
-    case 'DIGITAL':
-    case 'TICKETS':
+    case 'DIGITAL_GOODS':
+    case 'OWNERSHIP_TRANSFER':
       return ProofType.DIGITAL
     default:
       return ProofType.PHYSICAL

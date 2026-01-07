@@ -52,7 +52,7 @@ export async function POST(
     const itemTypeForClassification = rift.itemType
     const classifications = await Promise.all(
       assetIds.map((assetId: string) =>
-        classifyProof(assetId, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES').catch((error) => ({
+        classifyProof(assetId, itemTypeForClassification as 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES').catch((error) => ({
           assetId,
           error: error.message,
         }))

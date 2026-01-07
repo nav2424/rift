@@ -219,9 +219,9 @@ async function getHistoricalDisputeRate(itemType: ItemType, amount: number): Pro
  */
 function getItemTypeRisk(itemType: ItemType): number {
   switch (itemType) {
-    case 'TICKETS':
+    case 'OWNERSHIP_TRANSFER':
       return 70
-    case 'DIGITAL':
+    case 'DIGITAL_GOODS':
       return 40
     case 'SERVICES':
       return 50
@@ -241,9 +241,8 @@ async function calculateOptimalHoldHours(
 ): Promise<number> {
   // Base hold times by item type
   const baseHolds: Record<ItemType, number> = {
-    DIGITAL: 48,
-    LICENSE_KEYS: 48, // Same as DIGITAL
-    TICKETS: 72,
+    DIGITAL_GOODS: 48,
+    OWNERSHIP_TRANSFER: 72,
     SERVICES: 96,
     PHYSICAL: 120,
   }

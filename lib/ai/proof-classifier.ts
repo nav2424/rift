@@ -8,7 +8,7 @@ import { prisma } from '../prisma'
 export interface ProofClassification {
   itemTypeMatch: boolean
   confidence: number // 0-100
-  detectedType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'UNKNOWN'
+  detectedType: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES' | 'UNKNOWN'
   authenticitySignals: AuthenticitySignal[]
   qualityScore: number // 0-100
   warnings: string[]
@@ -27,7 +27,7 @@ export interface AuthenticitySignal {
  */
 export async function classifyProof(
   assetId: string,
-  expectedItemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  expectedItemType: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
 ): Promise<ProofClassification> {
   const asset = await prisma.vault_assets.findUnique({
     where: { id: assetId },
@@ -97,7 +97,7 @@ export async function classifyProof(
 /**
  * Detect item type from asset metadata and content
  */
-function detectItemTypeFromAsset(asset: any): 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'UNKNOWN' {
+function detectItemTypeFromAsset(asset: any): 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES' | 'UNKNOWN' {
   const fileName = (asset.fileName || '').toLowerCase()
   const mimeType = asset.mimeType || ''
   const textContent = asset.textContent || ''
@@ -111,7 +111,7 @@ function detectItemTypeFromAsset(asset: any): 'PHYSICAL' | 'DIGITAL' | 'TICKETS'
     textContent.includes('venue') ||
     textContent.includes('seat')
   ) {
-    return 'TICKETS'
+    return 'OWNERSHIP_TRANSFER'
   }
 
   // Digital goods detection
@@ -128,7 +128,7 @@ function detectItemTypeFromAsset(asset: any): 'PHYSICAL' | 'DIGITAL' | 'TICKETS'
     if (textContent.includes('deliverable') || textContent.includes('completed')) {
       return 'SERVICES'
     }
-    return 'DIGITAL'
+    return 'DIGITAL_GOODS'
   }
 
   // Service detection

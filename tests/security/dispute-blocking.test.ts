@@ -63,7 +63,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
 
   describe('File Download Blocks "Never Received" Dispute', () => {
     it('should block "never received" dispute when file was downloaded', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       // Mock rift lookup
@@ -89,7 +89,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
     })
 
     it('should allow dispute for other reasons even if file was downloaded', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       vi.mocked(prisma.vault_events.findFirst).mockResolvedValue({
@@ -109,7 +109,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
 
   describe('Asset Open Blocks "Never Opened" Claim', () => {
     it('should provide proof that asset was opened when buyer claims "never opened"', async () => {
-      const rift = createTestRift({ itemType: 'TICKETS', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       // Mock that buyer opened asset

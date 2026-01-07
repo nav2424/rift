@@ -208,7 +208,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
             rift.seller.stripeConnectAccountId,
             riftId,
             undefined, // No milestone ID for full release
-            rift.stripeTransferId || null // Check for existing transfer (idempotency)
+            null // Check payout for existing transfer (idempotency handled in createRiftTransfer)
           )
         }
       }
@@ -253,13 +253,8 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     }
   )
 
-  // Store transfer ID if created
-  if (stripeTransferId) {
-    await prisma.riftTransaction.update({
-      where: { id: riftId },
-      data: { stripeTransferId },
-    })
-  }
+  // Transfer ID is stored in Payout record, not RiftTransaction
+  // No need to update RiftTransaction here
 
   // Schedule payout (for wallet withdrawals if transfer wasn't created)
   await schedulePayout(riftId, rift.sellerId, sellerNet, rift.currency)

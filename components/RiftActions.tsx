@@ -14,7 +14,7 @@ import { EscrowStatus } from '@prisma/client'
 interface RiftTransaction {
   id: string
   status: EscrowStatus
-  itemType?: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'LICENSE_KEYS'
+  itemType?: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
   subtotal?: number
   amount?: number
   buyerFee?: number
@@ -82,9 +82,9 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
   // Helper function to get seller proof button text based on item type
   const getSellerProofButtonText = (): string => {
     switch (rift.itemType) {
-      case 'DIGITAL':
+      case 'DIGITAL_GOODS':
         return 'Add File/PDF to Vault'
-      case 'TICKETS':
+      case 'OWNERSHIP_TRANSFER':
         return 'Add Ticket Proof to Vault'
       case 'SERVICES':
         return 'Add Completion Proof to Vault'

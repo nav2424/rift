@@ -18,7 +18,7 @@ describe('Idempotency and Double-Submit Safety', () => {
 
   describe('Proof Submission Idempotency', () => {
     it('should not create duplicate assets on identical proof submission', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const seller = createTestUser()
       const fileContent = Buffer.from('test file content')
       const fileHash = createHash('sha256').update(fileContent).digest('hex')
@@ -48,7 +48,7 @@ describe('Idempotency and Double-Submit Safety', () => {
     })
 
     it('should allow different proof submissions (different hash)', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PAID' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID' })
       const seller = createTestUser()
       const file1 = Buffer.from('file 1')
       const file2 = Buffer.from('file 2')
@@ -80,7 +80,7 @@ describe('Idempotency and Double-Submit Safety', () => {
 
   describe('Access Event Idempotency', () => {
     it('should not create duplicate access events on retry storms', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       const sessionId = 'session123'
       const assetId = 'asset1'
@@ -109,7 +109,7 @@ describe('Idempotency and Double-Submit Safety', () => {
     })
 
     it('should allow duplicate events if outside dedupe window', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       const sessionId = 'session123'
       const assetId = 'asset1'
@@ -141,7 +141,7 @@ describe('Idempotency and Double-Submit Safety', () => {
 
   describe('Download Endpoint Idempotency', () => {
     it('should handle concurrent download requests gracefully', async () => {
-      const rift = createTestRift({ itemType: 'DIGITAL', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
       const assetId = 'asset1'
 

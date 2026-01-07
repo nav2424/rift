@@ -130,7 +130,13 @@ export async function checkBalanceForTransfer(
 }> {
   const balance = await checkBalanceAvailability(amount, currency)
 
-  const result = {
+  const result: {
+    sufficient: boolean
+    available: number
+    required: number
+    shortfall: number
+    alert?: BalanceAlert
+  } = {
     sufficient: balance.sufficient,
     available: balance.available,
     required: amount,

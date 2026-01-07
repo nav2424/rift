@@ -27,7 +27,7 @@ export interface SmartRequirements {
  * Get adaptive thresholds based on live dispute rates
  */
 export async function getAdaptiveThresholds(
-  category: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES'
+  category: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
 ): Promise<AdaptiveThresholds> {
   // Calculate dispute rate for this category
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -73,8 +73,8 @@ export async function getAdaptiveThresholds(
   }
 
   // Category-specific adjustments
-  if (category === 'TICKETS') {
-    riskThreshold = Math.min(riskThreshold, 40) // Always stricter for tickets
+  if (category === 'OWNERSHIP_TRANSFER') {
+    riskThreshold = Math.min(riskThreshold, 40) // Always stricter for ownership transfer
     holdWindowDays = Math.max(holdWindowDays, 5)
     require3DS = true
   }
@@ -114,7 +114,7 @@ export async function getSmartRequirements(
   const recommendedFields: string[] = []
 
   // Type-specific requirements
-  if (rift.itemType === 'TICKETS') {
+  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
     mandatoryFields.push('eventDate', 'venue')
     recommendedFields.push('seatNumber', 'section')
   }
@@ -136,7 +136,7 @@ export async function getSmartRequirements(
   // Proof requirements
   const proofRequirements = {
     minAssets: rift.itemType === 'SERVICES' ? 2 : 1,
-    requiredTypes: rift.itemType === 'TICKETS' ? ['IMAGE', 'PDF'] :
+    requiredTypes: rift.itemType === 'OWNERSHIP_TRANSFER' ? ['IMAGE', 'PDF'] :
                    rift.itemType === 'SERVICES' ? ['IMAGE', 'TEXT', 'LINK'] :
                    ['ANY'],
   }
@@ -171,9 +171,8 @@ export async function calculateHoldWindow(
   }
 
   // Get adaptive thresholds
-  // Map LICENSE_KEYS to DIGITAL for getAdaptiveThresholds function
   const itemTypeForThresholds = rift.itemType
-  const thresholds = await getAdaptiveThresholds(itemTypeForThresholds as 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES')
+  const thresholds = await getAdaptiveThresholds(itemTypeForThresholds as 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES')
 
   // Calculate hold window
   let holdDays = thresholds.holdWindowDays
