@@ -248,6 +248,13 @@ img[alt="Rift"] {
   background-color: transparent !important;
 }
 
+/* Remove any black background from logo image - if PNG has black bg, invert dark colors */
+header img[alt="Rift"],
+nav img[alt="Rift"] {
+  mix-blend-mode: screen;
+  filter: contrast(1.1);
+}
+
 /* Ensure logo container matches navbar background */
 nav img[alt="Rift"],
 nav a[href*="/"] img[alt="Rift"],
