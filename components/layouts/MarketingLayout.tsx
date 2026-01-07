@@ -19,41 +19,55 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Top Navigation */}
-      <header className="fixed top-0 z-50 w-full">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="mt-4 flex h-14 items-center justify-between rounded-2xl glass glass-highlight px-4">
+      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link 
               href="/" 
-              className="flex items-center hover:opacity-80 transition-opacity bg-transparent [&_img]:bg-transparent [&_*]:bg-transparent"
-              style={{ background: 'transparent', backgroundColor: 'transparent' }}
+              className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <RiftLogo size="md" />
+              <RiftLogo size="sm" />
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8 text-sm text-white/60">
-              <Link href="/" className="hover:text-white transition">
+            <nav className="hidden md:flex items-center gap-1 text-sm">
+              <Link 
+                href="/" 
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+              >
                 Product
               </Link>
-              <Link href="/pricing" className="hover:text-white transition">
+              <Link 
+                href="/pricing" 
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+              >
                 Pricing
               </Link>
-              <Link href="/about" className="hover:text-white transition">
+              <Link 
+                href="/about" 
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+              >
                 About
               </Link>
               {session ? (
-                <Link href="/dashboard" className="hover:text-white transition">
+                <Link 
+                  href="/dashboard" 
+                  className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-2"
+                >
                   Dashboard
                 </Link>
               ) : (
                 <>
-                  <Link href="/auth/signin" className="hover:text-white transition">
+                  <Link 
+                    href="/auth/signin" 
+                    className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-4"
+                  >
                     Sign In
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
+                    className="ml-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition shadow-sm"
                   >
                     Create a Rift
                   </Link>
@@ -63,7 +77,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-white/80 hover:text-white transition-colors"
+              className="md:hidden p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
               aria-label="Menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +89,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="pt-28">{children}</main>
+      <main className="pt-24">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">
