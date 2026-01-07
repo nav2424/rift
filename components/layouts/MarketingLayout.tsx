@@ -27,7 +27,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
               href="/" 
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <RiftLogo size="sm" />
+              <RiftLogo size="md" />
             </Link>
 
             {/* Desktop Navigation */}
