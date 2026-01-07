@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
         { buyerId: userId },
         { sellerId: userId },
       ],
+      // Exclude invalid enum values (LICENSE_KEYS is no longer in the enum)
+      itemType: {
+        in: ['PHYSICAL', 'DIGITAL_GOODS', 'OWNERSHIP_TRANSFER', 'SERVICES'],
+      },
     }
 
     // Apply status filter
