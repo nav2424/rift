@@ -76,14 +76,14 @@ export default function Home() {
                 Process
               </span>
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
-            </div>
+        </div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-medium text-white mb-6 tracking-tight leading-tight">
               How it <span className="text-emerald-400/40">works</span>
-            </h2>
+          </h2>
             <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
               Five simple steps to secure any deal
-            </p>
-          </div>
+          </p>
+        </div>
 
           <div className="relative">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-6 lg:gap-10">
@@ -254,10 +254,10 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 )
-              }
+                }
             ].map((item, index) => (
               <div 
-                key={index} 
+              key={index} 
                 className={`group relative transition-all duration-300 ${
                   item.primary 
                     ? 'md:-mt-4 md:mb-4 rounded-2xl glass-soft glass-highlight p-8 border border-emerald-400/20 hover:border-emerald-400/30' 
@@ -277,47 +277,94 @@ export default function Home() {
                   item.primary ? 'text-white' : 'text-white/90'
                 }`}>
                   {item.title}
-                </div>
+        </div>
                 <div className={`leading-relaxed transition-colors ${
                   item.primary ? 'text-sm text-white/60' : 'text-sm text-white/55'
                 }`}>
                   {item.description}
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
+          ))}
+        </div>
+      </section>
 
         {/* Trust Layer Features */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
-          <div className="mb-20 text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
-              Trust layer features
+          <div className="mb-24 text-center">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
+              <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
+                Features
+              </span>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
+            </div>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-medium text-white mb-6 tracking-tight leading-tight">
+              Trust layer <span className="text-emerald-400/40">features</span>
           </h2>
+            <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
+              Built-in security, transparency, and control for every transaction
+          </p>
         </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+          {[
+            {
                 title: 'Private IDs',
                 description: 'No directory lookup. Counterparties identified by secure IDs only.',
-              },
-              {
+              icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              )
+            },
+            {
                 title: 'Audit trail',
                 description: 'Complete activity log with transparent status updates.',
-              },
-              {
+              icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              )
+            },
+            {
                 title: 'Vault submissions',
                 description: 'Secure proof storage with verification window and access controls.',
-              },
-              {
+              icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              )
+            },
+            {
                 title: 'Resolution controls',
                 description: 'Clear rules, structured issue submission, and admin review path.',
+              icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              )
             }
           ].map((item, index) => (
-              <div key={index} className="pb-6 border-b border-white/6">
-                <div className="text-white font-medium text-base mb-2">{item.title}</div>
-                <div className="text-sm text-white/60 leading-relaxed">{item.description}</div>
+              <div 
+              key={index} 
+                className="group rounded-2xl glass-soft p-6 border border-white/5 hover:border-white/10 hover:bg-white/[0.025] transition-all duration-300"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Icon */}
+                  <div className="flex-shrink-0 inline-flex items-center justify-center rounded-xl p-3 bg-white/5 text-white/60 group-hover:bg-emerald-400/10 group-hover:text-emerald-400/60 transition-all duration-300">
+                    {item.icon}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="text-white font-medium text-lg mb-2 group-hover:text-emerald-400/30 transition-colors">
+                      {item.title}
+                    </div>
+                    <div className="text-sm text-white/60 leading-relaxed">
+                      {item.description}
+                    </div>
+                  </div>
+                </div>
               </div>
           ))}
         </div>
