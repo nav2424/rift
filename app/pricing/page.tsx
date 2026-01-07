@@ -12,6 +12,7 @@ export default function Pricing() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [transactionAmount, setTransactionAmount] = useState('100')
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -344,16 +345,33 @@ export default function Pricing() {
           </div>
 
           <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <GlassCard key={index} className="p-6 lg:p-8 glass-highlight hover:bg-white/[0.02] transition-all">
-                <h3 className="text-lg font-medium text-white mb-3 group-hover:text-emerald-400/30 transition-colors">
-                  {faq.question}
-                </h3>
-                <p className="text-white/60 font-light text-sm leading-relaxed">
-                  {faq.answer}
-                </p>
-              </GlassCard>
-            ))}
+            {faqs.map((faq, index) => {
+              const isOpen = openFaqIndex === index
+              return (
+                <GlassCard key={index} className="glass-highlight overflow-hidden transition-all">
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                    className="w-full p-6 lg:p-8 text-left hover:bg-white/[0.02] transition-all flex items-start justify-between gap-4"
+                  >
+                    <h3 className="text-lg font-medium text-white flex-1 transition-colors group-hover:text-emerald-400/30">
+                      {faq.question}
+                    </h3>
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-lg glass-soft flex items-center justify-center text-white/60 transition-all duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-6 lg:px-8 pb-6 lg:pb-8 pt-0">
+                      <p className="text-white/60 font-light text-sm leading-relaxed">
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              )
+            })}
           </div>
         </section>
 
