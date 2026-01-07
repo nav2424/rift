@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -12,6 +12,7 @@ import Tabs from '@/components/ui/Tabs'
 export default function Pricing() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [transactionAmount, setTransactionAmount] = useState('100')
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -26,6 +27,13 @@ export default function Pricing() {
       </div>
     )
   }
+
+  // Calculate fees
+  const amount = parseFloat(transactionAmount) || 0
+  const buyerProcessingFee = amount * 0.03
+  const buyerTotal = amount + buyerProcessingFee
+  const sellerPlatformFee = amount * 0.05
+  const sellerReceives = amount - sellerPlatformFee
 
   const buyerCard = {
     title: 'Buyer',
@@ -154,6 +162,87 @@ export default function Pricing() {
               </Link>
             </GlassCard>
                   </div>
+        </section>
+
+        {/* Transaction Calculator */}
+        <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <GlassCard className="p-8 lg:p-12">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-light text-white mb-4">Transaction Calculator</h2>
+              <p className="text-white/60 font-light text-sm">
+                See exactly how much each party pays in a transaction
+              </p>
+            </div>
+
+            <div className="max-w-md mx-auto mb-8">
+              <label htmlFor="amount" className="block text-sm font-light text-white/80 mb-2">
+                Transaction Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60">$</span>
+                <input
+                  id="amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={transactionAmount}
+                  onChange={(e) => setTransactionAmount(e.target.value)}
+                  className="w-full pl-8 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 font-light"
+                  placeholder="100.00"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Buyer Breakdown */}
+              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                <h3 className="text-lg font-light text-white mb-4">Buyer Pays</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/60 font-light text-sm">Transaction amount</span>
+                    <span className="text-white font-light">${amount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/60 font-light text-sm">Processing fee (3%)</span>
+                    <span className="text-white font-light">${buyerProcessingFee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-white/10 pt-3 mt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-light">Total</span>
+                      <span className="text-xl font-light text-white">${buyerTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seller Breakdown */}
+              <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                <h3 className="text-lg font-light text-white mb-4">Seller Receives</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/60 font-light text-sm">Transaction amount</span>
+                    <span className="text-white font-light">${amount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/60 font-light text-sm">Platform fee (5%)</span>
+                    <span className="text-white font-light">-${sellerPlatformFee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-white/10 pt-3 mt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-light">Net payout</span>
+                      <span className="text-xl font-light text-white">${sellerReceives.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/10 text-center">
+              <p className="text-white/60 font-light text-sm">
+                Fees are calculated automatically. No hidden costs.
+              </p>
+            </div>
+          </GlassCard>
         </section>
 
         {/* Fee Explanation */}
