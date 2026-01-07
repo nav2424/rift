@@ -98,7 +98,7 @@ export default function Pricing() {
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
             {/* Buyer Card */}
-            <GlassCard className="p-8">
+            <GlassCard className="p-8 glass-highlight">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-light text-white mb-2">{buyerCard.title}</h3>
                 <p className="text-white/60 font-light text-sm mb-6">{buyerCard.description}</p>
@@ -129,7 +129,7 @@ export default function Pricing() {
             </GlassCard>
 
             {/* Seller Card */}
-            <GlassCard className="p-8 relative border-white/20 bg-white/5">
+            <GlassCard className="p-8 glass-highlight relative border-white/20">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-light text-white mb-2">{sellerCard.title}</h3>
                 <p className="text-white/60 font-light text-sm mb-6">{sellerCard.description}</p>
