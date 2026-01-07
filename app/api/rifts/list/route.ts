@@ -50,7 +50,14 @@ export async function GET(request: NextRequest) {
 
     // Apply item type filter
     if (itemType) {
-      whereClause.itemType = itemType
+      // Map legacy LICENSE_KEYS to DIGITAL_GOODS, or filter it out if invalid
+      const validItemTypes = ['PHYSICAL', 'DIGITAL_GOODS', 'OWNERSHIP_TRANSFER', 'SERVICES']
+      if (itemType === 'LICENSE_KEYS') {
+        whereClause.itemType = 'DIGITAL_GOODS' // Map legacy value
+      } else if (validItemTypes.includes(itemType)) {
+        whereClause.itemType = itemType
+      }
+      // If invalid itemType, it will be filtered out by the base filter above
     }
 
     // Apply search query (search in item title, description, or rift number)
