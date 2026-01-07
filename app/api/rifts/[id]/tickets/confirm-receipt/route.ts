@@ -9,7 +9,7 @@ import { transitionRiftState } from '@/lib/rift-state'
 
 /**
  * POST /api/rifts/[id]/tickets/confirm-receipt
- * Buyer confirms ticket receipt in their official ticketing app/account
+ * Buyer confirms ownership transfer receipt
  */
 export async function POST(
   request: NextRequest,
@@ -43,10 +43,10 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Verify category is tickets
-    if (rift.itemType !== 'TICKETS') {
+    // Verify category is ownership transfer
+    if (rift.itemType !== 'OWNERSHIP_TRANSFER') {
       return NextResponse.json(
-        { error: 'This endpoint is only for tickets' },
+        { error: 'This endpoint is only for ownership transfers' },
         { status: 400 }
       )
     }

@@ -7,7 +7,7 @@ import { RiftEventActorType } from '@prisma/client'
 
 /**
  * POST /api/rifts/[id]/tickets/claim-transfer-sent
- * Seller claims ticket transfer has been sent
+ * Seller claims ownership transfer has been sent
  */
 export async function POST(
   request: NextRequest,
@@ -44,10 +44,10 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Verify category is tickets
-    if (rift.itemType !== 'TICKETS') {
+    // Verify category is ownership transfer
+    if (rift.itemType !== 'OWNERSHIP_TRANSFER') {
       return NextResponse.json(
-        { error: 'This endpoint is only for tickets' },
+        { error: 'This endpoint is only for ownership transfers' },
         { status: 400 }
       )
     }
