@@ -87,7 +87,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-16">{children}</main>
+      <main>{children}</main>
     </div>
   )
 }
