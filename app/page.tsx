@@ -226,7 +226,7 @@ export default function Home() {
                   {item.icon}
                 </div>
                 <div className="text-white font-medium">{item.title}</div>
-                <p className="mt-2 text-sm text-white/55 leading-relaxed">
+                <div className="mt-2 text-sm text-white/55 leading-relaxed">
                   {item.description}
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function Home() {
                   {item.icon}
                 </div>
                 <div className="text-white font-medium">{item.title}</div>
-                <p className="mt-2 text-sm text-white/55 leading-relaxed">
+                <div className="mt-2 text-sm text-white/55 leading-relaxed">
                   {item.description}
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function Home() {
                 <div>
                   <p className="text-white/80 font-light mb-2 italic">
                     "Rift transformed how we handle client payments. The verification process gives everyone confidence, and disputes are resolved quickly."
-                  </div>
+                  </p>
                   <p className="text-white/50 font-light text-sm">— Creator, Digital Services</p>
                 </div>
               </div>
