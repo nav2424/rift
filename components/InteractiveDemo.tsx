@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import GlassCard from './ui/GlassCard'
 import PremiumButton from './ui/PremiumButton'
 
 interface DemoStep {
