@@ -253,10 +253,15 @@ header img[alt="Rift"],
 nav img[alt="Rift"] {
   background: transparent !important;
   background-color: transparent !important;
-  /* If logo has black background, use mix-blend-mode to remove it */
+}
+
+/* Alternative approach: if logo has black background, try these filters */
+header a[href="/"] img[alt="Rift"],
+nav a[href="/"] img[alt="Rift"] {
+  /* Option 1: Use mix-blend-mode to blend out black */
   mix-blend-mode: screen;
-  /* Alternative: invert colors to make black transparent */
-  /* filter: invert(1); */
+  /* Option 2: If mix-blend-mode doesn't work, try brightness/contrast */
+  /* filter: brightness(1.2) contrast(1.1); */
 }
 
 /* Ensure logo container matches navbar background */
