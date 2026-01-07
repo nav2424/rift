@@ -6,7 +6,7 @@ import VaultAssetsViewer from './VaultAssetsViewer'
 
 interface DeliveryStatusProps {
   riftId: string
-  itemType: 'PHYSICAL' | 'DIGITAL' | 'TICKETS' | 'SERVICES' | 'LICENSE_KEYS'
+  itemType: 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'
   status: string
 }
 
