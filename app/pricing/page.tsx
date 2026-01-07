@@ -31,8 +31,8 @@ export default function Pricing() {
     {
       name: 'Personal',
       description: 'For casual deals',
-      protectionFee: '3%',
-      processingFee: '3%',
+      buyerFee: '3%',
+      sellerFee: '5%',
       features: [
         'Standard verification window',
         'Basic vault storage',
@@ -44,8 +44,8 @@ export default function Pricing() {
     {
       name: 'Pro',
       description: 'For creators and power sellers',
-      protectionFee: '3%',
-      processingFee: '3%',
+      buyerFee: '3%',
+      sellerFee: '5%',
       features: [
         'Extended verification window',
         'Enhanced vault storage',
@@ -58,8 +58,8 @@ export default function Pricing() {
     {
       name: 'Business',
       description: 'For agencies and teams',
-      protectionFee: '3%',
-      processingFee: '3%',
+      buyerFee: '3%',
+      sellerFee: '5%',
       features: [
         'Extended verification window',
         'Unlimited vault storage',
@@ -124,14 +124,20 @@ export default function Pricing() {
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-light text-white mb-2">{tier.name}</h3>
                   <p className="text-white/60 font-light text-sm mb-6">{tier.description}</p>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div>
-                      <span className="text-3xl font-light text-white">Protection fee: </span>
-                      <span className="text-3xl font-light text-white">{tier.protectionFee}</span>
+                      <div className="text-sm text-white/60 font-light mb-1">Buyer pays</div>
+                      <div className="text-2xl font-light text-white">
+                        <span className="text-white">{tier.buyerFee}</span>
+                        <span className="text-sm text-white/60 font-light ml-2">payment processing</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-sm text-white/60 font-light">Processing fee: </span>
-                      <span className="text-sm text-white/60 font-light">{tier.processingFee}</span>
+                    <div className="border-t border-white/10 pt-3">
+                      <div className="text-sm text-white/60 font-light mb-1">Seller pays</div>
+                      <div className="text-2xl font-light text-white">
+                        <span className="text-white">{tier.sellerFee}</span>
+                        <span className="text-sm text-white/60 font-light ml-2">platform fee</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -168,17 +174,17 @@ export default function Pricing() {
             </div>
             <div className="space-y-6 text-white/70 font-light text-sm">
               <div>
-                <h3 className="text-white font-light mb-2">Protection fee (3%)</h3>
+                <h3 className="text-white font-light mb-2">Payment processing fee (3% - paid by buyer)</h3>
                 <p className="text-white/60">
-                  Covers platform services, dispute resolution, fraud prevention, and secure fund holding. 
-                  This fee ensures your transaction is protected from start to finish.
+                  Covers payment processing costs, card network fees, and payment provider charges. 
+                  This is standard for all card transactions and is paid by the buyer when they secure funds.
                 </p>
               </div>
               <div>
-                <h3 className="text-white font-light mb-2">Processing fee (3%)</h3>
+                <h3 className="text-white font-light mb-2">Platform fee (5% - paid by seller)</h3>
                 <p className="text-white/60">
-                  Covers payment processing costs, card network fees, and payment provider charges. 
-                  This is standard for all card transactions.
+                  Covers platform services, dispute resolution, fraud prevention, secure fund holding, and Vault storage. 
+                  This fee is deducted from the seller's payout when funds are released.
                 </p>
               </div>
               <div className="pt-6 border-t border-white/10">
