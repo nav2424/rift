@@ -603,7 +603,7 @@ export default function RiftDetailPage() {
               </GlassCard>
 
               {/* Delivery Status */}
-              {(rift.itemType === 'DIGITAL' || rift.itemType === 'TICKETS' || rift.itemType === 'SERVICES') && (
+              {(rift.itemType === 'DIGITAL_GOODS' || rift.itemType === 'OWNERSHIP_TRANSFER' || rift.itemType === 'SERVICES') && (
                 <DeliveryStatus
                   riftId={rift.id}
                   itemType={rift.itemType}

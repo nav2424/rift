@@ -42,7 +42,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    if (rift.itemType !== 'DIGITAL') {
+    if (rift.itemType !== 'DIGITAL_GOODS') {
       return NextResponse.json(
         { error: 'This endpoint is only for digital goods' },
         { status: 400 }

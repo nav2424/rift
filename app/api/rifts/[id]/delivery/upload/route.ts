@@ -42,7 +42,7 @@ export async function POST(
     }
 
     // Verify category is digital goods
-    if (rift.itemType !== 'DIGITAL') {
+    if (rift.itemType !== 'DIGITAL_GOODS') {
       return NextResponse.json(
         { error: 'This endpoint is only for digital goods' },
         { status: 400 }

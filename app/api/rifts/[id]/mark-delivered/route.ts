@@ -65,8 +65,8 @@ export async function POST(
     // REQUIRE proof file upload - sellers cannot just mark as delivered without proof
     if (!file || file.size === 0) {
       const proofType = 
-        rift.itemType === 'DIGITAL' ? 'proof of digital product transfer (screenshot, license key, etc.)' :
-        rift.itemType === 'TICKETS' ? 'proof of ticket transfer (screenshot of transfer confirmation, email, etc.)' :
+        rift.itemType === 'DIGITAL_GOODS' ? 'proof of digital goods transfer (screenshot, license key, etc.)' :
+        rift.itemType === 'OWNERSHIP_TRANSFER' ? 'proof of ownership transfer (screenshot of transfer confirmation, email, etc.)' :
         'proof of service completion (photos, completion certificate, etc.)'
       
       return NextResponse.json(
@@ -79,14 +79,14 @@ export async function POST(
 
     // Verify that delivery information is present
     const hasDeliveryInfo = 
-      (rift.itemType === 'DIGITAL' && rift.downloadLink) ||
-      (rift.itemType === 'TICKETS' && rift.transferMethod) ||
+      (rift.itemType === 'DIGITAL_GOODS' && rift.downloadLink) ||
+      (rift.itemType === 'OWNERSHIP_TRANSFER' && rift.transferMethod) ||
       (rift.itemType === 'SERVICES' && rift.serviceDate)
 
     if (!hasDeliveryInfo) {
       return NextResponse.json(
         { 
-          error: `Missing delivery information. ${rift.itemType === 'DIGITAL' ? 'Download link' : rift.itemType === 'TICKETS' ? 'Transfer method' : 'Service date'} is required.` 
+          error: `Missing delivery information. ${rift.itemType === 'DIGITAL_GOODS' ? 'Download link' : rift.itemType === 'OWNERSHIP_TRANSFER' ? 'Transfer method' : 'Service date'} is required.` 
         },
         { status: 400 }
       )
@@ -149,9 +149,9 @@ export async function POST(
     // Create timeline event
     const itemTypeName = rift.itemType.toLowerCase()
     const deliveryMessage = 
-      rift.itemType === 'DIGITAL' 
-        ? `Digital product delivered with proof. Funds will auto-release on ${gracePeriodEndsAt.toLocaleString()} unless buyer raises a dispute.` 
-        : rift.itemType === 'TICKETS' 
+      rift.itemType === 'DIGITAL_GOODS' 
+        ? `Digital goods delivered with proof. Funds will auto-release on ${gracePeriodEndsAt.toLocaleString()} unless buyer raises a dispute.` 
+        : rift.itemType === 'OWNERSHIP_TRANSFER' 
         ? `Tickets transferred with proof. Funds will auto-release on ${gracePeriodEndsAt.toLocaleString()} unless buyer raises a dispute.` 
         : `Service completed with proof. Funds will auto-release on ${gracePeriodEndsAt.toLocaleString()} unless buyer raises a dispute.`
 
