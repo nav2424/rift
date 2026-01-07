@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
+import StatusPill from '@/components/ui/StatusPill'
 import { subscribeToUserConversations } from '@/lib/realtime-messaging'
 import { useToast } from '@/components/ui/Toast'
 
@@ -259,9 +261,11 @@ export default function MessagesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading conversations...</div>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-white/60 font-light">Loading conversations...</div>
+        </div>
+      </AppLayout>
     )
   }
 
@@ -270,18 +274,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+    <AppLayout>
+      <div className="space-y-8">
         {/* Header */}
         <div className="mb-10 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4 mb-3">
@@ -400,12 +394,7 @@ export default function MessagesPage() {
                           </div>
                           
                           <div className="flex items-center gap-4 flex-wrap">
-                            {conv.transactionStatus && (
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-light border ${statusColors.bg} ${statusColors.text}`}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${statusColors.dot}`} />
-                                {getStatusLabel(conv.transactionStatus)}
-                              </span>
-                            )}
+                            {conv.transactionStatus && <StatusPill status={conv.transactionStatus} />}
                             {conv.lastMessage ? (
                               <span className={`text-sm font-light ${
                                 isLastMessageMine ? 'text-white/60' : 'text-white/70'
@@ -434,6 +423,6 @@ export default function MessagesPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   )
 }

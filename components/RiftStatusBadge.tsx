@@ -1,10 +1,10 @@
 import { EscrowStatus } from '@prisma/client'
 
-interface EscrowStatusBadgeProps {
+interface RiftStatusBadgeProps {
   status: EscrowStatus
 }
 
-export default function EscrowStatusBadge({ status }: EscrowStatusBadgeProps) {
+export default function RiftStatusBadge({ status }: RiftStatusBadgeProps) {
   const statusConfig: Record<string, { label: string; color: string }> = {
     DRAFT: { label: 'Draft', color: 'bg-white/5 text-white/60 border-white/10' },
     FUNDED: { label: 'Paid', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' }, // Paid - Blue

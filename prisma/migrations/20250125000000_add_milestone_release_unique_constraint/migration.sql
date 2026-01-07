@@ -22,3 +22,4 @@ ALTER TABLE "MilestoneRelease"
 ADD CONSTRAINT "MilestoneRelease_riftId_milestoneIndex_key" 
 UNIQUE ("riftId", "milestoneIndex");
 
+

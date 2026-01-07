@@ -23,7 +23,7 @@ interface RiftTransaction {
   allowsPartialRelease?: boolean
 }
 
-interface EscrowActionsProps {
+interface RiftActionsProps {
   rift: RiftTransaction
   currentUserRole: 'BUYER' | 'SELLER' | 'ADMIN'
   userId: string
@@ -31,7 +31,7 @@ interface EscrowActionsProps {
   isSeller?: boolean // Explicit seller flag
 }
 
-export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, isSeller }: EscrowActionsProps) {
+export default function RiftActions({ rift, currentUserRole, userId, isBuyer, isSeller }: RiftActionsProps) {
   const router = useRouter()
   const { showToast } = useToast()
   const [loading, setLoading] = useState<string | null>(null)
@@ -43,11 +43,11 @@ export default function EscrowActions({ rift, currentUserRole, userId, isBuyer, 
   const userIsSeller = isSeller !== undefined ? isSeller : currentUserRole === 'SELLER'
 
   // Debug logging
-  console.log('EscrowActions render:', {
+  console.log('RiftActions render:', {
     status: rift.status,
     currentUserRole,
     userId,
-    escrowId: rift.id,
+    riftId: rift.id,
     isBuyer: userIsBuyer,
     isSeller: userIsSeller
   })

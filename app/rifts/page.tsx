@@ -4,7 +4,10 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
+import StatusPill from '@/components/ui/StatusPill'
+import EmptyState from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
 import { Skeleton, SkeletonList } from '@/components/ui/Skeleton'
 
@@ -193,8 +196,8 @@ export default function AllRiftsPage() {
 
   if (status === 'loading' || (loading && rifts.length === 0)) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
+      <AppLayout>
+        <div className="space-y-8">
           <div className="mb-8">
             <Skeleton variant="rectangular" width={200} height={40} className="mb-4" />
             <Skeleton variant="text" width={300} height={24} />
@@ -206,7 +209,7 @@ export default function AllRiftsPage() {
           </div>
           <SkeletonList count={5} />
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
@@ -215,18 +218,8 @@ export default function AllRiftsPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+    <AppLayout>
+      <div className="space-y-8">
         {/* Header */}
         <div className="mb-10 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4 mb-3">
@@ -300,21 +293,21 @@ export default function AllRiftsPage() {
 
         {/* Rifts List */}
         {!loading && filteredRifts.length === 0 ? (
-          <GlassCard variant="strong" className="overflow-hidden">
-            <div className="p-16 text-center">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10">
-                <svg className="w-12 h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-light text-white mb-3">No rifts found</h3>
-              <p className="text-white/50 font-light">
-                {searchQuery ? 'Try a different search query' : filter === 'all' 
-                  ? 'You don\'t have any transactions yet'
-                  : `No ${filter} rifts at the moment`}
-              </p>
-            </div>
-          </GlassCard>
+          <EmptyState
+            icon={
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            }
+            title="No rifts found"
+            description={searchQuery ? 'Try a different search query' : filter === 'all' 
+              ? 'You don\'t have any transactions yet'
+              : `No ${filter} rifts at the moment`}
+            action={filter === 'all' ? {
+              label: 'Create a Rift',
+              href: '/rifts/new'
+            } : undefined}
+          />
         ) : (
           <div className="space-y-6">
             {filteredRifts.map((rift) => {
@@ -346,9 +339,7 @@ export default function AllRiftsPage() {
                           </div>
                           
                           <div className="flex items-center gap-4 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-light border ${getStatusColor(rift.status).bg} ${getStatusColor(rift.status).border} ${getStatusColor(rift.status).text}`}>
-                              {getStatusLabel(rift.status)}
-                            </span>
+                            <StatusPill status={rift.status} />
                             <span className="text-white/60 font-light text-sm">
                               {rift.itemType.replace(/_/g, ' ')}
                             </span>
@@ -391,7 +382,7 @@ export default function AllRiftsPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   )
 }
 

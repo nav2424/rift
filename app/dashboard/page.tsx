@@ -4,8 +4,11 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import WalletCard from '@/components/WalletCard'
+import StatusPill from '@/components/ui/StatusPill'
+import EmptyState from '@/components/ui/EmptyState'
 import { subscribeToUserRifts } from '@/lib/realtime-rifts'
 import { useToast } from '@/components/ui/Toast'
 
@@ -354,18 +357,8 @@ export default function Dashboard() {
                    new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12" data-onboarding="dashboard">
+    <AppLayout>
+      <div className="space-y-8" data-onboarding="dashboard">
         {/* Enhanced Header */}
         <div className="mb-8 relative">
           {/* Top Right Actions - Positioned at top right of header */}
@@ -705,9 +698,7 @@ export default function Dashboard() {
                               <h3 className="text-lg font-light text-white truncate">
                                 Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                               </h3>
-                              <span className={`text-xs px-2 py-1 rounded-lg border ${getStatusColor(rift.status)} border-current/30 bg-current/10 flex-shrink-0 font-light`}>
-                                {getStatusLabel(rift.status)}
-                              </span>
+                              <StatusPill status={rift.status} />
                             </div>
                             <p className="text-base text-white/90 font-light truncate mb-1.5">{rift.itemTitle}</p>
                             <p className="text-sm text-white/50 font-light truncate">
@@ -737,6 +728,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

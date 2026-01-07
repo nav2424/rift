@@ -4,7 +4,10 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
+import StatusPill from '@/components/ui/StatusPill'
+import EmptyState from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
 
 interface RiftTransaction {
@@ -294,9 +297,11 @@ export default function ActivityPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-white/60 font-light">Loading...</div>
+        </div>
+      </AppLayout>
     )
   }
 
@@ -305,18 +310,8 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+    <AppLayout>
+      <div className="space-y-8">
         {/* Header */}
         <div className="mb-10 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4 mb-3">
@@ -325,12 +320,21 @@ export default function ActivityPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-1">
                 Recent Activity
               </h1>
               <p className="text-white/50 font-light text-sm">All your transaction activity</p>
             </div>
+            <Link 
+              href="/api/rifts/export"
+              className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 border border-white/20 text-white/80 font-light flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Export CSV</span>
+            </Link>
           </div>
         </div>
 
@@ -370,19 +374,19 @@ export default function ActivityPage() {
 
         {/* Activity List */}
         {getAllActivity.length === 0 ? (
-          <GlassCard variant="strong" className="overflow-hidden">
-            <div className="p-16 text-center">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10">
-                <svg className="w-12 h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-light text-white mb-3">No activity found</h3>
-              <p className="text-white/50 font-light">
-                {searchQuery ? 'Try a different search query' : 'You don\'t have any transactions yet'}
-              </p>
-            </div>
-          </GlassCard>
+          <EmptyState
+            icon={
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            title="No activity found"
+            description={searchQuery ? 'Try a different search query' : 'You don\'t have any transactions yet'}
+            action={!searchQuery ? {
+              label: 'Create a Rift',
+              href: '/rifts/new'
+            } : undefined}
+          />
         ) : (
           <div className="space-y-6">
             {getAllActivity.map((activity) => {
@@ -406,10 +410,7 @@ export default function ActivityPage() {
                           </div>
                           
                           <div className="flex items-center gap-4 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-light border ${statusColors.bg} ${statusColors.border} ${statusColors.text}`}>
-                              {getStatusIcon(activity.status)}
-                              {activity.status ? (activity.status === 'FUNDED' ? 'Paid' : activity.status.replace(/_/g, ' ')) : 'Active'}
-                            </span>
+                            {activity.status && <StatusPill status={activity.status} />}
                             {activity.amount !== null && activity.amount !== undefined && (
                               <span className="text-white/70 font-light text-sm font-mono">
                                 {formatCurrency(activity.amount, activity.currency || 'CAD')}
@@ -426,7 +427,7 @@ export default function ActivityPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   )
 }
 

@@ -216,3 +216,4 @@ Consider creating a dashboard page at `/admin/stripe-balance` that:
 - Shows balance trends over time
 - Allows threshold configuration
 
+

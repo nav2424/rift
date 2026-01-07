@@ -16,7 +16,7 @@ import DisputeWizard from '@/components/DisputeWizard'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 
-type EscrowStatus = 
+type RiftStatus = 
   | 'DRAFT'
   | 'FUNDED'
   | 'PROOF_SUBMITTED'
@@ -46,7 +46,7 @@ interface RiftTransaction {
   sellerFee: number
   sellerNet?: number
   currency: string
-  status: EscrowStatus
+  status: RiftStatus
   buyerId: string
   sellerId: string
   shippingAddress?: string | null
@@ -66,7 +66,7 @@ interface RiftTransaction {
   }
   timelineEvents: Array<{
     id: string
-    escrowId: string
+    riftId: string
     type: string
     message: string
     createdById: string | null
@@ -603,10 +603,10 @@ export default function RiftDetailPage() {
               </GlassCard>
 
               {/* Delivery Status */}
-              {(rift.itemType === 'DIGITAL_GOODS' || rift.itemType === 'OWNERSHIP_TRANSFER' || rift.itemType === 'SERVICES') && (
+              {(['DIGITAL_GOODS', 'OWNERSHIP_TRANSFER', 'SERVICES'].includes(rift.itemType as string)) && (
                 <DeliveryStatus
                   riftId={rift.id}
-                  itemType={rift.itemType}
+                  itemType={rift.itemType as 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SERVICES'}
                   status={rift.status}
                 />
               )}
