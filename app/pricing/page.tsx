@@ -124,11 +124,6 @@ export default function Pricing() {
 
             {/* Seller Card */}
             <GlassCard className="p-8 relative border-white/20 bg-white/5">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="px-4 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-light">
-                  Most Popular
-                </span>
-                  </div>
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-light text-white mb-2">{sellerCard.title}</h3>
                 <p className="text-white/60 font-light text-sm mb-6">{sellerCard.description}</p>
