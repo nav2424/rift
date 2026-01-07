@@ -39,19 +39,59 @@ function SignInForm() {
       })
 
       if (result?.error) {
+        // Sign-in failed - check if it's due to verification requirements
+        // We'll check verification status to provide helpful error messages
+        try {
+          const verificationResponse = await fetch('/api/auth/check-verification-by-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: formData.email }),
+          })
+
+          if (verificationResponse.ok) {
+            const verificationData = await verificationResponse.json()
+            
+            // Only show verification errors if we can confirm the account exists
+            // and credentials might be correct (NextAuth returns null for both wrong password and unverified)
+            if (!verificationData.allVerified) {
+              if (!verificationData.emailVerified && !verificationData.phoneVerified) {
+                setError('Email and phone not verified. Please verify both to access the platform.')
+                setLoading(false)
+                return
+              } else if (!verificationData.emailVerified) {
+                setError('Email not verified. Please verify your email address to access the platform.')
+                setLoading(false)
+                return
+              } else if (!verificationData.phoneVerified) {
+                setError('Phone not verified. Please verify your phone number to access the platform.')
+                setLoading(false)
+                return
+              }
+            }
+          }
+        } catch (verificationError) {
+          console.error('Error checking verification:', verificationError)
+          // Fall through to generic error if verification check fails
+        }
+
+        // Default to generic error message for security (don't reveal if account exists)
         setError('Invalid email or password')
         setLoading(false)
-      } else {
-        // Redirect on success
-        const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
-        router.push(callbackUrl)
-        router.refresh()
+        return
       }
+
+      // Redirect on success
+      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+      router.push(callbackUrl)
+      router.refresh()
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.')
       setLoading(false)
     }
   }
+
+  const registered = searchParams?.get('registered')
+  const passwordReset = searchParams?.get('passwordReset')
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 pt-24 pb-16">
@@ -78,6 +118,28 @@ function SignInForm() {
 
         {/* Form Card */}
         <GlassCard className="p-8 lg:p-10 glass-highlight">
+          {registered && (
+            <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-emerald-400 text-sm font-light">Account created successfully! Please sign in.</p>
+              </div>
+            </div>
+          )}
+
+          {passwordReset && (
+            <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-emerald-400 text-sm font-light">Password reset successfully! Please sign in with your new password.</p>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
               <div className="flex items-center gap-2">
