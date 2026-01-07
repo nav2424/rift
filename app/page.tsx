@@ -79,11 +79,6 @@ export default function Home() {
         </div>
 
           <div className="relative">
-            {/* Animated connector line - desktop only */}
-            <div className="hidden lg:block absolute top-24 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent animate-pulse" />
-                </div>
-
             <div className="grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-6 lg:gap-10">
               {[
                 { 
@@ -138,15 +133,6 @@ export default function Home() {
                 }
               ].map((item, index) => (
                 <div key={item.step} className="relative text-center md:text-left group">
-                  {/* Animated connector dots - desktop only */}
-                  {index < 4 && (
-                    <>
-                      <div className="hidden lg:block absolute top-24 left-full w-full h-[2px] bg-gradient-to-r from-emerald-400/20 via-emerald-400/30 to-emerald-400/20" style={{ width: 'calc(100% + 1rem)', transform: 'translateX(-50%)' }}>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent animate-pulse" />
-                      </div>
-                      <div className="hidden lg:block absolute top-[95px] right-[-16px] w-3 h-3 rounded-full bg-emerald-400/30 group-hover:bg-emerald-400/60 transition-all duration-300 shadow-lg shadow-emerald-400/20 group-hover:shadow-emerald-400/40 group-hover:scale-125" />
-                    </>
-                  )}
                   
                   {/* Icon container with glow effect */}
                   <div className="relative mb-6 flex justify-center md:justify-start">
