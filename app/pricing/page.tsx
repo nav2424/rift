@@ -77,7 +77,7 @@ export default function Pricing() {
     },
     {
       question: 'What types of deals are supported?',
-      answer: 'Rift supports digital goods (usernames, licenses, files), tickets (digital transfer), services (milestone-based work), and physical items with proof of shipment.',
+      answer: 'Rift supports digital goods (usernames, licenses, files), ownership transfer (digital transfer with ownership verification), and services (milestone-based work).',
     },
   ]
 
