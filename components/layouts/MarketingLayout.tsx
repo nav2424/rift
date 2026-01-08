@@ -89,7 +89,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="pt-24">{children}</main>
+      <main className="pt-20">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">

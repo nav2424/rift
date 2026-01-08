@@ -93,7 +93,7 @@ function SignInForm() {
   const passwordReset = searchParams?.get('passwordReset')
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 py-24">
+    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 pt-12 pb-24">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-12">

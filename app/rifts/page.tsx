@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import StatusPill from '@/components/ui/StatusPill'
 import EmptyState from '@/components/ui/EmptyState'
@@ -39,6 +38,7 @@ type RiftFilter = 'all' | 'active' | 'completed' | 'cancelled'
 export default function AllRiftsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { showToast } = useToast()
   const [rifts, setRifts] = useState<RiftTransaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,6 +47,12 @@ export default function AllRiftsPage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal] = useState(0)
+
+  // Sync search query with URL params
+  useEffect(() => {
+    const searchParam = searchParams.get('search') || ''
+    setSearchQuery(searchParam)
+  }, [searchParams])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -59,6 +65,7 @@ export default function AllRiftsPage() {
     }
   }, [status, router])
 
+  // Reload rifts when filter or search query changes
   useEffect(() => {
     if (status === 'authenticated') {
       loadRifts(1)
@@ -112,7 +119,9 @@ export default function AllRiftsPage() {
           setHasMore(false)
         }
       } else {
-        showToast('Failed to load rifts. Please try again.', 'error')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('API error response:', response.status, errorData)
+        showToast(errorData.details || 'Failed to load rifts. Please try again.', 'error')
       }
     } catch (error) {
       console.error('Error loading rifts:', error)
@@ -196,20 +205,18 @@ export default function AllRiftsPage() {
 
   if (status === 'loading' || (loading && rifts.length === 0)) {
     return (
-      <AppLayout>
-        <div className="space-y-8">
-          <div className="mb-8">
-            <Skeleton variant="rectangular" width={200} height={40} className="mb-4" />
-            <Skeleton variant="text" width={300} height={24} />
-          </div>
-          <div className="mb-6 flex gap-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} variant="rectangular" width={80} height={36} className="rounded-xl" />
-            ))}
-          </div>
-          <SkeletonList count={5} />
+      <div className="space-y-8">
+        <div className="mb-8">
+          <Skeleton variant="rectangular" width={200} height={40} className="mb-4" />
+          <Skeleton variant="text" width={300} height={24} />
         </div>
-      </AppLayout>
+        <div className="mb-6 flex gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} variant="rectangular" width={80} height={36} className="rounded-xl" />
+          ))}
+        </div>
+        <SkeletonList count={5} />
+      </div>
     )
   }
 
@@ -218,8 +225,7 @@ export default function AllRiftsPage() {
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Header */}
         <div className="mb-10 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4 mb-3">
@@ -285,7 +291,19 @@ export default function AllRiftsPage() {
               type="text"
               placeholder="Search by Rift number, item title, or user..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setSearchQuery(value)
+                // Update URL params to sync with AppLayout search bar
+                const params = new URLSearchParams(searchParams.toString())
+                if (value.trim()) {
+                  params.set('search', value.trim())
+                } else {
+                  params.delete('search')
+                }
+                const newUrl = params.toString() ? `/rifts?${params.toString()}` : '/rifts'
+                router.push(newUrl, { scroll: false })
+              }}
               className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200"
             />
           </div>
@@ -382,7 +400,6 @@ export default function AllRiftsPage() {
           </div>
         )}
       </div>
-    </AppLayout>
   )
 }
 

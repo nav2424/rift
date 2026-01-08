@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import WalletCard from '@/components/WalletCard'
 import StatusPill from '@/components/ui/StatusPill'
@@ -357,8 +356,7 @@ export default function Dashboard() {
                    new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <AppLayout>
-      <div className="space-y-8" data-onboarding="dashboard">
+    <div className="space-y-8" data-onboarding="dashboard">
         {/* Enhanced Header */}
         <div className="mb-8 relative">
           {/* Top Right Actions - Positioned at top right of header */}
@@ -728,6 +726,5 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </AppLayout>
   )
 }

@@ -13,10 +13,10 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950'
+  const baseStyles = 'font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950'
   
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-white/10 hover:bg-white/15 border border-white/20 text-white font-light',
     secondary: 'bg-slate-700 text-white hover:bg-slate-600 focus:ring-slate-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     outline: 'border border-slate-600 text-slate-200 hover:bg-slate-800 focus:ring-slate-500',

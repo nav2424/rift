@@ -219,7 +219,7 @@ export default function Home() {
               Built for every <span className="text-emerald-400/40">deal</span>
             </h2>
             <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
-              Secure transactions across digital goods, tickets, and services
+              Secure transactions across digital goods, ownership transfers, and services
             </p>
           </div>
 
@@ -227,60 +227,46 @@ export default function Home() {
             {[
               {
                 title: 'Digital Goods',
-                description: 'Usernames, licenses, files, and digital assets',
-                primary: false,
+                description: 'Software, licenses, downloads, and digital assets',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 )
               },
               {
-                title: 'Tickets',
-                description: 'Digital transfer with ownership verification and instant release.',
-                primary: true,
+                title: 'Ownership Transfer',
+                description: 'Assets that require verified transfer with confirmation and protection.',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                 )
               },
               {
                 title: 'Services',
-                description: 'Milestone-based work and deliverables',
-                primary: false,
+                description: 'Consulting, freelance work, and milestone-based deliverables',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 )
                 }
             ].map((item, index) => (
               <div 
               key={index} 
-                className={`group relative transition-all duration-300 ${
-                  item.primary 
-                    ? 'md:-mt-4 md:mb-4 rounded-2xl glass-soft glass-highlight p-8 border border-emerald-400/20 hover:border-emerald-400/30' 
-                    : 'rounded-2xl glass-soft p-6 border border-white/5 hover:border-white/10 hover:bg-white/[0.025]'
-                }`}
+                className="group relative transition-all duration-300 rounded-2xl glass-soft p-6 md:p-8 border border-white/5 hover:border-emerald-400/30 hover:bg-white/[0.025] hover:shadow-lg hover:shadow-emerald-400/10 hover:scale-[1.02]"
               >
                 {/* Icon */}
-                <div className={`mb-4 inline-flex items-center justify-center rounded-xl p-3 transition-colors ${
-                  item.primary
-                    ? 'bg-emerald-400/10 text-emerald-400 group-hover:bg-emerald-400/15'
-                    : 'bg-white/5 text-white/60 group-hover:bg-white/10 group-hover:text-white/80'
-                }`}>
+                <div className="mb-4 inline-flex items-center justify-center rounded-xl p-3 transition-colors bg-white/5 text-white/60 group-hover:bg-emerald-400/10 group-hover:text-emerald-400">
                   {item.icon}
                 </div>
                 
-                <div className={`font-medium text-lg mb-3 transition-colors ${
-                  item.primary ? 'text-white' : 'text-white/90'
-                }`}>
+                <div className="font-medium text-lg mb-3 transition-colors text-white/90 group-hover:text-white">
                   {item.title}
         </div>
-                <div className={`leading-relaxed transition-colors ${
-                  item.primary ? 'text-sm text-white/60' : 'text-sm text-white/55'
-                }`}>
+                <div className="leading-relaxed transition-colors text-sm text-white/55 group-hover:text-white/70">
                   {item.description}
                 </div>
               </div>

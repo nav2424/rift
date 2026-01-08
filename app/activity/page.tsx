@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import AppLayout from '@/components/layouts/AppLayout'
 import GlassCard from '@/components/ui/GlassCard'
 import StatusPill from '@/components/ui/StatusPill'
 import EmptyState from '@/components/ui/EmptyState'
@@ -297,11 +296,9 @@ export default function ActivityPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-white/60 font-light">Loading...</div>
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-white/60 font-light">Loading...</div>
+      </div>
     )
   }
 
@@ -310,8 +307,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Header */}
         <div className="mb-10 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4 mb-3">
@@ -427,7 +423,6 @@ export default function ActivityPage() {
           </div>
         )}
       </div>
-    </AppLayout>
   )
 }
 
