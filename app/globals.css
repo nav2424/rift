@@ -565,3 +565,16 @@ input[type="date"].date-input-visible::-moz-calendar-picker-indicator:hover {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Chatbot message formatting */
+.chatbot-message {
+  line-height: 1.85rem;
+}
+
+.chatbot-message p {
+  margin-bottom: 0.75rem;
+}
+
+.chatbot-message p:last-child {
+  margin-bottom: 0;
+}

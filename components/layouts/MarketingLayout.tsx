@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import RiftLogo from '@/components/RiftLogo'
@@ -15,6 +15,19 @@ interface MarketingLayoutProps {
  */
 export default function MarketingLayout({ children }: MarketingLayoutProps) {
   const { data: session } = useSession()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -77,16 +90,106 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
 
             {/* Mobile Menu Button */}
             <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
               aria-label="Menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/95 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          style={{
+            animation: 'slideInRight 0.3s ease-out',
+          }}
+        >
+          <div 
+            className="fixed inset-0 bg-black overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with close button */}
+            <div className="flex justify-between items-center p-4 border-b border-white/8">
+              <div className="flex items-center">
+                <RiftLogo size="md" />
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 text-white/80 hover:text-white transition-colors"
+                aria-label="Close menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="flex flex-col pt-8 px-4">
+              <Link 
+                href="/" 
+                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Product
+              </Link>
+              <Link 
+                href="/pricing" 
+                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link 
+                href="/about" 
+                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              {session ? (
+                <Link 
+                  href="/dashboard" 
+                  className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link 
+                    href="/auth/signin" 
+                    className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="block py-3 px-6 bg-white text-black hover:opacity-90 transition-colors duration-200 font-medium text-base rounded-lg mt-4 text-center"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Create a Rift
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="pt-20">{children}</main>

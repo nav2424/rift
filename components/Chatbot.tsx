@@ -170,15 +170,56 @@ export default function Chatbot() {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     message.role === 'user'
                       ? 'bg-white/10 text-white'
                       : 'bg-white/5 text-white/90'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {message.content}
-                  </p>
+                  <div className="text-sm whitespace-pre-wrap chatbot-message">
+                    {message.content.split('\n').map((line, index, array) => {
+                      const trimmedLine = line.trim()
+                      const isEmpty = trimmedLine === ''
+                      
+                      // Check if line is a numbered list item (e.g., "1. ", "2. ")
+                      const isNumberedItem = /^\d+\.\s/.test(trimmedLine)
+                      
+                      // Check previous line
+                      const prevLine = index > 0 ? array[index - 1].trim() : ''
+                      const prevIsEmpty = prevLine === ''
+                      const prevIsNumbered = index > 0 && /^\d+\.\s/.test(prevLine)
+                      
+                      // Add extra spacing before first numbered item (after empty line or non-numbered content)
+                      if (isNumberedItem && !prevIsNumbered && index > 0) {
+                        return (
+                          <div key={index} className={prevIsEmpty ? 'mt-1' : 'mt-4'}>
+                            {line}
+                          </div>
+                        )
+                      }
+                      
+                      // Regular numbered item - keep close spacing
+                      if (isNumberedItem) {
+                        return (
+                          <div key={index} className="mt-1">
+                            {line}
+                          </div>
+                        )
+                      }
+                      
+                      // Empty line - add spacing
+                      if (isEmpty) {
+                        return <div key={index} className="h-2" />
+                      }
+                      
+                      // Regular text line - add moderate spacing
+                      return (
+                        <div key={index} className={index > 0 ? 'mt-2' : ''}>
+                          {line}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             ))}
