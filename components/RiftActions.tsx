@@ -21,6 +21,10 @@ interface RiftTransaction {
   currency?: string
   eventDateTz?: Date | string | null
   allowsPartialRelease?: boolean
+  buyerId?: string
+  sellerId?: string
+  buyerArchived?: boolean
+  sellerArchived?: boolean
 }
 
 interface RiftActionsProps {
@@ -37,6 +41,9 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
   const [loading, setLoading] = useState<string | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showDisputeWizard, setShowDisputeWizard] = useState(false)
+  const [isArchived, setIsArchived] = useState<boolean>(
+    (userIsBuyer && rift.buyerArchived) || (userIsSeller && rift.sellerArchived) || false
+  )
 
   // Determine if user is buyer - use explicit flag or fall back to role
   const userIsBuyer = isBuyer !== undefined ? isBuyer : currentUserRole === 'BUYER'
@@ -72,6 +79,32 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
     } catch (error) {
       console.error('Action error:', error)
       showToast('Action failed. Please try again.', 'error')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  const handleArchive = async (archive: boolean) => {
+    setLoading(archive ? 'archive' : 'unarchive')
+    try {
+      const response = await fetch(`/api/rifts/${rift.id}/archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archived: archive }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        showToast(error.error || 'Archive action failed', 'error')
+        return
+      }
+
+      setIsArchived(archive)
+      showToast(archive ? 'Rift archived' : 'Rift unarchived', 'success')
+      router.refresh()
+    } catch (error) {
+      console.error('Archive error:', error)
+      showToast('Archive action failed. Please try again.', 'error')
     } finally {
       setLoading(null)
     }
@@ -289,6 +322,30 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
         </PremiumButton>
       )
     }
+  }
+
+  // Archive action for cancelled/refunded rifts (both buyer and seller)
+  const isCancelled = ['CANCELLED', 'CANCELED', 'REFUNDED'].includes(rift.status)
+  if (isCancelled && (userIsBuyer || userIsSeller)) {
+    actions.push(
+      <PremiumButton
+        key="archive"
+        variant="ghost"
+        onClick={() => {
+          const action = isArchived ? 'unarchive' : 'archive'
+          const message = isArchived 
+            ? 'Unarchive this rift? It will appear in your main view again.'
+            : 'Archive this rift? It will be hidden from your main view but remain in your records.'
+          if (confirm(message)) {
+            handleArchive(!isArchived)
+          }
+        }}
+        disabled={loading === 'archive' || loading === 'unarchive'}
+        className="w-full text-white/60 hover:text-white/80 hover:bg-white/5"
+      >
+        {loading === 'archive' ? 'Archiving...' : loading === 'unarchive' ? 'Unarchiving...' : isArchived ? 'Unarchive Rift' : 'Archive Rift'}
+      </PremiumButton>
+    )
   }
 
   // Admin actions for disputes
