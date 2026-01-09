@@ -109,6 +109,11 @@ model RiftTransaction {
   requiresBuyerConfirmation Boolean            @default(false)
   stripeCustomerId          String?
   paidAt                    DateTime?
+  // Archive fields - user-specific (buyer and seller can archive independently)
+  buyerArchived             Boolean            @default(false)
+  sellerArchived            Boolean            @default(false)
+  buyerArchivedAt           DateTime?
+  sellerArchivedAt          DateTime?
   Dispute                   Dispute[]
   buyer                     User               @relation("EscrowBuyer", fields: [buyerId], references: [id])
   seller                    User               @relation("EscrowSeller", fields: [sellerId], references: [id])

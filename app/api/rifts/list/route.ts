@@ -19,14 +19,49 @@ export async function GET(request: NextRequest) {
     const searchQuery = searchParams.get('search') // Search query string
     const itemType = searchParams.get('itemType') // Filter by item type
 
+    // Check if user wants to see archived rifts
+    const includeArchived = searchParams.get('includeArchived') === 'true'
+    const showOnlyArchived = searchParams.get('archived') === 'true'
+
     // Build where clause
     // Note: We don't filter by itemType in the base query to avoid Prisma enum validation errors
     // The database may have old enum values (DIGITAL, TICKETS) that don't match the Prisma schema
-    const whereClause: any = {
-      OR: [
-        { buyerId: userId },
-        { sellerId: userId },
-      ],
+    let whereClause: any
+    
+    if (showOnlyArchived) {
+      // Show only archived rifts (user-specific)
+      whereClause = {
+        OR: [
+          { buyerId: userId, buyerArchived: true },
+          { sellerId: userId, sellerArchived: true },
+        ],
+      }
+    } else if (!includeArchived) {
+      // Exclude archived rifts from main view (default behavior)
+      whereClause = {
+        AND: [
+          {
+            OR: [
+              { buyerId: userId },
+              { sellerId: userId },
+            ],
+          },
+          {
+            OR: [
+              { buyerId: userId, buyerArchived: false },
+              { sellerId: userId, sellerArchived: false },
+            ],
+          },
+        ],
+      }
+    } else {
+      // Include all rifts (archived and non-archived)
+      whereClause = {
+        OR: [
+          { buyerId: userId },
+          { sellerId: userId },
+        ],
+      }
     }
 
     // Apply status filter
@@ -150,9 +185,18 @@ export async function GET(request: NextRequest) {
         console.warn('Prisma enum deserialization failed, using raw SQL:', error.message)
         
         // Build SQL WHERE clause
-        const conditions = [`("buyerId" = $1 OR "sellerId" = $2)`]
+        let conditions: string[] = []
         const params: any[] = [userId, userId]
         let paramIndex = 3
+        
+        // Handle archive filtering
+        if (showOnlyArchived) {
+          conditions.push(`(("buyerId" = $1 AND "buyerArchived" = true) OR ("sellerId" = $2 AND "sellerArchived" = true))`)
+        } else if (!includeArchived) {
+          conditions.push(`(("buyerId" = $1 AND "buyerArchived" = false) OR ("sellerId" = $2 AND "sellerArchived" = false))`)
+        } else {
+          conditions.push(`("buyerId" = $1 OR "sellerId" = $2)`)
+        }
 
         if (whereClause.status) {
           if (typeof whereClause.status === 'string') {
