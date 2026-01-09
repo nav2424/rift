@@ -16,18 +16,72 @@ export async function POST(
     }
 
     const { id } = await params
-    const rift = await prisma.riftTransaction.findUnique({
-      where: { id },
-      include: {
-        buyer: true,
-        seller: true,
-      },
-    })
+    
+    // Try Prisma first, fallback to raw SQL if enum validation fails
+    let rift: any
+    let buyer: any
+    let seller: any
+    
+    try {
+      rift = await prisma.riftTransaction.findUnique({
+        where: { id },
+        include: {
+          buyer: true,
+          seller: true,
+        },
+      })
+      
+      if (rift) {
+        buyer = rift.buyer
+        seller = rift.seller
+      }
+    } catch (findError: any) {
+      // If Prisma fails due to enum validation, use raw SQL fallback
+      if (findError?.message?.includes('enum') || findError?.message?.includes('not found in enum')) {
+        console.warn('Prisma enum validation failed in cancel route, using raw SQL fallback:', findError.message)
+        
+        // Fetch rift using raw SQL with text casting to avoid enum validation
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT 
+            id, "riftNumber", "itemTitle", "itemDescription", 
+            "itemType"::text as "itemType", subtotal, "buyerFee", "sellerFee", "sellerNet",
+            currency, "buyerId", "sellerId", status::text as status,
+            "riskScore", amount, "platformFee", "sellerPayoutAmount", "createdAt", "updatedAt"
+          FROM "EscrowTransaction"
+          WHERE id = $1
+        `, id)
+        
+        if (!fetchedRifts || fetchedRifts.length === 0) {
+          return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
+        }
+        
+        const fetchedRift = fetchedRifts[0]
+        rift = fetchedRift
+        
+        // Fetch buyer and seller separately
+        buyer = await prisma.user.findUnique({
+          where: { id: fetchedRift.buyerId },
+        })
+        
+        seller = await prisma.user.findUnique({
+          where: { id: fetchedRift.sellerId },
+        })
+      } else {
+        // Re-throw if it's not an enum error
+        throw findError
+      }
+    }
 
     if (!rift) {
       return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
     }
 
+    // Check if user is actually the buyer (direct ID comparison)
+    const isBuyer = rift.buyerId === auth.userId
+    const isSeller = rift.sellerId === auth.userId
+    const isAdmin = auth.userRole === 'ADMIN'
+
+    // Get role using helper function, but also check direct ID match
     const userRole = getUserRole(
       auth.userId,
       rift.buyerId,
@@ -35,9 +89,27 @@ export async function POST(
       auth.userRole
     )
 
-    // Only buyer can cancel
-    if (userRole !== 'BUYER') {
-      return NextResponse.json({ error: 'Only buyer can cancel' }, { status: 403 })
+    // Only buyer can cancel - check both the role and direct ID match
+    if (!isBuyer && userRole !== 'BUYER' && !isAdmin) {
+      console.error('Cancel permission denied:', {
+        userId: auth.userId,
+        buyerId: rift.buyerId,
+        sellerId: rift.sellerId,
+        isBuyer,
+        isSeller,
+        userRole,
+        authUserRole: auth.userRole
+      })
+      return NextResponse.json({ 
+        error: 'Only buyer can cancel rifts',
+        debug: process.env.NODE_ENV === 'development' ? {
+          userId: auth.userId,
+          buyerId: rift.buyerId,
+          sellerId: rift.sellerId,
+          isBuyer,
+          userRole
+        } : undefined
+      }, { status: 403 })
     }
 
     // Allow cancellation from DRAFT, AWAITING_PAYMENT, or FUNDED (new system)

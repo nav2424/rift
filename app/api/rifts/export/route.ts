@@ -14,32 +14,80 @@ export async function GET(request: NextRequest) {
 
     const userId = auth.userId
 
-    // Get all rifts for the user
-    const rifts = await prisma.riftTransaction.findMany({
-      where: {
-        OR: [
-          { buyerId: userId },
-          { sellerId: userId },
-        ],
-      },
-      include: {
-        buyer: {
-          select: {
-            name: true,
-            email: true,
+    // Get all rifts for the user - try Prisma first, fallback to raw SQL if enum validation fails
+    let rifts: any[]
+    try {
+      rifts = await prisma.riftTransaction.findMany({
+        where: {
+          OR: [
+            { buyerId: userId },
+            { sellerId: userId },
+          ],
+        },
+        include: {
+          buyer: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+          seller: {
+            select: {
+              name: true,
+              email: true,
+            },
           },
         },
-        seller: {
-          select: {
-            name: true,
-            email: true,
-          },
+        orderBy: {
+          createdAt: 'desc',
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+      })
+    } catch (error: any) {
+      // If Prisma fails due to enum deserialization, use raw SQL
+      if (error?.message?.includes('not found in enum') || error?.message?.includes('ItemType')) {
+        console.warn('Prisma enum deserialization failed in export route, using raw SQL:', error.message)
+        
+        // Map old enum values to new ones
+        const mapItemType = (itemType: string): string => {
+          if (itemType === 'LICENSE_KEYS' || itemType === 'DIGITAL') return 'DIGITAL_GOODS'
+          if (itemType === 'TICKETS') return 'OWNERSHIP_TRANSFER'
+          return itemType
+        }
+        
+        // Fetch rifts using raw SQL with text casting
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT 
+            id, "riftNumber", "itemTitle", "itemDescription", 
+            "itemType"::text as "itemType", amount, subtotal, currency,
+            status::text as status, "buyerId", "sellerId", "createdAt", "updatedAt"
+          FROM "EscrowTransaction"
+          WHERE ("buyerId" = $1 OR "sellerId" = $2)
+          ORDER BY "createdAt" DESC
+        `, userId, userId)
+        
+        // Fetch buyer and seller info separately
+        const allRiftIds = fetchedRifts.map(r => r.id)
+        const allUserIds = [...new Set([...fetchedRifts.map(r => r.buyerId), ...fetchedRifts.map(r => r.sellerId)])]
+        
+        const users = await prisma.user.findMany({
+          where: { id: { in: allUserIds } },
+          select: { id: true, name: true, email: true },
+        })
+        
+        const userMap = new Map(users.map(u => [u.id, u]))
+        
+        // Map the results to match Prisma format
+        rifts = fetchedRifts.map(rift => ({
+          ...rift,
+          itemType: mapItemType(rift.itemType),
+          buyer: userMap.get(rift.buyerId) || { id: rift.buyerId, name: null, email: null },
+          seller: userMap.get(rift.sellerId) || { id: rift.sellerId, name: null, email: null },
+        }))
+      } else {
+        // Re-throw if it's not an enum error
+        throw error
+      }
+    }
 
     // Convert to CSV
     const headers = [
