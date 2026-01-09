@@ -152,8 +152,11 @@ export async function GET(request: NextRequest) {
         },
       })
     } catch (error: any) {
-      // If Prisma fails due to enum deserialization, use raw SQL
-      if (error?.message?.includes('not found in enum') || error?.message?.includes('ItemType')) {
+      // If Prisma fails due to enum deserialization or missing columns (migration not applied), use raw SQL
+      if (error?.message?.includes('not found in enum') || 
+          error?.message?.includes('ItemType') ||
+          error?.code === 'P2022' || // Column doesn't exist
+          error?.message?.includes('does not exist in the current database')) {
         console.warn('Prisma enum deserialization failed, using raw SQL:', error.message)
         
         // Build SQL WHERE clause
