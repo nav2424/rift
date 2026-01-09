@@ -285,6 +285,8 @@ export async function GET(request: NextRequest) {
         rifts = riftsRaw.map((rift: any) => ({
           ...rift,
           itemType: mapItemType(rift.itemType),
+          buyerArchived: rift.buyerArchived || false, // Default to false if column doesn't exist yet
+          sellerArchived: rift.sellerArchived || false, // Default to false if column doesn't exist yet
           buyer: userMap.get(rift.buyerId) || null,
           seller: userMap.get(rift.sellerId) || null,
         }))
