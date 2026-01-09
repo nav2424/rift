@@ -189,12 +189,7 @@ export async function GET(request: NextRequest) {
         const params: any[] = [userId, userId]
         let paramIndex = 3
         
-        // Handle archive filtering (check searchParams directly since whereClause might not have archive info)
-        const archivedParam = searchParams.get('archived')
-        const includeArchivedParam = searchParams.get('includeArchived')
-        const showOnlyArchived = archivedParam === 'true'
-        const includeArchived = includeArchivedParam === 'true'
-        
+        // Handle archive filtering - use the same logic as Prisma query above
         if (showOnlyArchived) {
           // Show only archived rifts (user-specific)
           conditions.push(`(("buyerId" = $1 AND "buyerArchived" = true) OR ("sellerId" = $2 AND "sellerArchived" = true))`)
