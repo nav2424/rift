@@ -21,14 +21,42 @@ export async function GET(
 
     const { id } = await params
 
-    // Verify access
-    const rift = await prisma.riftTransaction.findUnique({
-      where: { id },
-      select: {
-        buyerId: true,
-        sellerId: true,
-      },
-    })
+    // Verify access - try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+    let rift: any
+    try {
+      rift = await prisma.riftTransaction.findUnique({
+        where: { id },
+        select: {
+          buyerId: true,
+          sellerId: true,
+        },
+      })
+    } catch (findError: any) {
+      const isEnumError = findError?.message?.includes('enum') || 
+                          findError?.message?.includes('not found in enum') ||
+                          findError?.message?.includes("Value 'TICKETS'") ||
+                          findError?.message?.includes("Value 'DIGITAL'")
+      const isColumnError = findError?.code === 'P2022' || 
+                            findError?.message?.includes('does not exist in the current database') ||
+                            (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+      
+      if (isEnumError || isColumnError) {
+        // Fetch rift using raw SQL with text casting to avoid enum/column validation
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT id, "buyerId", "sellerId"
+          FROM "EscrowTransaction"
+          WHERE id = $1
+        `, id)
+        
+        if (!fetchedRifts || fetchedRifts.length === 0) {
+          return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
+        }
+        
+        rift = fetchedRifts[0]
+      } else {
+        throw findError
+      }
+    }
 
     if (!rift) {
       return NextResponse.json({ error: 'Rift not found' }, { status: 404 })

@@ -300,13 +300,67 @@ export async function getVaultAssets(
   viewerId: string,
   viewerRole: 'BUYER' | 'SELLER' | 'ADMIN'
 ): Promise<any[]> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-    include: {
-      buyer: true,
-      seller: true,
-    },
-  })
+  // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+  let rift: any
+  try {
+    rift = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+      include: {
+        buyer: true,
+        seller: true,
+      },
+    })
+  } catch (findError: any) {
+    const isEnumError = findError?.message?.includes('enum') || 
+                        findError?.message?.includes('not found in enum') ||
+                        findError?.message?.includes("Value 'TICKETS'") ||
+                        findError?.message?.includes("Value 'DIGITAL'")
+    const isColumnError = findError?.code === 'P2022' || 
+                          findError?.message?.includes('does not exist in the current database') ||
+                          (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+    
+    if (isEnumError || isColumnError) {
+      // Fetch rift using raw SQL with text casting to avoid enum/column validation
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT id, "buyerId", "sellerId", status::text as status
+        FROM "EscrowTransaction"
+        WHERE id = $1
+      `, riftId)
+      
+      if (!fetchedRifts || fetchedRifts.length === 0) {
+        throw new Error('Rift not found')
+      }
+      
+      const fetchedRift = fetchedRifts[0]
+      
+      // Fetch buyer and seller separately
+      const buyer = await prisma.user.findUnique({
+        where: { id: fetchedRift.buyerId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
+      
+      const seller = await prisma.user.findUnique({
+        where: { id: fetchedRift.sellerId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
+      
+      rift = {
+        ...fetchedRift,
+        buyer: buyer || { id: fetchedRift.buyerId, name: null, email: null },
+        seller: seller || { id: fetchedRift.sellerId, name: null, email: null },
+      }
+    } else {
+      throw findError
+    }
+  }
 
   if (!rift) {
     throw new Error('Rift not found')
