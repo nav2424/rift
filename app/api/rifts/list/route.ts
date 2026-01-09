@@ -216,12 +216,40 @@ export async function GET(request: NextRequest) {
 
         const whereClauseSQL = conditions.join(' AND ')
 
-        // Get count
-        const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-          `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereClauseSQL}`,
-          ...params
-        )
-        total = Number(countResult[0]?.count || 0)
+        // Get count - use try-catch in case archive columns don't exist yet
+        try {
+          const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+            `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereClauseSQL}`,
+            ...params
+          )
+          total = Number(countResult[0]?.count || 0)
+        } catch (countError: any) {
+          // If count fails (e.g., archive columns don't exist), use simplified query
+          console.warn('Count query failed, using simplified query:', countError.message)
+          const simplifiedConditions = [`("buyerId" = $1 OR "sellerId" = $2)`]
+          const simplifiedParams = [userId, userId]
+          let simplifiedParamIndex = 3
+          
+          // Add status filter if present (without archive filtering)
+          if (whereClause.status) {
+            if (typeof whereClause.status === 'string') {
+              simplifiedConditions.push(`"status" = $${simplifiedParamIndex}`)
+              simplifiedParams.push(whereClause.status)
+              simplifiedParamIndex++
+            } else if (whereClause.status.in) {
+              const placeholders = whereClause.status.in.map((_: any, i: number) => `$${simplifiedParamIndex + i}`).join(',')
+              simplifiedConditions.push(`"status" IN (${placeholders})`)
+              simplifiedParams.push(...whereClause.status.in)
+            }
+          }
+          
+          const simplifiedWhere = simplifiedConditions.join(' AND ')
+          const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+            `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${simplifiedWhere}`,
+            ...simplifiedParams
+          )
+          total = Number(countResult[0]?.count || 0)
+        }
 
         // Get paginated results with itemType cast to text to avoid enum validation
         const riftsRaw = await prisma.$queryRawUnsafe<any[]>(
@@ -234,10 +262,7 @@ export async function GET(request: NextRequest) {
             "platformFee", "sellerPayoutAmount", "shipmentVerifiedAt", "trackingVerified",
             "deliveryVerifiedAt", "gracePeriodEndsAt", "autoReleaseScheduled",
             "eventDate", venue, "transferMethod", "downloadLink", "licenseKey",
-            "serviceDate", "createdAt", "updatedAt",
-            COALESCE("buyerArchived", false) as "buyerArchived", 
-            COALESCE("sellerArchived", false) as "sellerArchived",
-            "buyerArchivedAt", "sellerArchivedAt"
+            "serviceDate", "createdAt", "updatedAt"
           FROM "EscrowTransaction"
           WHERE ${whereClauseSQL}
           ORDER BY "createdAt" DESC
