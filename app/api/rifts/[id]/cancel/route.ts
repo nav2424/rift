@@ -114,26 +114,76 @@ export async function POST(
 
     // Allow cancellation from DRAFT, AWAITING_PAYMENT, or FUNDED (new system)
     // Also support legacy AWAITING_SHIPMENT
-    const canCancel = ['DRAFT', 'AWAITING_PAYMENT', 'FUNDED', 'AWAITING_SHIPMENT'].includes(rift.status)
+    // Ensure status is properly normalized (raw SQL might return strings)
+    const rawStatus = typeof rift.status === 'string' ? rift.status : String(rift.status)
+    const currentStatus = rawStatus as EscrowStatus
+    
+    console.log('Cancel attempt:', {
+      rawStatus,
+      currentStatus,
+      statusType: typeof rift.status,
+      userId: auth.userId,
+      buyerId: rift.buyerId,
+      isBuyer
+    })
+    
+    const canCancel = ['DRAFT', 'AWAITING_PAYMENT', 'FUNDED', 'AWAITING_SHIPMENT'].includes(currentStatus)
     
     if (!canCancel) {
       return NextResponse.json(
-        { error: 'Cannot cancel in current status. Rift must be in DRAFT, AWAITING_PAYMENT, or FUNDED status.' },
+        { error: `Cannot cancel in current status (${currentStatus}). Rift must be in DRAFT, AWAITING_PAYMENT, or FUNDED status.` },
         { status: 400 }
       )
     }
 
-    // Use CANCELED for new system (DRAFT, FUNDED) or legacy (AWAITING_PAYMENT, AWAITING_SHIPMENT)
-    const canceledStatus: EscrowStatus = 
-      ['DRAFT', 'FUNDED', 'AWAITING_PAYMENT'].includes(rift.status) ? 'CANCELED' : 'CANCELLED'
-    
     // At this point, we know the user is a buyer (verified above), so use 'BUYER' as the role
     // Or use ADMIN if they're an admin. This ensures type safety.
     const actorRole: 'BUYER' | 'SELLER' | 'ADMIN' = isAdmin ? 'ADMIN' : 'BUYER'
     
-    if (!canTransition(rift.status, canceledStatus, actorRole)) {
+    // Determine which cancel status to use based on current status
+    // Try CANCELED first (new system), fallback to CANCELLED for legacy if needed
+    let canceledStatus: EscrowStatus = 'CANCELED'
+    let transitionAllowed = canTransition(currentStatus, canceledStatus, actorRole)
+    
+    console.log('Transition check 1:', {
+      currentStatus,
+      canceledStatus,
+      actorRole,
+      transitionAllowed
+    })
+    
+    // If CANCELED doesn't work, try CANCELLED for legacy compatibility
+    if (!transitionAllowed) {
+      canceledStatus = 'CANCELLED'
+      transitionAllowed = canTransition(currentStatus, canceledStatus, actorRole)
+      console.log('Transition check 2:', {
+        currentStatus,
+        canceledStatus,
+        actorRole,
+        transitionAllowed
+      })
+    }
+    
+    if (!transitionAllowed) {
+      console.error('Cancel transition failed:', {
+        currentStatus,
+        rawStatus,
+        attemptedStatuses: ['CANCELED', 'CANCELLED'],
+        actorRole,
+        isBuyer,
+        isAdmin,
+        statusType: typeof rift.status
+      })
       return NextResponse.json(
-        { error: 'Invalid status transition' },
+        { 
+          error: 'Invalid status transition',
+          debug: process.env.NODE_ENV === 'development' ? {
+            currentStatus,
+            rawStatus,
+            attemptedStatuses: ['CANCELED', 'CANCELLED'],
+            actorRole
+          } : undefined
+        },
         { status: 400 }
       )
     }
