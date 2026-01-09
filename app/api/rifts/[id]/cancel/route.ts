@@ -136,9 +136,19 @@ export async function POST(
       )
     }
 
-    // At this point, we know the user is a buyer (verified above), so use 'BUYER' as the role
-    // Or use ADMIN if they're an admin. This ensures type safety.
-    const actorRole: 'BUYER' | 'SELLER' | 'ADMIN' = isAdmin ? 'ADMIN' : 'BUYER'
+    // Determine actor role: prioritize buyer/seller role over admin role
+    // This is important because canTransition checks buyer/seller permissions first
+    let actorRole: 'BUYER' | 'SELLER' | 'ADMIN'
+    if (isBuyer) {
+      actorRole = 'BUYER'
+    } else if (isSeller) {
+      actorRole = 'SELLER'
+    } else if (isAdmin) {
+      actorRole = 'ADMIN'
+    } else {
+      // This shouldn't happen due to earlier checks, but handle it
+      return NextResponse.json({ error: 'Unable to determine user role' }, { status: 403 })
+    }
     
     // Determine which cancel status to use based on current status
     // Try CANCELED first (new system), fallback to CANCELLED for legacy if needed
