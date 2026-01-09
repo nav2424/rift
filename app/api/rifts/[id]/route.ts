@@ -17,25 +17,97 @@ export async function GET(
     const userId = auth.userId
     const userRole = auth.userRole
 
-    const rift = await prisma.riftTransaction.findUnique({
-      where: { id },
-      include: {
-        buyer: {
+    // Try Prisma first, fallback to raw SQL if enum validation fails
+    let rift: any
+    let buyer: any
+    let seller: any
+    
+    try {
+      rift = await prisma.riftTransaction.findUnique({
+        where: { id },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      })
+      
+      if (rift) {
+        buyer = rift.buyer
+        seller = rift.seller
+      }
+    } catch (findError: any) {
+      // If Prisma fails due to enum validation, use raw SQL fallback
+      if (findError?.message?.includes('enum') || findError?.message?.includes('not found in enum')) {
+        console.warn('Prisma enum validation failed, using raw SQL fallback:', findError.message)
+        
+        // Fetch rift using raw SQL with text casting to avoid enum validation
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT 
+            id, "riftNumber", "itemTitle", "itemDescription", 
+            "itemType"::text as "itemType", subtotal, "buyerFee", "sellerFee", "sellerNet",
+            currency, "buyerId", "sellerId", "shippingAddress", notes,
+            "eventDate", venue, "transferMethod", "seatDetails", quantity,
+            "downloadLink", "fileStorageType", "licenseKey", "licenseKeyType",
+            "licensePlatform", "licenseKeyRevealed", "serviceDate", "serviceScope",
+            "serviceDeliverables", "completionCriteria", "allowsPartialRelease",
+            milestones, status::text as status, "riskScore", amount, "platformFee", 
+            "sellerPayoutAmount", "createdAt", "updatedAt", version
+          FROM "EscrowTransaction"
+          WHERE id = $1
+        `, id)
+        
+        if (!fetchedRifts || fetchedRifts.length === 0) {
+          return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
+        }
+        
+        // Map the itemType back to the application layer value
+        const mapItemTypeFromDB = (dbType: string): string => {
+          if (dbType === 'TICKETS') return 'OWNERSHIP_TRANSFER'
+          if (dbType === 'DIGITAL' || dbType === 'LICENSE_KEYS') return 'DIGITAL_GOODS'
+          return dbType
+        }
+        
+        const fetchedRift = fetchedRifts[0]
+        rift = {
+          ...fetchedRift,
+          itemType: mapItemTypeFromDB(fetchedRift.itemType || fetchedRift.ItemType) as any,
+        }
+        
+        // Fetch buyer and seller separately
+        buyer = await prisma.user.findUnique({
+          where: { id: fetchedRift.buyerId },
           select: {
             id: true,
             name: true,
             email: true,
           },
-        },
-        seller: {
+        })
+        
+        seller = await prisma.user.findUnique({
+          where: { id: fetchedRift.sellerId },
           select: {
             id: true,
             name: true,
             email: true,
           },
-        },
-      },
-    })
+        })
+      } else {
+        // Re-throw if it's not an enum error
+        throw findError
+      }
+    }
 
     if (!rift) {
       return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
@@ -111,6 +183,15 @@ export async function GET(
       disputes = []
     }
 
+    // Attach buyer and seller if they were fetched separately (raw SQL fallback)
+    if (buyer || seller) {
+      rift = {
+        ...rift,
+        buyer: buyer || rift.buyer,
+        seller: seller || rift.seller,
+      }
+    }
+    
     return NextResponse.json({
       ...rift,
       timelineEvents: timelineEvents.map(e => ({
