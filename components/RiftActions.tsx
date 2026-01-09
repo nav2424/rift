@@ -41,13 +41,15 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
   const [loading, setLoading] = useState<string | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showDisputeWizard, setShowDisputeWizard] = useState(false)
-  const [isArchived, setIsArchived] = useState<boolean>(
-    (userIsBuyer && rift.buyerArchived) || (userIsSeller && rift.sellerArchived) || false
-  )
 
   // Determine if user is buyer - use explicit flag or fall back to role
   const userIsBuyer = isBuyer !== undefined ? isBuyer : currentUserRole === 'BUYER'
   const userIsSeller = isSeller !== undefined ? isSeller : currentUserRole === 'SELLER'
+  
+  // Initialize archived state based on user role
+  const [isArchived, setIsArchived] = useState<boolean>(
+    (userIsBuyer && rift.buyerArchived) || (userIsSeller && rift.sellerArchived) || false
+  )
 
   // Debug logging
   console.log('RiftActions render:', {
