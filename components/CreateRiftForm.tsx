@@ -546,18 +546,14 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         break
       case 4: // Type-specific
         if (itemType === 'OWNERSHIP_TRANSFER') {
-          const dateError = validateField('eventDate', formData.eventDate)
-          const venueError = validateField('venue', formData.venue)
-          const sectionError = validateField('seatSection', formData.seatSection)
-          const rowError = validateField('seatRow', formData.seatRow)
-          const seatNumbersError = validateField('seatNumbers', formData.seatNumbers)
-          const methodError = validateField('transferMethod', formData.transferMethod)
-          if (dateError) stepErrors.eventDate = dateError
-          if (venueError) stepErrors.venue = venueError
-          if (sectionError) stepErrors.seatSection = sectionError
-          if (rowError) stepErrors.seatRow = rowError
-          if (seatNumbersError) stepErrors.seatNumbers = seatNumbersError
-          if (methodError) stepErrors.transferMethod = methodError
+          const itemError = validateField('itemBeingTransferred', formData.itemBeingTransferred)
+          const platformError = validateField('transferPlatform', formData.transferPlatform)
+          const dateError = validateField('expectedTransferDate', formData.expectedTransferDate)
+          const verificationError = validateField('verificationMethod', formData.verificationMethod)
+          if (itemError) stepErrors.itemBeingTransferred = itemError
+          if (platformError) stepErrors.transferPlatform = platformError
+          if (dateError) stepErrors.expectedTransferDate = dateError
+          if (verificationError) stepErrors.verificationMethod = verificationError
         } else if (itemType === 'DIGITAL_GOODS') {
           // No validation needed for digital items during creation
           // Proof of delivery (files, links, license keys) will be submitted after payment
