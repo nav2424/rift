@@ -451,9 +451,38 @@ export async function buyerOpenAsset(
     deviceFingerprint?: string
   }
 ): Promise<{ url?: string; content?: string }> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-  })
+  // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+  let rift: any
+  try {
+    rift = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+    })
+  } catch (findError: any) {
+    const isEnumError = findError?.message?.includes('enum') || 
+                        findError?.message?.includes('not found in enum') ||
+                        findError?.message?.includes("Value 'TICKETS'") ||
+                        findError?.message?.includes("Value 'DIGITAL'")
+    const isColumnError = findError?.code === 'P2022' || 
+                          findError?.message?.includes('does not exist in the current database') ||
+                          (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+    
+    if (isEnumError || isColumnError) {
+      // Fetch rift using raw SQL with text casting to avoid enum/column validation
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT id, "buyerId", "sellerId", status::text as status
+        FROM "EscrowTransaction"
+        WHERE id = $1
+      `, riftId)
+      
+      if (!fetchedRifts || fetchedRifts.length === 0) {
+        throw new Error('Rift not found')
+      }
+      
+      rift = fetchedRifts[0]
+    } else {
+      throw findError
+    }
+  }
 
   if (!rift) {
     throw new Error('Rift not found')
@@ -537,9 +566,38 @@ export async function buyerRevealLicenseKey(
     deviceFingerprint?: string
   }
 ): Promise<string> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-  })
+  // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+  let rift: any
+  try {
+    rift = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+    })
+  } catch (findError: any) {
+    const isEnumError = findError?.message?.includes('enum') || 
+                        findError?.message?.includes('not found in enum') ||
+                        findError?.message?.includes("Value 'TICKETS'") ||
+                        findError?.message?.includes("Value 'DIGITAL'")
+    const isColumnError = findError?.code === 'P2022' || 
+                          findError?.message?.includes('does not exist in the current database') ||
+                          (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+    
+    if (isEnumError || isColumnError) {
+      // Fetch rift using raw SQL with text casting to avoid enum/column validation
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT id, "buyerId", "sellerId", status::text as status
+        FROM "EscrowTransaction"
+        WHERE id = $1
+      `, riftId)
+      
+      if (!fetchedRifts || fetchedRifts.length === 0) {
+        throw new Error('Rift not found')
+      }
+      
+      rift = fetchedRifts[0]
+    } else {
+      throw findError
+    }
+  }
 
   if (!rift) {
     throw new Error('Rift not found')
