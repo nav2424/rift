@@ -293,14 +293,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     </svg>
                   </button>
                 )}
-                {/* Keyboard shortcut hint */}
-                {!searchValue && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <kbd className="px-2 py-0.5 text-xs font-semibold text-white/30 bg-white/5 border border-white/10 rounded">
-                      /
-                    </kbd>
-                  </div>
-                )}
               </div>
             </div>
 

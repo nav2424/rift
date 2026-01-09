@@ -57,14 +57,11 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     buyerId: '',
     buyerEmail: '',
     notes: '',
-    // Ticket-specific fields
-    eventDate: getTodayDateString(),
-    venue: '',
-    transferMethod: '',
-    seatSection: '',
-    seatRow: '',
-    seatNumbers: '',
-    quantity: '1',
+    // Ownership transfer-specific fields
+    itemBeingTransferred: '',
+    transferPlatform: '',
+    expectedTransferDate: getTodayDateString(),
+    verificationMethod: '',
     // Service-specific fields
     serviceDate: getTodayDateString(),
     serviceScope: '',
@@ -132,28 +129,24 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         return ''
       // Digital file fields removed from creation - no validation needed
       case 'eventDate':
-        if ((itemType === 'OWNERSHIP_TRANSFER' || itemType === 'DIGITAL_GOODS') && !value) return 'Event date is required'
+        return ''
+      case 'itemBeingTransferred':
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Item being transferred is required'
+        return ''
+      case 'transferPlatform':
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Transfer platform is required'
+        return ''
+      case 'expectedTransferDate':
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value) return 'Expected transfer date is required'
         if (value) {
           const selectedDate = new Date(value)
           const today = new Date()
           today.setHours(0, 0, 0, 0)
-          if (selectedDate < today) return 'Event date must be in the future'
+          if (selectedDate < today) return 'Expected transfer date must be today or in the future'
         }
         return ''
-      case 'venue':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Venue is required'
-        return ''
-      case 'seatSection':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Section is required'
-        return ''
-      case 'seatRow':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Row is required'
-        return ''
-      case 'seatNumbers':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Seat numbers are required'
-        return ''
-      case 'transferMethod':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value) return 'Transfer method is required'
+      case 'verificationMethod':
+        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Verification method is required'
         return ''
       // License key fields removed from creation - no validation needed
       case 'serviceDate':
@@ -308,8 +301,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     
     // Type-specific validation
     if (itemType === 'OWNERSHIP_TRANSFER') {
-      const ticketFields = ['eventDate', 'venue', 'seatSection', 'seatRow', 'seatNumbers', 'transferMethod']
-      ticketFields.forEach((key) => {
+      const ownershipFields = ['itemBeingTransferred', 'transferPlatform', 'expectedTransferDate', 'verificationMethod']
+      ownershipFields.forEach((key) => {
         const error = validateField(key, formData[key as keyof typeof formData] as string)
         if (error) allErrors[key] = error
       })
@@ -419,17 +412,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
       // Add type-specific fields
       if (itemType === 'OWNERSHIP_TRANSFER') {
-        payload.eventDate = formData.eventDate
-        payload.venue = formData.venue
-        // Construct seat details from separate fields
-        if (formData.seatSection && formData.seatRow && formData.seatNumbers) {
-          payload.seatDetails = `Section ${formData.seatSection}, Row ${formData.seatRow}, Seats ${formData.seatNumbers}`
-        } else {
-          // Fallback if fields are missing (shouldn't happen due to validation)
-          payload.seatDetails = ''
-        }
-        payload.transferMethod = formData.transferMethod
-        payload.quantity = parseInt(formData.quantity) || 1
+        payload.itemBeingTransferred = formData.itemBeingTransferred
+        payload.transferPlatform = formData.transferPlatform
+        payload.expectedTransferDate = formData.expectedTransferDate
+        payload.verificationMethod = formData.verificationMethod
       } else if (itemType === 'DIGITAL_GOODS') {
         // No digital-specific fields during creation
         // Files, links, and license keys will be added during proof submission after payment
@@ -473,17 +459,30 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
       if (!response.ok) {
         let error: any = {}
+        let errorText = ''
         try {
-          error = await response.json()
+          errorText = await response.text()
+          if (errorText) {
+            try {
+              error = JSON.parse(errorText)
+            } catch {
+              // If not JSON, use the text as error message
+              error = { error: errorText || response.statusText || 'Failed to create rift' }
+            }
+          } else {
+            error = { error: response.statusText || 'Failed to create rift' }
+          }
         } catch (parseError) {
           error = { error: response.statusText || 'Failed to create rift' }
         }
         
-        const errorMessage = error.error || error.message || 'Failed to create rift'
+        const errorMessage = error.error || error.message || errorText || response.statusText || 'Failed to create rift'
         console.error('Rift creation error:', {
           status: response.status,
-          error: errorMessage,
           statusText: response.statusText,
+          error: errorMessage,
+          errorObject: error,
+          rawErrorText: errorText,
           details: error.details,
           payload: payload, // Log payload for debugging
         })
@@ -510,9 +509,15 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       
       showToast('Rift created successfully!', 'success')
       router.push(`/rifts/${riftId}`)
-    } catch (error) {
-      console.error('Error creating rift:', error)
-      showToast('Failed to create rift. Please try again.', 'error')
+    } catch (error: any) {
+      console.error('Error creating rift:', {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+      })
+      const errorMessage = error?.message || error?.toString() || 'Failed to create rift. Please try again.'
+      showToast(errorMessage, 'error')
     } finally {
       setLoading(false)
     }
@@ -596,7 +601,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     'Basic Information',
     'Payment Details',
     'Partner Selection',
-    itemType === 'OWNERSHIP_TRANSFER' ? 'Event Details' 
+    itemType === 'OWNERSHIP_TRANSFER' ? 'Transfer Details' 
       : itemType === 'DIGITAL_GOODS' ? 'Item Details' 
       : itemType === 'SERVICES' ? 'Service Details'
       : 'License Details',
@@ -690,7 +695,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   : 'border-white/10 focus:ring-white/20 focus:border-white/20'
               }`}
               placeholder={
-                itemType === 'OWNERSHIP_TRANSFER' ? 'e.g., Taylor Swift Concert Tickets' :
+                itemType === 'OWNERSHIP_TRANSFER' ? 'e.g., Steam Account (username123), Instagram Username (@handle), Domain Name (example.com)' :
                 itemType === 'DIGITAL_GOODS' ? 'e.g., Premium Software License' :
                 'e.g., Web Development Service'
               }
@@ -987,200 +992,135 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center">
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Event Details</h2>
+              <h2 className="text-2xl font-light text-white">Ownership Transfer Details</h2>
+            </div>
+            <div>
+              <label className="block text-sm font-light text-white/80 mb-3">
+                Item Being Transferred *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  What is being transferred (e.g., Steam Account, Instagram Username, Domain Name, NFT)
+                </span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.itemBeingTransferred}
+                onChange={(e) => {
+                  setFormData({ ...formData, itemBeingTransferred: e.target.value })
+                  const error = validateField('itemBeingTransferred', e.target.value)
+                  setErrors({ ...errors, itemBeingTransferred: error })
+                }}
+                onBlur={(e) => {
+                  const error = validateField('itemBeingTransferred', e.target.value)
+                  setErrors({ ...errors, itemBeingTransferred: error })
+                }}
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+                  errors.itemBeingTransferred 
+                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
+                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                }`}
+                placeholder="e.g., Steam Account (username123), Instagram Username (@handle), Domain Name (example.com)"
+              />
+              {errors.itemBeingTransferred && (
+                <p className="mt-2 text-sm text-red-400 font-light">{errors.itemBeingTransferred}</p>
+              )}
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-light text-white/80 mb-3">
-                  Event Date *
+                  Transfer Platform *
                   <span className="ml-2 text-xs text-white/50 font-light">
-                    Must be in the future
+                    Platform where transfer will occur
                   </span>
-                </label>
-                <DatePicker
-                  value={formData.eventDate}
-                  onChange={(date) => {
-                    setFormData({ ...formData, eventDate: date })
-                    const error = validateField('eventDate', date)
-                    setErrors({ ...errors, eventDate: error })
-                  }}
-                  minDate={getTodayDateString()}
-                  className={errors.eventDate ? 'border-red-500/50' : ''}
-                />
-                {errors.eventDate && (
-                  <p className="mt-2 text-sm text-red-400 font-light">{errors.eventDate}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-light text-white/80 mb-3">
-                  Venue *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.venue}
-                  onChange={(e) => {
-                    setFormData({ ...formData, venue: e.target.value })
-                    const error = validateField('venue', e.target.value)
-                    setErrors({ ...errors, venue: error })
-                  }}
-                  onBlur={(e) => {
-                    const error = validateField('venue', e.target.value)
-                    setErrors({ ...errors, venue: error })
-                  }}
-                  className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                    errors.venue 
-                      ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                      : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                  }`}
-                  placeholder="e.g., Rogers Centre, Toronto"
-                />
-                {errors.venue && (
-                  <p className="mt-2 text-sm text-red-400 font-light">{errors.venue}</p>
-                )}
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-light text-white/80 mb-3">
-                  Quantity *
-                  <span className="ml-2 text-xs text-white/50 font-light">
-                    Number of tickets
-                  </span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  max="100"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light"
-                  placeholder="1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-light text-white/80 mb-3">
-                  Transfer Method *
                 </label>
                 <select
                   required
-                  value={formData.transferMethod}
+                  value={formData.transferPlatform}
                   onChange={(e) => {
-                    setFormData({ ...formData, transferMethod: e.target.value })
-                    const error = validateField('transferMethod', e.target.value)
-                    setErrors({ ...errors, transferMethod: error })
+                    setFormData({ ...formData, transferPlatform: e.target.value })
+                    const error = validateField('transferPlatform', e.target.value)
+                    setErrors({ ...errors, transferPlatform: error })
                   }}
                   onBlur={(e) => {
-                    const error = validateField('transferMethod', e.target.value)
-                    setErrors({ ...errors, transferMethod: error })
+                    const error = validateField('transferPlatform', e.target.value)
+                    setErrors({ ...errors, transferPlatform: error })
                   }}
                   className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white focus:outline-none focus:ring-2 transition-all font-light ${
-                    errors.transferMethod 
+                    errors.transferPlatform 
                       ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
                       : 'border-white/10 focus:ring-white/20 focus:border-white/20'
                   }`}
                 >
-                  <option value="" className="bg-black/90">Select transfer method...</option>
-                  <option value="TICKETMASTER" className="bg-black/90">Ticketmaster</option>
-                  <option value="AXS" className="bg-black/90">AXS</option>
-                  <option value="SEATGEEK" className="bg-black/90">SeatGeek</option>
-                  <option value="EMAIL" className="bg-black/90">Email Transfer</option>
-                  <option value="PDF" className="bg-black/90">PDF Download</option>
-                  <option value="OTHER" className="bg-black/90">Other</option>
+                  <option value="" className="bg-black/90">Select platform...</option>
+                  <option value="STEAM" className="bg-black/90">Steam</option>
+                  <option value="EPIC_GAMES" className="bg-black/90">Epic Games</option>
+                  <option value="INSTAGRAM" className="bg-black/90">Instagram</option>
+                  <option value="TIKTOK" className="bg-black/90">TikTok</option>
+                  <option value="TWITTER" className="bg-black/90">Twitter/X</option>
+                  <option value="DOMAIN_REGISTRAR" className="bg-black/90">Domain Registrar</option>
+                  <option value="OPENSEA" className="bg-black/90">OpenSea</option>
+                  <option value="OTHER_NFT" className="bg-black/90">Other NFT Platform</option>
+                  <option value="OTHER" className="bg-black/90">Other Platform</option>
                 </select>
-                {errors.transferMethod && (
-                  <p className="mt-2 text-sm text-red-400 font-light">{errors.transferMethod}</p>
+                {errors.transferPlatform && (
+                  <p className="mt-2 text-sm text-red-400 font-light">{errors.transferPlatform}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-light text-white/80 mb-3">
+                  Expected Transfer Date *
+                  <span className="ml-2 text-xs text-white/50 font-light">
+                    When the transfer should be completed
+                  </span>
+                </label>
+                <DatePicker
+                  value={formData.expectedTransferDate}
+                  onChange={(date) => {
+                    setFormData({ ...formData, expectedTransferDate: date })
+                    const error = validateField('expectedTransferDate', date)
+                    setErrors({ ...errors, expectedTransferDate: error })
+                  }}
+                  minDate={getTodayDateString()}
+                  className={errors.expectedTransferDate ? 'border-red-500/50' : ''}
+                />
+                {errors.expectedTransferDate && (
+                  <p className="mt-2 text-sm text-red-400 font-light">{errors.expectedTransferDate}</p>
                 )}
               </div>
             </div>
             <div>
               <label className="block text-sm font-light text-white/80 mb-3">
-                Seat Details *
+                Verification Method *
+                <span className="ml-2 text-xs text-white/50 font-light">
+                  How ownership will be verified
+                </span>
               </label>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-light text-white/60 mb-2">Section</label>
-              <input
-                    type="text"
+              <textarea
                 required
-                    value={formData.seatSection}
+                rows={3}
+                value={formData.verificationMethod}
                 onChange={(e) => {
-                      setFormData({ ...formData, seatSection: e.target.value })
-                      const error = validateField('seatSection', e.target.value)
-                      setErrors({ ...errors, seatSection: error })
+                  setFormData({ ...formData, verificationMethod: e.target.value })
+                  const error = validateField('verificationMethod', e.target.value)
+                  setErrors({ ...errors, verificationMethod: error })
                 }}
                 onBlur={(e) => {
-                      const error = validateField('seatSection', e.target.value)
-                      setErrors({ ...errors, seatSection: error })
+                  const error = validateField('verificationMethod', e.target.value)
+                  setErrors({ ...errors, verificationMethod: error })
                 }}
-                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                      errors.seatSection 
+                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light resize-none ${
+                  errors.verificationMethod 
                     ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
                     : 'border-white/10 focus:ring-white/20 focus:border-white/20'
                 }`}
-                    placeholder="e.g., 101"
+                placeholder="e.g., Buyer will log into the account to verify ownership, or Seller will provide account credentials and email access for buyer to change password"
               />
-                  {errors.seatSection && (
-                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatSection}</p>
+              {errors.verificationMethod && (
+                <p className="mt-2 text-sm text-red-400 font-light">{errors.verificationMethod}</p>
               )}
-            </div>
-            <div>
-                  <label className="block text-xs font-light text-white/60 mb-2">Row</label>
-              <input
-                type="text"
-                    required
-                    value={formData.seatRow}
-                    onChange={(e) => {
-                      setFormData({ ...formData, seatRow: e.target.value })
-                      const error = validateField('seatRow', e.target.value)
-                      setErrors({ ...errors, seatRow: error })
-                    }}
-                    onBlur={(e) => {
-                      const error = validateField('seatRow', e.target.value)
-                      setErrors({ ...errors, seatRow: error })
-                    }}
-                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                      errors.seatRow 
-                        ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                        : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                    }`}
-                    placeholder="e.g., 5"
-                  />
-                  {errors.seatRow && (
-                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatRow}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-light text-white/60 mb-2">Seat Numbers</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.seatNumbers}
-                    onChange={(e) => {
-                      setFormData({ ...formData, seatNumbers: e.target.value })
-                      const error = validateField('seatNumbers', e.target.value)
-                      setErrors({ ...errors, seatNumbers: error })
-                    }}
-                    onBlur={(e) => {
-                      const error = validateField('seatNumbers', e.target.value)
-                      setErrors({ ...errors, seatNumbers: error })
-                    }}
-                    className={`w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                      errors.seatNumbers 
-                        ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                        : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                    }`}
-                    placeholder="e.g., 1-2"
-                  />
-                  {errors.seatNumbers && (
-                    <p className="mt-1 text-xs text-red-400 font-light">{errors.seatNumbers}</p>
-                  )}
-                </div>
-              </div>
             </div>
               </div>
             )}
@@ -1710,31 +1650,25 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Event Details</h4>
-                      <div className="grid grid-cols-2 gap-3">
+                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Ownership Transfer Details</h4>
+                      <div className="space-y-3">
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Date</p>
-                          <p className="text-white font-light">{formData.eventDate ? new Date(formData.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}</p>
+                          <p className="text-white/50 text-xs font-light mb-1">Item Being Transferred</p>
+                          <p className="text-white font-light">{formData.itemBeingTransferred || 'Not set'}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-white/50 text-xs font-light mb-1">Transfer Platform</p>
+                            <p className="text-white font-light capitalize">{formData.transferPlatform?.replace('_', ' ') || 'Not set'}</p>
+                          </div>
+                          <div>
+                            <p className="text-white/50 text-xs font-light mb-1">Expected Transfer Date</p>
+                            <p className="text-white font-light">{formData.expectedTransferDate ? new Date(formData.expectedTransferDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}</p>
+                          </div>
                         </div>
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Venue</p>
-                          <p className="text-white font-light">{formData.venue || 'Not set'}</p>
-                        </div>
-                        <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Quantity</p>
-                          <p className="text-white font-light">{formData.quantity} {formData.quantity === '1' ? 'ticket' : 'tickets'}</p>
-                        </div>
-                        <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Seat Details</p>
-                          <p className="text-white font-light">
-                            {formData.seatSection && formData.seatRow && formData.seatNumbers
-                              ? `Section ${formData.seatSection}, Row ${formData.seatRow}, Seats ${formData.seatNumbers}`
-                              : 'Not set'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Transfer Method</p>
-                          <p className="text-white font-light capitalize">{formData.transferMethod?.replace('_', ' ') || 'Not set'}</p>
+                          <p className="text-white/50 text-xs font-light mb-1">Verification Method</p>
+                          <p className="text-white font-light">{formData.verificationMethod || 'Not set'}</p>
                         </div>
                       </div>
                     </div>
