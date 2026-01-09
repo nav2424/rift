@@ -494,16 +494,58 @@ export async function predictChargebackProbability(
   factors: string[]
   recommendation: 'LOW' | 'MEDIUM' | 'HIGH'
 }> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-    include: {
-      buyer: {
+  // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+  let rift: any
+  try {
+    rift = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    })
+  } catch (findError: any) {
+    const isEnumError = findError?.message?.includes('enum') || 
+                        findError?.message?.includes('not found in enum') ||
+                        findError?.message?.includes("Value 'TICKETS'") ||
+                        findError?.message?.includes("Value 'DIGITAL'")
+    const isColumnError = findError?.code === 'P2022' || 
+                          findError?.message?.includes('does not exist in the current database') ||
+                          (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+    
+    if (isEnumError || isColumnError) {
+      // Fetch rift using raw SQL, then fetch buyer separately
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT id, "buyerId", "sellerId", amount, status::text as status
+        FROM "EscrowTransaction"
+        WHERE id = $1
+      `, riftId)
+      
+      if (!fetchedRifts || fetchedRifts.length === 0) {
+        throw new Error(`Rift not found: ${riftId}`)
+      }
+      
+      const fetchedRift = fetchedRifts[0]
+      
+      // Fetch buyer separately
+      const buyer = await prisma.user.findUnique({
+        where: { id: fetchedRift.buyerId },
         select: {
           id: true,
         },
-      },
-    },
-  })
+      })
+      
+      rift = {
+        ...fetchedRift,
+        buyer: buyer || { id: fetchedRift.buyerId },
+      }
+    } else {
+      throw findError
+    }
+  }
 
   if (!rift) {
     throw new Error(`Rift not found: ${riftId}`)
