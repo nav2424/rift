@@ -44,27 +44,92 @@ export async function computeEnhancedRiskScore(
   riftId: string,
   deviceFingerprint?: DeviceFingerprint
 ): Promise<EnhancedRiskFactors> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-    include: {
-      buyer: {
+  // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+  let rift: any
+  try {
+    rift = await prisma.riftTransaction.findUnique({
+      where: { id: riftId },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            createdAt: true,
+            emailVerified: true,
+            phoneVerified: true,
+          },
+        },
+        seller: {
+          select: {
+            id: true,
+            createdAt: true,
+            emailVerified: true,
+            phoneVerified: true,
+          },
+        },
+      },
+    })
+  } catch (findError: any) {
+    const isEnumError = findError?.message?.includes('enum') || 
+                        findError?.message?.includes('not found in enum') ||
+                        findError?.message?.includes("Value 'TICKETS'") ||
+                        findError?.message?.includes("Value 'DIGITAL'")
+    const isColumnError = findError?.code === 'P2022' || 
+                          findError?.message?.includes('does not exist in the current database') ||
+                          (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+    
+    if (isEnumError || isColumnError) {
+      // Fetch rift using raw SQL, then fetch buyer/seller separately
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT id, "buyerId", "sellerId", amount, subtotal, currency,
+               "itemType"::text as "itemType", status::text as status, "createdAt"
+        FROM "EscrowTransaction"
+        WHERE id = $1
+      `, riftId)
+      
+      if (!fetchedRifts || fetchedRifts.length === 0) {
+        throw new Error(`Rift not found: ${riftId}`)
+      }
+      
+      const fetchedRift = fetchedRifts[0]
+      
+      // Fetch buyer and seller separately
+      const buyer = await prisma.user.findUnique({
+        where: { id: fetchedRift.buyerId },
         select: {
           id: true,
           createdAt: true,
           emailVerified: true,
           phoneVerified: true,
         },
-      },
-      seller: {
+      })
+      
+      const seller = await prisma.user.findUnique({
+        where: { id: fetchedRift.sellerId },
         select: {
           id: true,
           createdAt: true,
           emailVerified: true,
           phoneVerified: true,
         },
-      },
-    },
-  })
+      })
+      
+      // Map itemType
+      const mapItemType = (dbType: string): string => {
+        if (dbType === 'TICKETS') return 'OWNERSHIP_TRANSFER'
+        if (dbType === 'DIGITAL' || dbType === 'LICENSE_KEYS') return 'DIGITAL_GOODS'
+        return dbType
+      }
+      
+      rift = {
+        ...fetchedRift,
+        itemType: mapItemType(fetchedRift.itemType),
+        buyer: buyer || { id: fetchedRift.buyerId, createdAt: new Date(), emailVerified: false, phoneVerified: false },
+        seller: seller || { id: fetchedRift.sellerId, createdAt: new Date(), emailVerified: false, phoneVerified: false },
+      }
+    } else {
+      throw findError
+    }
+  }
 
   if (!rift) {
     throw new Error(`Rift not found: ${riftId}`)

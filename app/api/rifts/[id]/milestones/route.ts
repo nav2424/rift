@@ -17,16 +17,68 @@ export async function GET(
 
     const { id } = await params
 
-    const rift = await prisma.riftTransaction.findUnique({
-      where: { id },
-      include: {
-        MilestoneRelease: {
-          orderBy: {
-            milestoneIndex: 'asc',
+    // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+    let rift: any
+    try {
+      rift = await prisma.riftTransaction.findUnique({
+        where: { id },
+        include: {
+          MilestoneRelease: {
+            orderBy: {
+              milestoneIndex: 'asc',
+            },
           },
         },
-      },
-    })
+      })
+    } catch (findError: any) {
+      const isEnumError = findError?.message?.includes('enum') || 
+                          findError?.message?.includes('not found in enum') ||
+                          findError?.message?.includes("Value 'TICKETS'") ||
+                          findError?.message?.includes("Value 'DIGITAL'")
+      const isColumnError = findError?.code === 'P2022' || 
+                            findError?.message?.includes('does not exist in the current database') ||
+                            (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+      
+      if (isEnumError || isColumnError) {
+        // Fetch rift using raw SQL, then fetch MilestoneRelease separately
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT id, "buyerId", "sellerId", "itemType"::text as "itemType", 
+                 "allowsPartialRelease", milestones, status::text as status
+          FROM "EscrowTransaction"
+          WHERE id = $1
+        `, id)
+        
+        if (!fetchedRifts || fetchedRifts.length === 0) {
+          return NextResponse.json(
+            { error: 'Rift not found' },
+            { status: 404 }
+          )
+        }
+        
+        const fetchedRift = fetchedRifts[0]
+        
+        // Fetch MilestoneRelease separately
+        const milestoneReleases = await prisma.milestoneRelease.findMany({
+          where: { riftId: id },
+          orderBy: { milestoneIndex: 'asc' },
+        })
+        
+        // Map itemType
+        const mapItemType = (dbType: string): string => {
+          if (dbType === 'TICKETS') return 'OWNERSHIP_TRANSFER'
+          if (dbType === 'DIGITAL' || dbType === 'LICENSE_KEYS') return 'DIGITAL_GOODS'
+          return dbType
+        }
+        
+        rift = {
+          ...fetchedRift,
+          itemType: mapItemType(fetchedRift.itemType),
+          MilestoneRelease: milestoneReleases,
+        }
+      } else {
+        throw findError
+      }
+    }
 
     if (!rift) {
       return NextResponse.json(
