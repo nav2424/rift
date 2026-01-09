@@ -5,6 +5,42 @@
 import nodemailer from 'nodemailer'
 import { BalanceAlert } from './stripe-balance-monitor'
 
+/**
+ * Get the base URL for the application
+ * Always prioritizes production domain (joinrift.co) over Vercel URLs
+ * 
+ * IMPORTANT: Set NEXT_PUBLIC_APP_URL or APP_URL environment variable
+ * to your production domain (e.g., https://joinrift.co) in Vercel settings.
+ */
+function getBaseUrl(): string {
+  // Priority 1: NEXT_PUBLIC_APP_URL or APP_URL (explicitly set production domain)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+  if (appUrl) {
+    // Always use the explicitly set URL, even if it contains vercel.app
+    // This allows overriding in production if needed
+    const cleanUrl = appUrl.trim().replace(/\/$/, '') // Remove trailing slash
+    if (cleanUrl) {
+      return cleanUrl
+    }
+  }
+
+  // Priority 2: In production, always use joinrift.co (never Vercel URLs)
+  if (process.env.NODE_ENV === 'production') {
+    // Check NEXTAUTH_URL but only if it's NOT a Vercel URL
+    const nextAuthUrl = process.env.NEXTAUTH_URL
+    if (nextAuthUrl && !nextAuthUrl.includes('.vercel.app') && !nextAuthUrl.includes('localhost')) {
+      return nextAuthUrl.trim().replace(/\/$/, '')
+    }
+    
+    // Default production domain - always use this in production
+    console.warn('⚠️  Using default production domain. Set NEXT_PUBLIC_APP_URL=https://joinrift.co in Vercel settings.')
+    return 'https://joinrift.co'
+  }
+
+  // Development: Use localhost
+  return 'http://localhost:3000'
+}
+
 // Create transporter function (creates new transporter each time to pick up env changes)
 function createTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com'
@@ -85,7 +121,7 @@ export async function sendEscrowCreatedEmail(
     <p>You've created a rift for <strong>${itemTitle}</strong>.</p>
     <p><strong>Amount:</strong> ${amount} ${currency}</p>
     <p>Please proceed to make payment to complete the transaction.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   const sellerHtml = `
@@ -93,7 +129,7 @@ export async function sendEscrowCreatedEmail(
     <p>You have a new rift transaction for <strong>${itemTitle}</strong>.</p>
     <p><strong>Amount:</strong> ${amount} ${currency}</p>
     <p>Please wait for the buyer to complete payment.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await Promise.all([
@@ -117,7 +153,7 @@ export async function sendPaymentReceivedEmail(
     <p>Payment has been received for your rift: <strong>${itemTitle}</strong>.</p>
     <p><strong>Amount:</strong> ${amount} ${currency}</p>
     <p>Please proceed to ship the item and upload proof of shipment.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await sendEmail(sellerEmail, 'Payment Received - Rift', html)
@@ -135,7 +171,7 @@ export async function sendShipmentProofEmail(
     <h2>Shipment Proof Uploaded</h2>
     <p>The seller has uploaded proof of shipment for: <strong>${itemTitle}</strong>.</p>
     <p>Please track your shipment and confirm receipt when it arrives.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await sendEmail(buyerEmail, 'Shipment Proof Uploaded - Rift', html)
@@ -153,7 +189,7 @@ export async function sendItemReceivedEmail(
     <h2>Item Received</h2>
     <p>The buyer has confirmed receipt of: <strong>${itemTitle}</strong>.</p>
     <p>Funds are now pending release. The buyer will release funds shortly.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await sendEmail(sellerEmail, 'Item Received - Rift', html)
@@ -186,7 +222,7 @@ export async function sendFundsReleasedEmail(
     <p><strong>Amount You Receive:</strong> ${currency} ${amount.toFixed(2)}</p>
     ${feeBreakdown}
     <p>The funds should appear in your account within 1-2 business days.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await sendEmail(sellerEmail, 'Funds Released - Rift', html)
@@ -219,7 +255,7 @@ export async function sendDisputeRaisedEmail(
     summary?: string | null
   }
 ) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = getBaseUrl()
   const riftUrl = `${baseUrl}/rifts/${escrowId}`
   
   // Format dispute type for display
@@ -389,8 +425,8 @@ export async function sendProofSubmittedEmail(
     <p><strong>Seller:</strong> ${sellerName || sellerEmail}</p>
     <p><strong>Proof Type:</strong> ${proofType.replace(/_/g, ' ')}</p>
     <p>Please review the proof and approve or reject it.</p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/proofs">Review Proofs</a></p>
-    <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/rifts/${escrowId}">View Rift</a></p>
+    <p><a href="${getBaseUrl()}/admin/proofs">Review Proofs</a></p>
+    <p><a href="${getBaseUrl()}/rifts/${escrowId}">View Rift</a></p>
   `
 
   await sendEmail(adminEmail, 'New Proof Submission - Rift', adminHtml)
@@ -407,7 +443,7 @@ export async function sendDisputeResolvedEmail(
   resolution: 'buyer' | 'seller' | 'rejected',
   note?: string
 ) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = getBaseUrl()
   const riftUrl = `${baseUrl}/rifts/${escrowId}`
   
   const resolutionText = resolution === 'buyer' 
@@ -458,7 +494,7 @@ export async function sendDisputeInfoRequestedEmail(
   itemTitle: string,
   message: string
 ) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = getBaseUrl()
   const riftUrl = `${baseUrl}/rifts/${escrowId}`
   
   const html = `
@@ -494,7 +530,7 @@ export async function sendRiftStatusUpdateEmail(
   status: string,
   message?: string
 ) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = getBaseUrl()
   const riftUrl = `${baseUrl}/rifts/${escrowId}`
   
   const statusLabels: Record<string, string> = {
@@ -569,13 +605,13 @@ export async function sendStripeStatusChangeEmail(
     actionHtml = `
       <p style="color: #10b981; font-weight: bold;">✓ Your Stripe account has been approved!</p>
       <p>You can now receive payouts from your Rift transactions.</p>
-      <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 8px;">View Wallet</a></p>
+      <p><a href="${getBaseUrl()}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 8px;">View Wallet</a></p>
     `
   } else if (status === 'rejected') {
     actionHtml = `
       <p style="color: #ef4444; font-weight: bold;">✗ Your Stripe account was rejected</p>
       <p>Please update your account information to resolve the issue.</p>
-      <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Update Account</a></p>
+      <p><a href="${getBaseUrl()}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Update Account</a></p>
     `
   } else if (status === 'restricted' && requirements && requirements.length > 0) {
     actionHtml = `
@@ -584,12 +620,12 @@ export async function sendStripeStatusChangeEmail(
       <ul>
         ${requirements.map(req => `<li>${req.replace(/_/g, ' ')}</li>`).join('')}
       </ul>
-      <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Complete Setup</a></p>
+      <p><a href="${getBaseUrl()}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Complete Setup</a></p>
     `
   } else {
     actionHtml = `
       <p>${statusMessage}</p>
-      <p><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Check Status</a></p>
+      <p><a href="${getBaseUrl()}/wallet" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">Check Status</a></p>
     `
   }
 
@@ -602,7 +638,7 @@ export async function sendStripeStatusChangeEmail(
       <p style="margin: 8px 0 0 0;"><strong>Message:</strong> ${statusMessage}</p>
     </div>
     ${actionHtml}
-    <p style="margin-top: 24px; color: #6b7280; font-size: 14px;">You can check your account status anytime in your <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/wallet">wallet</a>.</p>
+    <p style="margin-top: 24px; color: #6b7280; font-size: 14px;">You can check your account status anytime in your <a href="${getBaseUrl()}/wallet">wallet</a>.</p>
   `
 
   await sendEmail(
