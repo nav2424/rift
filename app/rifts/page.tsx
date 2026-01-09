@@ -33,7 +33,7 @@ interface RiftTransaction {
   }
 }
 
-type RiftFilter = 'all' | 'active' | 'completed' | 'cancelled'
+type RiftFilter = 'all' | 'active' | 'completed' | 'cancelled' | 'archived'
 
 export default function AllRiftsPage() {
   const { data: session, status } = useSession()
@@ -89,6 +89,8 @@ export default function AllRiftsPage() {
           params.append('status', 'completed')
         } else if (filter === 'cancelled') {
           params.append('status', 'cancelled')
+        } else if (filter === 'archived') {
+          params.append('archived', 'true')
         }
       }
       
@@ -266,7 +268,7 @@ export default function AllRiftsPage() {
         {/* Filters and Search */}
         <div className="mb-8 space-y-5">
           <div className="flex flex-wrap gap-2.5">
-            {(['all', 'active', 'completed', 'cancelled'] as RiftFilter[]).map((f) => (
+            {(['all', 'active', 'completed', 'cancelled', 'archived'] as RiftFilter[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -317,10 +319,14 @@ export default function AllRiftsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             }
-            title="No rifts found"
-            description={searchQuery ? 'Try a different search query' : filter === 'all' 
-              ? 'You don\'t have any transactions yet'
-              : `No ${filter} rifts at the moment`}
+            title={filter === 'archived' ? 'No archived rifts' : 'No rifts found'}
+            description={searchQuery 
+              ? 'Try a different search query' 
+              : filter === 'all' 
+                ? 'You don\'t have any transactions yet'
+                : filter === 'archived'
+                  ? 'You haven\'t archived any rifts yet'
+                  : `No ${filter} rifts at the moment`}
             action={filter === 'all' ? {
               label: 'Create a Rift',
               href: '/rifts/new'
