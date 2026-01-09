@@ -594,7 +594,11 @@ export async function createAccountLink(
     
     // Detect and provide clear messages for common errors
     if (error.message?.includes('live mode') && error.message?.includes('test mode')) {
-      const currentMode = stripe?.getApiField('apiMode') || 'unknown'
+      // Determine mode from API key (if available) or error message
+      const stripeKey = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY_LIVE || ''
+      const isLiveMode = stripeKey.startsWith('sk_live_')
+      const currentMode = isLiveMode ? 'live' : (stripeKey.startsWith('sk_test_') ? 'test' : 'unknown')
+      
       const errorDetail = error.message.includes('live mode account link for an account that was created in test mode')
         ? 'The Stripe account was created in test mode, but your API keys are in live mode. Please use test mode API keys for test accounts, or recreate the account in live mode.'
         : 'The Stripe account was created in live mode, but your API keys are in test mode. Please use live mode API keys for live accounts, or recreate the account in test mode.'
