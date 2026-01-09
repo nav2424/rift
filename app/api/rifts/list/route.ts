@@ -189,12 +189,20 @@ export async function GET(request: NextRequest) {
         const params: any[] = [userId, userId]
         let paramIndex = 3
         
-        // Handle archive filtering
+        // Handle archive filtering (check searchParams directly since whereClause might not have archive info)
+        const archivedParam = searchParams.get('archived')
+        const includeArchivedParam = searchParams.get('includeArchived')
+        const showOnlyArchived = archivedParam === 'true'
+        const includeArchived = includeArchivedParam === 'true'
+        
         if (showOnlyArchived) {
+          // Show only archived rifts (user-specific)
           conditions.push(`(("buyerId" = $1 AND "buyerArchived" = true) OR ("sellerId" = $2 AND "sellerArchived" = true))`)
         } else if (!includeArchived) {
+          // Exclude archived rifts from main view (default behavior)
           conditions.push(`(("buyerId" = $1 AND "buyerArchived" = false) OR ("sellerId" = $2 AND "sellerArchived" = false))`)
         } else {
+          // Include all rifts (archived and non-archived)
           conditions.push(`("buyerId" = $1 OR "sellerId" = $2)`)
         }
 
@@ -260,7 +268,8 @@ export async function GET(request: NextRequest) {
             "platformFee", "sellerPayoutAmount", "shipmentVerifiedAt", "trackingVerified",
             "deliveryVerifiedAt", "gracePeriodEndsAt", "autoReleaseScheduled",
             "eventDate", venue, "transferMethod", "downloadLink", "licenseKey",
-            "serviceDate", "createdAt", "updatedAt"
+            "serviceDate", "createdAt", "updatedAt",
+            "buyerArchived", "sellerArchived", "buyerArchivedAt", "sellerArchivedAt"
           FROM "EscrowTransaction"
           WHERE ${whereClauseSQL}
           ORDER BY "createdAt" DESC
