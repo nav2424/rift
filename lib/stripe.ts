@@ -591,7 +591,24 @@ export async function createAccountLink(
     return accountLink.url
   } catch (error: any) {
     console.error('Stripe account link creation error:', error)
-    throw new Error(`Failed to create account link: ${error.message}`)
+    
+    // Detect and provide clear messages for common errors
+    if (error.message?.includes('live mode') && error.message?.includes('test mode')) {
+      const currentMode = stripe?.getApiField('apiMode') || 'unknown'
+      const errorDetail = error.message.includes('live mode account link for an account that was created in test mode')
+        ? 'The Stripe account was created in test mode, but your API keys are in live mode. Please use test mode API keys for test accounts, or recreate the account in live mode.'
+        : 'The Stripe account was created in live mode, but your API keys are in test mode. Please use live mode API keys for live accounts, or recreate the account in test mode.'
+      
+      throw new Error(`Stripe mode mismatch: ${errorDetail} Current mode: ${currentMode}. Account ID: ${accountId}`)
+    }
+    
+    if (error.type === 'StripeInvalidRequestError') {
+      // Provide more context for invalid request errors
+      const helpfulMessage = error.message || 'Invalid Stripe request'
+      throw new Error(`Stripe error: ${helpfulMessage}. Please check your Stripe configuration and ensure the account exists.`)
+    }
+    
+    throw new Error(`Failed to create account link: ${error.message || 'Unknown error'}`)
   }
 }
 

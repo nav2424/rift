@@ -56,6 +56,23 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     logError('Check withdrawal eligibility', error)
+    
+    // Use database error handler for connection errors
+    const { getDatabaseErrorDetails } = await import('@/lib/db-error-handler')
+    const dbError = getDatabaseErrorDetails(error)
+    
+    // If it's a database connection error, return detailed message
+    if (dbError.statusCode === 503 || dbError.statusCode === 401) {
+      return NextResponse.json(
+        { 
+          error: dbError.message,
+          actionable: dbError.actionable,
+          code: error?.code || 'DATABASE_ERROR',
+        },
+        { status: dbError.statusCode }
+      )
+    }
+    
     return NextResponse.json(
       { error: sanitizeErrorMessage(error, 'Failed to check withdrawal eligibility') },
       { status: 500 }

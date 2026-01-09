@@ -87,12 +87,19 @@ export async function POST(request: NextRequest) {
     let statusCode = 500
     let errorMessage = sanitizeErrorMessage(error, 'Failed to create Stripe account')
     
-    // Handle specific error cases
-    if (error.message?.includes('Stripe Connect is not fully configured')) {
+    // Handle specific error cases with clearer messages
+    if (error.message?.includes('Stripe mode mismatch')) {
+      statusCode = 400
+      errorMessage = error.message // Use the detailed message from createAccountLink
+    } else if (error.message?.includes('Stripe Connect is not fully configured')) {
       statusCode = 503
       errorMessage = 'Stripe Connect setup is incomplete. Please contact support or complete the setup in Stripe Dashboard.'
     } else if (error.message?.includes('account_onboarding') || error.message?.includes('account_update')) {
+      statusCode = 400
       errorMessage = 'Unable to start Stripe verification. Please try again or contact support.'
+    } else if (error.message?.includes('test mode') || error.message?.includes('live mode')) {
+      statusCode = 400
+      errorMessage = error.message || 'Stripe configuration error: Test and live mode mismatch. Please check your Stripe API keys match the account mode.'
     }
     
     return NextResponse.json(
