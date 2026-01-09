@@ -37,11 +37,11 @@ If you see "db.prisma.io" or an incorrect host, update DATABASE_URL in Vercel Se
   if (errorCode === 'P2024' || errorMessage.includes('Connection pool timeout')) {
     return {
       message: 'Database connection timeout',
-      actionable: 'The database connection pool timed out. This may be due to:
+      actionable: `The database connection pool timed out. This may be due to:
 1. High database load
 2. Too many concurrent connections
 3. Network issues
-Please try again in a few moments. If this persists, check your database connection pool settings.',
+Please try again in a few moments. If this persists, check your database connection pool settings.`,
       statusCode: 503,
     }
   }
