@@ -113,7 +113,7 @@ export async function GET(
     // Map milestones with release status
     const milestonesWithStatus = milestones.map((milestone, index) => {
       const release = rift.MilestoneRelease.find(
-        (r) => r.milestoneIndex === index && r.status === 'RELEASED'
+        (r: any) => r.milestoneIndex === index && r.status === 'RELEASED'
       )
 
       return {
