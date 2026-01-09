@@ -9,31 +9,47 @@ import { BalanceAlert } from './stripe-balance-monitor'
  * Get the base URL for the application
  * Always prioritizes production domain (joinrift.co) over Vercel URLs
  * 
- * IMPORTANT: Set NEXT_PUBLIC_APP_URL or APP_URL environment variable
- * to your production domain (e.g., https://joinrift.co) in Vercel settings.
+ * NOTE: NEXT_PUBLIC_APP_URL is client-side only in Next.js.
+ * For server-side code (API routes, email functions), use APP_URL instead.
+ * 
+ * IMPORTANT: Set APP_URL (not NEXT_PUBLIC_APP_URL) in Vercel settings
+ * to your production domain (e.g., https://joinrift.co)
  */
 function getBaseUrl(): string {
-  // Priority 1: NEXT_PUBLIC_APP_URL or APP_URL (explicitly set production domain)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+  // Priority 1: APP_URL (server-side variable) - this is what we need for API routes
+  // NEXT_PUBLIC_APP_URL is only available client-side, so don't rely on it here
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL
+  
+  // Debug logging in production to see what we're getting
+  if (process.env.NODE_ENV === 'production') {
+    console.log('🔍 getBaseUrl() - APP_URL:', process.env.APP_URL)
+    console.log('🔍 getBaseUrl() - NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+    console.log('🔍 getBaseUrl() - NEXTAUTH_URL:', process.env.NEXTAUTH_URL)
+  }
+  
   if (appUrl) {
-    // Always use the explicitly set URL, even if it contains vercel.app
-    // This allows overriding in production if needed
     const cleanUrl = appUrl.trim().replace(/\/$/, '') // Remove trailing slash
-    if (cleanUrl) {
+    // NEVER use Vercel URLs, even if APP_URL is set to one
+    if (cleanUrl && !cleanUrl.includes('.vercel.app')) {
+      console.log('✅ getBaseUrl() - Using APP_URL:', cleanUrl)
       return cleanUrl
+    } else if (cleanUrl && cleanUrl.includes('.vercel.app')) {
+      console.warn('⚠️  getBaseUrl() - APP_URL is set to Vercel URL, ignoring and using joinrift.co instead')
     }
   }
 
   // Priority 2: In production, always use joinrift.co (never Vercel URLs)
   if (process.env.NODE_ENV === 'production') {
-    // Check NEXTAUTH_URL but only if it's NOT a Vercel URL
+    // NEVER use NEXTAUTH_URL if it contains vercel.app
     const nextAuthUrl = process.env.NEXTAUTH_URL
-    if (nextAuthUrl && !nextAuthUrl.includes('.vercel.app') && !nextAuthUrl.includes('localhost')) {
-      return nextAuthUrl.trim().replace(/\/$/, '')
+    if (nextAuthUrl && !nextAuthUrl.includes('.vercel.app') && !nextAuthUrl.includes('localhost') && nextAuthUrl.includes('joinrift.co')) {
+      const cleanAuthUrl = nextAuthUrl.trim().replace(/\/$/, '')
+      console.log('✅ getBaseUrl() - Using NEXTAUTH_URL (non-Vercel):', cleanAuthUrl)
+      return cleanAuthUrl
     }
     
-    // Default production domain - always use this in production
-    console.warn('⚠️  Using default production domain. Set NEXT_PUBLIC_APP_URL=https://joinrift.co in Vercel settings.')
+    // Default production domain - always use this in production as fallback
+    console.log('✅ getBaseUrl() - Using default production domain: https://joinrift.co')
     return 'https://joinrift.co'
   }
 
