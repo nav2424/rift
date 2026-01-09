@@ -127,7 +127,11 @@ export async function POST(
     const canceledStatus: EscrowStatus = 
       ['DRAFT', 'FUNDED', 'AWAITING_PAYMENT'].includes(rift.status) ? 'CANCELED' : 'CANCELLED'
     
-    if (!canTransition(rift.status, canceledStatus, userRole)) {
+    // At this point, we know the user is a buyer (verified above), so use 'BUYER' as the role
+    // Or use ADMIN if they're an admin. This ensures type safety.
+    const actorRole: 'BUYER' | 'SELLER' | 'ADMIN' = isAdmin ? 'ADMIN' : 'BUYER'
+    
+    if (!canTransition(rift.status, canceledStatus, actorRole)) {
       return NextResponse.json(
         { error: 'Invalid status transition' },
         { status: 400 }
