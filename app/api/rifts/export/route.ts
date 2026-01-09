@@ -44,11 +44,19 @@ export async function GET(request: NextRequest) {
       })
     } catch (error: any) {
       // If Prisma fails due to enum deserialization or missing columns (migration not applied), use raw SQL
-      if (error?.message?.includes('not found in enum') || 
-          error?.message?.includes('ItemType') ||
-          error?.code === 'P2022' || // Column doesn't exist
-          error?.message?.includes('does not exist in the current database')) {
-        console.warn('Prisma enum deserialization failed in export route, using raw SQL:', error.message)
+      const isEnumError = error?.message?.includes('not found in enum') || 
+                          error?.message?.includes('ItemType') ||
+                          error?.message?.includes("Value 'TICKETS'") ||
+                          error?.message?.includes("Value 'DIGITAL'")
+      const isColumnError = error?.code === 'P2022' || 
+                            error?.message?.includes('does not exist in the current database') ||
+                            (error?.message?.includes('column') && error?.message?.includes('does not exist'))
+      
+      if (isEnumError || isColumnError) {
+        // Silent fallback - these are expected until migrations are fully applied
+        if (process.env.NODE_ENV === 'development' && isEnumError) {
+          console.warn('Prisma query failed in export route, using raw SQL fallback (expected behavior)')
+        }
         
         // Map old enum values to new ones
         const mapItemType = (itemType: string): string => {

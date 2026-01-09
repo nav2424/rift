@@ -48,13 +48,30 @@ export async function GET(
         seller = rift.seller
       }
     } catch (findError: any) {
-      // If Prisma fails due to enum validation, use raw SQL fallback
-      if (findError?.message?.includes('enum') || findError?.message?.includes('not found in enum')) {
-        console.warn('Prisma enum validation failed, using raw SQL fallback:', findError.message)
+      // If Prisma fails due to enum validation or missing columns (migration not applied), use raw SQL fallback
+      const isEnumError = findError?.message?.includes('enum') || 
+                          findError?.message?.includes('not found in enum') ||
+                          findError?.message?.includes("Value 'TICKETS'") ||
+                          findError?.message?.includes("Value 'DIGITAL'")
+      const isColumnError = findError?.code === 'P2022' || 
+                            findError?.message?.includes('does not exist in the current database') ||
+                            (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+      
+      if (isEnumError || isColumnError) {
+        // Silent fallback - these are expected until migrations are fully applied
+        if (process.env.NODE_ENV === 'development' && isEnumError) {
+          console.warn('Prisma query failed, using raw SQL fallback (expected behavior)')
+        }
         
-        // Fetch rift using raw SQL with text casting to avoid enum validation
-        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
-          SELECT 
+        // Check if archive columns exist in the database
+        const columnCheck = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'EscrowTransaction' AND column_name IN ('buyerArchived', 'sellerArchived')
+        `)
+        const hasArchiveColumns = columnCheck.length === 2
+        
+        // Build SELECT statement dynamically based on column existence
+        let selectColumns = `
             id, "riftNumber", "itemTitle", "itemDescription", 
             "itemType"::text as "itemType", subtotal, "buyerFee", "sellerFee", "sellerNet",
             currency, "buyerId", "sellerId", "shippingAddress", notes,
@@ -63,7 +80,15 @@ export async function GET(
             "licensePlatform", "licenseKeyRevealed", "serviceDate", "serviceScope",
             "serviceDeliverables", "completionCriteria", "allowsPartialRelease",
             milestones, status::text as status, "riskScore", amount, "platformFee", 
-            "sellerPayoutAmount", "createdAt", "updatedAt", version
+            "sellerPayoutAmount", "createdAt", "updatedAt", version`
+        
+        if (hasArchiveColumns) {
+          selectColumns += `, "buyerArchived", "sellerArchived", "buyerArchivedAt", "sellerArchivedAt"`
+        }
+        
+        // Fetch rift using raw SQL with text casting to avoid enum validation
+        const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT ${selectColumns}
           FROM "EscrowTransaction"
           WHERE id = $1
         `, id)
@@ -83,6 +108,10 @@ export async function GET(
         rift = {
           ...fetchedRift,
           itemType: mapItemTypeFromDB(fetchedRift.itemType || fetchedRift.ItemType) as any,
+          buyerArchived: fetchedRift.buyerArchived || false,
+          sellerArchived: fetchedRift.sellerArchived || false,
+          buyerArchivedAt: fetchedRift.buyerArchivedAt || null,
+          sellerArchivedAt: fetchedRift.sellerArchivedAt || null,
         }
         
         // Fetch buyer and seller separately
