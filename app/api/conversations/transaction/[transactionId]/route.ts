@@ -159,14 +159,43 @@ export async function GET(
     const userId = auth.userId
 
     // Validate that the user is either buyer or seller on this transaction
-    const transaction = await prisma.riftTransaction.findUnique({
-      where: { id: transactionId },
-      select: {
-        id: true,
-        buyerId: true,
-        sellerId: true,
-      },
-    })
+    // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
+    let transaction: any
+    try {
+      transaction = await prisma.riftTransaction.findUnique({
+        where: { id: transactionId },
+        select: {
+          id: true,
+          buyerId: true,
+          sellerId: true,
+        },
+      })
+    } catch (findError: any) {
+      const isEnumError = findError?.message?.includes('enum') || 
+                          findError?.message?.includes('not found in enum') ||
+                          findError?.message?.includes("Value 'TICKETS'") ||
+                          findError?.message?.includes("Value 'DIGITAL'")
+      const isColumnError = findError?.code === 'P2022' || 
+                            findError?.message?.includes('does not exist in the current database') ||
+                            (findError?.message?.includes('column') && findError?.message?.includes('does not exist'))
+      
+      if (isEnumError || isColumnError) {
+        // Fetch transaction using raw SQL with text casting to avoid enum/column validation
+        const fetchedTransactions = await prisma.$queryRawUnsafe<any[]>(`
+          SELECT id, "buyerId", "sellerId"
+          FROM "EscrowTransaction"
+          WHERE id = $1
+        `, transactionId)
+        
+        if (!fetchedTransactions || fetchedTransactions.length === 0) {
+          return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
+        }
+        
+        transaction = fetchedTransactions[0]
+      } else {
+        throw findError
+      }
+    }
 
     if (!transaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 })
