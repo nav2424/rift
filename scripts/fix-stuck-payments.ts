@@ -3,6 +3,14 @@
  * This script checks Stripe for payment status and updates rifts accordingly
  */
 
+// Load environment variables from .env.local
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Try loading .env.local first, fallback to .env
+config({ path: resolve(process.cwd(), '.env.local') })
+config({ path: resolve(process.cwd(), '.env') })
+
 import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
 
@@ -12,11 +20,29 @@ const stripe = process.env.STRIPE_SECRET_KEY
   : null
 
 async function main() {
-  if (!stripe) {
-    console.error('Stripe is not configured. Set STRIPE_SECRET_KEY environment variable.')
+  // Check environment variables
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL is not set.')
+    console.error('Please either:')
+    console.error('  1. Set DATABASE_URL environment variable: export DATABASE_URL="..."')
+    console.error('  2. Or ensure .env.local contains DATABASE_URL')
+    console.error('')
+    console.error('Get your DATABASE_URL from:')
+    console.error('  - Supabase Dashboard → Settings → Database → Connection string (URI)')
+    console.error('  - Or pull from Vercel: vercel env pull .env.production')
     process.exit(1)
   }
 
+  if (!stripe) {
+    console.error('❌ Stripe is not configured. Set STRIPE_SECRET_KEY environment variable.')
+    console.error('Get your STRIPE_SECRET_KEY from Stripe Dashboard or Vercel environment variables.')
+    process.exit(1)
+  }
+
+  console.log('✅ Environment variables loaded')
+  console.log(`   Database: ${process.env.DATABASE_URL.substring(0, 50)}...`)
+  console.log(`   Stripe: ${process.env.STRIPE_SECRET_KEY?.substring(0, 20)}...`)
+  console.log('')
   console.log('🔍 Finding rifts stuck in AWAITING_PAYMENT with payment intent IDs...')
 
   // Find rifts in AWAITING_PAYMENT with payment intent IDs
