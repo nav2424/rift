@@ -3,7 +3,67 @@
  * Uses string similarity and normalization for address comparison
  */
 
-import { compareTwoStrings, findBestMatch } from 'string-similarity'
+/**
+ * Calculate similarity between two strings using Sorensen-Dice coefficient
+ * Returns a value between 0 (completely different) and 1 (identical)
+ * This is a simple replacement for the deprecated string-similarity package
+ */
+function compareTwoStrings(str1: string, str2: string): number {
+  if (str1 === str2) return 1.0
+  if (str1.length < 2 || str2.length < 2) return 0.0
+
+  // Create bigrams (pairs of adjacent characters)
+  const pairs1 = new Map<string, number>()
+  const pairs2 = new Map<string, number>()
+
+  for (let i = 0; i < str1.length - 1; i++) {
+    const pair = str1.substring(i, i + 2).toLowerCase()
+    pairs1.set(pair, (pairs1.get(pair) || 0) + 1)
+  }
+
+  for (let i = 0; i < str2.length - 1; i++) {
+    const pair = str2.substring(i, i + 2).toLowerCase()
+    pairs2.set(pair, (pairs2.get(pair) || 0) + 1)
+  }
+
+  // Calculate intersection and union
+  let intersection = 0
+  const allPairs = new Set([...pairs1.keys(), ...pairs2.keys()])
+
+  for (const pair of allPairs) {
+    const count1 = pairs1.get(pair) || 0
+    const count2 = pairs2.get(pair) || 0
+    intersection += Math.min(count1, count2)
+  }
+
+  const totalPairs = pairs1.size + pairs2.size
+  if (totalPairs === 0) return 0.0
+
+  // Sorensen-Dice coefficient: 2 * intersection / (size1 + size2)
+  return (2 * intersection) / totalPairs
+}
+
+/**
+ * Find the best match from a list of strings
+ */
+function findBestMatch(target: string, candidates: string[]): {
+  bestMatch: { target: string; rating: number; index: number }
+  ratings: Array<{ target: string; rating: number; index: number }>
+} {
+  const ratings = candidates.map((candidate, index) => ({
+    target: candidate,
+    rating: compareTwoStrings(target, candidate),
+    index,
+  }))
+
+  // Sort by rating (highest first)
+  ratings.sort((a, b) => b.rating - a.rating)
+
+  return {
+    bestMatch: ratings[0],
+    ratings,
+  }
+}
 
 /**
  * Normalize address string for comparison
