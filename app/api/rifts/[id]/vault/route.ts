@@ -52,8 +52,15 @@ export async function GET(
     // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
     let rift: any
     try {
+      // Use explicit select to avoid schema mismatch with archive fields
       rift = await prisma.riftTransaction.findUnique({
         where: { id: riftId },
+        select: {
+          id: true,
+          buyerId: true,
+          sellerId: true,
+          status: true,
+        },
       })
     } catch (findError: any) {
       const isEnumError = findError?.message?.includes('enum') || 
@@ -174,8 +181,15 @@ export async function POST(
     // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
     let rift: any
     try {
+      // Use explicit select to avoid schema mismatch with archive fields
       rift = await prisma.riftTransaction.findUnique({
         where: { id: riftId },
+        select: {
+          id: true,
+          buyerId: true,
+          sellerId: true,
+          status: true,
+        },
       })
     } catch (findError: any) {
       const isEnumError = findError?.message?.includes('enum') || 

@@ -20,9 +20,17 @@ export async function GET(
     // Try Prisma first, fallback to raw SQL if enum validation fails or columns don't exist
     let rift: any
     try {
+      // Use explicit select to avoid schema mismatch with archive fields
       rift = await prisma.riftTransaction.findUnique({
         where: { id },
-        include: {
+        select: {
+          id: true,
+          buyerId: true,
+          sellerId: true,
+          itemType: true,
+          allowsPartialRelease: true,
+          milestones: true,
+          status: true,
           MilestoneRelease: {
             orderBy: {
               milestoneIndex: 'asc',

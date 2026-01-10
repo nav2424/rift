@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     // Get all rifts for the user - try Prisma first, fallback to raw SQL if enum validation fails
     let rifts: any[]
     try {
+      // Use explicit select to avoid schema mismatch with archive fields
       rifts = await prisma.riftTransaction.findMany({
         where: {
           OR: [
@@ -24,7 +25,20 @@ export async function GET(request: NextRequest) {
             { sellerId: userId },
           ],
         },
-        include: {
+        select: {
+          id: true,
+          riftNumber: true,
+          itemTitle: true,
+          itemDescription: true,
+          itemType: true,
+          amount: true,
+          subtotal: true,
+          currency: true,
+          status: true,
+          buyerId: true,
+          sellerId: true,
+          createdAt: true,
+          updatedAt: true,
           buyer: {
             select: {
               name: true,
