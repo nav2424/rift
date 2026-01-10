@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import GlassCard from './ui/GlassCard'
@@ -8,9 +8,12 @@ import PremiumButton from './ui/PremiumButton'
 import { useToast } from './ui/Toast'
 
 // Initialize Stripe - use publishable key from environment
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
-)
+const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+if (!publishableKey) {
+  console.warn('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Stripe Elements will not work.')
+}
+
+const stripePromise = publishableKey ? loadStripe(publishableKey) : null
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -29,12 +32,25 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [elementsError, setElementsError] = useState<string | null>(null)
   
   // Reset error and interaction state when clientSecret changes (modal reopened)
   useEffect(() => {
     setError(null)
     setHasInteracted(false)
+    setElementsError(null)
   }, [clientSecret])
+
+  // Check if Stripe and Elements are loaded
+  useEffect(() => {
+    if (!stripe) {
+      setElementsError('Stripe is not loaded. Please check your Stripe publishable key.')
+    } else if (!elements) {
+      setElementsError('Stripe Elements is not initialized. Please try refreshing the page.')
+    } else {
+      setElementsError(null)
+    }
+  }, [stripe, elements])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -271,39 +287,56 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
     )
   }
 
-  const options: StripeElementsOptions = {
-    clientSecret,
-    appearance: {
-      theme: 'night',
-      variables: {
-        colorPrimary: '#ffffff',
-        colorBackground: 'rgba(0, 0, 0, 0.8)',
-        colorText: '#ffffff',
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        spacingUnit: '4px',
-        borderRadius: '12px',
-      },
-    },
-    // Note: paymentMethodTypes is not needed here when using clientSecret
-    // The PaymentIntent already restricts to cards only via payment_method_types: ['card']
+  // Show error if Stripe or Elements is not loaded
+  if (!stripe || !elements || elementsError) {
+    return (
+      <div className="p-8 text-center">
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+          <p className="text-red-400 text-sm font-light mb-2">
+            {elementsError || 'Payment form could not be loaded'}
+          </p>
+          <p className="text-red-300/60 text-xs font-light">
+            Please check your browser console or try refreshing the page.
+          </p>
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm transition-colors"
+        >
+          Refresh Page
+        </button>
+      </div>
+    )
   }
 
   // Handle change events from PaymentElement to track user interaction
   useEffect(() => {
     if (!elements) return
     
-    const paymentElement = elements.getElement('payment')
-    if (!paymentElement) return
+    try {
+      const paymentElement = elements.getElement('payment')
+      if (!paymentElement) {
+        console.warn('PaymentElement not found in elements')
+        return
+      }
 
-    const handleChange = () => {
-      setHasInteracted(true)
-    }
+      const handleChange = () => {
+        setHasInteracted(true)
+        setElementsError(null)
+      }
 
-    paymentElement.on('change', handleChange)
-    
-    return () => {
-      paymentElement.off('change', handleChange)
+      paymentElement.on('change', handleChange)
+      
+      return () => {
+        try {
+          paymentElement.off('change', handleChange)
+        } catch (err) {
+          // Ignore errors when cleaning up
+        }
+      }
+    } catch (err: any) {
+      console.error('Error setting up PaymentElement:', err)
+      setElementsError('Failed to initialize payment form. Please try again.')
     }
   }, [elements])
 
@@ -314,11 +347,14 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
           // PaymentIntent already restricts to cards only via payment_method_types: ['card']
           // This ensures only card input is shown, no Link or other payment methods
         }}
+        onReady={() => {
+          setElementsError(null)
+        }}
       />
       
-      {error && hasInteracted && (
+      {(error || elementsError) && (hasInteracted || elementsError) && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-          <p className="text-red-400 text-sm font-light">{error}</p>
+          <p className="text-red-400 text-sm font-light">{error || elementsError}</p>
         </div>
       )}
 
@@ -348,6 +384,28 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
   const { showToast } = useToast()
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
+  const [stripeLoaded, setStripeLoaded] = useState(false)
+
+  // Check if Stripe is loaded
+  useEffect(() => {
+    if (!stripePromise) {
+      console.error('Stripe publishable key is missing')
+      showToast('Payment system is not configured. Please contact support.', 'error')
+      return
+    }
+
+    stripePromise.then((stripe) => {
+      if (stripe) {
+        setStripeLoaded(true)
+      } else {
+        console.error('Failed to load Stripe')
+        showToast('Failed to load payment system. Please try refreshing the page.', 'error')
+      }
+    }).catch((err) => {
+      console.error('Error loading Stripe:', err)
+      showToast('Failed to initialize payment system. Please check your connection.', 'error')
+    })
+  }, [])
 
   // Disable background scroll while modal is open
   useEffect(() => {
@@ -395,10 +453,11 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
 
   if (!isOpen) return null
 
-  const options: StripeElementsOptions = {
+  // Memoize options to prevent Elements from re-initializing
+  const options: StripeElementsOptions = useMemo(() => ({
     clientSecret: clientSecret || undefined,
     appearance: {
-      theme: 'night',
+      theme: 'night' as const,
       variables: {
         colorPrimary: '#ffffff',
         colorBackground: 'rgba(0, 0, 0, 0.8)',
@@ -411,6 +470,26 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
     },
     // Note: paymentMethodTypes is not needed here when using clientSecret
     // The PaymentIntent already restricts to cards only via payment_method_types: ['card']
+  }), [clientSecret])
+
+  // Show error if Stripe publishable key is missing
+  if (!publishableKey || !stripePromise) {
+    return (
+      <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
+        <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
+        <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
+          <GlassCard variant="strong" className="relative w-full max-w-lg p-8 pointer-events-auto">
+            <div className="text-center">
+              <p className="text-red-400 mb-4">Payment system is not configured</p>
+              <p className="text-white/60 text-sm mb-4">
+                Stripe publishable key is missing. Please contact support.
+              </p>
+              <PremiumButton onClick={onClose}>Close</PremiumButton>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -461,8 +540,13 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
           </div>
         </div>
 
-        {clientSecret && paymentIntentId ? (
-          <Elements stripe={stripePromise} options={options}>
+        {!stripeLoaded ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin h-8 w-8 border-2 border-white/20 border-t-white rounded-full mx-auto mb-4"></div>
+            <p className="text-white/60 font-light">Loading payment system...</p>
+          </div>
+        ) : clientSecret && paymentIntentId ? (
+          <Elements stripe={stripePromise} options={options} key={clientSecret}>
             <PaymentForm
               escrowId={escrowId}
               amount={amount}
