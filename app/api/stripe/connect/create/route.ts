@@ -88,18 +88,32 @@ export async function POST(request: NextRequest) {
     let errorMessage = sanitizeErrorMessage(error, 'Failed to create Stripe account')
     
     // Handle specific error cases with clearer messages
-    if (error.message?.includes('Stripe mode mismatch')) {
+    const errorMsg = error.message || ''
+    
+    if (errorMsg.includes('STRIPE_CONNECT_SETUP_REQUIRED') || 
+        errorMsg.includes('complete your platform profile') ||
+        errorMsg.includes('platform profile') ||
+        errorMsg.includes('questionnaire')) {
+      statusCode = 503 // Service Unavailable - configuration issue, not user error
+      // Extract the helpful message from the error
+      if (errorMsg.includes('STRIPE_CONNECT_SETUP_REQUIRED')) {
+        errorMessage = errorMsg.replace('STRIPE_CONNECT_SETUP_REQUIRED: ', '')
+      } else {
+        const mode = process.env.STRIPE_SECRET_KEY?.includes('_live_') ? 'live' : 'test'
+        errorMessage = `Stripe Connect platform profile must be completed. Visit https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/accounts/overview to complete the questionnaire.`
+      }
+    } else if (errorMsg.includes('Stripe mode mismatch')) {
       statusCode = 400
-      errorMessage = error.message // Use the detailed message from createAccountLink
-    } else if (error.message?.includes('Stripe Connect is not fully configured')) {
+      errorMessage = errorMsg // Use the detailed message from createAccountLink
+    } else if (errorMsg.includes('Stripe Connect is not fully configured')) {
       statusCode = 503
       errorMessage = 'Stripe Connect setup is incomplete. Please contact support or complete the setup in Stripe Dashboard.'
-    } else if (error.message?.includes('account_onboarding') || error.message?.includes('account_update')) {
+    } else if (errorMsg.includes('account_onboarding') || errorMsg.includes('account_update')) {
       statusCode = 400
       errorMessage = 'Unable to start Stripe verification. Please try again or contact support.'
-    } else if (error.message?.includes('test mode') || error.message?.includes('live mode')) {
+    } else if (errorMsg.includes('test mode') || errorMsg.includes('live mode')) {
       statusCode = 400
-      errorMessage = error.message || 'Stripe configuration error: Test and live mode mismatch. Please check your Stripe API keys match the account mode.'
+      errorMessage = errorMsg || 'Stripe configuration error: Test and live mode mismatch. Please check your Stripe API keys match the account mode.'
     }
     
     return NextResponse.json(

@@ -537,22 +537,30 @@ export async function createOrGetConnectAccount(
     console.error('Stripe Connect account creation error:', error)
     
     // Check for specific Stripe Connect setup errors
-    if (error.message?.includes('review the responsibilities') || 
-        error.message?.includes('platform-profile') ||
+    const errorMsg = error.message || error.userMessage || ''
+    
+    if (errorMsg.includes('complete your platform profile') || 
+        errorMsg.includes('platform profile') ||
+        errorMsg.includes('questionnaire') ||
+        errorMsg.includes('review the responsibilities') || 
+        errorMsg.includes('platform-profile') ||
+        errorMsg.includes('connect/accounts/overview') ||
         error.code === 'account_invalid') {
+      const mode = process.env.STRIPE_SECRET_KEY?.includes('_live_') ? 'live' : 'test'
       throw new Error(
-        'Stripe Connect is not fully configured. Please complete the Connect profile setup in your Stripe Dashboard: https://dashboard.stripe.com/settings/connect/platform-profile'
+        `STRIPE_CONNECT_SETUP_REQUIRED: Stripe Connect platform profile must be completed in ${mode} mode. ` +
+        `Visit https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/accounts/overview to complete the questionnaire.`
       )
     }
     
     // Check for capability approval errors
-    if (error.message?.includes('transfers') && error.message?.includes('card_payments')) {
+    if (errorMsg.includes('transfers') && errorMsg.includes('card_payments')) {
       throw new Error(
         'Stripe requires approval for transfers capability. Please contact Stripe support or ensure your platform has the necessary approvals.'
       )
     }
     
-    throw new Error(`Failed to create Stripe account: ${error.message || 'Unknown error'}`)
+    throw new Error(`Failed to create Stripe account: ${errorMsg || 'Unknown error'}`)
   }
 }
 
