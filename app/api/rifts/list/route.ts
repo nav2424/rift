@@ -90,63 +90,70 @@ export async function GET(request: NextRequest) {
     let rifts: any[]
 
     try {
-      total = await prisma.riftTransaction.count({
-        where: whereClause,
-      })
+      // Try count first - if it fails due to enum issues, we'll use raw SQL
+      try {
+        total = await prisma.riftTransaction.count({
+          where: whereClause,
+        })
+      } catch (countError: any) {
+        // If count fails due to enum issues, we'll calculate in raw SQL fallback
+        throw countError
+      }
 
       // Get paginated rifts where user is buyer or seller
+      // Note: Using explicit select to avoid selecting buyerArchived/sellerArchived
       rifts = await prisma.riftTransaction.findMany({
         where: whereClause,
         skip,
         take: limit,
-      select: {
-        id: true,
-        riftNumber: true,
-        itemTitle: true,
-        itemDescription: true,
-        itemType: true,
-        amount: true,
-        subtotal: true,
-        buyerFee: true,
-        sellerFee: true,
-        sellerNet: true,
-        currency: true,
-        status: true,
-        buyerId: true,
-        sellerId: true,
-        shippingAddress: true,
-        notes: true,
-        paymentReference: true,
-        platformFee: true,
-        sellerPayoutAmount: true,
-        shipmentVerifiedAt: true,
-        trackingVerified: true,
-        deliveryVerifiedAt: true,
-        gracePeriodEndsAt: true,
-        autoReleaseScheduled: true,
-        eventDate: true,
-        venue: true,
-        transferMethod: true,
-        downloadLink: true,
-        licenseKey: true,
-        serviceDate: true,
-        createdAt: true,
-        updatedAt: true,
-        buyer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+        select: {
+          id: true,
+          riftNumber: true,
+          itemTitle: true,
+          itemDescription: true,
+          itemType: true, // This will fail if old enum values exist in DB
+          amount: true,
+          subtotal: true,
+          buyerFee: true,
+          sellerFee: true,
+          sellerNet: true,
+          currency: true,
+          status: true,
+          buyerId: true,
+          sellerId: true,
+          shippingAddress: true,
+          notes: true,
+          paymentReference: true,
+          platformFee: true,
+          sellerPayoutAmount: true,
+          shipmentVerifiedAt: true,
+          trackingVerified: true,
+          deliveryVerifiedAt: true,
+          gracePeriodEndsAt: true,
+          autoReleaseScheduled: true,
+          eventDate: true,
+          venue: true,
+          transferMethod: true,
+          downloadLink: true,
+          licenseKey: true,
+          serviceDate: true,
+          createdAt: true,
+          updatedAt: true,
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
         orderBy: {
           createdAt: 'desc',
         },
@@ -157,10 +164,12 @@ export async function GET(request: NextRequest) {
                           error?.message?.includes('ItemType') ||
                           error?.message?.includes("Value 'TICKETS'") ||
                           error?.message?.includes("Value 'DIGITAL'") ||
-                          error?.message?.includes("Value 'LICENSE_KEYS'")
+                          error?.message?.includes("Value 'LICENSE_KEYS'") ||
+                          (error?.code === 'P2002' && error?.message?.includes('enum')) ||
+                          error?.message?.includes("Enum value")
       const isColumnError = error?.code === 'P2022' || 
                             error?.message?.includes('does not exist in the current database') ||
-                            error?.message?.includes('column') && error?.message?.includes('does not exist')
+                            (error?.message?.includes('column') && error?.message?.includes('does not exist'))
       
       if (isEnumError || isColumnError) {
         // Silent fallback - these are expected until migrations are fully applied

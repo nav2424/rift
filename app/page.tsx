@@ -83,8 +83,8 @@ export default function Home() {
           </div>
           
             <h1 className="text-5xl md:text-6xl font-medium tracking-tight text-white leading-[1.1]">
-              The execution layer for online{" "}
-              <span className="text-white/60">deals.</span>
+              Where online deals get{" "}
+              <span className="text-white/60">done.</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-base text-white/55 leading-relaxed">
