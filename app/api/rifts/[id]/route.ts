@@ -23,9 +23,35 @@ export async function GET(
     let seller: any
     
     try {
+      // Use explicit select to avoid schema mismatch with archive fields
       rift = await prisma.riftTransaction.findUnique({
         where: { id },
-        include: {
+        select: {
+          id: true,
+          riftNumber: true,
+          itemTitle: true,
+          itemDescription: true,
+          itemType: true,
+          amount: true,
+          subtotal: true,
+          buyerFee: true,
+          sellerFee: true,
+          sellerNet: true,
+          currency: true,
+          status: true,
+          buyerId: true,
+          sellerId: true,
+          shippingAddress: true,
+          notes: true,
+          paymentReference: true,
+          eventDate: true,
+          venue: true,
+          transferMethod: true,
+          downloadLink: true,
+          licenseKey: true,
+          serviceDate: true,
+          createdAt: true,
+          updatedAt: true,
           buyer: {
             select: {
               id: true,
