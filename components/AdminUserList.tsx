@@ -188,7 +188,16 @@ export default function AdminUserList({ users: initialUsers }: AdminUserListProp
                 <tr 
                   key={user.id} 
                   className="hover:bg-white/5 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    try {
+                      router.push(`/admin/users/${user.id}`)
+                    } catch (error) {
+                      console.error('Navigation error:', error)
+                      // Fallback to window.location if router fails
+                      window.location.href = `/admin/users/${user.id}`
+                    }
+                  }}
                 >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">

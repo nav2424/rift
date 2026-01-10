@@ -18,8 +18,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Helper function to safely get metadata base URL
+function getMetadataBase(): URL {
+  try {
+    // Try multiple environment variables in order of preference
+    const url = process.env.NEXT_PUBLIC_APP_URL || 
+                process.env.APP_URL || 
+                process.env.NEXTAUTH_URL || 
+                (process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000')
+    
+    // Validate URL format
+    if (!url || url.trim() === '') {
+      const fallback = process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000'
+      return new URL(fallback)
+    }
+    return new URL(url)
+  } catch (error) {
+    console.error('Invalid URL in environment variables, using fallback:', error)
+    const fallback = process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000'
+    return new URL(fallback)
+  }
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: getMetadataBase(),
   title: "Rift - Secure Buyer Protection for Marketplace Deals",
   description: "Send money safely, receive goods, and release funds only when everything checks out.",
   openGraph: {

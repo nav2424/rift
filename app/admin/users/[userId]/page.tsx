@@ -6,70 +6,108 @@ import AdminUserActions from '@/components/AdminUserActions'
 import RiftList from '@/components/RiftList'
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
-  await requireAdmin()
-  const { userId } = await params
+  try {
+    await requireAdmin()
+    const { userId } = await params
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      riftUserId: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-      totalProcessedAmount: true,
-      availableBalance: true,
-      pendingBalance: true,
-      numCompletedTransactions: true,
-      averageRating: true,
-      responseTimeMs: true,
-      level: true,
-      xp: true,
-      idVerified: true,
-      bankVerified: true,
-      emailVerified: true,
-      phoneVerified: true,
-      stripeIdentityVerified: true,
-      stripeConnectAccountId: true,
-      _count: {
-        select: {
-          sellerTransactions: true,
-          buyerTransactions: true,
-          // Note: disputes are stored in Supabase, not Prisma
-          // Dispute counts would need to be fetched separately from Supabase
+    if (!userId) {
+      return (
+        <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+          <GlassCard variant="strong" className="p-8">
+            <div className="text-white/60 font-light text-center">
+              <p className="text-xl mb-4">Invalid user ID</p>
+              <Link 
+                href="/admin" 
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group"
+              >
+                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Admin Panel
+              </Link>
+            </div>
+          </GlassCard>
+        </div>
+      )
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        riftUserId: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        totalProcessedAmount: true,
+        availableBalance: true,
+        pendingBalance: true,
+        numCompletedTransactions: true,
+        averageRating: true,
+        responseTimeMs: true,
+        level: true,
+        xp: true,
+        idVerified: true,
+        bankVerified: true,
+        emailVerified: true,
+        phoneVerified: true,
+        stripeIdentityVerified: true,
+        stripeConnectAccountId: true,
+        _count: {
+          select: {
+            sellerTransactions: true,
+            buyerTransactions: true,
+            // Note: disputes are stored in Supabase, not Prisma
+            // Dispute counts would need to be fetched separately from Supabase
+          },
         },
       },
-    },
-  })
+    })
 
-  if (!user) {
-    return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <GlassCard variant="strong" className="p-8">
-          <div className="text-white/60 font-light text-center">
-            <p className="text-xl mb-4">User not found</p>
-            <Link 
-              href="/admin" 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group"
-            >
-              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Admin Panel
-            </Link>
-          </div>
-        </GlassCard>
-      </div>
-    )
-  }
+    if (!user) {
+      return (
+        <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+          <GlassCard variant="strong" className="p-8">
+            <div className="text-white/60 font-light text-center">
+              <p className="text-xl mb-4">User not found</p>
+              <p className="text-sm text-white/40 mb-4">User ID: {userId}</p>
+              <Link 
+                href="/admin" 
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group"
+              >
+                <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Admin Panel
+              </Link>
+            </div>
+          </GlassCard>
+        </div>
+      )
+    }
 
   // Get all transactions (both as buyer and seller)
+  // Use explicit select to avoid schema mismatch issues with archive fields
   const buyerTransactions = await prisma.riftTransaction.findMany({
     where: { buyerId: userId },
-    include: {
+    select: {
+      id: true,
+      riftNumber: true,
+      itemTitle: true,
+      amount: true,
+      currency: true,
+      status: true,
+      buyerId: true,
+      sellerId: true,
+      createdAt: true,
+      updatedAt: true,
+      subtotal: true,
+      buyerFee: true,
+      sellerFee: true,
+      sellerNet: true,
       buyer: {
         select: {
           id: true,
@@ -92,7 +130,21 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   const sellerTransactions = await prisma.riftTransaction.findMany({
     where: { sellerId: userId },
-    include: {
+    select: {
+      id: true,
+      riftNumber: true,
+      itemTitle: true,
+      amount: true,
+      currency: true,
+      status: true,
+      buyerId: true,
+      sellerId: true,
+      createdAt: true,
+      updatedAt: true,
+      subtotal: true,
+      buyerFee: true,
+      sellerFee: true,
+      sellerNet: true,
       buyer: {
         select: {
           id: true,
@@ -458,4 +510,26 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       </div>
     </div>
   )
+  } catch (error: any) {
+    console.error('Admin user detail page error:', error)
+    return (
+      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
+        <GlassCard variant="strong" className="p-8 max-w-md">
+          <div className="text-white/60 font-light text-center">
+            <p className="text-xl mb-4 text-red-400">Error loading user</p>
+            <p className="text-sm text-white/40 mb-6">{error?.message || 'An unexpected error occurred'}</p>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group mx-auto"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Admin Panel
+            </Link>
+          </div>
+        </GlassCard>
+      </div>
+    )
+  }
 }
