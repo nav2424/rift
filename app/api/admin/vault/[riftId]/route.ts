@@ -29,9 +29,25 @@ export async function GET(
     const { riftId } = await params
 
     // Get Rift with all related data
+    // Use explicit select to avoid schema mismatch issues with archive fields
     const rift = await prisma.riftTransaction.findUnique({
       where: { id: riftId },
-      include: {
+      select: {
+        id: true,
+        riftNumber: true,
+        itemTitle: true,
+        itemDescription: true,
+        itemType: true,
+        amount: true,
+        currency: true,
+        status: true,
+        buyerId: true,
+        sellerId: true,
+        createdAt: true,
+        updatedAt: true,
+        subtotal: true,
+        buyerFee: true,
+        sellerFee: true,
         buyer: {
           select: {
             id: true,
@@ -54,7 +70,13 @@ export async function GET(
         vault_events: {
           orderBy: { timestampUtc: 'desc' },
           take: 50,
-          include: {
+          select: {
+            id: true,
+            eventType: true,
+            timestampUtc: true,
+            actorRole: true,
+            actorId: true,
+            metadata: true,
             vault_assets: {
               select: {
                 id: true,
@@ -67,7 +89,13 @@ export async function GET(
         admin_reviews: {
           orderBy: { createdAt: 'desc' },
           take: 10,
-          include: {
+          select: {
+            id: true,
+            status: true,
+            notes: true,
+            reasonsJson: true,
+            createdAt: true,
+            resolvedAt: true,
             User: {
               select: {
                 id: true,
