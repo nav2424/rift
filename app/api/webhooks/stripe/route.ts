@@ -190,23 +190,30 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
     return
   }
 
-  // Only transition if still in DRAFT
-  if (rift.status === 'DRAFT') {
-    await transitionRiftState(rift.id, 'FUNDED')
-    
-    // Store charge ID, payment intent ID, and customer ID
+  // Only transition if still in DRAFT or AWAITING_PAYMENT
+  // DRAFT is legacy, AWAITING_PAYMENT is current status when payment intent is created
+  if (rift.status === 'DRAFT' || rift.status === 'AWAITING_PAYMENT') {
+    // Store charge ID, payment intent ID, and customer ID BEFORE transitioning
+    // This ensures the data is persisted even if transition fails
     const charges = paymentIntent.charges?.data || []
-    if (charges.length > 0) {
-      await prisma.riftTransaction.update({
-        where: { id: riftId },
-        data: {
-          stripeChargeId: charges[0].id,
-          stripePaymentIntentId: paymentIntent.id,
-          stripeCustomerId: paymentIntent.customer || null,
-          paidAt: new Date(),
-        },
-      })
+    const updateData: any = {
+      stripePaymentIntentId: paymentIntent.id,
+      stripeCustomerId: paymentIntent.customer || null,
+      paidAt: new Date(),
     }
+    
+    if (charges.length > 0) {
+      updateData.stripeChargeId = charges[0].id
+    }
+
+    // Update payment info first
+    await prisma.riftTransaction.update({
+      where: { id: riftId },
+      data: updateData,
+    })
+
+    // Then transition to FUNDED
+    await transitionRiftState(rift.id, 'FUNDED')
 
     // Capture policy acceptance for buyer at checkout
     try {

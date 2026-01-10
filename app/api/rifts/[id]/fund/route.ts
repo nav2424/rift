@@ -17,6 +17,29 @@ export async function POST(
     }
 
     const { id } = await params
+    
+    // Verify the user is the buyer
+    const { prisma } = await import('@/lib/prisma')
+    const rift = await prisma.riftTransaction.findUnique({
+      where: { id },
+      select: { buyerId: true, status: true },
+    })
+
+    if (!rift) {
+      return NextResponse.json({ error: 'Rift not found' }, { status: 404 })
+    }
+
+    if (rift.buyerId !== auth.userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    if (rift.status !== 'AWAITING_PAYMENT') {
+      return NextResponse.json(
+        { error: `Rift is in ${rift.status} status. Cannot create payment intent.` },
+        { status: 400 }
+      )
+    }
+
     const result = await createEscrowPaymentIntent(id)
     
     if (!result) {
@@ -24,6 +47,19 @@ export async function POST(
         { error: 'Failed to create payment intent' },
         { status: 500 }
       )
+    }
+
+    // Store the payment intent ID in the database
+    try {
+      await prisma.riftTransaction.update({
+        where: { id },
+        data: {
+          stripePaymentIntentId: result.paymentIntentId,
+        },
+      })
+    } catch (updateError: any) {
+      console.error('Failed to store payment intent ID:', updateError)
+      // Non-critical - continue and return the result
     }
 
     return NextResponse.json(result)
@@ -95,8 +131,9 @@ export async function PUT(
       )
     }
 
-    // Verify payment intent matches
-    if (rift.stripePaymentIntentId !== paymentIntentId) {
+    // Verify payment intent matches (if stored)
+    // If not stored yet, we'll verify via Stripe API instead
+    if (rift.stripePaymentIntentId && rift.stripePaymentIntentId !== paymentIntentId) {
       console.error('Payment intent mismatch:', {
         stored: rift.stripePaymentIntentId,
         provided: paymentIntentId
@@ -108,9 +145,24 @@ export async function PUT(
     }
 
     // Verify payment intent status with Stripe (if Stripe is configured)
+    // Also verify the payment intent belongs to this rift
     if (stripe) {
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+        
+        // Verify this payment intent belongs to this rift
+        const paymentRiftId = paymentIntent.metadata?.escrowId
+        if (paymentRiftId && paymentRiftId !== id) {
+          console.error('Payment intent belongs to different rift:', {
+            paymentIntentId,
+            expectedRiftId: id,
+            actualRiftId: paymentRiftId
+          })
+          return NextResponse.json({ 
+            error: 'Payment intent mismatch',
+            details: 'This payment intent belongs to a different rift'
+          }, { status: 400 })
+        }
         
         // Accept succeeded, processing, or requires_capture as valid states
         const validStatuses = ['succeeded', 'processing', 'requires_capture']
@@ -126,6 +178,21 @@ export async function PUT(
             error: `Payment not completed. Status: ${paymentIntent.status}`,
             details: paymentIntent.last_payment_error?.message || `Payment intent is in ${paymentIntent.status} state, expected succeeded/processing/requires_capture`
           }, { status: 400 })
+        }
+
+        // Update stored payment intent ID if it wasn't stored before
+        if (!rift.stripePaymentIntentId) {
+          try {
+            await prisma.riftTransaction.update({
+              where: { id },
+              data: {
+                stripePaymentIntentId: paymentIntentId,
+              },
+            })
+          } catch (updateError) {
+            console.warn('Failed to store payment intent ID after verification:', updateError)
+            // Non-critical - continue
+          }
         }
       } catch (stripeError: any) {
         console.error('Stripe payment intent retrieval error:', stripeError)
