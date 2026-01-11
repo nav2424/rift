@@ -358,51 +358,52 @@ export default function Dashboard() {
   return (
     <div className="space-y-8" data-onboarding="dashboard">
         {/* Enhanced Header */}
-        <div className="mb-8 relative">
-          {/* Top Right Actions - Positioned at top right of header */}
-          <div className="absolute top-0 right-0 flex items-center gap-3">
+        <div className="mb-6 sm:mb-8 relative">
+          {/* Top Right Actions - Responsive positioning */}
+          <div className="absolute top-0 right-0 flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Notifications Badge */}
             {unreadCount > 0 && (
               <Link href="/wallet" className="relative group">
-                <button className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white/70 hover:text-white backdrop-blur-sm">
+                <button className="p-2.5 sm:p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white/70 hover:text-white backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-medium flex items-center justify-center shadow-lg shadow-red-500/50">
+                  <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-5 h-5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-medium flex items-center justify-center shadow-lg shadow-red-500/50">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 </button>
               </Link>
             )}
             <Link href="/rifts/new" className="group" data-onboarding="create-rift">
-              <button className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-sm backdrop-blur-sm shadow-lg">
-                <span className="flex items-center gap-2">
+              <button className="px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-xs sm:text-sm backdrop-blur-sm shadow-lg min-h-[44px] flex items-center justify-center">
+                <span className="flex items-center gap-1.5 sm:gap-2">
                   <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Create Rift
+                  <span className="hidden sm:inline">Create Rift</span>
+                  <span className="sm:hidden">New</span>
                 </span>
               </button>
             </Link>
           </div>
           
-          <div className="flex items-start justify-between mb-6 pr-48">
-            <div className="flex-1">
+          <div className="flex items-start justify-between mb-4 sm:mb-6 pr-24 sm:pr-32 md:pr-48">
+            <div className="flex-1 min-w-0">
               <div className="flex items-start gap-4">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="mb-2">
-                    <p className="text-xs text-white/40 font-light uppercase tracking-wider mb-3">{greeting}</p>
-                    <h1 className="text-2xl md:text-3xl font-light text-white tracking-tight mb-4">
+                    <p className="text-xs text-white/40 font-light uppercase tracking-wider mb-2 sm:mb-3">{greeting}</p>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-light text-white tracking-tight mb-3 sm:mb-4 break-words">
                       Welcome back, <span className="text-white/90">{userName}</span>
                     </h1>
                   </div>
                   {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
-                    <p className="text-sm text-white/50 font-light">You're all set! Ready to create your first rift?</p>
+                    <p className="text-xs sm:text-sm text-white/50 font-light">You're all set! Ready to create your first rift?</p>
                   )}
                   {metrics.pendingActionsCount > 0 && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-                      <p className="text-sm text-white/70 font-light">
+                      <p className="text-xs sm:text-sm text-white/70 font-light">
                         {metrics.pendingActionsCount} {metrics.pendingActionsCount === 1 ? 'action' : 'actions'} waiting
                       </p>
                     </div>
@@ -410,7 +411,6 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            {/* Removed old button container - now positioned above */}
           </div>
         </div>
 
@@ -484,7 +484,7 @@ export default function Dashboard() {
         )}
 
         {/* Main Grid: Wallet (Left), Recent Activity (Middle), Actions Required (Right) */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 items-stretch">
           {/* Left Column: Wallet */}
           <div className="flex flex-col">
             <div className="min-h-0 h-full">
@@ -495,19 +495,19 @@ export default function Dashboard() {
           {/* Middle Column: Recent Activity */}
           <div className="flex flex-col">
             <GlassCard className="border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 via-cyan-500/2 to-transparent hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 h-full flex flex-col">
-              <div className="p-8 flex flex-col flex-1">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-cyan-500/10 flex items-center justify-center border border-cyan-500/25 shadow-lg shadow-cyan-500/10 flex-shrink-0">
-                        <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-4 sm:p-6 md:p-8 flex flex-col flex-1">
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-cyan-500/10 flex items-center justify-center border border-cyan-500/25 shadow-lg shadow-cyan-500/10 flex-shrink-0">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <h2 className="text-lg font-light text-white">Recent Activity</h2>
+                      <h2 className="text-base sm:text-lg font-light text-white truncate">Recent Activity</h2>
                     </div>
                     {recentActivity.length > 0 && (
-                      <Link href="/activity" className="text-xs text-cyan-400/80 hover:text-cyan-400 font-light flex items-center gap-1.5 transition-colors group">
+                      <Link href="/activity" className="text-xs text-cyan-400/80 hover:text-cyan-400 font-light flex items-center gap-1.5 transition-colors group flex-shrink-0 ml-2">
                         View All
                         <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -517,28 +517,28 @@ export default function Dashboard() {
                   </div>
                 </div>
                 {recentActivity.length > 0 ? (
-                  <div className="pt-6 border-t border-white/10 flex-1 flex flex-col">
-                    <div className="space-y-2.5 flex-1">
+                  <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex flex-col">
+                    <div className="space-y-2 sm:space-y-2.5 flex-1">
                       {recentActivity.slice(0, 3).map((activity) => (
                         <Link
                           key={activity.id}
                           href={`/rifts/${activity.id}`}
-                          className="block p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 hover:shadow-md hover:shadow-cyan-500/5 group h-20 flex items-center"
+                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 hover:shadow-md hover:shadow-cyan-500/5 group min-h-[72px] sm:h-20 flex items-center"
                         >
-                          <p className="text-sm text-white/80 group-hover:text-white font-light leading-relaxed line-clamp-2 transition-colors">{activity.message}</p>
+                          <p className="text-xs sm:text-sm text-white/80 group-hover:text-white font-light leading-relaxed line-clamp-2 transition-colors">{activity.message}</p>
                         </Link>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="pt-6 border-t border-white/10 flex-1 flex items-center justify-center">
+                  <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <p className="text-sm text-white/40 font-light">No recent activity</p>
+                      <p className="text-xs sm:text-sm text-white/40 font-light">No recent activity</p>
                     </div>
                   </div>
                 )}
@@ -550,21 +550,21 @@ export default function Dashboard() {
           <div className="flex flex-col">
             {/* Enhanced Actions Required - Always visible */}
             <GlassCard className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-blue-500/2 to-transparent hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 h-full flex flex-col">
-              <div className="p-8 flex flex-col flex-1">
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/25 to-blue-500/10 flex items-center justify-center border border-blue-500/25 shadow-lg shadow-blue-500/10 flex-shrink-0">
-                      <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-4 sm:p-6 md:p-8 flex flex-col flex-1">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500/25 to-blue-500/10 flex items-center justify-center border border-blue-500/25 shadow-lg shadow-blue-500/10 flex-shrink-0">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                       </svg>
                     </div>
-                    <div>
-                      <h2 className="text-lg font-light text-white">Action Required</h2>
+                    <div className="min-w-0">
+                      <h2 className="text-base sm:text-lg font-light text-white truncate">Action Required</h2>
                     </div>
                   </div>
                   {metrics.pendingActionsCount > 0 && (
-                    <Link href="/rifts/actions-required" className="text-xs text-blue-400/80 hover:text-blue-400 font-light flex items-center gap-1.5 transition-colors group">
+                    <Link href="/rifts/actions-required" className="text-xs text-blue-400/80 hover:text-blue-400 font-light flex items-center gap-1.5 transition-colors group flex-shrink-0 ml-2">
                       View All
                       <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -573,9 +573,9 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-              <div className="pt-6 border-t border-white/10 flex-1 flex flex-col">
+              <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex flex-col">
                 {metrics.pendingActionsCount > 0 ? (
-                  <div className="space-y-2.5 flex-1">
+                  <div className="space-y-2 sm:space-y-2.5 flex-1">
                     {metrics.pendingActions.slice(0, 3).map((action) => {
                       const isBuyer = action.buyerId === session?.user?.id
                       let actionText = ''
@@ -610,11 +610,11 @@ export default function Dashboard() {
                         <Link
                           key={action.id}
                           href={`/rifts/${action.id}#actions`}
-                          className="block p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/5 group h-20 flex items-center"
+                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/5 group min-h-[72px] sm:h-20 flex items-center"
                         >
                           <div className="flex items-center justify-between gap-3 w-full">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm text-white font-medium truncate mb-1.5">{actionText}</p>
+                              <p className="text-xs sm:text-sm text-white font-medium truncate mb-1 sm:mb-1.5">{actionText}</p>
                               <p className="text-xs text-white/60 font-light line-clamp-2 leading-relaxed">{actionDescription}</p>
                             </div>
                             <svg className="w-5 h-5 text-white/30 group-hover:text-blue-400 group-hover:translate-x-1 flex-shrink-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -626,8 +626,8 @@ export default function Dashboard() {
                     })}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center flex-1 py-8">
-                    <p className="text-white/60 font-light text-sm">No actions required at this time</p>
+                  <div className="flex items-center justify-center flex-1 py-6 sm:py-8">
+                    <p className="text-white/60 font-light text-xs sm:text-sm text-center px-2">No actions required at this time</p>
                   </div>
                 )}
               </div>
@@ -637,20 +637,20 @@ export default function Dashboard() {
         </div>
 
         {/* Enhanced Your Rifts Section */}
-        <div className="mt-10 mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mt-6 sm:mt-8 md:mt-10 mb-4 sm:mb-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 flex items-center justify-center border border-purple-500/20 flex-shrink-0">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Your Rifts</h2>
+              <h2 className="text-xl sm:text-2xl font-light text-white truncate">Your Rifts</h2>
             </div>
             {rifts.length > 0 && (
-              <Link href="/rifts" className="text-sm text-white/50 hover:text-white font-light flex items-center gap-1.5 transition-colors group">
+              <Link href="/rifts" className="text-xs sm:text-sm text-white/50 hover:text-white font-light flex items-center gap-1.5 transition-colors group flex-shrink-0">
                 View All
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -659,19 +659,19 @@ export default function Dashboard() {
           
           {activeRifts.length === 0 ? (
             <GlassCard className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-purple-500/0">
-              <div className="p-12 text-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 flex items-center justify-center mx-auto mb-6 border border-purple-500/30 shadow-lg shadow-purple-500/10">
-                  <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-8 sm:p-10 md:p-12 text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-purple-500/30 to-purple-500/10 flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-purple-500/30 shadow-lg shadow-purple-500/10">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-light text-white mb-3">No rifts yet</h3>
-                <p className="text-white/50 font-light text-sm mb-6">
+                <h3 className="text-xl sm:text-2xl font-light text-white mb-2 sm:mb-3">No rifts yet</h3>
+                <p className="text-white/50 font-light text-xs sm:text-sm mb-4 sm:mb-6 px-4">
                   Create your first rift to get started
                 </p>
                 <Link 
                   href="/rifts/new"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-sm shadow-lg"
+                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-xs sm:text-sm shadow-lg min-h-[44px]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -681,7 +681,7 @@ export default function Dashboard() {
               </div>
             </GlassCard>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-3 sm:space-y-4 md:space-y-5">
               {activeRifts.slice(0, 3).map((rift) => {
                 const isBuyer = rift.buyerId === session?.user?.id
                 const otherParty = isBuyer ? rift.seller : rift.buyer
@@ -689,22 +689,22 @@ export default function Dashboard() {
                 return (
                   <Link key={rift.id} href={`/rifts/${rift.id}`}>
                     <GlassCard className="hover:bg-white/5 hover:border-white/20 transition-all duration-300 cursor-pointer group">
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-4">
+                      <div className="p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-3 sm:gap-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-light text-white truncate">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                              <h3 className="text-base sm:text-lg font-light text-white truncate">
                                 Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                               </h3>
                               <StatusPill status={rift.status} />
                             </div>
-                            <p className="text-base text-white/90 font-light truncate mb-1.5">{rift.itemTitle}</p>
-                            <p className="text-sm text-white/50 font-light truncate">
+                            <p className="text-sm sm:text-base text-white/90 font-light truncate mb-1 sm:mb-1.5">{rift.itemTitle}</p>
+                            <p className="text-xs sm:text-sm text-white/50 font-light truncate">
                               {otherParty.name || otherParty.email.split('@')[0]} • {rift.itemType.replace(/_/g, ' ')}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 flex flex-col items-end">
-                            <p className="text-lg font-light text-white mb-1">
+                            <p className="text-base sm:text-lg font-light text-white mb-1">
                               {formatCurrency((rift as any).subtotal || rift.amount || 0, rift.currency)}
                             </p>
                             {(rift as any).buyerFee && (rift as any).buyerFee > 0 && isBuyer && (
@@ -712,7 +712,7 @@ export default function Dashboard() {
                                 + {formatCurrency((rift as any).buyerFee, rift.currency)} fee
                               </p>
                             )}
-                            <svg className="w-5 h-5 text-white/30 group-hover:text-white/50 group-hover:translate-x-1 mt-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/30 group-hover:text-white/50 group-hover:translate-x-1 mt-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>

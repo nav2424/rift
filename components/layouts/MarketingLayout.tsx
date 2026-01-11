@@ -33,12 +33,12 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
     <div className="min-h-screen bg-black text-white">
       {/* Top Navigation */}
       <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex h-16 items-center justify-between">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 md:px-6">
+          <div className="flex h-14 sm:h-16 items-center justify-between gap-2">
             {/* Logo */}
             <Link 
               href="/" 
-              className="flex items-center hover:opacity-80 transition-opacity"
+              className="flex items-center hover:opacity-80 transition-opacity flex-shrink-0"
             >
               <RiftLogo size="md" />
             </Link>
@@ -47,26 +47,26 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             <nav className="hidden md:flex items-center gap-1 text-sm">
               <Link 
                 href="/" 
-                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light min-h-[44px] flex items-center"
               >
                 Product
               </Link>
               <Link 
                 href="/pricing" 
-                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light min-h-[44px] flex items-center"
               >
                 Pricing
               </Link>
               <Link 
                 href="/about" 
-                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light"
+                className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light min-h-[44px] flex items-center"
               >
                 About
               </Link>
               {session ? (
                 <Link 
                   href="/dashboard" 
-                  className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-2"
+                  className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-2 min-h-[44px] flex items-center"
                 >
                   Dashboard
                 </Link>
@@ -74,13 +74,13 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                 <>
                   <Link 
                     href="/auth/signin" 
-                    className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-4"
+                    className="px-4 py-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 font-light ml-4 min-h-[44px] flex items-center"
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="ml-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition shadow-sm"
+                    className="ml-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition shadow-sm min-h-[44px] flex items-center"
                   >
                     Create a Rift
                   </Link>
@@ -91,7 +91,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              className="md:hidden p-2.5 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Menu"
             >
               {mobileMenuOpen ? (
@@ -138,24 +138,24 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             </div>
             
             {/* Navigation Links */}
-            <div className="flex flex-col pt-8 px-4">
+            <div className="flex flex-col pt-6 sm:pt-8 px-4">
               <Link 
                 href="/" 
-                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                className="block py-3.5 sm:py-4 px-4 sm:px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Product
               </Link>
               <Link 
                 href="/pricing" 
-                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                className="block py-3.5 sm:py-4 px-4 sm:px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link 
                 href="/about" 
-                className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                className="block py-3.5 sm:py-4 px-4 sm:px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 About
@@ -163,7 +163,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
               {session ? (
                 <Link 
                   href="/dashboard" 
-                  className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                  className="block py-3.5 sm:py-4 px-4 sm:px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 min-h-[44px] flex items-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
@@ -172,14 +172,14 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                 <>
                   <Link 
                     href="/auth/signin" 
-                    className="block py-3 px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10"
+                    className="block py-3.5 sm:py-4 px-4 sm:px-6 text-white/80 hover:text-white hover:bg-white/5 transition-colors duration-200 font-medium text-base border-b border-white/10 min-h-[44px] flex items-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="block py-3 px-6 bg-white text-black hover:opacity-90 transition-colors duration-200 font-medium text-base rounded-lg mt-4 text-center"
+                    className="block py-3.5 sm:py-4 px-4 sm:px-6 bg-white text-black hover:opacity-90 transition-colors duration-200 font-medium text-base rounded-lg mt-4 text-center min-h-[44px] flex items-center justify-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Create a Rift
@@ -192,7 +192,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
       )}
 
       {/* Main Content */}
-      <main className="pt-20">{children}</main>
+      <main className="pt-14 sm:pt-16 md:pt-20">{children}</main>
       
       {/* Footer */}
       <footer className="border-t border-white/8 bg-black/95 backdrop-blur-sm">

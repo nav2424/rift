@@ -229,50 +229,54 @@ export default function AllRiftsPage() {
   return (
     <div className="space-y-8">
         {/* Header */}
-        <div className="mb-10 pb-6 border-b border-white/10">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-500/10 flex items-center justify-center border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
-              <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
+        <div className="mb-6 sm:mb-8 md:mb-10 pb-4 sm:pb-6 border-b border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-500/10 flex items-center justify-center border border-cyan-500/20 shadow-lg shadow-cyan-500/10 flex-shrink-0">
+                <svg className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-tight mb-1 truncate">
+                  Your Rifts
+                </h1>
+                <p className="text-white/50 font-light text-xs sm:text-sm">All your rift transactions</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-1">
-                Your Rifts
-              </h1>
-              <p className="text-white/50 font-light text-sm">All your rift transactions</p>
-            </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
               <Link 
                 href="/api/rifts/export"
-                className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 border border-white/20 text-white/80 font-light flex items-center gap-2 group"
+                className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 border border-white/20 text-white/80 font-light flex items-center gap-1.5 sm:gap-2 group min-h-[44px] text-xs sm:text-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                <span>Export CSV</span>
+                <span className="hidden sm:inline">Export CSV</span>
+                <span className="sm:hidden">Export</span>
               </Link>
               <Link 
                 href="/rifts/new"
-                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light flex items-center gap-2 group"
+                className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light flex items-center gap-1.5 sm:gap-2 group min-h-[44px] text-xs sm:text-sm"
               >
-                <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:scale-110 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span>Create Rift</span>
+                <span className="hidden sm:inline">Create Rift</span>
+                <span className="sm:hidden">New</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="mb-8 space-y-5">
-          <div className="flex flex-wrap gap-2.5">
+        <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-5">
+          <div className="flex flex-wrap gap-2 sm:gap-2.5">
             {(['all', 'active', 'completed', 'cancelled', 'archived'] as RiftFilter[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-light transition-all duration-200 ${
+                className={`px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-light transition-all duration-200 min-h-[44px] flex items-center justify-center ${
                   filter === f
                     ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
                     : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:border-white/20'
@@ -284,8 +288,8 @@ export default function AllRiftsPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -306,7 +310,7 @@ export default function AllRiftsPage() {
                 const newUrl = params.toString() ? `/rifts?${params.toString()}` : '/rifts'
                 router.push(newUrl, { scroll: false })
               }}
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200"
+              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200 text-sm sm:text-base min-h-[44px]"
             />
           </div>
         </div>
@@ -342,16 +346,16 @@ export default function AllRiftsPage() {
               return (
                 <Link key={rift.id} href={`/rifts/${rift.id}`}>
                   <GlassCard className="hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer group">
-                    <div className="p-6">
-                      <div className="flex items-start gap-4">
+                    <div className="p-4 sm:p-5 md:p-6">
+                      <div className="flex items-start gap-3 sm:gap-4">
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4 mb-3">
-                            <div>
-                              <h3 className="text-white font-light text-lg mb-1">
+                          <div className="flex items-start justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-white font-light text-base sm:text-lg mb-1 truncate">
                                 Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                               </h3>
-                              <p className="text-white/80 font-light leading-relaxed">{rift.itemTitle}</p>
+                              <p className="text-white/80 font-light leading-relaxed text-sm sm:text-base line-clamp-2">{rift.itemTitle}</p>
                             </div>
                             <span className="text-white/40 font-light text-xs whitespace-nowrap flex-shrink-0 pt-1">
                               {new Date(rift.createdAt).toLocaleDateString('en-US', {
@@ -362,18 +366,18 @@ export default function AllRiftsPage() {
                             </span>
                           </div>
                           
-                          <div className="flex items-center gap-4 flex-wrap">
+                          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
                             <StatusPill status={rift.status} />
-                            <span className="text-white/60 font-light text-sm">
+                            <span className="text-white/60 font-light text-xs sm:text-sm">
                               {rift.itemType.replace(/_/g, ' ')}
                             </span>
-                            <span className="text-white/40">•</span>
-                            <span className="text-white/60 font-light text-sm">{role}</span>
-                            <span className="text-white/40">•</span>
-                            <span className="text-white/60 font-light text-sm">
+                            <span className="text-white/40 hidden sm:inline">•</span>
+                            <span className="text-white/60 font-light text-xs sm:text-sm">{role}</span>
+                            <span className="text-white/40 hidden sm:inline">•</span>
+                            <span className="text-white/60 font-light text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
                               {otherParty.name || otherParty.email.split('@')[0]}
                             </span>
-                            <span className="text-white/70 font-light text-sm font-mono ml-auto">
+                            <span className="text-white/70 font-light text-sm sm:text-base font-mono ml-auto flex-shrink-0">
                               {formatCurrency(rift.amount, rift.currency)}
                             </span>
                           </div>
@@ -392,7 +396,7 @@ export default function AllRiftsPage() {
           <div className="mt-6 flex justify-center">
             <button
               onClick={loadMore}
-              className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-colors border border-white/20 text-white font-light"
+              className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 transition-colors border border-white/20 text-white font-light min-h-[44px] text-sm sm:text-base"
             >
               Load More
             </button>

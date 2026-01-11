@@ -177,11 +177,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className={`flex-1 py-6 space-y-1 ${sidebarCollapsed ? 'px-2' : 'px-4'}`}>
+          <nav className={`flex-1 py-4 md:py-6 space-y-1 ${sidebarCollapsed ? 'px-2' : 'px-3 md:px-4'}`}>
             {/* Collapse Button */}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`hidden md:flex items-center rounded-lg transition-colors group w-full mb-2 ${
+              className={`hidden md:flex items-center rounded-lg transition-colors group w-full mb-2 min-h-[44px] ${
                 sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
               } text-white/60 hover:text-white hover:bg-white/5`}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -207,7 +207,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center rounded-lg transition-colors group ${
+                  className={`flex items-center rounded-lg transition-colors group min-h-[44px] ${
                     sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
                   } ${
                     active
@@ -251,11 +251,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-black/95 backdrop-blur-sm border-b border-white/8">
-          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 text-white/60 hover:text-white transition-colors"
+              className="md:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              aria-label="Open menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -263,7 +264,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </button>
 
             {/* Search */}
-            <div className="flex-1 max-w-xl mx-4">
+            <div className="flex-1 max-w-xl mx-1 sm:mx-2 md:mx-4 min-w-0">
               <div className="relative">
                 <input
                   ref={searchInputRef}
@@ -272,10 +273,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   value={searchValue}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 pl-10 pr-10 text-white placeholder-white/40 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all text-sm font-light"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2.5 sm:py-2 pl-9 sm:pl-10 pr-9 sm:pr-10 text-white placeholder-white/40 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all text-sm sm:text-base font-light"
                 />
                 <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+                  className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -285,10 +286,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {searchValue && (
                   <button
                     onClick={() => handleSearchChange('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 hover:text-white/60 transition-colors"
+                    className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 min-h-[44px] min-w-[44px] flex items-center justify-center text-white/40 hover:text-white/60 transition-colors"
                     aria-label="Clear search"
                   >
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -298,18 +299,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
             {/* Profile Dropdown */}
             {session && (
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-white/5 transition-colors min-h-[44px] min-w-[44px] md:min-w-0"
                 >
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-medium text-white">
                       {session.user?.email?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   </div>
                   <svg
-                    className={`w-4 h-4 text-white/60 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`}
+                    className={`hidden sm:block w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${profileMenuOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -319,18 +320,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </button>
 
                 {profileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 rounded-lg shadow-xl">
+                  <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 rounded-lg shadow-xl z-50">
                     <div className="p-2">
                       <Link
                         href="/account"
-                        className="block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         Account
                       </Link>
                       <Link
                         href="/settings"
-                        className="block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         Settings
@@ -338,7 +339,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                       {session.user?.role === 'ADMIN' && (
                         <Link
                           href="/admin"
-                          className="block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                          className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
                           onClick={() => setProfileMenuOpen(false)}
                         >
                           Admin
@@ -350,7 +351,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                           setProfileMenuOpen(false)
                           signOut()
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        className="w-full text-left px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
                       >
                         Sign Out
                       </button>
@@ -364,7 +365,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">{children}</div>
         </main>
       </div>
 

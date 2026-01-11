@@ -75,32 +75,32 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
         {/* Hero Section */}
-        <section className="mx-auto max-w-6xl px-6 pt-40 pb-64">
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 sm:pt-32 md:pt-40 pb-32 sm:pb-48 md:pb-64">
           <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-4 py-2 text-xs text-white/60 mb-8">
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-3 sm:px-4 py-1.5 sm:py-2 text-xs text-white/60 mb-6 sm:mb-8">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               TRUST LAYER • DIGITAL DEALS
           </div>
           
-            <h1 className="text-5xl md:text-6xl font-medium tracking-tight text-white leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.1] px-2">
               Where online deals get{" "}
               <span className="text-white/60">done.</span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-xl text-base text-white/55 leading-relaxed">
+            <p className="mx-auto mt-4 sm:mt-6 max-w-xl text-sm sm:text-base text-white/55 leading-relaxed px-4">
               Create a Rift, secure payment, verify delivery, and release funds.
             </p>
 
-            <div className="mt-10 flex items-center justify-center gap-3">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
               <Link
                 href="/auth/signup"
-                className="rounded-xl bg-white px-6 py-3 text-sm font-medium text-black hover:opacity-90 transition"
+                className="w-full sm:w-auto rounded-xl bg-white px-6 py-3.5 sm:py-3 text-sm font-medium text-black hover:opacity-90 transition min-h-[44px] flex items-center justify-center"
               >
                 Create a Rift
             </Link>
               <Link
                 href="#how-it-works"
-                className="rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition"
+                className="w-full sm:w-auto rounded-xl glass-soft px-6 py-3.5 sm:py-3 text-sm font-medium text-white/85 hover:text-white transition min-h-[44px] flex items-center justify-center"
               >
                 See how it works
             </Link>
@@ -109,29 +109,29 @@ export default function Home() {
       </section>
 
         {/* Interface Showcase */}
-        <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-3 mb-6">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
+        <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 md:pt-20 pb-16 sm:pb-24 md:pb-32">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <div className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
               <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
                 Interface
               </span>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
+              <div className="h-px w-8 sm:w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
             </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-medium text-white mb-6 tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-medium text-white mb-4 sm:mb-6 tracking-tight leading-tight px-4">
               Powerful <span className="text-emerald-400/40">interface</span>
             </h2>
-            <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
+            <p className="text-white/60 font-light text-sm sm:text-base max-w-2xl mx-auto leading-relaxed px-4">
               A clean, intuitive interface designed for managing transactions with ease
             </p>
           </div>
 
           {/* Carousel */}
-          <div className="relative max-w-5xl mx-auto">
+          <div className="relative max-w-5xl mx-auto px-2">
             {/* Navigation Buttons - Outside */}
             <button
               onClick={goToPrevious}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 z-10 w-12 h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group hidden md:flex"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 z-10 w-12 h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group hidden md:flex min-h-[48px] min-w-[48px]"
               aria-label="Previous slide"
             >
               <svg className="w-6 h-6 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export default function Home() {
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 z-10 w-12 h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group hidden md:flex"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 z-10 w-12 h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group hidden md:flex min-h-[48px] min-w-[48px]"
               aria-label="Next slide"
             >
               <svg className="w-6 h-6 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,30 +203,30 @@ export default function Home() {
             {/* Mobile Navigation Buttons - Inside for smaller screens */}
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group md:hidden"
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group md:hidden min-h-[44px] min-w-[44px]"
               aria-label="Previous slide"
             >
-              <svg className="w-5 h-5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group md:hidden"
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full glass-soft border border-white/10 hover:border-emerald-400/30 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 hover:scale-110 group md:hidden min-h-[44px] min-w-[44px]"
               aria-label="Next slide"
             >
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
 
             {/* Indicators/Dots */}
-            <div className="flex items-center justify-center gap-2 mt-8">
+            <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
               {[0, 1, 2, 3, 4].map((index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`transition-all duration-300 rounded-full ${
+                  className={`transition-all duration-300 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     currentSlide === index
                       ? 'w-8 h-2 bg-emerald-400'
                       : 'w-2 h-2 bg-white/20 hover:bg-white/40'
