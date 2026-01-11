@@ -32,6 +32,7 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [loading, setLoading] = useState(true)
   const [releasingIndex, setReleasingIndex] = useState<number | null>(null)
+  const [releasingAll, setReleasingAll] = useState(false)
   const [allReleased, setAllReleased] = useState(false)
 
   const currencySymbols: Record<string, string> = {
@@ -108,6 +109,55 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
       showToast(error.message || 'Failed to release milestone', 'error')
     } finally {
       setReleasingIndex(null)
+    }
+  }
+
+  const handleReleaseAll = async () => {
+    if (!isBuyer) {
+      showToast('Only buyers can release milestone funds', 'error')
+      return
+    }
+
+    if (riftStatus !== 'FUNDED' && riftStatus !== 'PROOF_SUBMITTED' && riftStatus !== 'UNDER_REVIEW') {
+      showToast('Rift must be funded before releasing milestones', 'error')
+      return
+    }
+
+    const unreleasedCount = milestones.filter((m) => !m.released).length
+    if (unreleasedCount === 0) {
+      showToast('All milestones have already been released', 'info')
+      return
+    }
+
+    if (!confirm(`Are you sure you want to release ALL remaining funds (${unreleasedCount} milestone${unreleasedCount > 1 ? 's' : ''}) to the seller? This action cannot be undone.`)) {
+      return
+    }
+
+    setReleasingAll(true)
+    try {
+      const response = await fetch(`/api/rifts/${riftId}/milestones/release-all`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to release all milestones')
+      }
+
+      const data = await response.json()
+      showToast(`Successfully released ${data.releasedCount} milestone${data.releasedCount > 1 ? 's' : ''}!`, 'success')
+      
+      // Refresh milestones
+      await fetchMilestones()
+      
+      // Refresh page to update rift status
+      router.refresh()
+    } catch (error: any) {
+      console.error('Error releasing all milestones:', error)
+      showToast(error.message || 'Failed to release all milestones', 'error')
+    } finally {
+      setReleasingAll(false)
     }
   }
 
@@ -230,6 +280,23 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
           )
         })}
       </div>
+
+      {/* Release All Funds button - Supreme button, works unconditionally */}
+      {canRelease && !allReleased && (
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <PremiumButton
+            onClick={handleReleaseAll}
+            disabled={releasingAll}
+            className="w-full py-3 text-base font-medium"
+            variant="outline"
+          >
+            {releasingAll ? 'Releasing All Funds...' : 'Release All Funds'}
+          </PremiumButton>
+          <p className="text-xs text-white/50 font-light text-center mt-2">
+            Release all remaining milestone funds to the seller at once
+          </p>
+        </div>
+      )}
 
       {allReleased && (
         <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">

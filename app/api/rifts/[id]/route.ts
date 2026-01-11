@@ -52,6 +52,8 @@ export async function GET(
           serviceDate: true,
           createdAt: true,
           updatedAt: true,
+          allowsPartialRelease: true,
+          milestones: true,
           buyer: {
             select: {
               id: true,

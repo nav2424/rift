@@ -134,34 +134,55 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
   // PHASE 3: Category-specific actions
   // ============================================
 
-  // DIGITAL GOODS
-  if (rift.itemType === 'DIGITAL_GOODS') {
-
-    // Buyer: View Proof - Only if proof has been submitted
-    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
-    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCESS_VAULT')) {
+  // Buyer: View Proof - For all item types that can have vault assets (proof)
+  // The /rifts/[id]/delivery page now handles vault assets (proof) correctly
+  // Show this button for DIGITAL_GOODS, OWNERSHIP_TRANSFER, and SERVICES
+  if (userIsBuyer && ['DIGITAL_GOODS', 'OWNERSHIP_TRANSFER', 'SERVICES'].includes(rift.itemType || '')) {
+    if (isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCESS_VAULT')) {
       actions.push(
         <PremiumButton
-            key="view-proof"
-            variant="ghost"
-            onClick={() => router.push(`/rifts/${rift.id}/delivery`)}
-            className="w-full text-sm"
-          >
-            View Proof →
-          </PremiumButton>
+          key="view-proof"
+          variant="ghost"
+          onClick={() => router.push(`/rifts/${rift.id}/delivery`)}
+          className="w-full text-sm"
+        >
+          View Proof →
+        </PremiumButton>
       )
     }
   }
 
   // SERVICES
   if (rift.itemType === 'SERVICES') {
-
-    // Buyer: Release All Funds - Only if proof has been submitted
-    // Permission system handles both new (PROOF_SUBMITTED, UNDER_REVIEW) and legacy (DELIVERED_PENDING_RELEASE) statuses
-    if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
-      // Permission check is sufficient - it handles PROOF_SUBMITTED, UNDER_REVIEW, and DELIVERED_PENDING_RELEASE
-      actions.push(
-        <PremiumButton
+    // For milestone rifts, show "Release All Funds" button that calls the milestone release-all endpoint
+    // This is the "supreme button" - works unconditionally (only requires FUNDED status)
+    if (rift.allowsPartialRelease && userIsBuyer) {
+      // For milestone rifts, only require FUNDED status (supreme button)
+      const canReleaseAll = rift.status === 'FUNDED' || rift.status === 'PROOF_SUBMITTED' || rift.status === 'UNDER_REVIEW'
+      
+      if (canReleaseAll) {
+        actions.push(
+          <PremiumButton
+            key="release-all-milestones"
+            variant="outline"
+            onClick={() => {
+              if (confirm('Release ALL remaining milestone funds to the seller? This action cannot be undone.')) {
+                handleAction('release-all-milestones', 'milestones/release-all')
+              }
+            }}
+            disabled={loading === 'release-all-milestones'}
+            className="w-full"
+          >
+            {loading === 'release-all-milestones' ? 'Releasing All Funds...' : 'Release All Funds'}
+          </PremiumButton>
+        )
+      }
+    } else if (!rift.allowsPartialRelease) {
+      // For non-milestone service rifts, use the existing confirm-completion endpoint
+      // Only if proof has been submitted
+      if (userIsBuyer && isActionAllowed(rift.status as EscrowStatus, 'BUYER', 'ACCEPT_PROOF')) {
+        actions.push(
+          <PremiumButton
             key="confirm-completion"
             variant="outline"
             onClick={() => {
@@ -174,14 +195,9 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
           >
             {loading === 'confirm-completion' ? 'Processing...' : 'Release All Funds'}
           </PremiumButton>
-      )
+        )
+      }
     }
-  }
-
-  // OWNERSHIP TRANSFER
-  if (rift.itemType === 'OWNERSHIP_TRANSFER') {
-    // Ownership transfers use standard proof submission and release flow
-    // No special handling needed - use the standard "Release Payment" button
   }
 
   // ============================================

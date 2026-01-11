@@ -29,6 +29,7 @@ export async function POST(
         buyerId: true,
         itemType: true,
         status: true,
+        allowsPartialRelease: true,
       },
     })
 
@@ -44,6 +45,14 @@ export async function POST(
     if (rift.itemType !== 'SERVICES') {
       return NextResponse.json(
         { error: 'This endpoint is only for services' },
+        { status: 400 }
+      )
+    }
+
+    // Reject milestone rifts - they should use the milestone release endpoints
+    if (rift.allowsPartialRelease) {
+      return NextResponse.json(
+        { error: 'This rift uses milestone-based payments. Please use the milestone release interface.' },
         { status: 400 }
       )
     }
