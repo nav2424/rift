@@ -18,7 +18,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
 
   describe('License Key Reveal Blocks "Never Received" Dispute', () => {
     it('should block "never received" dispute when key was revealed', async () => {
-      const rift = createTestRift({ itemType: 'LICENSE_KEYS', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       // Mock that buyer revealed key
@@ -41,7 +41,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
     })
 
     it('should allow dispute for other reasons even if key was revealed', async () => {
-      const rift = createTestRift({ itemType: 'LICENSE_KEYS', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       // Mock that buyer revealed key
@@ -109,7 +109,7 @@ describe('Dispute Blocking Based on Access Logs', () => {
 
   describe('Asset Open Blocks "Never Opened" Claim', () => {
     it('should provide proof that asset was opened when buyer claims "never opened"', async () => {
-      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PROOF_SUBMITTED' })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
       const buyer = createTestUser()
 
       // Mock that buyer opened asset

@@ -30,22 +30,20 @@ export default function About() {
       {/* Hero */}
       <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-64">
         <div className="text-center">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-400/30" />
-            <span className="text-xs font-mono text-emerald-400/60 uppercase tracking-wider">
-              About
-            </span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
+          <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 sm:px-4 py-1.5 sm:py-2 text-xs text-white/60 mb-6 sm:mb-8">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            ABOUT RIFT • BUILT FOR CREATORS
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-medium mb-6 tracking-tight leading-tight">
             <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-              Making online transactions
+              Making brand deals
             </span>
             <br />
             <span className="text-emerald-400/40">executable.</span>
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto font-light leading-relaxed">
-            We believe trust shouldn't be a prerequisite for commerce. Rift provides the execution layer that makes online deals executable without requiring prior trust between parties.
+            We believe creators shouldn't have to chase payments, and brands shouldn't have to worry about deliverables. 
+            Rift provides the execution layer that makes influencer partnerships executable without requiring prior trust.
           </p>
         </div>
       </section>
@@ -63,8 +61,12 @@ export default function About() {
               <h2 className="text-3xl sm:text-4xl font-medium text-white mb-4 tracking-tight">
                 Mission
               </h2>
-              <p className="text-white/70 font-light text-lg leading-relaxed">
-                Make online transactions executable. We remove trust as a requirement by providing a secure execution layer that protects both buyers and sellers.
+              <p className="text-white/70 font-light text-lg leading-relaxed mb-4">
+                Facilitate transactions between creators and brands. We make brand deals executable by removing trust as a requirement and providing a secure execution layer that protects both sides.
+              </p>
+              <p className="text-white/60 font-light text-base leading-relaxed">
+                Creators get paid when work is delivered. Brands get deliverables before payment is released. 
+                Everyone wins through transparent, automated processes.
               </p>
             </div>
           </div>
@@ -89,7 +91,7 @@ export default function About() {
           {[
             { 
               title: 'Clarity', 
-              description: 'Transparent rules, clear statuses, no ambiguity.',
+              description: 'Transparent rules, clear statuses, no ambiguity. Know exactly where your deal stands.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -99,7 +101,7 @@ export default function About() {
             },
             { 
               title: 'Neutrality', 
-              description: 'We don\'t take sides. The protocol decides.',
+              description: 'We don\'t take sides. The protocol decides based on deliverables and evidence.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -108,7 +110,7 @@ export default function About() {
             },
             { 
               title: 'Proof', 
-              description: 'Evidence-based decisions. Vault submissions. Audit trails.',
+              description: 'Evidence-based decisions. Vault submissions. Complete audit trails for every deal.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -117,7 +119,7 @@ export default function About() {
             },
             { 
               title: 'Speed', 
-              description: 'Automated flows. Fast resolution. Quick payouts.',
+              description: 'Automated flows. Fast resolution. Quick payouts. Get paid when work is done.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -154,10 +156,15 @@ export default function About() {
                 Why <span className="text-emerald-400/40">now</span>
               </h2>
               <p className="text-white/70 font-light text-lg leading-relaxed mb-4">
-                Online scams and trust collapse make secure transactions essential.
+                The creator economy is growing, but payment disputes and trust issues are holding it back.
+              </p>
+              <p className="text-white/60 font-light text-base leading-relaxed mb-4">
+                Creators waste time chasing payments. Brands hesitate to work with new influencers. 
+                Agencies struggle with milestone-based payments. Everyone loses when trust is required upfront.
               </p>
               <p className="text-white/60 font-light text-base leading-relaxed">
-                Traditional payment methods require trust that often doesn't exist. Rift removes trust as a requirement by providing a secure execution layer that protects both buyers and sellers through automated verification and transparent protocols.
+                Rift removes trust as a requirement by providing a secure execution layer that protects both creators and brands through automated verification, 
+                transparent protocols, and evidence-based dispute resolution.
               </p>
             </div>
           </div>
@@ -182,7 +189,7 @@ export default function About() {
           {[
             { 
               title: 'Private IDs', 
-              description: 'No directory lookup. Counterparties identified by secure IDs only.',
+              description: 'No directory lookup. Counterparties identified by secure IDs only. Your privacy is protected.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -191,7 +198,7 @@ export default function About() {
             },
             { 
               title: 'Least-privilege access', 
-              description: 'Only parties involved in a transaction can access its details.',
+              description: 'Only parties involved in a deal can access its details. Complete privacy by default.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -200,7 +207,7 @@ export default function About() {
             },
             { 
               title: 'Vault access restricted', 
-              description: 'Proof submissions are encrypted and access-controlled.',
+              description: 'Deliverables are encrypted and access-controlled. Only authorized parties can view content.',
               icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -234,8 +241,8 @@ export default function About() {
             <div className="h-px w-16 bg-gradient-to-l from-transparent to-emerald-400/30" />
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-8 tracking-tight leading-tight">
-            Stop negotiating trust.<br />
-            Execute the deal.
+            Stop chasing payments.<br />
+            Secure your brand deals.
           </h2>
           <Link href="/auth/signup">
             <PremiumButton size="lg" className="min-w-[220px]" glow>

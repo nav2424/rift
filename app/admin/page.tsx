@@ -123,7 +123,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
           <GlassCard>
             <div className="p-6">
               <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Users</p>
@@ -159,6 +159,24 @@ export default async function AdminPage() {
                 <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Pending Proofs</p>
                 <p className="text-4xl font-light text-white mb-2 tracking-tight">{pendingProofsCount}</p>
                 <p className="text-sm text-white/40 font-light">Awaiting review</p>
+              </div>
+            </GlassCard>
+          </Link>
+          <Link href="/admin/payouts">
+            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="p-6">
+                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Payout Tracking</p>
+                <p className="text-4xl font-light text-white mb-2 tracking-tight">→</p>
+                <p className="text-sm text-white/40 font-light">Track payouts & amounts owed</p>
+              </div>
+            </GlassCard>
+          </Link>
+          <Link href="/admin/support">
+            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+              <div className="p-6">
+                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Support Tickets</p>
+                <p className="text-4xl font-light text-white mb-2 tracking-tight">→</p>
+                <p className="text-sm text-white/40 font-light">Manage user support requests</p>
               </div>
             </GlassCard>
           </Link>

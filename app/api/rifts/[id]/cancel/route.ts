@@ -229,6 +229,15 @@ export async function POST(
       data: { status: canceledStatus },
     })
 
+    // Cleanup vault assets (files from storage and database records)
+    try {
+      const { cleanupVaultAssetsForRift } = await import('@/lib/data-cleanup')
+      await cleanupVaultAssetsForRift(id)
+    } catch (cleanupError) {
+      // Log but don't fail cancellation if cleanup fails
+      console.error('Error cleaning up vault assets during cancellation:', cleanupError)
+    }
+
     // Create timeline event
     await prisma.timelineEvent.create({
       data: {

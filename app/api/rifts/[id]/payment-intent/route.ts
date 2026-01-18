@@ -29,6 +29,9 @@ export async function POST(
     return NextResponse.json(result)
   } catch (error: any) {
     console.error('Create payment intent error:', error)
+    if (error?.message?.includes('AWAITING_PAYMENT')) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
     return NextResponse.json(
       { 
         error: 'Internal server error',

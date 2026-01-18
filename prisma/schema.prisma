@@ -126,6 +126,7 @@ model RiftTransaction {
   rift_events               rift_events[]
   vault_assets              vault_assets[]
   vault_events              vault_events[]
+  SupportTicket             SupportTicket[]
 
   @@map("EscrowTransaction")
 }
@@ -146,10 +147,10 @@ model MilestoneRelease {
   notes           String?
   RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
 
+  @@unique([riftId, milestoneIndex]) // Prevents duplicate milestone releases
   @@index([releasedAt])
   @@index([releasedBy])
   @@index([riftId])
-  @@unique([riftId, milestoneIndex]) // Prevents duplicate milestone releases
 }
 
 model Payout {
@@ -221,47 +222,50 @@ model TimelineEvent {
 }
 
 model User {
-  id                                    String             @id
-  name                                  String?
-  email                                 String             @unique
-  phone                                 String?            @unique
-  passwordHash                          String
-  role                                  String             @default("USER")
-  createdAt                             DateTime           @default(now())
-  updatedAt                             DateTime
-  totalProcessedAmount                  Float              @default(0)
-  availableBalance                      Float              @default(0)
-  pendingBalance                        Float              @default(0)
-  numCompletedTransactions              Int                @default(0)
-  averageRating                         Float?
-  responseTimeMs                        Int?
-  level                                 String             @default("ROOKIE")
-  xp                                    Int                @default(0)
-  showInActivityFeed                    Boolean            @default(true)
-  showAmountsInFeed                     Boolean            @default(true)
-  idVerified                            Boolean            @default(false)
-  bankVerified                          Boolean            @default(false)
-  emailVerified                         Boolean            @default(false)
-  phoneVerified                         Boolean            @default(false)
-  stripeConnectAccountId                String?
-  stripeIdentityVerified                Boolean            @default(false)
-  riftUserId                            String?            @unique
-  Activity                              Activity[]
-  Dispute_Dispute_raisedByIdToUser      Dispute[]          @relation("Dispute_raisedByIdToUser")
-  Dispute_Dispute_resolvedByIdToUser    Dispute[]          @relation("Dispute_resolvedByIdToUser")
-  buyerTransactions                     RiftTransaction[]  @relation("EscrowBuyer")
-  sellerTransactions                    RiftTransaction[]  @relation("EscrowSeller")
-  Payout                                Payout[]
-  TimelineEvent                         TimelineEvent[]
-  UserBadge                             UserBadge[]
-  UserBlock_UserBlock_blockedByIdToUser UserBlock[]        @relation("UserBlock_blockedByIdToUser")
-  UserBlock_UserBlock_userIdToUser      UserBlock[]        @relation("UserBlock_userIdToUser")
-  UserMilestone                         UserMilestone[]
-  UserRiskProfile                       UserRiskProfile?
-  VerificationCode                      VerificationCode[]
-  WalletAccount                         WalletAccount?
-  admin_reviews                         admin_reviews[]
-  vault_assets                          vault_assets[]
+  id                                     String             @id
+  name                                   String?
+  email                                  String             @unique
+  phone                                  String?            @unique
+  passwordHash                           String
+  role                                   String             @default("USER")
+  createdAt                              DateTime           @default(now())
+  updatedAt                              DateTime
+  totalProcessedAmount                   Float              @default(0)
+  availableBalance                       Float              @default(0)
+  pendingBalance                         Float              @default(0)
+  numCompletedTransactions               Int                @default(0)
+  averageRating                          Float?
+  responseTimeMs                         Int?
+  level                                  String             @default("ROOKIE")
+  xp                                     Int                @default(0)
+  showInActivityFeed                     Boolean            @default(true)
+  showAmountsInFeed                      Boolean            @default(true)
+  idVerified                             Boolean            @default(false)
+  bankVerified                           Boolean            @default(false)
+  emailVerified                          Boolean            @default(false)
+  phoneVerified                          Boolean            @default(false)
+  stripeConnectAccountId                 String?
+  stripeIdentityVerified                 Boolean            @default(false)
+  riftUserId                             String?            @unique
+  Activity                               Activity[]
+  Dispute_Dispute_raisedByIdToUser       Dispute[]          @relation("Dispute_raisedByIdToUser")
+  Dispute_Dispute_resolvedByIdToUser     Dispute[]          @relation("Dispute_resolvedByIdToUser")
+  buyerTransactions                      RiftTransaction[]  @relation("EscrowBuyer")
+  sellerTransactions                     RiftTransaction[]  @relation("EscrowSeller")
+  Payout                                 Payout[]
+  TimelineEvent                          TimelineEvent[]
+  UserBadge                              UserBadge[]
+  UserBlock_UserBlock_blockedByIdToUser  UserBlock[]        @relation("UserBlock_blockedByIdToUser")
+  UserBlock_UserBlock_userIdToUser       UserBlock[]        @relation("UserBlock_userIdToUser")
+  UserMilestone                          UserMilestone[]
+  UserRiskProfile                        UserRiskProfile?
+  VerificationCode                       VerificationCode[]
+  WalletAccount                          WalletAccount?
+  admin_reviews                          admin_reviews[]
+  vault_assets                           vault_assets[]
+  SupportTicket_SupportTicket_createdBy  SupportTicket[]    @relation("SupportTicket_createdBy")
+  SupportTicket_SupportTicket_assignedTo SupportTicket[]    @relation("SupportTicket_assignedTo")
+  SupportTicket_SupportTicket_resolvedBy SupportTicket[]    @relation("SupportTicket_resolvedBy")
 
   @@index([riftUserId])
 }
@@ -325,6 +329,38 @@ model UserRiskProfile {
 
   @@index([tier])
   @@index([userId])
+}
+
+model SupportTicket {
+  id                  String                @id @default(uuid())
+  ticketNumber        Int                   @unique
+  userId              String
+  title               String
+  description         String
+  status              SupportTicketStatus   @default(OPEN)
+  priority            SupportTicketPriority @default(MEDIUM)
+  category            SupportTicketCategory @default(GENERAL)
+  subcategory         String?
+  assignedToId        String?
+  resolvedById        String?
+  resolvedAt          DateTime?
+  relatedRiftId       String?
+  metadata            Json?
+  conversationHistory Json? // Array of messages
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdBy           User                  @relation("SupportTicket_createdBy", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo          User?                 @relation("SupportTicket_assignedTo", fields: [assignedToId], references: [id])
+  resolvedBy          User?                 @relation("SupportTicket_resolvedBy", fields: [resolvedById], references: [id])
+  RiftTransaction     RiftTransaction?      @relation(fields: [relatedRiftId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([assignedToId])
+  @@index([createdAt])
+  @@index([ticketNumber])
 }
 
 model VerificationCode {
@@ -843,4 +879,26 @@ enum WalletLedgerType {
   DEBIT_CHARGEBACK
   DEBIT_REFUND
   ADJUSTMENT
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SupportTicketCategory {
+  TECHNICAL
+  ACCOUNT
+  PAYMENT
+  DISPUTE
+  GENERAL
 }

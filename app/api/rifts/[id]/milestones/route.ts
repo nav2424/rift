@@ -30,6 +30,8 @@ export async function GET(
           itemType: true,
           allowsPartialRelease: true,
           milestones: true,
+          autoReleaseAt: true,
+          autoReleaseScheduled: true,
           status: true,
           MilestoneRelease: {
             orderBy: {
@@ -51,7 +53,8 @@ export async function GET(
         // Fetch rift using raw SQL, then fetch MilestoneRelease separately
         const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(`
           SELECT id, "buyerId", "sellerId", "itemType"::text as "itemType", 
-                 "allowsPartialRelease", milestones, status::text as status
+                 "allowsPartialRelease", milestones, status::text as status,
+                 "autoReleaseAt", "autoReleaseScheduled"
           FROM "EscrowTransaction"
           WHERE id = $1
         `, id)
@@ -114,11 +117,38 @@ export async function GET(
     const milestones = (rift.milestones as Array<{
       title: string
       description?: string
+      deliverables?: string
       amount: number
       dueDate: string
+      reviewWindowDays?: number
+      revisionLimit?: number
+      dealType?: string
     }>) || []
 
+    const revisionEvents = await prisma.rift_events.findMany({
+      where: {
+        riftId: id,
+        eventType: 'MILESTONE_REVISION_REQUESTED',
+      },
+      select: {
+        payload: true,
+      },
+    })
+
+    const revisionCounts = revisionEvents.reduce<Record<number, number>>((acc, event) => {
+      const milestoneIndex = (event.payload as any)?.milestoneIndex
+      if (typeof milestoneIndex === 'number') {
+        acc[milestoneIndex] = (acc[milestoneIndex] || 0) + 1
+      }
+      return acc
+    }, {})
+
     // Map milestones with release status
+    const nextMilestoneIndex = milestones.findIndex((_, idx) =>
+      !rift.MilestoneRelease.find((r: any) => r.milestoneIndex === idx && r.status === 'RELEASED')
+    )
+    const activeMilestoneIndex = nextMilestoneIndex === -1 ? null : nextMilestoneIndex
+
     const milestonesWithStatus = milestones.map((milestone, index) => {
       const release = rift.MilestoneRelease.find(
         (r: any) => r.milestoneIndex === index && r.status === 'RELEASED'
@@ -128,8 +158,16 @@ export async function GET(
         index,
         title: milestone.title,
         description: milestone.description || '',
+        deliverables: milestone.deliverables || '',
         amount: milestone.amount,
         dueDate: milestone.dueDate,
+        reviewWindowDays: milestone.reviewWindowDays ?? 3,
+        revisionLimit: milestone.revisionLimit ?? 1,
+        dealType: milestone.dealType || null,
+        revisionRequests: revisionCounts[index] || 0,
+        reviewWindowEndsAt:
+          release?.releasedAt ||
+          (index === activeMilestoneIndex && rift.autoReleaseAt ? rift.autoReleaseAt : null),
         released: !!release,
         releaseDate: release?.releasedAt || null,
         sellerNet: release?.sellerNet || null,
@@ -146,6 +184,9 @@ export async function GET(
       allReleased,
       riftStatus: rift.status,
       isBuyer: rift.buyerId === auth.userId,
+      activeMilestoneIndex,
+      autoReleaseAt: rift.autoReleaseAt,
+      autoReleaseScheduled: rift.autoReleaseScheduled,
     })
   } catch (error: any) {
     console.error('Get milestones error:', error)

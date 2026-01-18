@@ -15,16 +15,9 @@ export interface ProofRequirement {
 
 /**
  * Proof requirements by item type - ENFORCES TYPE-LOCKED SUBMISSION
- * LAUNCH SCOPE: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS only
+ * UGC SCOPE: DIGITAL_GOODS, SERVICES only
  */
 export const PROOF_REQUIREMENTS: Partial<Record<ItemType, ProofRequirement>> = {
-  OWNERSHIP_TRANSFER: {
-    allowedAssetTypes: ['TICKET_PROOF', 'FILE'], // Platform transfer confirmation OR QR asset
-    requiredFields: ['eventName', 'eventDate', 'platform'], // Must declare these
-    minAssets: 1,
-    maxAssets: 5, // Allow multiple views/angles of ticket
-    description: 'Must include event details and one of: platform transfer confirmation OR QR asset',
-  },
   DIGITAL_GOODS: {
     allowedAssetTypes: ['FILE'], // Vault file upload only (no external links)
     requiredFields: [], // No mandatory fields, file itself is proof
@@ -55,7 +48,7 @@ export function validateProofTypeLock(
   if (!requirements) {
     return {
       valid: false,
-      errors: [`Item type ${itemType} is not supported in launch scope. Supported: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS`],
+      errors: [`Item type ${itemType} is not supported. Supported: DIGITAL_GOODS, SERVICES`],
     }
   }
   
@@ -113,10 +106,8 @@ export function getProofTypeFromItemType(itemType: ItemType): ProofType {
     case 'SERVICES':
       return 'SERVICE'
     case 'DIGITAL_GOODS':
-    case 'OWNERSHIP_TRANSFER':
       return 'DIGITAL'
     default:
-      // Launch scope: default to DIGITAL for unsupported types
       return 'DIGITAL'
   }
 }

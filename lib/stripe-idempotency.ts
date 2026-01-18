@@ -7,9 +7,10 @@
 
 /**
  * Generate idempotency key for PaymentIntent creation
+ * Version bumped to v2 after changing payment_method_types from automatic_payment_methods
  */
-export function getPaymentIntentIdempotencyKey(riftId: string): string {
-  return `pi:create:rift:${riftId}:v1`
+export function getPaymentIntentIdempotencyKey(riftId: string, version: number = 2): string {
+  return `pi:create:rift:${riftId}:v${version}`
 }
 
 /**

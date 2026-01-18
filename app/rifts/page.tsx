@@ -9,6 +9,7 @@ import StatusPill from '@/components/ui/StatusPill'
 import EmptyState from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
 import { Skeleton, SkeletonList } from '@/components/ui/Skeleton'
+import { getItemTypeLabel } from '@/lib/item-type-labels'
 
 interface RiftTransaction {
   id: string
@@ -241,7 +242,7 @@ export default function AllRiftsPage() {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light text-white tracking-tight mb-1 truncate">
                   Your Rifts
                 </h1>
-                <p className="text-white/50 font-light text-xs sm:text-sm">All your rift transactions</p>
+                <p className="text-white/50 font-light text-xs sm:text-sm">All your brand deals and creator partnerships</p>
               </div>
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0">
@@ -369,7 +370,7 @@ export default function AllRiftsPage() {
                           <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
                             <StatusPill status={rift.status} />
                             <span className="text-white/60 font-light text-xs sm:text-sm">
-                              {rift.itemType.replace(/_/g, ' ')}
+                              {getItemTypeLabel(rift.itemType)}
                             </span>
                             <span className="text-white/40 hidden sm:inline">•</span>
                             <span className="text-white/60 font-light text-xs sm:text-sm">{role}</span>

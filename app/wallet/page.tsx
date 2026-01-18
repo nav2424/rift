@@ -184,11 +184,25 @@ export default function WalletPage() {
         credentials: 'include',
       })
       const data = await response.json()
+      
+      console.log('[Stripe Connect] Response:', { 
+        ok: response.ok, 
+        hasOnboardingUrl: !!data.onboardingUrl,
+        success: data.success,
+        accountId: data.accountId 
+      })
+      
       if (response.ok && data.onboardingUrl) {
         // Redirect to Stripe onboarding
+        console.log('[Stripe Connect] Redirecting to onboarding URL')
         window.location.href = data.onboardingUrl
+      } else if (response.ok && data.refreshUrl) {
+        // Account was created but link creation failed, try refresh URL
+        console.log('[Stripe Connect] Account created, trying refresh URL')
+        window.location.href = data.refreshUrl
       } else {
         const errorMessage = data.error || 'Failed to create Stripe account'
+        console.error('[Stripe Connect] Error:', errorMessage)
         showToast(errorMessage, 'error')
       }
     } catch (error) {

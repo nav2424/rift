@@ -155,7 +155,6 @@ export default function DisputeQueue() {
               <option value="">All</option>
               <option value="DIGITAL_GOODS">Digital Goods</option>
               <option value="SERVICES">Services</option>
-              <option value="OWNERSHIP_TRANSFER">Ownership Transfer</option>
             </select>
           </div>
           <div>

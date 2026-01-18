@@ -60,40 +60,128 @@ export async function createRiftPaymentIntent({
 
   const amountCents = Math.round(buyerTotal * 100);
 
-  // Generate idempotency key for PaymentIntent creation
-  const { getPaymentIntentIdempotencyKey } = await import('./stripe-idempotency')
-  const idempotencyKey = getPaymentIntentIdempotencyKey(riftId)
+  // First, check if a payment intent already exists for this rift via metadata
+  try {
+    const existingPaymentIntents = await stripe.paymentIntents.search({
+      query: `metadata['escrowId']:'${riftId}'`,
+      limit: 1,
+    })
 
-  const pi = await stripe.paymentIntents.create(
-    {
-      amount: amountCents,
-      currency: currency.toLowerCase(),
-      receipt_email: buyerEmail,
-      description: `Rift payment for transaction ${riftId}`,
-      automatic_payment_methods: { enabled: true },
-
-      // IMPORTANT: funds stay on PLATFORM because we are NOT using transfer_data here.
-      // We'll transfer to seller later when a milestone is released.
-
-      metadata: {
-        escrowId: riftId, // keep name for now to avoid breaking downstream
-        type: "rift",
-
-        subtotal: subtotal.toString(),
-        buyerFee: buyerFee.toString(),
-        sellerFee: sellerFee.toString(),
-        buyerTotal: buyerTotal.toString(),
-        sellerPayout: sellerPayout.toString(),
-      },
-    },
-    {
-      idempotencyKey: idempotencyKey,
+    if (existingPaymentIntents.data.length > 0) {
+      const existingPi = existingPaymentIntents.data[0]
+      if (existingPi.client_secret) {
+        console.log(`Found existing payment intent ${existingPi.id} for rift ${riftId}`)
+        return { clientSecret: existingPi.client_secret, paymentIntentId: existingPi.id }
+      }
     }
-  );
+  } catch (searchError: any) {
+    // If search fails, continue to create new payment intent
+    console.warn('Could not search for existing payment intent:', searchError.message)
+  }
 
-  if (!pi.client_secret) throw new Error("Payment intent created but no client secret returned");
+  // Generate idempotency key for PaymentIntent creation (v2 with card-only restriction)
+  const { getPaymentIntentIdempotencyKey } = await import('./stripe-idempotency')
+  const idempotencyKey = getPaymentIntentIdempotencyKey(riftId, 2)
 
-  return { clientSecret: pi.client_secret, paymentIntentId: pi.id };
+  try {
+    // Prioritize bank transfers (us_bank_account) over card payments
+    // Note: us_bank_account (ACH) is US-only, so only include it for USD
+    // For other currencies/countries, use card only
+    const currencyLower = currency.toLowerCase()
+    const isUSD = currencyLower === 'usd'
+    const paymentMethodTypes: string[] = isUSD 
+      ? ['us_bank_account', 'card'] // US: prioritize bank transfers
+      : ['card'] // Non-US: card only (bank transfers require country-specific implementations)
+
+    const pi = await stripe.paymentIntents.create(
+      {
+        amount: amountCents,
+        currency: currencyLower,
+        receipt_email: buyerEmail,
+        description: `Rift payment for transaction ${riftId}`,
+        payment_method_types: paymentMethodTypes,
+
+        // IMPORTANT: funds stay on PLATFORM because we are NOT using transfer_data here.
+        // We'll transfer to seller later when a milestone is released.
+
+        metadata: {
+          escrowId: riftId, // keep name for now to avoid breaking downstream
+          type: "rift",
+
+          subtotal: subtotal.toString(),
+          buyerFee: buyerFee.toString(),
+          sellerFee: sellerFee.toString(),
+          buyerTotal: buyerTotal.toString(),
+          sellerPayout: sellerPayout.toString(),
+        },
+      },
+      {
+        idempotencyKey: idempotencyKey,
+      }
+    );
+
+    if (!pi.client_secret) throw new Error("Payment intent created but no client secret returned");
+
+    return { clientSecret: pi.client_secret, paymentIntentId: pi.id };
+  } catch (createError: any) {
+    // Handle idempotency key conflict - try to retrieve the existing payment intent
+    if (createError.type === 'StripeIdempotencyError' || 
+        createError.code === 'idempotency_key_in_use' ||
+        createError.message?.includes('idempotent requests can only be used with the same parameters')) {
+      console.warn(`Idempotency key conflict for rift ${riftId}, attempting to retrieve existing payment intent`)
+      
+      try {
+        // Try to find the payment intent via metadata (it was created with different parameters)
+        const searchResult = await stripe.paymentIntents.search({
+          query: `metadata['escrowId']:'${riftId}'`,
+          limit: 5,
+        })
+
+        if (searchResult.data.length > 0) {
+          // Find the most recent one that matches our criteria
+          const matchingPi = searchResult.data
+            .filter(pi => pi.metadata?.escrowId === riftId)
+            .sort((a, b) => b.created - a.created)[0]
+
+          if (matchingPi && matchingPi.client_secret) {
+            console.log(`Retrieved existing payment intent ${matchingPi.id} for rift ${riftId} after idempotency conflict`)
+            return { clientSecret: matchingPi.client_secret, paymentIntentId: matchingPi.id }
+          }
+        }
+      } catch (retrieveError: any) {
+        console.error('Failed to retrieve existing payment intent after idempotency conflict:', retrieveError)
+      }
+
+      // If we can't retrieve, try one more time with a broader search (including all payment intents for this rift)
+      // This handles the case where the payment intent exists but metadata search didn't find it
+      try {
+        // Search all payment intents with this rift ID in metadata (no limit on status)
+        const allResults = await stripe.paymentIntents.search({
+          query: `metadata['escrowId']:'${riftId}'`,
+          limit: 10,
+        })
+
+        for (const pi of allResults.data) {
+          if (pi.metadata?.escrowId === riftId && pi.client_secret) {
+            console.log(`Found existing payment intent ${pi.id} for rift ${riftId} after idempotency conflict (broader search)`)
+            return { clientSecret: pi.client_secret, paymentIntentId: pi.id }
+          }
+        }
+      } catch (finalRetryError: any) {
+        console.error('Final attempt to retrieve payment intent failed:', finalRetryError)
+      }
+
+      // If all retrieval attempts fail, throw the original error with a helpful message
+      throw new Error(
+        `Payment intent creation failed due to idempotency conflict. ` +
+        `A payment intent may already exist for this rift (ID: ${riftId}) but could not be retrieved. ` +
+        `Original error: ${createError.message}`
+      )
+    }
+
+    // Re-throw other errors
+    throw createError
+  }
 }
 
 /**
@@ -537,19 +625,26 @@ export async function createOrGetConnectAccount(
     console.error('Stripe Connect account creation error:', error)
     
     // Check for specific Stripe Connect setup errors
+    // Stripe errors can have message in error.message or error.userMessage
     const errorMsg = error.message || error.userMessage || ''
+    const errorType = error.type || ''
     
+    // Detect platform profile completion requirement errors
+    // This happens when Stripe Connect platform profile hasn't been completed in the dashboard
     if (errorMsg.includes('complete your platform profile') || 
         errorMsg.includes('platform profile') ||
         errorMsg.includes('questionnaire') ||
         errorMsg.includes('review the responsibilities') || 
         errorMsg.includes('platform-profile') ||
         errorMsg.includes('connect/accounts/overview') ||
-        error.code === 'account_invalid') {
+        error.code === 'account_invalid' ||
+        (errorType === 'StripeInvalidRequestError' && errorMsg.includes('platform'))) {
       const mode = process.env.STRIPE_SECRET_KEY?.includes('_live_') ? 'live' : 'test'
+      const tasklistUrl = `https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/tasklist`
       throw new Error(
         `STRIPE_CONNECT_SETUP_REQUIRED: Stripe Connect platform profile must be completed in ${mode} mode. ` +
-        `Visit https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/accounts/overview to complete the questionnaire.`
+        `Visit ${tasklistUrl}, click "Get Started", select "Platform or marketplace", then "Complete your platform profile". ` +
+        `Alternatively, go to Settings → Connect → Platform profile in your Stripe Dashboard.`
       )
     }
     
@@ -599,6 +694,19 @@ export async function createAccountLink(
     return accountLink.url
   } catch (error: any) {
     console.error('Stripe account link creation error:', error)
+    
+    // Detect HTTPS requirement for live mode
+    if (error.message?.includes('Livemode requests must always be redirected via HTTPS') || 
+        error.message?.includes('must always be redirected via HTTPS')) {
+      const isLiveMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
+      if (isLiveMode) {
+        throw new Error(
+          'Live mode Stripe requires HTTPS URLs for redirects. ' +
+          'Please set NEXT_PUBLIC_APP_URL or APP_URL to your production HTTPS URL (e.g., https://joinrift.co). ' +
+          'For local development, either use test mode keys (sk_test_...) or use a tool like ngrok to create an HTTPS tunnel.'
+        )
+      }
+    }
     
     // Detect and provide clear messages for common errors
     if (error.message?.includes('live mode') && error.message?.includes('test mode')) {
@@ -725,6 +833,18 @@ export async function getConnectAccountStatus(
       disabledReason,
     }
   } catch (error: any) {
+    // Handle invalid account errors (account deleted, disconnected, or doesn't exist)
+    if (error.code === 'account_invalid' || 
+        error.type === 'StripePermissionError' ||
+        (error.message && error.message.includes('does not have access to account'))) {
+      console.warn(`Stripe account ${accountId} is invalid or no longer accessible`)
+      // Throw a specific error that route handlers can catch to clear the account ID
+      const invalidAccountError: any = new Error(`STRIPE_ACCOUNT_INVALID: Account ${accountId} is invalid or no longer accessible`)
+      invalidAccountError.code = 'STRIPE_ACCOUNT_INVALID'
+      invalidAccountError.accountId = accountId
+      throw invalidAccountError
+    }
+    
     // Handle test/live key mismatch gracefully
     // This happens when a test account is used with a live key or vice versa
     if (error.message && error.message.includes('test account') && error.message.includes('testmode key')) {

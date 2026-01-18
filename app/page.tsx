@@ -79,16 +79,16 @@ export default function Home() {
           <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="mx-auto inline-flex items-center gap-2 rounded-full glass-soft px-3 sm:px-4 py-1.5 sm:py-2 text-xs text-white/60 mb-6 sm:mb-8">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              TRUST LAYER • DIGITAL DEALS
+              FOR CONTENT CREATORS • FOR AGENCIES
           </div>
           
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.1] px-2">
-              Where online deals get{" "}
-              <span className="text-white/60">done.</span>
+              Secure brand deals and{" "}
+              <span className="text-white/60">creator partnerships.</span>
             </h1>
 
             <p className="mx-auto mt-4 sm:mt-6 max-w-xl text-sm sm:text-base text-white/55 leading-relaxed px-4">
-              Create a Rift, secure payment, verify delivery, and release funds.
+              Rift facilitates transactions between creators and brands with secure payment protection for UGC, influencer partnerships, and agency deliverables. Get paid when work is delivered, not before.
             </p>
 
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 px-4">
@@ -96,7 +96,7 @@ export default function Home() {
                 href="/auth/signup"
                 className="w-full sm:w-auto rounded-xl bg-white px-6 py-3.5 sm:py-3 text-sm font-medium text-black hover:opacity-90 transition min-h-[44px] flex items-center justify-center"
               >
-                Create a Rift
+                Get Started
             </Link>
               <Link
                 href="#how-it-works"
@@ -221,18 +221,22 @@ export default function Home() {
             </button>
 
             {/* Indicators/Dots */}
-            <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
+            <div className="flex items-center justify-center gap-1 mt-6 sm:mt-8">
               {[0, 1, 2, 3, 4].map((index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`transition-all duration-300 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                    currentSlide === index
-                      ? 'w-8 h-2 bg-emerald-400'
-                      : 'w-2 h-2 bg-white/20 hover:bg-white/40'
-                  }`}
+                  className="transition-all duration-300 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label={`Go to slide ${index + 1}`}
-                />
+                >
+                  <span
+                    className={`block rounded-full scale-[0.6] ${
+                      currentSlide === index
+                        ? 'w-3 h-1 bg-emerald-400'
+                        : 'w-2 h-2 bg-white/30 hover:bg-white/50'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -252,7 +256,7 @@ export default function Home() {
               See it in <span className="text-emerald-400/40">action</span>
             </h2>
             <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
-              Interactive walkthrough of a Rift transaction
+              Interactive walkthrough of a Rift deal
             </p>
           </div>
           <div className="opacity-90">
@@ -274,7 +278,7 @@ export default function Home() {
               How it <span className="text-emerald-400/40">works</span>
           </h2>
             <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
-              Five simple steps to secure any deal
+              Five simple steps to secure any Rift deal
           </p>
         </div>
 
@@ -284,7 +288,7 @@ export default function Home() {
                 { 
                   step: '01', 
                   title: 'Create', 
-                  description: 'Set terms and counterparty',
+                  description: 'Set terms and deliverables',
                   icon: (
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
@@ -304,7 +308,7 @@ export default function Home() {
                 { 
                   step: '03', 
                   title: 'Deliver', 
-                  description: 'Proof submitted to Vault',
+                  description: 'Content uploaded and verified',
                   icon: (
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -313,8 +317,8 @@ export default function Home() {
                 },
                 { 
                   step: '04', 
-                  title: 'Verify', 
-                  description: 'Buyer confirms',
+                  title: 'Approve', 
+                  description: 'Brand/agency approves content',
                   icon: (
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -387,40 +391,39 @@ export default function Home() {
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
             </div>
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-medium text-white mb-6 tracking-tight leading-tight">
-              Built for every <span className="text-emerald-400/40">deal</span>
+              Built for <span className="text-emerald-400/40">creators</span> and <span className="text-emerald-400/40">agencies</span>
             </h2>
             <p className="text-white/60 font-light text-base max-w-2xl mx-auto leading-relaxed">
-              Secure transactions across digital goods, ownership transfers, and services
+              Secure payment protection for brand deals, UGC content, influencer partnerships, and agency deliverables
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {[
               {
-                title: 'Digital Goods',
-                description: 'Software, licenses, downloads, and digital assets',
+                title: 'Brand Deals',
+                description: 'Influencer partnerships, sponsored content, and brand collaborations with milestone-based payments',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                   </svg>
                 )
               },
               {
-                title: 'Ownership Transfer',
-                description: 'Assets that require verified transfer with confirmation and protection.',
+                title: 'UGC Content',
+                description: 'User-generated content, video production, and social media deliverables with secure file delivery',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 )
               },
               {
-                title: 'Services',
-                description: 'Consulting, freelance work, and milestone-based deliverables',
+                title: 'Agency Work',
+                description: 'Project management, creative deliverables, and milestone-based agency work',
                 icon: (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 )
                 }
@@ -530,12 +533,12 @@ export default function Home() {
         {/* Social Proof */}
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center">
-            <p className="text-white/50 font-light text-sm mb-12 tracking-wider uppercase">Used by teams, creators, and power sellers</p>
+            <p className="text-white/50 font-light text-sm mb-12 tracking-wider uppercase">Used by creators, influencers, and agencies</p>
             <div className="max-w-3xl mx-auto">
               <blockquote className="text-xl md:text-2xl font-light text-white/80 italic leading-relaxed mb-6">
-                "Rift transformed how we handle client payments. The verification process gives everyone confidence, and disputes are resolved quickly."
+                "Rift changed how we handle brand deals. No more chasing payments—funds are secured upfront and released when content is approved. Game changer for creator partnerships."
               </blockquote>
-              <p className="text-white/50 font-light text-sm font-mono">— Creator, Digital Services</p>
+              <p className="text-white/50 font-light text-sm font-mono">— Content Creator, 500K+ Followers</p>
             </div>
         </div>
       </section>
@@ -544,12 +547,12 @@ export default function Home() {
         <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-10 tracking-tight leading-tight">
-              Stop negotiating trust.<br />
-              Execute the deal.
+              Stop chasing payments.<br />
+              Secure your brand deals.
               </h2>
               <Link href="/auth/signup">
               <button className="rounded-xl bg-white px-8 py-4 text-base font-medium text-black hover:opacity-90 transition">
-                Create a Rift
+                Get Started Free
               </button>
               </Link>
           </div>

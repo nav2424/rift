@@ -201,7 +201,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             <div>
               <RiftLogo size="md" />
               <p className="mt-4 text-white/60 font-light text-sm">
-                The execution layer for online deals.
+                The execution layer for creator-brand deals.
               </p>
             </div>
             <div>

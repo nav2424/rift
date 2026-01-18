@@ -27,7 +27,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
     {
       id: 'welcome',
       title: 'Welcome to Rift! 👋',
-      description: 'Rift is your secure escrow platform for marketplace transactions. Let\'s take a quick tour to get you started.',
+      description: 'Rift is your secure payment platform for marketplace transactions. Let\'s take a quick tour to get you started.',
       icon: 'rocket',
     },
     {
@@ -39,7 +39,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
     {
       id: 'create-rift',
       title: 'Create a Rift',
-      description: 'Tap the Create tab to set up a new Rift transaction. You can create secure escrow for any marketplace sale.',
+      description: 'Tap the Create tab to set up a new Rift transaction. You can create protected payments for any marketplace sale.',
       icon: 'add-circle',
     },
     {

@@ -33,21 +33,24 @@ if (typeof window === 'undefined') {
   }
 }
 
-// Hard fail if Upstash Redis env vars are missing (no localhost fallback)
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    throw new Error(
-      'Upstash Redis environment variables are required in production. ' +
-      'Please set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in your Vercel environment variables.'
-    )
-  }
-  // In development, allow localhost fallback only if explicitly set
-  if (!process.env.REDIS_HOST) {
+// Check if Redis is configured - but don't throw during build time
+// Redis variables may only be available at runtime on Vercel
+// This check will be validated when Redis connection is actually needed
+const hasRedisUrl = !!(process.env.UPSTASH_REDIS_URL || process.env.REDIS_URL)
+const hasRestUrl = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+const hasRedisConfig = hasRedisUrl || hasRestUrl
+
+// Only warn if not configured (don't throw during build)
+// Actual validation happens when connection is attempted
+if (!hasRedisConfig) {
+  if (process.env.NODE_ENV === 'development') {
     console.warn(
-      '⚠️ Upstash Redis not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in .env.local, ' +
+      '⚠️ Redis not configured locally. Set UPSTASH_REDIS_URL, UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN in .env.local, ' +
       'or set REDIS_HOST for local development.'
     )
   }
+  // On Vercel production, variables should be set at runtime by the Redis extension
+  // We'll validate when connection is actually needed, not at module load
 }
 
 // Extract Upstash Redis connection details

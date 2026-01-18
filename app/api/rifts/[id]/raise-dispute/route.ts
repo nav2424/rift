@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { canTransition, getUserRole } from '@/lib/rules'
 import { sendDisputeRaisedEmail } from '@/lib/email'
 import { createActivity } from '@/lib/activity'
+import { getReviewWindowDeadline } from '@/lib/review-window'
 
 export async function POST(
   request: NextRequest,
@@ -89,6 +90,31 @@ export async function POST(
     if (!['IN_TRANSIT', 'DELIVERED_PENDING_RELEASE'].includes(rift.status)) {
       return NextResponse.json(
         { error: 'Cannot raise dispute in current status' },
+        { status: 400 }
+      )
+    }
+
+    const milestoneReleases = rift.allowsPartialRelease
+      ? await prisma.milestoneRelease.findMany({
+          where: { riftId: id, status: 'RELEASED' },
+          select: { milestoneIndex: true, status: true },
+        })
+      : []
+
+    // Enforce review window deadline (must dispute before auto-release)
+    const reviewDeadline = getReviewWindowDeadline({
+      autoReleaseAt: rift.autoReleaseAt,
+      itemType: rift.itemType,
+      allowsPartialRelease: rift.allowsPartialRelease,
+      milestones: rift.milestones,
+      proofSubmittedAt: rift.proofSubmittedAt,
+      fundedAt: rift.fundedAt,
+      milestoneReleases,
+    })
+
+    if (reviewDeadline && new Date() > reviewDeadline) {
+      return NextResponse.json(
+        { error: 'Review window has expired. Disputes must be submitted before the auto-release deadline.' },
         { status: 400 }
       )
     }

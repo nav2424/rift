@@ -44,8 +44,20 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (error: any) {
-        // If we can't check Stripe status, continue with database value
-        logError('Refresh Stripe status in withdraw check', error, { context: 'Withdrawal eligibility check' })
+        // If account is invalid, clear it from the database
+        if (error.code === 'STRIPE_ACCOUNT_INVALID') {
+          console.log(`Account ${user.stripeConnectAccountId} is invalid, clearing from database`)
+          await prisma.user.update({
+            where: { id: auth.userId },
+            data: {
+              stripeConnectAccountId: null,
+              stripeIdentityVerified: false,
+            },
+          })
+        } else {
+          // If we can't check Stripe status for other reasons, continue with database value
+          logError('Refresh Stripe status in withdraw check', error, { context: 'Withdrawal eligibility check' })
+        }
       }
     }
 

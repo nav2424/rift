@@ -39,20 +39,59 @@ export async function POST(request: NextRequest) {
         data: { stripeConnectAccountId: accountId },
       })
     } else {
-      // Check if account exists and needs identity verification
-      // If account is already created but identity verification is incomplete,
-      // use account_update type instead of account_onboarding
+      // Check if account exists and what type of link it needs
+      // If account is already created but onboarding is incomplete, use account_onboarding
+      // If account completed onboarding but needs identity verification, use account_update
       try {
         const accountStatus = await getConnectAccountStatus(accountId)
-        // If account is connected but payouts are not enabled due to verification requirements,
+        console.log('[Stripe Connect] Existing account status:', {
+          accountId,
+          detailsSubmitted: accountStatus.detailsSubmitted,
+          payoutsEnabled: accountStatus.payoutsEnabled,
+          chargesEnabled: accountStatus.chargesEnabled,
+          status: accountStatus.status,
+        })
+        
+        // If account hasn't completed initial onboarding (details not submitted)
+        // Use account_onboarding type
+        if (!accountStatus.detailsSubmitted) {
+          forIdentityVerification = false // Use account_onboarding
+          console.log('[Stripe Connect] Account needs initial onboarding')
+        } 
+        // If account completed onboarding but payouts are not enabled due to verification requirements,
         // use account_update to complete identity verification
-        if (accountStatus.detailsSubmitted && !accountStatus.payoutsEnabled && 
+        else if (accountStatus.detailsSubmitted && !accountStatus.payoutsEnabled && 
             accountStatus.requirements?.currentlyDue && accountStatus.requirements.currentlyDue.length > 0) {
+          forIdentityVerification = true // Use account_update
+          console.log('[Stripe Connect] Account needs identity verification')
+        }
+        // If account is fully set up, we shouldn't be here, but create an update link anyway
+        else if (accountStatus.payoutsEnabled && accountStatus.chargesEnabled) {
+          console.log('[Stripe Connect] Account is already fully set up')
+          // Still create a link in case user wants to update something
           forIdentityVerification = true
         }
-      } catch (statusError) {
-        // If we can't check status, proceed with onboarding
-        logError('Check account status', statusError, { context: 'Creating account link' })
+      } catch (statusError: any) {
+        // If account is invalid, clear it and create a new one
+        if (statusError.code === 'STRIPE_ACCOUNT_INVALID') {
+          console.log(`Account ${accountId} is invalid, clearing and creating new account`)
+          await prisma.user.update({
+            where: { id: auth.userId },
+            data: { stripeConnectAccountId: null },
+          })
+          // Create new account
+          accountId = await createOrGetConnectAccount(auth.userId, user.email, user.name)
+          await prisma.user.update({
+            where: { id: auth.userId },
+            data: { stripeConnectAccountId: accountId },
+          })
+        } else {
+          // If we can't check status for other reasons, proceed with onboarding
+          console.warn('[Stripe Connect] Could not check account status, proceeding with onboarding:', statusError.message)
+          logError('Check account status', statusError, { context: 'Creating account link' })
+          // Default to account_onboarding if we can't determine status
+          forIdentityVerification = false
+        }
       }
     }
 
@@ -63,8 +102,32 @@ export async function POST(request: NextRequest) {
       throw new Error('Missing NEXT_PUBLIC_APP_URL or APP_URL environment variable')
     }
 
-    const returnUrl = `${APP_URL}/connect/stripe/return?account=${accountId}`
-    const refreshUrl = `${APP_URL}/connect/stripe/refresh?account=${accountId}`
+    // Check if we're using live mode Stripe keys
+    const isLiveMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
+    
+    // Ensure HTTPS for live mode (Stripe requires HTTPS for live mode redirects)
+    let baseUrl = APP_URL.trim().replace(/\/$/, '') // Remove trailing slash
+    
+    // If using live mode and URL is HTTP, we need HTTPS
+    if (isLiveMode && baseUrl.startsWith('http://')) {
+      // Try to use production URL if available
+      const productionUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://joinrift.co'
+      if (productionUrl.startsWith('https://')) {
+        baseUrl = productionUrl.trim().replace(/\/$/, '')
+        console.warn('[Stripe Connect] Live mode detected with HTTP URL, using production HTTPS URL:', baseUrl)
+      } else {
+        // Force HTTPS for localhost in live mode (won't work, but better error message)
+        baseUrl = baseUrl.replace('http://', 'https://')
+        throw new Error(
+          'Live mode Stripe requires HTTPS URLs. ' +
+          'Please set NEXT_PUBLIC_APP_URL or APP_URL to your production HTTPS URL (e.g., https://joinrift.co). ' +
+          'For local development with live mode, use a tool like ngrok or test with test mode keys instead.'
+        )
+      }
+    }
+
+    const returnUrl = `${baseUrl}/connect/stripe/return?account=${accountId}`
+    const refreshUrl = `${baseUrl}/connect/stripe/refresh?account=${accountId}`
 
     // Log URLs to confirm they use Rift domain (not Vercel)
     console.log('[Stripe Connect] Creating account link with URLs:', {
@@ -74,7 +137,36 @@ export async function POST(request: NextRequest) {
       linkType: forIdentityVerification ? 'account_update' : 'account_onboarding',
     })
 
-    const onboardingUrl = await createAccountLink(accountId, returnUrl, refreshUrl, forIdentityVerification)
+    let onboardingUrl: string
+    try {
+      onboardingUrl = await createAccountLink(accountId, returnUrl, refreshUrl, forIdentityVerification)
+    } catch (linkError: any) {
+      // If account link creation fails, log the error but don't fail the whole request
+      // The account was already created, so we should still try to return a way to complete onboarding
+      console.error('[Stripe Connect] Account link creation failed:', linkError)
+      
+      // If the error is about platform profile, include that in the response
+      const linkErrorMsg = linkError.message || ''
+      if (linkErrorMsg.includes('platform profile') || linkErrorMsg.includes('STRIPE_CONNECT_SETUP_REQUIRED')) {
+        throw linkError // Re-throw platform profile errors so they're handled by the error handler
+      }
+      
+      // For other errors, still return the account ID so the frontend can try to refresh the link
+      // The user can manually navigate to complete onboarding
+      return NextResponse.json({
+        success: false,
+        accountId,
+        error: `Account created but could not generate onboarding link: ${linkErrorMsg}`,
+        // Provide a way to manually get the onboarding URL
+        refreshUrl: `${APP_URL}/connect/stripe/refresh?account=${accountId}`,
+      }, { status: 200 }) // Return 200 so frontend can handle it
+    }
+
+    console.log('[Stripe Connect] Successfully created account link:', {
+      accountId,
+      onboardingUrl: onboardingUrl.substring(0, 100) + '...', // Log partial URL for security
+      linkType: forIdentityVerification ? 'account_update' : 'account_onboarding',
+    })
 
     return NextResponse.json({
       success: true,
@@ -100,7 +192,8 @@ export async function POST(request: NextRequest) {
         errorMessage = errorMsg.replace('STRIPE_CONNECT_SETUP_REQUIRED: ', '')
       } else {
         const mode = process.env.STRIPE_SECRET_KEY?.includes('_live_') ? 'live' : 'test'
-        errorMessage = `Stripe Connect platform profile must be completed. Visit https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/accounts/overview to complete the questionnaire.`
+        const tasklistUrl = `https://dashboard.stripe.com/${mode === 'live' ? '' : 'test/'}connect/tasklist`
+        errorMessage = `Stripe Connect platform profile must be completed. Visit ${tasklistUrl}, click "Get Started", select "Platform or marketplace", then "Complete your platform profile". Alternatively, go to Settings → Connect → Platform profile in your Stripe Dashboard.`
       }
     } else if (errorMsg.includes('Stripe mode mismatch')) {
       statusCode = 400

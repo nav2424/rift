@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import { useToast } from '@/components/ui/Toast'
+import { getItemTypeShortLabel } from '@/lib/item-type-labels'
 
 interface RiftTransaction {
   id: string
@@ -274,7 +275,7 @@ export default function ActionsRequiredPage() {
                           </div>
                           <p className="text-base text-white/90 font-light mb-2">{rift.itemTitle}</p>
                           <p className="text-sm text-white/50 font-light mb-3">
-                            {otherParty.name || otherParty.email.split('@')[0]} • {rift.itemType.replace(/_/g, ' ')}
+                            {otherParty.name || otherParty.email.split('@')[0]} • {getItemTypeShortLabel(rift.itemType)}
                           </p>
                           <p className="text-sm text-white/60 font-light">{actionInfo.description}</p>
                         </div>

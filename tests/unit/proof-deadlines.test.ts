@@ -25,25 +25,9 @@ describe('Proof Deadline Enforcement', () => {
   })
 
   describe('calculateProofDeadline', () => {
-    it('should calculate 48h deadline for TICKETS from PAID', () => {
-      const paidAt = new Date('2025-01-15T10:00:00Z')
-      const deadline = calculateProofDeadline('OWNERSHIP_TRANSFER' as ItemType, paidAt)
-      
-      const expected = new Date('2025-01-17T10:00:00Z') // 48 hours later
-      expect(deadline.getTime()).toBe(expected.getTime())
-    })
-
     it('should calculate 24h deadline for DIGITAL from PAID', () => {
       const paidAt = new Date('2025-01-15T10:00:00Z')
       const deadline = calculateProofDeadline('DIGITAL_GOODS' as ItemType, paidAt)
-      
-      const expected = new Date('2025-01-16T10:00:00Z') // 24 hours later
-      expect(deadline.getTime()).toBe(expected.getTime())
-    })
-
-    it('should calculate 24h deadline for LICENSE_KEYS from PAID', () => {
-      const paidAt = new Date('2025-01-15T10:00:00Z')
-      const deadline = calculateProofDeadline('LICENSE_KEYS' as ItemType, paidAt)
       
       const expected = new Date('2025-01-16T10:00:00Z') // 24 hours later
       expect(deadline.getTime()).toBe(expected.getTime())
@@ -91,18 +75,11 @@ describe('Proof Deadline Enforcement', () => {
       expect(passed).toBe(false) // Not passed because already submitted
     })
 
-    it('should return true for TICKETS after 48h', () => {
+    it('should return true after deadline for DIGITAL_GOODS', () => {
       const paidAt = new Date('2025-01-13T10:00:00Z') // 2 days ago
-      const passed = isProofDeadlinePassed('OWNERSHIP_TRANSFER' as ItemType, paidAt, null)
+      const passed = isProofDeadlinePassed('DIGITAL_GOODS' as ItemType, paidAt, null)
       
       expect(passed).toBe(true)
-    })
-
-    it('should return false for TICKETS before 48h', () => {
-      const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const passed = isProofDeadlinePassed('OWNERSHIP_TRANSFER' as ItemType, paidAt, null)
-      
-      expect(passed).toBe(false)
     })
   })
 
@@ -122,11 +99,11 @@ describe('Proof Deadline Enforcement', () => {
       expect(hours).toBeLessThan(0)
     })
 
-    it('should return correct hours for TICKETS (48h deadline)', () => {
+    it('should return correct hours for DIGITAL_GOODS (24h deadline)', () => {
       const paidAt = new Date('2025-01-15T11:00:00Z') // 1 hour ago
-      const hours = getHoursUntilProofDeadline('OWNERSHIP_TRANSFER' as ItemType, paidAt)
+      const hours = getHoursUntilProofDeadline('DIGITAL_GOODS' as ItemType, paidAt)
       
-      expect(hours).toBeCloseTo(47, 0) // ~47 hours remaining
+      expect(hours).toBeCloseTo(23, 0) // ~23 hours remaining
     })
   })
 
@@ -137,20 +114,6 @@ describe('Proof Deadline Enforcement', () => {
       
       const deadline = calculateAutoReleaseDeadlineFromAccess(
         'DIGITAL_GOODS' as ItemType,
-        proofSubmittedAt,
-        firstBuyerAccessAt
-      )
-      
-      const expected = new Date('2025-01-16T11:00:00Z') // 24h after access
-      expect(deadline?.getTime()).toBe(expected.getTime())
-    })
-
-    it('should calculate 24h after first access for TICKETS', () => {
-      const proofSubmittedAt = new Date('2025-01-15T10:00:00Z')
-      const firstBuyerAccessAt = new Date('2025-01-15T11:00:00Z')
-      
-      const deadline = calculateAutoReleaseDeadlineFromAccess(
-        'OWNERSHIP_TRANSFER' as ItemType,
         proofSubmittedAt,
         firstBuyerAccessAt
       )
@@ -202,14 +165,6 @@ describe('Proof Deadline Enforcement', () => {
   })
 
   describe('PROOF_DEADLINE_CONFIGS', () => {
-    it('should have correct config for TICKETS', () => {
-      const config = PROOF_DEADLINE_CONFIGS['OWNERSHIP_TRANSFER']
-      expect(config).toBeDefined()
-      expect(config?.deadlineHours).toBe(48)
-      expect(config?.autoReleaseAfterAccessHours).toBe(24)
-      expect(config?.autoReleaseAfterSubmissionHours).toBe(48)
-    })
-
     it('should have correct config for DIGITAL', () => {
       const config = PROOF_DEADLINE_CONFIGS['DIGITAL_GOODS']
       expect(config).toBeDefined()
@@ -226,12 +181,9 @@ describe('Proof Deadline Enforcement', () => {
       expect(config?.autoReleaseAfterSubmissionHours).toBe(72)
     })
 
-    it('should have correct config for LICENSE_KEYS', () => {
-      const config = PROOF_DEADLINE_CONFIGS['LICENSE_KEYS']
-      expect(config).toBeDefined()
-      expect(config?.deadlineHours).toBe(24)
-      expect(config?.autoReleaseAfterAccessHours).toBe(24)
-      expect(config?.autoReleaseAfterSubmissionHours).toBe(48)
+    it('should not define config for unsupported types', () => {
+      const config = PROOF_DEADLINE_CONFIGS['OWNERSHIP_TRANSFER']
+      expect(config).toBeUndefined()
     })
   })
 })

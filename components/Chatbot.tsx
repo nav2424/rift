@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
+import { useToast } from './ui/Toast'
 
 interface Message {
   id: string
@@ -13,6 +15,8 @@ interface Message {
 
 export default function Chatbot() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const { showToast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -100,9 +104,31 @@ export default function Chatbot() {
 
       // Handle escalation if needed
       if (data.escalate) {
-        setTimeout(() => {
-          alert(`This issue requires human assistance. ${data.ticket ? 'A support ticket has been created.' : 'Please contact support@rift.com for immediate help.'}`)
-        }, 100)
+        const ticketId = data.ticketId
+        if (ticketId) {
+          // Add a follow-up message with ticket link
+          setTimeout(() => {
+            const ticketLinkMessage: Message = {
+              id: (Date.now() + 2).toString(),
+              role: 'assistant',
+              content: `A support ticket has been created for you. You can view and manage it in your Support Tickets page.`,
+              timestamp: new Date(),
+            }
+            setMessages((prev) => [...prev, ticketLinkMessage])
+            showToast('Support ticket created successfully', 'success')
+            
+            // Optionally navigate after a short delay
+            setTimeout(() => {
+              if (confirm('Would you like to view your support tickets now?')) {
+                router.push('/support/tickets')
+              }
+            }, 1500)
+          }, 500)
+        } else {
+          setTimeout(() => {
+            showToast('Please contact support@rift.com for immediate assistance.', 'info')
+          }, 100)
+        }
       }
     } catch (error) {
       console.error('Chatbot error:', error)

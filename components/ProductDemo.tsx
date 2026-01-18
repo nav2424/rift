@@ -87,7 +87,7 @@ export default function ProductDemo() {
   const demos = {
     dashboard: {
       title: 'Dashboard Overview',
-      description: 'Real-time tracking of all your rift transactions with comprehensive analytics',
+      description: 'Real-time tracking of all your creator-brand deals with clear analytics',
       features: [
         { icon: 'chart', text: 'Live transaction status' },
         { icon: 'bell', text: 'Instant notifications' },
@@ -128,9 +128,9 @@ export default function ProductDemo() {
           {/* Transaction List */}
           <div className="space-y-2">
             {[
-              { title: 'iPhone 15 Pro', amount: '$1,299', status: 'In Transit', progress: 75 },
-              { title: 'MacBook Pro M3', amount: '$2,499', status: 'Awaiting Shipment', progress: 50 },
-              { title: 'AirPods Pro', amount: '$249', status: 'Delivered', progress: 100 },
+              { title: 'UGC Video Bundle', amount: '$1,200', status: 'In Review', progress: 75 },
+              { title: 'Instagram Reels', amount: '$2,400', status: 'Awaiting Upload', progress: 50 },
+              { title: 'Brand Deal Retainer', amount: '$3,000', status: 'Completed', progress: 100 },
             ].map((item, i) => (
               <div key={i} className="h-20 bg-white/[0.08] rounded-xl border border-white/20 p-4 flex items-center justify-between group hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
                 <div className="flex-1">
@@ -159,12 +159,12 @@ export default function ProductDemo() {
       ),
     },
     transaction: {
-      title: 'Transaction Flow',
-      description: 'Seamless rift creation and management with step-by-step guidance',
+      title: 'Deal Flow',
+      description: 'Seamless Rift creation and management for creator-brand deals',
       features: [
         { icon: 'zap', text: 'One-click creation' },
-        { icon: 'lock', text: 'Secure payment processing' },
-        { icon: 'package', text: 'Shipment tracking' },
+        { icon: 'lock', text: 'Secure payment protection' },
+        { icon: 'package', text: 'Deliverable tracking' },
       ],
       mockup: (
         <div className="space-y-5">
@@ -199,8 +199,8 @@ export default function ProductDemo() {
           <div className="flex items-center justify-between py-4">
             {[
               { active: true, label: 'Create' },
-              { active: true, label: 'Pay' },
-              { active: false, label: 'Ship' },
+              { active: true, label: 'Fund' },
+              { active: false, label: 'Deliver' },
               { active: false, label: 'Complete' },
             ].map((step, i) => (
               <div key={i} className="flex items-center flex-1">

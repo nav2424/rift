@@ -35,39 +35,64 @@ export async function GET(request: NextRequest) {
     }
 
     // Get account status from Stripe
-    const accountStatus = await getConnectAccountStatus(user.stripeConnectAccountId)
+    try {
+      const accountStatus = await getConnectAccountStatus(user.stripeConnectAccountId)
 
-    // Check if identity verification status has changed based on Stripe account status
-    // This handles cases where webhooks haven't fired yet (e.g., in development)
-    const isVerified = accountStatus.chargesEnabled && accountStatus.payoutsEnabled
-    
-    // Update database if verification status has changed
-    if (user.stripeIdentityVerified !== isVerified) {
-      await prisma.user.update({
-        where: { id: auth.userId },
-        data: {
-          stripeIdentityVerified: isVerified,
-        },
-      })
-      // Only log in development to avoid cluttering production logs
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Updated identity verification status: ${user.stripeIdentityVerified} -> ${isVerified}`)
+      // Check if identity verification status has changed based on Stripe account status
+      // This handles cases where webhooks haven't fired yet (e.g., in development)
+      const isVerified = accountStatus.chargesEnabled && accountStatus.payoutsEnabled
+      
+      // Update database if verification status has changed
+      if (user.stripeIdentityVerified !== isVerified) {
+        await prisma.user.update({
+          where: { id: auth.userId },
+          data: {
+            stripeIdentityVerified: isVerified,
+          },
+        })
+        // Only log in development to avoid cluttering production logs
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Updated identity verification status: ${user.stripeIdentityVerified} -> ${isVerified}`)
+        }
       }
-    }
 
-    return NextResponse.json({
-      connected: true,
-      accountId: accountStatus.accountId,
-      chargesEnabled: accountStatus.chargesEnabled,
-      payoutsEnabled: accountStatus.payoutsEnabled,
-      detailsSubmitted: accountStatus.detailsSubmitted,
-      identityVerified: isVerified, // Use the updated status from Stripe
-      email: accountStatus.email,
-      status: accountStatus.status,
-      statusMessage: accountStatus.statusMessage,
-      requirements: accountStatus.requirements,
-      disabledReason: accountStatus.disabledReason,
-    })
+      return NextResponse.json({
+        connected: true,
+        accountId: accountStatus.accountId,
+        chargesEnabled: accountStatus.chargesEnabled,
+        payoutsEnabled: accountStatus.payoutsEnabled,
+        detailsSubmitted: accountStatus.detailsSubmitted,
+        identityVerified: isVerified, // Use the updated status from Stripe
+        email: accountStatus.email,
+        status: accountStatus.status,
+        statusMessage: accountStatus.statusMessage,
+        requirements: accountStatus.requirements,
+        disabledReason: accountStatus.disabledReason,
+      })
+    } catch (statusError: any) {
+      // If account is invalid, clear it from the database
+      if (statusError.code === 'STRIPE_ACCOUNT_INVALID') {
+        console.log(`Account ${user.stripeConnectAccountId} is invalid, clearing from database`)
+        await prisma.user.update({
+          where: { id: auth.userId },
+          data: {
+            stripeConnectAccountId: null,
+            stripeIdentityVerified: false,
+          },
+        })
+        // Return disconnected status
+        return NextResponse.json({
+          connected: false,
+          accountId: null,
+          chargesEnabled: false,
+          payoutsEnabled: false,
+          detailsSubmitted: false,
+          identityVerified: false,
+        })
+      }
+      // Re-throw other errors
+      throw statusError
+    }
   } catch (error: any) {
     logError('Get Stripe Connect status', error)
     return NextResponse.json(

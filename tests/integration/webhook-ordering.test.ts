@@ -26,6 +26,9 @@ vi.mock('@/lib/prisma', () => ({
     riftEvent: {
       create: vi.fn(),
     },
+    stripe_webhook_events: {
+      create: vi.fn(),
+    },
     $transaction: vi.fn((callback) => callback({
       riftTransaction: {
         findUnique: vi.fn(),
@@ -52,13 +55,19 @@ vi.mock('@/lib/policy-acceptance', () => ({
   capturePolicyAcceptance: vi.fn(),
 }))
 
+vi.mock('@/lib/risk/computeRisk', () => ({
+  applyRiskPolicy: vi.fn().mockResolvedValue({ action: 'allow', riskScore: 0 }),
+  computeRiftRisk: vi.fn().mockResolvedValue({ riskScore: 0 }),
+}))
+
 // Mock Stripe - must be set up before route import
 vi.mock('@/lib/stripe', () => {
   const mockConstructEvent = vi.fn((body, signature, secret) => {
     if (typeof body === 'string') {
-      return JSON.parse(body)
+      const parsed = JSON.parse(body)
+      return { livemode: false, ...parsed }
     }
-    return body
+    return { livemode: false, ...body }
   })
   
   return {
@@ -672,7 +681,7 @@ describe('Webhook Ordering', () => {
       // Mock signature verification to succeed
       const { stripe } = await import('@/lib/stripe')
       vi.mocked(stripe.webhooks.constructEvent).mockImplementationOnce((body) => {
-        return JSON.parse(body as string)
+        return { livemode: false, ...JSON.parse(body as string) }
       })
       
       const response = await POST(request)

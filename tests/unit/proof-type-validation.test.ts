@@ -5,142 +5,9 @@
 
 import { describe, it, expect } from 'vitest'
 import { validateProofTypeLock, getProofTypeFromItemType } from '@/lib/proof-type-validation'
-import { ItemType, VaultAssetType } from '@prisma/client'
+import { ItemType } from '@prisma/client'
 
 describe('Type-Locked Proof Validation', () => {
-  describe('OWNERSHIP_TRANSFER', () => {
-    it('should validate valid TICKETS proof with event details', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TICKET_PROOF'],
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(true)
-      expect(result.errors).toHaveLength(0)
-    })
-
-    it('should validate TICKETS proof with FILE asset', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['FILE'],
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(true)
-    })
-
-    it('should reject TICKETS proof without eventName', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TICKET_PROOF'],
-        {
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('eventName'))).toBe(true)
-    })
-
-    it('should reject TICKETS proof without eventDate', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TICKET_PROOF'],
-        {
-          eventName: 'Concert',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('eventDate'))).toBe(true)
-    })
-
-    it('should reject TICKETS proof without platform', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TICKET_PROOF'],
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('platform'))).toBe(true)
-    })
-
-    it('should reject unknown asset types for TICKETS', () => {
-      // TRACKING doesn't exist in launch scope - should be rejected as unknown
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TRACKING' as any], // Unknown asset type
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Invalid asset types'))).toBe(true)
-    })
-
-    it('should reject TICKETS proof with too few assets', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        [], // No assets
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('At least 1 asset'))).toBe(true)
-    })
-
-    it('should reject TICKETS proof with too many assets', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        Array(6).fill('TICKET_PROOF'), // 6 assets (max is 5)
-        {
-          eventName: 'Concert',
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Maximum 5 asset'))).toBe(true)
-    })
-
-    it('should reject empty string in required fields', () => {
-      const result = validateProofTypeLock(
-        'OWNERSHIP_TRANSFER' as ItemType,
-        ['TICKET_PROOF'],
-        {
-          eventName: '   ', // Empty string
-          eventDate: '2025-02-01',
-          platform: 'Ticketmaster',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('eventName'))).toBe(true)
-    })
-  })
 
   describe('DIGITAL_GOODS', () => {
     it('should validate valid DIGITAL proof with FILE', () => {
@@ -293,74 +160,6 @@ describe('Type-Locked Proof Validation', () => {
     })
   })
 
-  describe('LICENSE_KEYS', () => {
-    it('should validate valid LICENSE_KEYS proof', () => {
-      const result = validateProofTypeLock(
-        'LICENSE_KEYS' as ItemType,
-        ['LICENSE_KEY'],
-        {
-          softwareName: 'Adobe Photoshop',
-          licenseType: 'SINGLE_USE',
-        }
-      )
-      
-      expect(result.valid).toBe(true)
-    })
-
-    it('should validate LICENSE_KEYS proof with FILE', () => {
-      const result = validateProofTypeLock(
-        'LICENSE_KEYS' as ItemType,
-        ['FILE'],
-        {
-          softwareName: 'Adobe Photoshop',
-          licenseType: 'SINGLE_USE',
-        }
-      )
-      
-      expect(result.valid).toBe(true)
-    })
-
-    it('should reject LICENSE_KEYS proof without softwareName', () => {
-      const result = validateProofTypeLock(
-        'LICENSE_KEYS' as ItemType,
-        ['LICENSE_KEY'],
-        {
-          licenseType: 'SINGLE_USE',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('softwareName'))).toBe(true)
-    })
-
-    it('should reject LICENSE_KEYS proof without licenseType', () => {
-      const result = validateProofTypeLock(
-        'LICENSE_KEYS' as ItemType,
-        ['LICENSE_KEY'],
-        {
-          softwareName: 'Adobe Photoshop',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('licenseType'))).toBe(true)
-    })
-
-    it('should reject LICENSE_KEYS proof with no assets', () => {
-      const result = validateProofTypeLock(
-        'LICENSE_KEYS' as ItemType,
-        [],
-        {
-          softwareName: 'Adobe Photoshop',
-          licenseType: 'SINGLE_USE',
-        }
-      )
-      
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('At least 1 asset'))).toBe(true)
-    })
-  })
-
   describe('Unsupported Item Types', () => {
     it('should reject PHYSICAL item type (not in launch scope)', () => {
       const result = validateProofTypeLock(
@@ -370,7 +169,7 @@ describe('Type-Locked Proof Validation', () => {
       )
       
       expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('not supported in launch scope'))).toBe(true)
+      expect(result.errors.some(e => e.includes('not supported'))).toBe(true)
     })
 
     it('should reject TRACKING asset type (does not exist)', () => {
@@ -387,20 +186,12 @@ describe('Type-Locked Proof Validation', () => {
   })
 
   describe('getProofTypeFromItemType', () => {
-    it('should return DIGITAL for TICKETS', () => {
-      expect(getProofTypeFromItemType('OWNERSHIP_TRANSFER' as ItemType)).toBe('DIGITAL_GOODS')
-    })
-
-    it('should return DIGITAL for DIGITAL', () => {
-      expect(getProofTypeFromItemType('DIGITAL_GOODS' as ItemType)).toBe('DIGITAL_GOODS')
+    it('should return DIGITAL for DIGITAL_GOODS', () => {
+      expect(getProofTypeFromItemType('DIGITAL_GOODS' as ItemType)).toBe('DIGITAL')
     })
 
     it('should return SERVICE for SERVICES', () => {
       expect(getProofTypeFromItemType('SERVICES' as ItemType)).toBe('SERVICE')
-    })
-
-    it('should return DIGITAL for LICENSE_KEYS', () => {
-      expect(getProofTypeFromItemType('LICENSE_KEYS' as ItemType)).toBe('DIGITAL_GOODS')
     })
   })
 })

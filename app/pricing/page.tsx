@@ -6,12 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
 import PremiumButton from '@/components/ui/PremiumButton'
-import Tabs from '@/components/ui/Tabs'
 
 export default function Pricing() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [transactionAmount, setTransactionAmount] = useState('100')
+  const [transactionAmount, setTransactionAmount] = useState('1000')
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
 
   useEffect(() => {
@@ -36,48 +35,56 @@ export default function Pricing() {
   const sellerReceives = amount - sellerPlatformFee
 
   const buyerCard = {
-    title: 'Buyer',
-    description: 'Secure your payments',
+    title: 'Brands & Agencies',
+    description: 'Secure your influencer partnerships',
     fee: '3%',
     feeLabel: 'Payment processing fee',
     benefits: [
-      'Funds secured until delivery verified',
+      'Funds secured until content approved',
       'Automatic release after verification window',
       'Issue resolution support',
-      'Full refund if terms not met',
+      'Full refund if deliverables not met',
     ],
   }
 
   const sellerCard = {
-    title: 'Seller',
+    title: 'Creators & Influencers',
     description: 'Get paid with confidence',
     fee: '5%',
     feeLabel: 'Platform fee',
     benefits: [
-      'Payment secured before delivery',
-      'Fast payout after verification',
+      'Payment secured before you start work',
+      'Fast payout after content approval',
       'Dispute resolution support',
-      'Vault storage for proof of delivery',
+      'Secure Vault storage for deliverables',
     ],
     popular: true,
   }
 
   const faqs = [
     {
-      question: 'What happens if delivery is disputed?',
-      answer: 'If an issue is raised, funds are frozen and our admin team reviews the case. Both parties can submit evidence. Resolution typically occurs within 24-48 hours.',
+      question: 'What happens if content doesn\'t meet requirements?',
+      answer: 'If an issue is raised, funds are frozen and our admin team reviews the case. Both parties can submit evidence including deliverables, briefs, and communication. Resolution typically occurs within 24-48 hours.',
     },
     {
       question: 'How are funds released?',
-      answer: 'Funds are automatically released after the verification window expires, unless an issue is raised. Buyers can also manually release funds earlier if satisfied.',
+      answer: 'Funds are automatically released after the verification window expires (typically 24-72 hours), unless an issue is raised. Brands/agencies can also manually release funds earlier if satisfied with deliverables.',
     },
     {
-      question: 'Do you store my files?',
-      answer: 'Files submitted to the Vault are stored securely and encrypted. Access is restricted to authorized parties and admins during review. Files are retained according to our data retention policy.',
+      question: 'Do you store my files and content?',
+      answer: 'Files submitted to the Vault are stored securely and encrypted. Access is restricted to authorized parties (buyer and seller) and admins during review. Files are retained according to our data retention policy.',
     },
     {
-      question: 'What types of deals are supported?',
-      answer: 'Rift supports digital goods (usernames, licenses, files), ownership transfer (digital transfer with ownership verification), and services (milestone-based work).',
+      question: 'What types of brand deals are supported?',
+      answer: 'Rift supports brand deals, UGC content, influencer partnerships, and agency deliverables. Both milestone-based service payments and content deliverables are supported.',
+    },
+    {
+      question: 'Can I use Rift for recurring brand partnerships?',
+      answer: 'Yes! Each Rift transaction is independent, so you can create multiple Rifts for the same brand partnership. This makes it perfect for ongoing collaborations with milestone-based payments.',
+    },
+    {
+      question: 'Are there any monthly fees or subscriptions?',
+      answer: 'No. Rift charges only on successful transactions. No monthly fees, no setup costs, no hidden charges. You only pay when you use Rift.',
     },
   ]
 
@@ -86,13 +93,17 @@ export default function Pricing() {
         {/* Hero */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
           <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 sm:px-4 py-1.5 sm:py-2 text-xs text-white/60 mb-6 sm:mb-8">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              SIMPLE PRICING • NO SUBSCRIPTIONS
+            </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-light mb-6 tracking-tight">
               <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
                 Simple, transparent pricing
               </span>
             </h1>
             <p className="text-xl text-white/80 max-w-2xl mx-auto font-light">
-              One fee structure. No hidden costs. No monthly subscriptions.
+              One fee structure. No hidden costs. No monthly subscriptions. Pay only when you use Rift.
             </p>
             </div>
         </section>
@@ -126,7 +137,7 @@ export default function Pricing() {
                   className="w-full"
                   variant="outline"
                 >
-                  Get Started as Buyer
+                  Get Started as Brand
                 </PremiumButton>
               </Link>
             </GlassCard>
@@ -155,10 +166,9 @@ export default function Pricing() {
                 <PremiumButton
                   size="lg"
                   className="w-full"
-                  variant="primary"
-                  glow
+                  variant="outline"
                 >
-                  Get Started as Seller
+                  Get Started as Creator
                 </PremiumButton>
               </Link>
             </GlassCard>
@@ -177,16 +187,16 @@ export default function Pricing() {
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-400/30" />
               </div>
               <h2 className="text-3xl sm:text-4xl font-medium text-white mb-4 tracking-tight">
-                Transaction <span className="text-emerald-400/40">Calculator</span>
+                Fee <span className="text-emerald-400/40">Calculator</span>
               </h2>
               <p className="text-white/60 font-light text-base max-w-xl mx-auto">
-                See exactly how much each party pays in a transaction
+                See exactly how fees work for your brand deals
               </p>
             </div>
 
             <div className="max-w-md mx-auto mb-10">
               <label htmlFor="amount" className="block text-sm font-medium text-white/80 mb-3">
-                Transaction Amount (CAD)
+                Deal Amount (USD)
               </label>
               <div className="relative group">
                 <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 text-lg font-light">$</span>
@@ -198,7 +208,7 @@ export default function Pricing() {
                   value={transactionAmount}
                   onChange={(e) => setTransactionAmount(e.target.value)}
                   className="w-full pl-10 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white text-lg placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all font-light hover:bg-white/[0.07] hover:border-white/15"
-                  placeholder="100.00"
+                  placeholder="1000.00"
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400/0 via-emerald-400/5 to-emerald-400/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               </div>
@@ -213,11 +223,11 @@ export default function Pricing() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-medium text-white">Buyer Pays</h3>
+                  <h3 className="text-xl font-medium text-white">Brand Pays</h3>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-white/60 font-light text-sm">Transaction amount</span>
+                    <span className="text-white/60 font-light text-sm">Deal amount</span>
                     <span className="text-white font-medium font-mono">${amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
@@ -241,11 +251,11 @@ export default function Pricing() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-medium text-white">Seller Receives</h3>
+                  <h3 className="text-xl font-medium text-white">Creator Receives</h3>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-white/60 font-light text-sm">Transaction amount</span>
+                    <span className="text-white/60 font-light text-sm">Deal amount</span>
                     <span className="text-white font-medium font-mono">${amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
@@ -297,10 +307,10 @@ export default function Pricing() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-medium text-lg mb-2">Payment processing fee (3% - paid by buyer)</h3>
+                    <h3 className="text-white font-medium text-lg mb-2">Payment processing fee (3% - paid by brand)</h3>
                     <p className="text-white/60 font-light text-sm leading-relaxed">
                       Covers payment processing costs, card network fees, and payment provider charges. 
-                      This is standard for all card transactions and is paid by the buyer when they secure funds.
+                      This is standard for all card transactions and is paid by the brand when they secure funds for the deal.
                     </p>
                   </div>
                 </div>
@@ -313,10 +323,10 @@ export default function Pricing() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-white font-medium text-lg mb-2">Platform fee (5% - paid by seller)</h3>
+                    <h3 className="text-white font-medium text-lg mb-2">Platform fee (5% - paid by creator)</h3>
                     <p className="text-white/60 font-light text-sm leading-relaxed">
-                      Covers platform services, dispute resolution, fraud prevention, secure fund holding, and Vault storage. 
-                      This fee is deducted from the seller's payout when funds are released.
+                      Covers platform services including secure fund holding, dispute resolution, fraud prevention, Vault storage for deliverables, 
+                      and payment processing. This fee is deducted from the creator's payout when funds are released.
                     </p>
                   </div>
                 </div>
@@ -324,7 +334,7 @@ export default function Pricing() {
               <div className="pt-6 border-t border-white/10 rounded-xl glass-soft p-6">
                 <p className="text-white/80 font-light text-base text-center">
                   <strong className="text-white font-medium">No monthly fees.</strong> No setup costs. No hidden charges. 
-                  You only pay when you use Rift.
+                  You only pay when you use Rift for a brand deal.
                 </p>
               </div>
             </div>
@@ -388,8 +398,8 @@ export default function Pricing() {
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-emerald-400/30" />
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white mb-8 tracking-tight leading-tight">
-              Stop negotiating trust.<br />
-              Execute the deal.
+              Stop chasing payments.<br />
+              Secure your brand deals.
             </h2>
             <Link href="/auth/signup">
               <PremiumButton size="lg" className="min-w-[220px]" glow>

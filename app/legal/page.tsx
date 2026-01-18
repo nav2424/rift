@@ -30,7 +30,7 @@ export default function Legal() {
               <div>
                 <h3 className="text-xl font-light text-white mb-4 mt-8">1. What Rift Is (and Is Not)</h3>
                 <p className="text-white/80 leading-relaxed font-light mb-4">
-                  Rift is a transaction facilitation platform that helps buyers and sellers complete transactions more safely by providing payment flow structure, communication records, and conditional release mechanisms.
+                  Rift is a transaction facilitation platform that helps creators and brands (buyers and sellers) complete transactions more safely by providing payment flow structure, communication records, and conditional release mechanisms.
                 </p>
                 <p className="text-white/80 leading-relaxed font-light mb-2">Rift:</p>
                 <ul className="list-none text-white/80 space-y-2 mt-4 ml-0">
@@ -44,7 +44,7 @@ export default function Legal() {
                   </li>
                   <li className="flex items-start gap-3 font-light">
                     <span className="text-white/40 mt-1">•</span>
-                    <span>Is not a bank, money transmitter, or escrow provider</span>
+                    <span>Is not a bank, money transmitter, or regulated payment service provider</span>
                   </li>
                   <li className="flex items-start gap-3 font-light">
                     <span className="text-white/40 mt-1">•</span>
@@ -388,7 +388,7 @@ export default function Legal() {
                 </li>
                 <li className="flex items-start gap-3 font-light">
                   <span className="text-white/40 mt-1">•</span>
-                  <span>Act as a guarantor, insurer, or legal escrow</span>
+                  <span>Act as a guarantor, insurer, or regulated payment intermediary</span>
                 </li>
               </ul>
               <p className="text-white/80 leading-relaxed font-light mt-6">
@@ -552,6 +552,9 @@ export default function Legal() {
                     <span>Enforcement of agreements</span>
                   </li>
                 </ul>
+                <p className="text-white/60 leading-relaxed font-light text-sm mt-4">
+                  For detailed information about data retention periods and disposal procedures, please refer to our Data Retention and Disposal Policy. The policy defines specific retention periods, data deletion procedures, and user rights regarding data management.
+                </p>
               </div>
 
               <div>

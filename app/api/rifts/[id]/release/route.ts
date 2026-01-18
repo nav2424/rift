@@ -80,6 +80,13 @@ export async function POST(
       )
     }
 
+    if (rift.status === 'RELEASED' || rift.status === 'PAYOUT_SCHEDULED' || rift.status === 'PAID_OUT') {
+      return NextResponse.json(
+        { error: 'Rift is already released' },
+        { status: 400 }
+      )
+    }
+
     // For manual releases, directly transition to RELEASED without eligibility checks
     // Buyers can release funds early at any time
     

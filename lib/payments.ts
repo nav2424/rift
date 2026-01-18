@@ -25,6 +25,10 @@ export async function processPayment(
     throw new Error('Rift not found')
   }
 
+  if (rift.status !== 'AWAITING_PAYMENT') {
+    throw new Error('Rift must be in AWAITING_PAYMENT status')
+  }
+
   // If payment intent ID is provided, confirm it
   if (paymentIntentId) {
     const confirmed = await confirmPaymentIntent(paymentIntentId)
@@ -62,12 +66,23 @@ export async function processPayment(
 /**
  * Create a payment intent for a Rift transaction
  * ✅ Always uses subtotal, let stripe.ts compute buyerTotal + metadata breakdown
+ * Checks for existing payment intent before creating a new one
  */
 export async function createEscrowPaymentIntent(transactionId: string) {
   const rift = await prisma.riftTransaction.findUnique({
     where: { id: transactionId },
-    include: {
-      buyer: true,
+    select: {
+      id: true,
+      status: true,
+      subtotal: true,
+      currency: true,
+      buyerId: true,
+      buyer: {
+        select: {
+          email: true,
+        },
+      },
+      stripePaymentIntentId: true,
     },
   })
 
@@ -75,8 +90,33 @@ export async function createEscrowPaymentIntent(transactionId: string) {
     throw new Error('Rift not found')
   }
 
+  if (rift.status !== 'AWAITING_PAYMENT') {
+    throw new Error('Rift must be in AWAITING_PAYMENT status')
+  }
+
   if (!rift.buyer?.email) {
     throw new Error('Buyer email is required for payment intent')
+  }
+
+  // Check if payment intent already exists in database
+  if (rift.stripePaymentIntentId) {
+    const { stripe } = await import('./stripe')
+    if (stripe) {
+      try {
+        const existingPi = await stripe.paymentIntents.retrieve(rift.stripePaymentIntentId)
+        if (existingPi && existingPi.client_secret) {
+          console.log(`Using existing payment intent ${rift.stripePaymentIntentId} for rift ${transactionId}`)
+          return { 
+            clientSecret: existingPi.client_secret, 
+            paymentIntentId: existingPi.id 
+          }
+        }
+      } catch (retrieveError: any) {
+        // If retrieval fails (e.g., payment intent doesn't exist or was deleted), continue to create new one
+        console.warn(`Could not retrieve existing payment intent ${rift.stripePaymentIntentId}:`, retrieveError.message)
+        // Continue to create a new payment intent
+      }
+    }
   }
 
   // ✅ Always use subtotal, let stripe.ts compute buyerTotal + metadata breakdown

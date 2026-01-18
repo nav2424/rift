@@ -329,13 +329,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
                       >
                         Account
                       </Link>
-                      <Link
-                        href="/settings"
-                        className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
-                        onClick={() => setProfileMenuOpen(false)}
-                      >
-                        Settings
-                      </Link>
                       {session.user?.role === 'ADMIN' && (
                         <Link
                           href="/admin"

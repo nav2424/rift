@@ -54,8 +54,32 @@ export async function GET(request: NextRequest) {
       throw new Error('Missing NEXT_PUBLIC_APP_URL or APP_URL environment variable')
     }
 
-    const returnUrl = `${APP_URL}/connect/stripe/return?account=${accountId}`
-    const refreshUrl = `${APP_URL}/connect/stripe/refresh?account=${accountId}`
+    // Check if we're using live mode Stripe keys
+    const isLiveMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
+    
+    // Ensure HTTPS for live mode (Stripe requires HTTPS for live mode redirects)
+    let baseUrl = APP_URL.trim().replace(/\/$/, '') // Remove trailing slash
+    
+    // If using live mode and URL is HTTP, we need HTTPS
+    if (isLiveMode && baseUrl.startsWith('http://')) {
+      // Try to use production URL if available
+      const productionUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://joinrift.co'
+      if (productionUrl.startsWith('https://')) {
+        baseUrl = productionUrl.trim().replace(/\/$/, '')
+        console.warn('[Stripe Connect] Live mode detected with HTTP URL, using production HTTPS URL:', baseUrl)
+      } else {
+        // Force HTTPS for localhost in live mode (won't work, but better error message)
+        baseUrl = baseUrl.replace('http://', 'https://')
+        throw new Error(
+          'Live mode Stripe requires HTTPS URLs. ' +
+          'Please set NEXT_PUBLIC_APP_URL or APP_URL to your production HTTPS URL (e.g., https://joinrift.co). ' +
+          'For local development with live mode, use a tool like ngrok or test with test mode keys instead.'
+        )
+      }
+    }
+
+    const returnUrl = `${baseUrl}/connect/stripe/return?account=${accountId}`
+    const refreshUrl = `${baseUrl}/connect/stripe/refresh?account=${accountId}`
 
     const onboardingUrl = await createAccountLink(accountId, returnUrl, refreshUrl, forIdentityVerification)
 

@@ -11,10 +11,12 @@ import Timeline from '@/components/Timeline'
 import MessagingPreview from '@/components/MessagingPreview'
 import DeliveryStatus from '@/components/DeliveryStatus'
 import MilestoneCard from '@/components/MilestoneCard'
+import InvoiceCard from '@/components/InvoiceCard'
 import RiskScoreBadge from '@/components/RiskScoreBadge'
 import DisputeWizard from '@/components/DisputeWizard'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
+import { getItemTypeLabel } from '@/lib/item-type-labels'
 
 type RiftStatus = 
   | 'DRAFT'
@@ -358,7 +360,7 @@ export default function RiftDetailPage() {
                 </span>
                 <span className="text-white/20">•</span>
                 <span className="text-white/60">
-                  {rift.itemType.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  {getItemTypeLabel(rift.itemType)}
                 </span>
                 <span className="text-white/20">•</span>
                 <span className="text-white/60">{isBuyer ? 'Buyer' : 'Seller'}</span>
@@ -393,6 +395,15 @@ export default function RiftDetailPage() {
                 currency={rift.currency}
                 isBuyer={isBuyer}
                 riftStatus={rift.status}
+              />
+            )}
+
+            {/* Invoice - Only for service rifts */}
+            {rift.itemType === 'SERVICES' && (
+              <InvoiceCard
+                riftId={rift.id}
+                isSeller={isSeller}
+                currency={rift.currency}
               />
             )}
 

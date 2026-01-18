@@ -11,8 +11,14 @@ interface Milestone {
   index: number
   title: string
   description: string
+  deliverables: string
   amount: number
   dueDate: string
+  reviewWindowDays: number
+  revisionLimit: number
+  dealType?: string | null
+  reviewWindowEndsAt?: string | Date | null
+  revisionRequests?: number
   released: boolean
   releaseDate: string | null
   sellerNet: number | null
@@ -34,6 +40,10 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
   const [releasingIndex, setReleasingIndex] = useState<number | null>(null)
   const [releasingAll, setReleasingAll] = useState(false)
   const [allReleased, setAllReleased] = useState(false)
+  const [activeMilestoneIndex, setActiveMilestoneIndex] = useState<number | null>(null)
+  const [autoReleaseAt, setAutoReleaseAt] = useState<string | null>(null)
+  const [autoReleaseScheduled, setAutoReleaseScheduled] = useState(false)
+  const [requestingRevisionIndex, setRequestingRevisionIndex] = useState<number | null>(null)
 
   const currencySymbols: Record<string, string> = {
     CAD: '$',
@@ -59,6 +69,9 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
       const data = await response.json()
       setMilestones(data.milestones || [])
       setAllReleased(data.allReleased || false)
+      setActiveMilestoneIndex(data.activeMilestoneIndex ?? null)
+      setAutoReleaseAt(data.autoReleaseAt ?? null)
+      setAutoReleaseScheduled(!!data.autoReleaseScheduled)
     } catch (error) {
       console.error('Error fetching milestones:', error)
       showToast('Failed to load milestones', 'error')
@@ -161,6 +174,40 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
     }
   }
 
+  const handleRequestRevision = async (index: number) => {
+    if (!isBuyer) {
+      showToast('Only buyers can request revisions', 'error')
+      return
+    }
+    if (!['PROOF_SUBMITTED', 'UNDER_REVIEW'].includes(riftStatus)) {
+      showToast('Revisions can only be requested during review', 'error')
+      return
+    }
+
+    const reason = window.prompt('Optional: Add a short revision request note') || ''
+
+    setRequestingRevisionIndex(index)
+    try {
+      const response = await fetch(`/api/rifts/${riftId}/milestones/${index}/request-revision`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason }),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to request revision')
+      }
+      showToast('Revision request sent to the creator', 'success')
+      await fetchMilestones()
+    } catch (error: any) {
+      console.error('Revision request error:', error)
+      showToast(error.message || 'Failed to request revision', 'error')
+    } finally {
+      setRequestingRevisionIndex(null)
+    }
+  }
+
   if (loading) {
     return (
       <GlassCard className="p-6">
@@ -201,6 +248,18 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
         {milestones.map((milestone, index) => {
           const isOverdue = !milestone.released && new Date(milestone.dueDate) < new Date()
           const canReleaseThis = canRelease && !milestone.released
+          const isActiveMilestone = activeMilestoneIndex === milestone.index
+          const reviewWindowExpired = milestone.reviewWindowEndsAt
+            ? new Date(milestone.reviewWindowEndsAt) < new Date()
+            : false
+          const revisionLimitReached =
+            typeof milestone.revisionRequests === 'number' &&
+            milestone.revisionRequests >= milestone.revisionLimit
+          const canRequestRevision =
+            isBuyer &&
+            isActiveMilestone &&
+            !milestone.released &&
+            ['PROOF_SUBMITTED', 'UNDER_REVIEW'].includes(riftStatus)
 
           return (
             <div
@@ -234,6 +293,19 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
                   {milestone.description && (
                     <p className="text-sm text-white/60 font-light mb-2">{milestone.description}</p>
                   )}
+                {milestone.deliverables && (
+                  <p className="text-sm text-white/70 font-light mb-2">
+                    Deliverables: {milestone.deliverables}
+                  </p>
+                )}
+                <p className="text-xs text-white/50 font-light">
+                  Review window: {milestone.reviewWindowDays} day{milestone.reviewWindowDays === 1 ? '' : 's'} • 1 revision included
+                </p>
+                {typeof milestone.revisionRequests === 'number' && (
+                  <p className="text-xs text-white/40 font-light mt-1">
+                    Revisions used: {Math.min(milestone.revisionRequests, milestone.revisionLimit)} / {milestone.revisionLimit}
+                  </p>
+                )}
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-light text-white">
@@ -256,6 +328,15 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
                       year: 'numeric',
                     })}
                   </p>
+                  {milestone.reviewWindowEndsAt && (
+                    <p className="text-xs text-emerald-300/80 font-light mt-1">
+                      Review window ends on {new Date(milestone.reviewWindowEndsAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  )}
                   {milestone.released && milestone.releaseDate && (
                     <p className="text-xs text-green-300/70 font-light mt-1">
                       Released: {new Date(milestone.releaseDate).toLocaleDateString('en-US', {
@@ -266,15 +347,27 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
                     </p>
                   )}
                 </div>
-                {canReleaseThis && (
-                  <PremiumButton
-                    onClick={() => handleReleaseMilestone(index)}
-                    disabled={releasingIndex === index}
-                    className="px-4 py-2 text-sm"
-                  >
-                    {releasingIndex === index ? 'Releasing...' : 'Release Funds'}
-                  </PremiumButton>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                  {canRequestRevision && (
+                    <PremiumButton
+                      onClick={() => handleRequestRevision(index)}
+                      disabled={requestingRevisionIndex === index || reviewWindowExpired || revisionLimitReached}
+                      className="px-4 py-2 text-sm"
+                      variant="outline"
+                    >
+                      {requestingRevisionIndex === index ? 'Requesting...' : 'Request Revision'}
+                    </PremiumButton>
+                  )}
+                  {canReleaseThis && (
+                    <PremiumButton
+                      onClick={() => handleReleaseMilestone(index)}
+                      disabled={releasingIndex === index}
+                      className="px-4 py-2 text-sm"
+                    >
+                      {releasingIndex === index ? 'Releasing...' : 'Release Funds'}
+                    </PremiumButton>
+                  )}
+                </div>
               </div>
             </div>
           )

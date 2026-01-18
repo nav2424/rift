@@ -14,8 +14,8 @@ import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
 
 const prisma = new PrismaClient()
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-12-18.acacia' })
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-11-17.clover' as any })
   : null
 
 async function main() {
@@ -84,7 +84,7 @@ async function main() {
     let startingAfter: string | undefined = undefined
 
     while (hasMore && allPaymentIntents.length < 500) {
-      const response = await stripe.paymentIntents.list({
+      const response: Stripe.Response<Stripe.ApiList<Stripe.PaymentIntent>> = await stripe.paymentIntents.list({
         limit: 100,
         created: { gte: sevenDaysAgo },
         ...(startingAfter && { starting_after: startingAfter }),

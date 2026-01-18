@@ -45,6 +45,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  const addDays = (dateStr: string, days: number) => {
+    const base = new Date(`${dateStr}T00:00:00`)
+    base.setDate(base.getDate() + days)
+    return base.toISOString().slice(0, 10)
+  }
   
   // Default form data to ensure all fields are always defined
   const defaultFormData = {
@@ -57,24 +63,65 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     buyerId: '',
     buyerEmail: '',
     notes: '',
-    // Ownership transfer-specific fields
-    itemBeingTransferred: '',
-    transferPlatform: '',
-    expectedTransferDate: getTodayDateString(),
-    verificationMethod: '',
     // Service-specific fields
     serviceDate: getTodayDateString(),
     serviceScope: '',
     serviceDeliverables: '',
     completionCriteria: '',
     allowsPartialRelease: false,
-    milestones: [] as Array<{ title: string; description: string; amount: string; dueDate: string }>,
-    // License key-specific fields
-    softwareName: '',
-    licenseType: '',
+    dealType: 'ongoing',
+    milestones: [] as Array<{
+      title: string
+      description: string
+      deliverables: string
+      amount: string
+      dueDate: string
+      reviewWindowDays: number
+      revisionLimit: number
+    }>,
+    // Content delivery details captured after funding
   }
 
   const [formData, setFormData] = useState(defaultFormData)
+
+  const getDefaultReviewWindowDays = (dealType: string) => {
+    switch (dealType) {
+      case 'short':
+        return 5
+      case 'high_ticket':
+        return 7
+      case 'ongoing':
+      default:
+        return 3
+    }
+  }
+
+  const getMilestoneValidationErrors = () => {
+    const milestones = formData.milestones || []
+    return milestones.map((m, index) => {
+      const errors: string[] = []
+      if (!m.title || !m.deliverables || !m.amount || !m.dueDate) {
+        errors.push('Required fields missing')
+      }
+      const currentDate = m.dueDate ? new Date(`${m.dueDate}T00:00:00`) : null
+      if (currentDate && Number.isNaN(currentDate.getTime())) {
+        errors.push('Invalid due date')
+      }
+      if (index > 0 && currentDate && milestones[index - 1]?.dueDate) {
+        const prevDate = new Date(`${milestones[index - 1].dueDate}T00:00:00`)
+        if (currentDate <= prevDate) {
+          errors.push('Must be after previous milestone date')
+        }
+      }
+      if (formData.serviceDate && currentDate) {
+        const serviceDate = new Date(`${formData.serviceDate}T00:00:00`)
+        if (currentDate > serviceDate) {
+          errors.push('Cannot be after the service delivery date')
+        }
+      }
+      return errors
+    })
+  }
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -127,28 +174,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         if (isNaN(num) || num <= 0) return 'Amount must be a positive number'
         if (num < AMOUNT_MIN) return `Minimum amount is ${currencySymbols[formData.currency] || ''}${AMOUNT_MIN.toFixed(2)}`
         return ''
-      // Digital file fields removed from creation - no validation needed
+    // Digital file fields removed from creation - no validation needed
       case 'eventDate':
         return ''
-      case 'itemBeingTransferred':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Item being transferred is required'
         return ''
-      case 'transferPlatform':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Transfer platform is required'
-        return ''
-      case 'expectedTransferDate':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value) return 'Expected transfer date is required'
-        if (value) {
-          const selectedDate = new Date(value)
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-          if (selectedDate < today) return 'Expected transfer date must be today or in the future'
-        }
-        return ''
-      case 'verificationMethod':
-        if (itemType === 'OWNERSHIP_TRANSFER' && !value.trim()) return 'Verification method is required'
-        return ''
-      // License key fields removed from creation - no validation needed
       case 'serviceDate':
         if (itemType === 'SERVICES' && !value) return 'Service date is required'
         if (value) {
@@ -300,24 +329,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     })
     
     // Type-specific validation
-    if (itemType === 'OWNERSHIP_TRANSFER') {
-      const ownershipFields = ['itemBeingTransferred', 'transferPlatform', 'expectedTransferDate', 'verificationMethod']
-      ownershipFields.forEach((key) => {
-        const error = validateField(key, formData[key as keyof typeof formData] as string)
-        if (error) allErrors[key] = error
-      })
-    } else if (itemType === 'DIGITAL_GOODS') {
+    if (itemType === 'DIGITAL_GOODS') {
       // No validation needed for digital items during creation
-      // Proof of delivery (files, links, license keys) will be submitted after payment
+      // Proof of delivery (files, links) will be submitted after payment
     } else if (itemType === 'SERVICES') {
       const serviceFields = ['serviceDate', 'serviceScope', 'serviceDeliverables', 'completionCriteria']
       serviceFields.forEach((key) => {
-        const error = validateField(key, formData[key as keyof typeof formData] as string)
-        if (error) allErrors[key] = error
-      })
-    } else if (itemType === 'DIGITAL_GOODS') {
-      const licenseFields = ['softwareName', 'licenseType']
-      licenseFields.forEach((key) => {
         const error = validateField(key, formData[key as keyof typeof formData] as string)
         if (error) allErrors[key] = error
       })
@@ -328,10 +345,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     const hasBuyer = creatorRole === 'SELLER' && (formData.buyerId || selectedUser)
     
     if (creatorRole === 'BUYER' && !hasSeller) {
-      allErrors.partner = 'Please search and select a seller'
+      allErrors.partner = 'Please search and select a creator'
     }
     if (creatorRole === 'SELLER' && !hasBuyer) {
-      allErrors.partner = 'Please search and select a buyer'
+      allErrors.partner = 'Please search and select a brand/agency'
     }
     
     // Validate terms acceptance
@@ -411,15 +428,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       }
 
       // Add type-specific fields
-      if (itemType === 'OWNERSHIP_TRANSFER') {
-        payload.itemBeingTransferred = formData.itemBeingTransferred
-        payload.transferPlatform = formData.transferPlatform
-        payload.expectedTransferDate = formData.expectedTransferDate
-        payload.verificationMethod = formData.verificationMethod
-      } else if (itemType === 'DIGITAL_GOODS') {
-        // No digital-specific fields during creation
-        // Files, links, and license keys will be added during proof submission after payment
-      } else if (itemType === 'SERVICES') {
+    if (itemType === 'DIGITAL_GOODS') {
+      // No digital-specific fields during creation
+      // Files and links will be added during proof submission after payment
+    } else if (itemType === 'SERVICES') {
         payload.serviceDate = formData.serviceDate
         payload.serviceScope = formData.serviceScope
         payload.serviceDeliverables = formData.serviceDeliverables
@@ -435,16 +447,38 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           // Validate all milestones have required fields
           const milestones = formData.milestones || []
           for (const milestone of milestones) {
-            if (!milestone.title || !milestone.amount || !milestone.dueDate) {
-              showToast('All milestones must have a title, amount, and due date', 'error')
+            if (!milestone.title || !milestone.amount || !milestone.dueDate || !milestone.deliverables) {
+              showToast('All milestones must have a title, deliverables, amount, and due date', 'error')
               return
+            }
+          }
+          // Validate milestone due dates are sequential and within service date
+          for (let i = 0; i < milestones.length; i += 1) {
+            const currentDate = new Date(`${milestones[i].dueDate}T00:00:00`)
+            if (i > 0) {
+              const prevDate = new Date(`${milestones[i - 1].dueDate}T00:00:00`)
+              if (currentDate <= prevDate) {
+                showToast('Each milestone date must be after the previous milestone date', 'error')
+                return
+              }
+            }
+            if (formData.serviceDate) {
+              const serviceDate = new Date(`${formData.serviceDate}T00:00:00`)
+              if (currentDate > serviceDate) {
+                showToast('Final milestone date cannot be after the service delivery date', 'error')
+                return
+              }
             }
           }
           payload.milestones = milestones.map(m => ({
             title: m.title,
             description: m.description || '',
+            deliverables: m.deliverables || '',
             amount: parseFloat(m.amount),
             dueDate: m.dueDate,
+            reviewWindowDays: m.reviewWindowDays || getDefaultReviewWindowDays(formData.dealType),
+            revisionLimit: 1,
+            dealType: formData.dealType,
           }))
         }
       }
@@ -541,22 +575,13 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       case 3: // Partner
         const hasSeller = creatorRole === 'BUYER' && (formData.sellerId || selectedUser)
         const hasBuyer = creatorRole === 'SELLER' && (formData.buyerId || selectedUser)
-        if (creatorRole === 'BUYER' && !hasSeller) stepErrors.partner = 'Please select a seller'
-        if (creatorRole === 'SELLER' && !hasBuyer) stepErrors.partner = 'Please select a buyer'
+        if (creatorRole === 'BUYER' && !hasSeller) stepErrors.partner = 'Please select a creator'
+        if (creatorRole === 'SELLER' && !hasBuyer) stepErrors.partner = 'Please select a brand/agency'
         break
       case 4: // Type-specific
-        if (itemType === 'OWNERSHIP_TRANSFER') {
-          const itemError = validateField('itemBeingTransferred', formData.itemBeingTransferred)
-          const platformError = validateField('transferPlatform', formData.transferPlatform)
-          const dateError = validateField('expectedTransferDate', formData.expectedTransferDate)
-          const verificationError = validateField('verificationMethod', formData.verificationMethod)
-          if (itemError) stepErrors.itemBeingTransferred = itemError
-          if (platformError) stepErrors.transferPlatform = platformError
-          if (dateError) stepErrors.expectedTransferDate = dateError
-          if (verificationError) stepErrors.verificationMethod = verificationError
-        } else if (itemType === 'DIGITAL_GOODS') {
+        if (itemType === 'DIGITAL_GOODS') {
           // No validation needed for digital items during creation
-          // Proof of delivery (files, links, license keys) will be submitted after payment
+          // Proof of delivery (files, links) will be submitted after payment
         } else if (itemType === 'SERVICES') {
           const serviceError = validateField('serviceDate', formData.serviceDate)
           const scopeError = validateField('serviceScope', formData.serviceScope)
@@ -566,11 +591,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           if (scopeError) stepErrors.serviceScope = scopeError
           if (deliverablesError) stepErrors.serviceDeliverables = deliverablesError
           if (criteriaError) stepErrors.completionCriteria = criteriaError
-        } else if (itemType === 'DIGITAL_GOODS') {
-          const softwareError = validateField('softwareName', formData.softwareName)
-          const licenseTypeError = validateField('licenseType', formData.licenseType)
-          if (softwareError) stepErrors.softwareName = softwareError
-          if (licenseTypeError) stepErrors.licenseType = licenseTypeError
         }
         break
     }
@@ -582,7 +602,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(Math.min(currentStep + 1, totalSteps))
-      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       showToast('Please fix the errors before continuing', 'error')
     }
@@ -590,17 +609,15 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
   const handleBack = () => {
     setCurrentStep(Math.max(currentStep - 1, 1))
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const stepLabels = [
     'Basic Information',
     'Payment Details',
     'Partner Selection',
-    itemType === 'OWNERSHIP_TRANSFER' ? 'Transfer Details' 
-      : itemType === 'DIGITAL_GOODS' ? 'Item Details' 
+    itemType === 'DIGITAL_GOODS' ? 'Content Details' 
       : itemType === 'SERVICES' ? 'Service Details'
-      : 'License Details',
+      : 'Details',
     'Review & Submit'
   ]
 
@@ -661,12 +678,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Basic Information</h2>
+              <h2 className="text-2xl font-light text-white">Rift Details</h2>
             </div>
 
           <div>
             <label className="block text-sm font-light text-white/80 mb-3">
-              Item Title *
+              Project Title *
               <span className="ml-2 text-xs text-white/50 font-light">
                 ({formData.itemTitle.length}/{TITLE_MAX_LENGTH} characters)
               </span>
@@ -691,9 +708,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   : 'border-white/10 focus:ring-white/20 focus:border-white/20'
               }`}
               placeholder={
-                itemType === 'OWNERSHIP_TRANSFER' ? 'e.g., Steam Account (username123), Instagram Username (@handle), Domain Name (example.com)' :
-                itemType === 'DIGITAL_GOODS' ? 'e.g., Premium Software License' :
-                'e.g., Web Development Service'
+                itemType === 'DIGITAL_GOODS' ? 'e.g., Summer 2025 UGC Content' :
+                creatorRole === 'BUYER' ? 'e.g., Instagram Brand Partnership - Q1 2025' :
+                'e.g., TikTok Sponsored Content Series'
               }
             />
             {errors.itemTitle && (
@@ -703,7 +720,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
           <div>
             <label className="block text-sm font-light text-white/80 mb-3">
-              Description *
+              Project Brief / Deliverables *
               <span className="ml-2 text-xs text-white/50 font-light">
                 ({formData.itemDescription.length}/{DESCRIPTION_MAX_LENGTH} characters)
               </span>
@@ -728,7 +745,11 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     : 'border-white/10 focus:ring-white/20 focus:border-white/20'
                 }`}
                 rows={5}
-                placeholder="Describe the item in detail..."
+                placeholder={
+                  creatorRole === 'BUYER' 
+                    ? 'Describe the project requirements, deliverables, content guidelines, posting schedule, and any specific requirements...'
+                    : 'Describe what content you\'ll deliver, format, timeline, and any specific requirements...'
+                }
               />
             </div>
             {errors.itemDescription && (
@@ -866,19 +887,19 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
               <div>
                 <h2 className="text-2xl font-light text-white">
-                  {creatorRole === 'BUYER' ? 'Seller Information' : 'Buyer Information'}
+                  {creatorRole === 'BUYER' ? 'Creator / Partner Information' : 'Brand / Agency Information'}
                 </h2>
                 <p className="text-sm text-white/60 font-light mt-1">
                   {creatorRole === 'BUYER' 
-                    ? "You are the buyer. Enter the seller's Rift User ID to create a rift."
-                    : "You are the seller. Enter the buyer's Rift User ID to create a rift."}
+                    ? "You are the brand/agency. Enter the creator's Rift User ID to start the Rift."
+                    : "You are the creator. Enter the brand/agency's Rift User ID to start the Rift."}
                 </p>
               </div>
             </div>
 
             <div className="relative" ref={searchRef}>
             <label className="block text-sm font-light text-white/80 mb-3">
-              {creatorRole === 'BUYER' ? "Seller's Rift User ID *" : "Buyer's Rift User ID *"}
+              {creatorRole === 'BUYER' ? "Creator's Rift User ID *" : "Brand/Agency's Rift User ID *"}
             </label>
             <div className="relative">
               <input
@@ -892,8 +913,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 }}
                 className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light font-mono"
                 placeholder={creatorRole === 'BUYER' 
-                  ? "Enter seller's Rift User ID (e.g., RIFT111111)"
-                  : "Enter buyer's Rift User ID (e.g., RIFT111111)"}
+                  ? "Enter creator's Rift User ID (e.g., RIFT111111)"
+                  : "Enter brand/agency's Rift User ID (e.g., RIFT111111)"}
                 required
               />
               {searchLoading && (
@@ -961,7 +982,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             {showResults && searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
               <div className="mt-2 p-4 bg-white/5 border border-white/10 rounded-xl">
                 <p className="text-white/60 text-sm font-light">
-                  No user found with Rift User ID "{searchQuery}". The {creatorRole === 'BUYER' ? 'seller' : 'buyer'} must have a valid Rift User ID.
+                  No user found with Rift User ID "{searchQuery}". The {creatorRole === 'BUYER' ? 'creator' : 'brand/agency'} must have a valid Rift User ID.
                 </p>
               </div>
             )}
@@ -973,7 +994,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>
-                  <strong className="text-white/80">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'seller' : 'buyer'} for their Rift User ID. It looks like <code className="bg-white/10 px-1 rounded font-mono">RIFT111111</code>.                   Only exact matches will appear in search results.
+                  <strong className="text-white/80">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'creator' : 'brand/agency'} for their Rift User ID. It looks like <code className="bg-white/10 px-1 rounded font-mono">RIFT111111</code>. Only exact matches will appear in search results.
                 </span>
               </p>
             )}
@@ -983,153 +1004,16 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         {/* Step 4: Type-specific fields */}
         {currentStep === 4 && (
           <div>
-            {itemType === 'OWNERSHIP_TRANSFER' && (
-              <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center">
-                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-light text-white">Ownership Transfer Details</h2>
-            </div>
-            <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
-                Item Being Transferred *
-                <span className="ml-2 text-xs text-white/50 font-light">
-                  What is being transferred (e.g., Steam Account, Instagram Username, Domain Name, NFT)
-                </span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.itemBeingTransferred}
-                onChange={(e) => {
-                  setFormData({ ...formData, itemBeingTransferred: e.target.value })
-                  const error = validateField('itemBeingTransferred', e.target.value)
-                  setErrors({ ...errors, itemBeingTransferred: error })
-                }}
-                onBlur={(e) => {
-                  const error = validateField('itemBeingTransferred', e.target.value)
-                  setErrors({ ...errors, itemBeingTransferred: error })
-                }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
-                  errors.itemBeingTransferred 
-                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-                placeholder="e.g., Steam Account (username123), Instagram Username (@handle), Domain Name (example.com)"
-              />
-              {errors.itemBeingTransferred && (
-                <p className="mt-2 text-sm text-red-400 font-light">{errors.itemBeingTransferred}</p>
-              )}
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-light text-white/80 mb-3">
-                  Transfer Platform *
-                  <span className="ml-2 text-xs text-white/50 font-light">
-                    Platform where transfer will occur
-                  </span>
-                </label>
-                <select
-                  required
-                  value={formData.transferPlatform}
-                  onChange={(e) => {
-                    setFormData({ ...formData, transferPlatform: e.target.value })
-                    const error = validateField('transferPlatform', e.target.value)
-                    setErrors({ ...errors, transferPlatform: error })
-                  }}
-                  onBlur={(e) => {
-                    const error = validateField('transferPlatform', e.target.value)
-                    setErrors({ ...errors, transferPlatform: error })
-                  }}
-                  className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white focus:outline-none focus:ring-2 transition-all font-light ${
-                    errors.transferPlatform 
-                      ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                      : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                  }`}
-                >
-                  <option value="" className="bg-black/90">Select platform...</option>
-                  <option value="STEAM" className="bg-black/90">Steam</option>
-                  <option value="EPIC_GAMES" className="bg-black/90">Epic Games</option>
-                  <option value="INSTAGRAM" className="bg-black/90">Instagram</option>
-                  <option value="TIKTOK" className="bg-black/90">TikTok</option>
-                  <option value="TWITTER" className="bg-black/90">Twitter/X</option>
-                  <option value="DOMAIN_REGISTRAR" className="bg-black/90">Domain Registrar</option>
-                  <option value="OPENSEA" className="bg-black/90">OpenSea</option>
-                  <option value="OTHER_NFT" className="bg-black/90">Other NFT Platform</option>
-                  <option value="OTHER" className="bg-black/90">Other Platform</option>
-                </select>
-                {errors.transferPlatform && (
-                  <p className="mt-2 text-sm text-red-400 font-light">{errors.transferPlatform}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-light text-white/80 mb-3">
-                  Expected Transfer Date *
-                  <span className="ml-2 text-xs text-white/50 font-light">
-                    When the transfer should be completed
-                  </span>
-                </label>
-                <DatePicker
-                  value={formData.expectedTransferDate}
-                  onChange={(date) => {
-                    setFormData({ ...formData, expectedTransferDate: date })
-                    const error = validateField('expectedTransferDate', date)
-                    setErrors({ ...errors, expectedTransferDate: error })
-                  }}
-                  minDate={getTodayDateString()}
-                  className={errors.expectedTransferDate ? 'border-red-500/50' : ''}
-                />
-                {errors.expectedTransferDate && (
-                  <p className="mt-2 text-sm text-red-400 font-light">{errors.expectedTransferDate}</p>
-                )}
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
-                Verification Method *
-                <span className="ml-2 text-xs text-white/50 font-light">
-                  How ownership will be verified
-                </span>
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={formData.verificationMethod}
-                onChange={(e) => {
-                  setFormData({ ...formData, verificationMethod: e.target.value })
-                  const error = validateField('verificationMethod', e.target.value)
-                  setErrors({ ...errors, verificationMethod: error })
-                }}
-                onBlur={(e) => {
-                  const error = validateField('verificationMethod', e.target.value)
-                  setErrors({ ...errors, verificationMethod: error })
-                }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light resize-none ${
-                  errors.verificationMethod 
-                    ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-                placeholder="e.g., Buyer will log into the account to verify ownership, or Seller will provide account credentials and email access for buyer to change password"
-              />
-              {errors.verificationMethod && (
-                <p className="mt-2 text-sm text-red-400 font-light">{errors.verificationMethod}</p>
-              )}
-            </div>
-              </div>
-            )}
 
             {itemType === 'DIGITAL_GOODS' && (
-              <div className="space-y-6">
+              <div className="space-y-6 mt-12">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 flex items-center justify-center">
                 <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Delivery Details</h2>
+              <h2 className="text-2xl font-light text-white">Content Delivery</h2>
             </div>
             
             <div className="p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -1138,9 +1022,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <p className="text-white/90 font-light mb-2">Proof of delivery will be required after payment</p>
+                  <p className="text-white/90 font-light mb-2">Proof of delivery happens after funding</p>
                   <p className="text-white/60 text-sm font-light">
-                    After the buyer pays, you'll be able to upload files to Rift Vault, provide download links, or add license keys when submitting proof of delivery.
+                    After payment is funded, you'll upload UGC files, creative assets, or delivery links in Rift Vault when submitting proof of delivery.
                   </p>
                 </div>
               </div>
@@ -1148,88 +1032,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           </div>
             )}
 
-            {itemType === 'DIGITAL_GOODS' && (
-              <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/10 border border-emerald-500/30 flex items-center justify-center">
-                <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-light text-white">License Details</h2>
-            </div>
-            
-            <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-6">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <p className="text-white/90 font-light mb-2">License keys will be securely delivered after payment</p>
-                  <p className="text-white/60 text-sm font-light">
-                    After the buyer pays, you'll be able to add license keys, account invites, or download links when submitting proof of delivery.
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
-                Software Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.softwareName}
-                onChange={(e) => {
-                  setFormData({ ...formData, softwareName: e.target.value })
-                  if (errors.softwareName) {
-                    setErrors({ ...errors, softwareName: '' })
-                  }
-                }}
-                className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 transition-all ${
-                  errors.softwareName
-                    ? 'border-red-400/50 focus:ring-red-400/50 focus:border-red-400/50'
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-                placeholder="e.g., Adobe Photoshop, Microsoft Office"
-              />
-              {errors.softwareName && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.softwareName}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
-                License Type <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={formData.licenseType}
-                onChange={(e) => {
-                  setFormData({ ...formData, licenseType: e.target.value })
-                  if (errors.licenseType) {
-                    setErrors({ ...errors, licenseType: '' })
-                  }
-                }}
-                className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 transition-all ${
-                  errors.licenseType
-                    ? 'border-red-400/50 focus:ring-red-400/50 focus:border-red-400/50'
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
-                }`}
-              >
-                <option value="">Select license type</option>
-                <option value="SINGLE_USE">Single Use</option>
-                <option value="MULTI_USE">Multi-Use</option>
-                <option value="LIFETIME">Lifetime</option>
-                <option value="SUBSCRIPTION">Subscription</option>
-                <option value="ACCOUNT_ACCESS">Account Access</option>
-                <option value="OTHER">Other</option>
-              </select>
-              {errors.licenseType && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.licenseType}</p>
-              )}
-            </div>
-          </div>
-            )}
 
             {itemType === 'SERVICES' && (
               <div className="space-y-6">
@@ -1246,7 +1049,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               <label className="block text-sm font-light text-white/80 mb-3">
                 Service Date / Delivery Date *
                 <span className="ml-2 text-xs text-white/50 font-light">
-                  When will the service be completed?
+                  When will the content be delivered?
                 </span>
               </label>
               <DatePicker
@@ -1267,7 +1070,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               <label className="block text-sm font-light text-white/80 mb-3">
                 Scope of Service *
                 <span className="ml-2 text-xs text-white/50 font-light">
-                  What work will be performed?
+                  What content needs to be created?
                 </span>
               </label>
               <textarea
@@ -1288,7 +1091,11 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     : 'border-white/10 focus:ring-white/20 focus:border-white/20'
                 }`}
                 rows={4}
-                placeholder="Describe the scope of work, tasks, and responsibilities..."
+                placeholder={
+                  creatorRole === 'BUYER' 
+                    ? "Describe the scope of work, tasks, and responsibilities..."
+                    : "Describe what work will be performed..."
+                }
               />
               {errors.serviceScope && (
                 <p className="mt-2 text-sm text-red-400 font-light">{errors.serviceScope}</p>
@@ -1298,7 +1105,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               <label className="block text-sm font-light text-white/80 mb-3">
                 Deliverables *
                 <span className="ml-2 text-xs text-white/50 font-light">
-                  What will be delivered upon completion?
+                  What files/content will be delivered?
                 </span>
               </label>
               <textarea
@@ -1329,7 +1136,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               <label className="block text-sm font-light text-white/80 mb-3">
                 Completion Criteria *
                 <span className="ml-2 text-xs text-white/50 font-light">
-                  How will completion be determined?
+                  How will content approval be determined?
                 </span>
               </label>
               <textarea
@@ -1350,7 +1157,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     : 'border-white/10 focus:ring-white/20 focus:border-white/20'
                 }`}
                 rows={3}
-                placeholder="Define clear completion criteria that buyer can verify..."
+                placeholder="Define clear completion criteria that the brand can verify..."
               />
               {errors.completionCriteria && (
                 <p className="mt-2 text-sm text-red-400 font-light">{errors.completionCriteria}</p>
@@ -1375,10 +1182,29 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             {formData.allowsPartialRelease && (
               <div className="space-y-4 p-6 bg-white/[0.03] border border-white/10 rounded-xl">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-light text-white">Milestones</h3>
+                  <div>
+                    <h3 className="text-lg font-light text-white">Milestones</h3>
+                    <p className="text-xs text-white/50 font-light mt-1">
+                      Choose a deal type to set review window defaults per milestone.
+                    </p>
+                  </div>
                   <button
                     type="button"
+                    disabled={
+                      !!formData.serviceDate &&
+                      !!formData.milestones?.length &&
+                      new Date(`${formData.milestones[formData.milestones.length - 1].dueDate}T00:00:00`) >
+                        new Date(`${formData.serviceDate}T00:00:00`)
+                    }
                     onClick={() => {
+                      if (
+                        formData.serviceDate &&
+                        formData.milestones?.length &&
+                        new Date(`${formData.milestones[formData.milestones.length - 1].dueDate}T00:00:00`) >
+                          new Date(`${formData.serviceDate}T00:00:00`)
+                      ) {
+                        return
+                      }
                       const totalAmount = parseFloat(formData.amount || '0')
                       const milestones = formData.milestones || []
                       const existingTotal = milestones.reduce((sum, m) => sum + parseFloat(m.amount || '0'), 0)
@@ -1391,16 +1217,50 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                           {
                             title: '',
                             description: '',
+                            deliverables: '',
                             amount: remaining > 0 ? remaining.toFixed(2) : '',
                             dueDate: getTodayDateString(),
+                            reviewWindowDays: getDefaultReviewWindowDays(formData.dealType),
+                            revisionLimit: 1,
                           },
                         ],
                       })
                     }}
-                    className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 text-sm font-light transition-colors"
+                    className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-300 text-sm font-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     + Add Milestone
                   </button>
+                </div>
+                {formData.serviceDate &&
+                  formData.milestones?.length &&
+                  new Date(`${formData.milestones[formData.milestones.length - 1].dueDate}T00:00:00`) >
+                    new Date(`${formData.serviceDate}T00:00:00`) && (
+                    <p className="text-xs text-red-400 font-light">
+                      Service delivery date must be after the last milestone. Update the service date to add more milestones.
+                    </p>
+                  )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-white/60 font-light mb-1">Deal type</label>
+                    <select
+                      value={formData.dealType}
+                      onChange={(e) => {
+                        const dealType = e.target.value
+                        const milestones = formData.milestones || []
+                        const newMilestones = milestones.map((m) => ({
+                          ...m,
+                          reviewWindowDays: getDefaultReviewWindowDays(dealType),
+                        }))
+                        setFormData({ ...formData, dealType, milestones: newMilestones })
+                      }}
+                      className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                    >
+                      <option value="short">Short-term (1–2 deliverables) — 5 days</option>
+                      <option value="ongoing">Ongoing / monthly — 3 days</option>
+                      <option value="high_ticket">High-ticket / agency-heavy — 7 days</option>
+                    </select>
+                  </div>
                 </div>
 
                 {(!formData.milestones || formData.milestones.length === 0) ? (
@@ -1418,6 +1278,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                         <>
                           {milestones.map((milestone, index) => {
                             const remaining = totalAmount - existingTotal + parseFloat(milestone.amount || '0')
+                            const milestoneErrors = getMilestoneValidationErrors()[index] || []
                             
                             return (
                         <div 
@@ -1475,6 +1336,24 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                               placeholder="What needs to be completed for this milestone?"
                             />
                           </div>
+
+                          <div>
+                            <label className="block text-xs text-white/60 font-light mb-1">Deliverables *</label>
+                            <textarea
+                              value={milestone.deliverables}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                const milestones = formData.milestones || []
+                                const newMilestones = [...milestones]
+                                newMilestones[index].deliverables = e.target.value
+                                setFormData({ ...formData, milestones: newMilestones })
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                              rows={2}
+                              placeholder="e.g., 2 UGC videos + captions, 5 TikTok edits, monthly content batch"
+                            />
+                          </div>
                           
                           <div className="grid grid-cols-2 gap-3">
                             <div>
@@ -1509,9 +1388,49 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                   newMilestones[index].dueDate = date
                                   setFormData({ ...formData, milestones: newMilestones })
                                 }}
-                                minDate={getTodayDateString()}
+                                minDate={
+                                  index > 0 && formData.milestones?.[index - 1]?.dueDate
+                                    ? addDays(formData.milestones[index - 1].dueDate, 1)
+                                    : getTodayDateString()
+                                }
+                                maxDate={formData.serviceDate || undefined}
                                 className="text-sm"
                               />
+                            </div>
+                          </div>
+                          {milestoneErrors.length > 0 && (
+                            <div className="text-xs text-red-400 font-light space-y-1">
+                              {milestoneErrors.map((error, i) => (
+                                <p key={i}>{error}</p>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-white/60 font-light mb-1">Review window *</label>
+                              <select
+                                value={milestone.reviewWindowDays}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  const milestones = formData.milestones || []
+                                  const newMilestones = [...milestones]
+                                  newMilestones[index].reviewWindowDays = parseInt(e.target.value, 10)
+                                  setFormData({ ...formData, milestones: newMilestones })
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                              >
+                                <option value={3}>3 days (monthly / ongoing)</option>
+                                <option value={5}>5 days (standard)</option>
+                                <option value={7}>7 days (high-ticket)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs text-white/60 font-light mb-1">Revisions</label>
+                              <div className="w-full px-3 py-2 bg-white/[0.03] border border-white/10 rounded-lg text-white/70 text-sm">
+                                1 revision included
+                              </div>
                             </div>
                           </div>
                           
@@ -1637,41 +1556,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
               
               {/* Type-specific Details */}
-              {itemType === 'OWNERSHIP_TRANSFER' && (
-                <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4v-3a2 2 0 00-2-2H5z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Ownership Transfer Details</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Item Being Transferred</p>
-                          <p className="text-white font-light">{formData.itemBeingTransferred || 'Not set'}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <p className="text-white/50 text-xs font-light mb-1">Transfer Platform</p>
-                            <p className="text-white font-light capitalize">{formData.transferPlatform?.replace('_', ' ') || 'Not set'}</p>
-                          </div>
-                          <div>
-                            <p className="text-white/50 text-xs font-light mb-1">Expected Transfer Date</p>
-                            <p className="text-white font-light">{formData.expectedTransferDate ? new Date(formData.expectedTransferDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Verification Method</p>
-                          <p className="text-white font-light">{formData.verificationMethod || 'Not set'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
               {itemType === 'DIGITAL_GOODS' && (
                 <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-start gap-4">
@@ -1683,7 +1567,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Delivery</h4>
                       <p className="text-white/60 text-sm font-light">
-                        Proof of delivery (files, links, license keys) will be submitted after the buyer pays.
+                        Proof of delivery (files, links) will be submitted after payment is funded.
                       </p>
                     </div>
                   </div>
@@ -1710,6 +1594,14 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                               : 'Not set'}
                           </p>
                         </div>
+                        {formData.allowsPartialRelease && (
+                          <div>
+                            <p className="text-white/50 text-xs font-light mb-1">Deal Type</p>
+                            <p className="text-white font-light text-sm capitalize">
+                              {formData.dealType?.replace('_', ' ') || 'Ongoing / monthly'}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <p className="text-white/50 text-xs font-light mb-1">Scope</p>
                           <p className="text-white font-light text-sm">{formData.serviceScope || 'Not set'}</p>
@@ -1743,6 +1635,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                     )}
                                     <p className="text-white/50 text-xs font-light">
                                       Due: {milestone.dueDate ? new Date(milestone.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}
+                                    </p>
+                                    <p className="text-white/50 text-xs font-light mt-1">
+                                      Review window: {milestone.reviewWindowDays || getDefaultReviewWindowDays(formData.dealType)} days
                                     </p>
                                   </div>
                                 ))}
@@ -1816,7 +1711,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     <a href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300 underline transition-colors">
                       Privacy Policy
                     </a>
-                    . I understand that Rift facilitates protected transactions and charges fees as displayed.
+                    . I understand that Rift is a technology platform only, is not a party to any transaction, and is not liable for any losses, disputes, or transaction failures. I use Rift at my own risk.
                   </span>
                   {!acceptedTerms && Object.keys(errors).length === 0 && (
                     <p className="mt-3 text-sm text-red-400/80 font-light flex items-center gap-2">

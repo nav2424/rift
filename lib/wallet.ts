@@ -55,6 +55,9 @@ export async function creditSellerOnRelease(
   currency: string = 'CAD',
   metadata?: Record<string, any>
 ): Promise<void> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
   const wallet = await getOrCreateWalletAccount(sellerId, currency)
 
   // Use transaction to ensure atomicity
@@ -94,6 +97,9 @@ export async function debitSellerOnWithdrawal(
   currency: string = 'CAD',
   metadata?: Record<string, any>
 ): Promise<void> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
   const wallet = await getOrCreateWalletAccount(userId, currency)
 
   if (wallet.availableBalance < amount) {
@@ -134,6 +140,9 @@ export async function debitSellerOnChargeback(
   currency: string = 'CAD',
   metadata?: Record<string, any>
 ): Promise<void> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
   const wallet = await getOrCreateWalletAccount(sellerId, currency)
 
   await prisma.$transaction(async (tx) => {
@@ -171,6 +180,9 @@ export async function debitSellerOnRefund(
   currency: string = 'CAD',
   metadata?: Record<string, any>
 ): Promise<void> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Amount must be greater than 0')
+  }
   const wallet = await getOrCreateWalletAccount(sellerId, currency)
 
   await prisma.$transaction(async (tx) => {

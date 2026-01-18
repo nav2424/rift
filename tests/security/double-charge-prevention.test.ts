@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createEscrowPaymentIntent } from '@/lib/payments'
-import { createPaymentIntent } from '@/lib/stripe'
+import { createRiftPaymentIntent } from '@/lib/stripe'
 
 // Mock dependencies
 vi.mock('@/lib/prisma', () => ({
@@ -24,9 +24,11 @@ vi.mock('@/lib/prisma', () => ({
 
 vi.mock('@/lib/stripe', () => ({
   createPaymentIntent: vi.fn(),
+  createRiftPaymentIntent: vi.fn(),
   stripe: {
     paymentIntents: {
       create: vi.fn(),
+      retrieve: vi.fn(),
     },
   },
 }))
@@ -75,7 +77,7 @@ describe('Double-Charge Prevention', () => {
 
       // First call should succeed
       vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValueOnce(rift as any)
-      vi.mocked(createPaymentIntent).mockResolvedValueOnce({
+      vi.mocked(createRiftPaymentIntent).mockResolvedValueOnce({
         clientSecret: 'secret-1',
         paymentIntentId: 'pi_123',
       })
@@ -88,7 +90,7 @@ describe('Double-Charge Prevention', () => {
       // May return 500 if createPaymentIntent fails, or 200 if it succeeds
       // The important thing is that it attempts to create
       if (response1.status < 400) {
-        expect(createPaymentIntent).toHaveBeenCalledTimes(1)
+        expect(createRiftPaymentIntent).toHaveBeenCalledTimes(1)
       } else {
         // If it fails, check the error
         const data1 = await response1.json()
@@ -111,7 +113,7 @@ describe('Double-Charge Prevention', () => {
       // Currently the API doesn't check, but it should
       // This test documents expected behavior
       if (response2.status === 400 || response2.status === 409) {
-        expect(createPaymentIntent).toHaveBeenCalledTimes(1) // Still only called once
+        expect(createRiftPaymentIntent).toHaveBeenCalledTimes(1) // Still only called once
       } else {
         // If API doesn't check yet, at least verify it was called
         // This documents that the check should be added
@@ -141,33 +143,28 @@ describe('Double-Charge Prevention', () => {
         userRole: 'USER',
       } as any)
       vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValue(rift as any)
+      const { stripe } = await import('@/lib/stripe')
+      vi.mocked(stripe.paymentIntents.retrieve).mockResolvedValueOnce({
+        id: existingPaymentIntentId,
+        client_secret: 'secret_existing',
+      } as any)
+
+      const { stripe } = await import('@/lib/stripe')
+      vi.mocked(stripe.paymentIntents.retrieve).mockResolvedValueOnce({
+        id: existingPaymentIntentId,
+        client_secret: 'secret_existing',
+      } as any)
 
       const request = new NextRequest('http://localhost:3000/api/rifts/test/payment-intent', {
         method: 'POST',
       })
       const response = await POST(request, { params: Promise.resolve({ id: riftId }) })
       
-      // Currently API doesn't check for existing payment intent
-      // It will try to create a new one even if one exists
-      // This documents the gap - API should check first
       const data = await response.json()
       
-      // If API returns success, it means it tried to create (which is the current behavior)
-      // If API returns error, it might be for other reasons
-      // The key test: API should ideally check and return existing payment intent
-      if (response.status < 400) {
-        // API currently allows creating new payment intent even if one exists
-        // This is a security gap that should be fixed
-        console.warn('API endpoint should check for existing payment intent before creating new one')
-        // For now, document that it was called (current behavior)
-        expect(createPaymentIntent).toHaveBeenCalled()
-      } else {
-        // If it returns error, verify it's not because it tried to create
-        // (might be other validation error)
-        if (data.error?.includes('payment intent') || data.error?.includes('already')) {
-          expect(createPaymentIntent).not.toHaveBeenCalled()
-        }
-      }
+      expect(response.status).toBeLessThan(400)
+      expect(data.paymentIntentId).toBe(existingPaymentIntentId)
+      expect(createRiftPaymentIntent).not.toHaveBeenCalled()
     })
 
     it('should handle concurrent payment intent creation attempts', async () => {
@@ -191,7 +188,7 @@ describe('Double-Charge Prevention', () => {
       const promise1 = createEscrowPaymentIntent(riftId)
       const promise2 = createEscrowPaymentIntent(riftId)
 
-      vi.mocked(createPaymentIntent)
+      vi.mocked(createRiftPaymentIntent)
         .mockResolvedValueOnce({
           clientSecret: 'secret-1',
           paymentIntentId: 'pi_123',
@@ -242,7 +239,7 @@ describe('Double-Charge Prevention', () => {
       expect(response.status).toBe(400)
       const data = await response.json()
       expect(data.error).toContain('AWAITING_PAYMENT')
-      expect(createPaymentIntent).not.toHaveBeenCalled()
+      expect(createRiftPaymentIntent).not.toHaveBeenCalled()
     })
   })
 
@@ -301,24 +298,11 @@ describe('Double-Charge Prevention', () => {
       })
       const response = await POST(request, { params: Promise.resolve({ id: riftId }) })
       
-      // Currently API doesn't check for existing payment intent
-      // It will try to create a new one even if one exists
-      // This documents the gap - API should check first and return existing
       const data = await response.json()
-      
-      // Current behavior: API tries to create new payment intent
-      // Expected behavior: API should check and return existing payment intent
-      if (response.status < 400) {
-        // API currently allows creating new payment intent even if one exists
-        // This is a security gap that should be fixed
-        console.warn('API endpoint should check for existing payment intent and return it instead of creating new one')
-        // Document current behavior
-        expect(createPaymentIntent).toHaveBeenCalled()
-      } else {
-        // If it returns error, it might be for other reasons
-        // The key is: API should ideally check first
-        console.warn('API should check for existing payment intent before attempting to create new one')
-      }
+
+      expect(response.status).toBeLessThan(400)
+      expect(data.paymentIntentId).toBe(existingPaymentIntentId)
+      expect(createRiftPaymentIntent).not.toHaveBeenCalled()
     })
   })
 
@@ -361,7 +345,7 @@ describe('Double-Charge Prevention', () => {
         
         if (secondCheck?.stripePaymentIntentId) {
           // Should abort creation and use existing
-          expect(createPaymentIntent).not.toHaveBeenCalled()
+          expect(createRiftPaymentIntent).not.toHaveBeenCalled()
         }
       }
     })

@@ -120,35 +120,27 @@ vi.mock('../../lib/supabase', () => ({
   })),
 }))
 
-describe('Refund & Dispute Stress Tests', () => {
+const defaultTestDbUrl = 'postgresql://test:test@localhost:5432/rift_test'
+const hasTestDb =
+  typeof process.env.TEST_DATABASE_URL === 'string' &&
+  /^postgres(ql)?:\/\//.test(process.env.TEST_DATABASE_URL) &&
+  process.env.TEST_DATABASE_URL !== defaultTestDbUrl
+
+const integrationDescribe = hasTestDb ? describe : describe.skip
+
+integrationDescribe('Refund & Dispute Stress Tests', () => {
   let buyerId: string
   let sellerId: string
   let riftId: string
   let paymentIntentId: string
 
   beforeAll(async () => {
-    // Verify database connection
-    if (!process.env.DATABASE_URL && !process.env.TEST_DATABASE_URL) {
-      throw new Error(
-        'DATABASE_URL or TEST_DATABASE_URL must be set for integration tests.\n' +
-        'Set TEST_DATABASE_URL to point to a test database.'
-      )
-    }
-
-    try {
-      await prisma.$connect()
-      console.log('✅ Prisma connected successfully')
-    } catch (error: any) {
-      console.error('❌ Failed to connect to database:', error.message)
-      throw new Error(
-        `Database connection failed: ${error.message}\n` +
-        'Make sure TEST_DATABASE_URL is set and the database is accessible.'
-      )
-    }
+    if (!hasTestDb) return
+    await prisma.$connect()
   })
 
   afterAll(async () => {
-    // Cleanup: disconnect Prisma
+    if (!hasTestDb) return
     await prisma.$disconnect()
   })
 

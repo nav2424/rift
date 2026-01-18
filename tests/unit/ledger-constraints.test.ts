@@ -25,31 +25,26 @@ vi.mock('@prisma/client', async () => {
 })
 
 // Mock dependencies
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
-    walletAccount: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
+vi.mock('@/lib/prisma', () => {
+  const walletAccount = {
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  }
+  const walletLedgerEntry = {
+    create: vi.fn(),
+  }
+
+  return {
+    prisma: {
+      walletAccount,
+      walletLedgerEntry,
+      $transaction: vi.fn(async (callback) => {
+        return callback({ walletAccount, walletLedgerEntry })
+      }),
     },
-    walletLedgerEntry: {
-      create: vi.fn(),
-    },
-    $transaction: vi.fn(async (callback) => {
-      const tx = {
-        walletAccount: {
-          findUnique: vi.fn(),
-          create: vi.fn(),
-          update: vi.fn(),
-        },
-        walletLedgerEntry: {
-          create: vi.fn(),
-        },
-      }
-      return callback(tx)
-    }),
-  },
-}))
+  }
+})
 
 describe('Ledger Constraints', () => {
   beforeEach(() => {
@@ -198,7 +193,10 @@ describe('Ledger Constraints', () => {
         currency: 'CAD',
       }
 
-      vi.mocked(prisma.walletAccount.findUnique).mockResolvedValue(wallet as any)
+      vi.mocked(prisma.walletAccount.findUnique).mockImplementation(async () => ({
+        ...wallet,
+        availableBalance: balance,
+      } as any))
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         const tx = {
           walletAccount: {
@@ -346,7 +344,6 @@ describe('Ledger Constraints', () => {
 
       vi.mocked(prisma.walletAccount.findUnique).mockResolvedValue(wallet as any)
       
-      // Mock transaction for credit operations
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         const tx = {
           walletAccount: {
@@ -356,33 +353,8 @@ describe('Ledger Constraints', () => {
             } as any),
             update: vi.fn().mockImplementation(async (args: any) => {
               const increment = args.data.availableBalance.increment || 0
-              balance += increment
-              return {
-                ...wallet,
-                availableBalance: balance,
-              } as any
-            }),
-          },
-          walletLedgerEntry: {
-            create: vi.fn().mockResolvedValue({
-              id: 'ledger-1',
-            } as any),
-          },
-        }
-        return callback(tx)
-      })
-      
-      // Mock transaction for debit operations
-      const originalTransaction = vi.mocked(prisma.$transaction)
-      vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) => {
-        const tx = {
-          walletAccount: {
-            findUnique: vi.fn().mockResolvedValue({
-              ...wallet,
-              availableBalance: balance,
-            } as any),
-            update: vi.fn().mockImplementation(async (args: any) => {
               const decrement = args.data.availableBalance.decrement || 0
+              balance += increment
               balance -= decrement
               return {
                 ...wallet,
@@ -596,7 +568,7 @@ describe('Ledger Constraints', () => {
         expect(prisma.$transaction).toHaveBeenCalled()
       } catch (error: any) {
         // If rejected, should throw appropriate error
-        expect(error.message).toContain('amount')
+        expect(error.message).toMatch(/amount/i)
       }
     })
 
@@ -612,19 +584,9 @@ describe('Ledger Constraints', () => {
 
       vi.mocked(prisma.walletAccount.findUnique).mockResolvedValue(wallet as any)
 
-      // Negative amounts should be rejected
-      // The function checks balance before transaction: wallet.availableBalance < amount
-      // Since -10.00 < 100.00 is false, it won't throw from that check
-      // But the function should validate amount > 0 or handle negative amounts
-      // For now, test that it doesn't allow negative withdrawals
-      try {
-        await debitSellerOnWithdrawal(userId, -10.00, 'CAD')
-        // If it doesn't throw, at least verify it was handled
-        console.warn('Function should validate amount > 0 before processing')
-      } catch (error: any) {
-        // Should reject negative amounts
-        expect(error).toBeDefined()
-      }
+      await expect(
+        debitSellerOnWithdrawal(userId, -10.00, 'CAD')
+      ).rejects.toThrow('Amount must be greater than 0')
     })
   })
 })

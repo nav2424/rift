@@ -7,6 +7,7 @@ import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, getFeeBreakd
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { RiftEventActorType } from '@prisma/client'
 import { isCategoryBlocked } from '@/lib/risk/enforcement'
+import { validateMilestoneDates } from '@/lib/milestone-validation'
 import { randomUUID } from 'crypto'
 import { MIN_TRANSACTION_AMOUNT } from '@/lib/constants'
 
@@ -44,11 +45,6 @@ export async function POST(request: NextRequest) {
       partnerId, // Generic partner ID (buyer or seller depending on creatorRole)
       partnerEmail, // Generic partner email
       notes,
-      // Ownership transfer-specific fields
-      itemBeingTransferred,
-      transferPlatform,
-      expectedTransferDate,
-      verificationMethod,
       // Legacy ticket fields (for backward compatibility)
       eventDate,
       venue,
@@ -79,6 +75,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!['DIGITAL_GOODS', 'SERVICES'].includes(itemType)) {
+      return NextResponse.json(
+        { error: 'Unsupported item type. Only DIGITAL_GOODS and SERVICES are allowed.' },
+        { status: 400 }
+      )
+    }
+
     // Validate minimum transaction amount
     const subtotal = parseFloat(amount)
     if (isNaN(subtotal) || subtotal < MIN_TRANSACTION_AMOUNT) {
@@ -95,21 +98,6 @@ export async function POST(request: NextRequest) {
       if (fileStorageType === 'EXTERNAL_LINK' && !downloadLink) {
         return NextResponse.json(
           { error: 'Download link is required when using external link storage' },
-          { status: 400 }
-        )
-      }
-      // If license key is provided, validate license key fields are complete
-      if (licenseKey && (!licenseKeyType || !licensePlatform)) {
-        return NextResponse.json(
-          { error: 'License key type and platform are required when providing a license key' },
-          { status: 400 }
-        )
-      }
-    }
-    if (itemType === 'OWNERSHIP_TRANSFER') {
-      if (!itemBeingTransferred || !transferPlatform || !expectedTransferDate || !verificationMethod) {
-        return NextResponse.json(
-          { error: 'Item being transferred, transfer platform, expected transfer date, and verification method are required for ownership transfers' },
           { status: 400 }
         )
       }
@@ -153,9 +141,9 @@ export async function POST(request: NextRequest) {
         // Validate each milestone has required fields
         for (let i = 0; i < milestones.length; i++) {
           const m = milestones[i]
-          if (!m.title || m.amount === undefined || m.amount === null || !m.dueDate) {
+          if (!m.title || m.amount === undefined || m.amount === null || !m.dueDate || !m.deliverables) {
             return NextResponse.json(
-              { error: `Milestone ${i + 1} is missing required fields (title, amount, or due date)` },
+              { error: `Milestone ${i + 1} is missing required fields (title, deliverables, amount, or due date)` },
               { status: 400 }
             )
           }
@@ -165,6 +153,14 @@ export async function POST(request: NextRequest) {
               { status: 400 }
             )
           }
+        }
+
+        const dateValidationError = validateMilestoneDates(milestones, serviceDate)
+        if (dateValidationError) {
+          return NextResponse.json(
+            { error: dateValidationError },
+            { status: 400 }
+          )
         }
       }
     }
@@ -278,7 +274,6 @@ export async function POST(request: NextRequest) {
     
     // Map itemType to database enum value (handles connection pool enum visibility)
     const mapItemTypeToDB = (type: string): string => {
-      if (type === 'OWNERSHIP_TRANSFER') return 'TICKETS' // Map to TICKETS in DB
       if (type === 'DIGITAL_GOODS') return 'DIGITAL' // Map to DIGITAL in DB
       return type
     }
@@ -302,11 +297,11 @@ export async function POST(request: NextRequest) {
           sellerId: seller.id,
           shippingAddress: null,
           notes: notes || null,
-          // Ownership transfer fields (reusing existing schema fields)
-          eventDate: itemType === 'OWNERSHIP_TRANSFER' ? (expectedTransferDate || eventDate || null) : (eventDate || null),
-          venue: itemType === 'OWNERSHIP_TRANSFER' ? (itemBeingTransferred || venue || null) : (venue || null),
-          transferMethod: itemType === 'OWNERSHIP_TRANSFER' ? (transferPlatform || transferMethod || null) : (transferMethod || null),
-          seatDetails: itemType === 'OWNERSHIP_TRANSFER' ? (verificationMethod || seatDetails || null) : (seatDetails || null),
+          // Legacy fields for backward compatibility
+          eventDate: eventDate || null,
+          venue: venue || null,
+          transferMethod: transferMethod || null,
+          seatDetails: seatDetails || null,
           quantity: quantity ? parseInt(quantity) : null,
           // Digital file-specific fields
           downloadLink: downloadLink || null,
@@ -377,10 +372,10 @@ export async function POST(request: NextRequest) {
           seller.id, // $13
           null, // $14
           notes || null, // $15
-          itemType === 'OWNERSHIP_TRANSFER' ? (expectedTransferDate || eventDate || null) : (eventDate || null), // $16
-          itemType === 'OWNERSHIP_TRANSFER' ? (itemBeingTransferred || venue || null) : (venue || null), // $17
-          itemType === 'OWNERSHIP_TRANSFER' ? (transferPlatform || transferMethod || null) : (transferMethod || null), // $18
-          itemType === 'OWNERSHIP_TRANSFER' ? (verificationMethod || seatDetails || null) : (seatDetails || null), // $19
+          eventDate || null, // $16
+          venue || null, // $17
+          transferMethod || null, // $18
+          seatDetails || null, // $19
           quantity ? parseInt(quantity) : null, // $20
           downloadLink || null, // $21
           fileStorageType || null, // $22
@@ -431,7 +426,6 @@ export async function POST(request: NextRequest) {
         // Map the itemType back to the application layer value if needed
         const fetchedRift = fetchedRifts[0]
         const mapItemTypeFromDB = (dbType: string): string => {
-          if (dbType === 'TICKETS') return 'OWNERSHIP_TRANSFER'
           if (dbType === 'DIGITAL' || dbType === 'LICENSE_KEYS') return 'DIGITAL_GOODS'
           return dbType
         }

@@ -52,20 +52,21 @@ describe('Watermarking (Viewer-First Design)', () => {
 
   describe('Viewer Output (Primary Protection)', () => {
     it('should apply overlay to viewer output, not stored file', async () => {
-      // Create a valid PNG image buffer (minimal valid PNG)
-      const pngHeader = Buffer.from([
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-        0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-        0x49, 0x48, 0x44, 0x52, // IHDR
-        0x00, 0x00, 0x00, 0x01, // width: 1
-        0x00, 0x00, 0x00, 0x01, // height: 1
-        0x08, 0x06, 0x00, 0x00, 0x00, // bit depth, color type, etc.
-        0x1F, 0x15, 0xC4, 0x89, // CRC
-        0x00, 0x00, 0x00, 0x00, // IEND chunk length
-        0x49, 0x45, 0x4E, 0x44, // IEND
-        0xAE, 0x42, 0x60, 0x82, // CRC
-      ])
-      const overlay = Buffer.from('watermark overlay')
+      // Minimal valid 1x1 PNG
+      const pngHeader = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
+        'base64'
+      )
+      const overlay = await generateDynamicWatermarkOverlay(
+        {
+          transactionId: 'rift123',
+          riftNumber: 456,
+          buyerId: 'buyer789',
+          timestamp: new Date('2025-12-28T10:00:00Z'),
+        },
+        'buyer@example.com',
+        'session123'
+      )
 
       const watermarked = await applyWatermarkOverlayToImage(pngHeader, overlay)
 

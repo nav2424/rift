@@ -9,6 +9,7 @@ import { beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest'
 // For integration tests, we need a real database
 // For unit tests, we can use mocks
 const testDbUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL
+const defaultUrl = 'postgresql://test:test@localhost:5432/rift_test'
 
 if (!testDbUrl) {
   // Only warn for integration tests - they'll fail when trying to use Prisma
@@ -16,7 +17,6 @@ if (!testDbUrl) {
   console.warn('⚠️  WARNING: DATABASE_URL or TEST_DATABASE_URL not set.')
   console.warn('   Integration tests will fail. Set TEST_DATABASE_URL for integration tests.')
   console.warn('   Using default test database URL (may not work):')
-  const defaultUrl = 'postgresql://test:test@localhost:5432/rift_test'
   process.env.DATABASE_URL = defaultUrl
   // Also set it for Prisma to pick up
   if (!process.env.TEST_DATABASE_URL) {
@@ -41,7 +41,7 @@ if (process.env.DATABASE_URL && !process.env.DATABASE_URL.match(/^postgres(ql)?:
 }
 
 // Mock environment variables
-process.env.DATABASE_URL = testDbUrl
+process.env.DATABASE_URL = testDbUrl || defaultUrl
 process.env.NEXTAUTH_SECRET = 'test-secret-key-for-testing-only'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
 const env = process.env as any
@@ -49,6 +49,7 @@ env.JWT_SECRET = 'test-jwt-secret-for-testing-only'
 env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
+env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret'
 env.NODE_ENV = 'test'
 
 // Mock PrismaClient constructor to prevent instantiation errors
@@ -56,6 +57,7 @@ vi.mock('@prisma/client', () => ({
   PrismaClient: vi.fn().mockImplementation(() => ({
     riftTransaction: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
@@ -89,9 +91,28 @@ vi.mock('@prisma/client', () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+    walletAccount: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
     walletLedgerEntry: {
       count: vi.fn(),
       findMany: vi.fn(),
+      create: vi.fn(),
+    },
+    timelineEvent: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    rift_events: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+    stripe_webhook_events: {
+      create: vi.fn(),
     },
     vault_assets: {
       findUnique: vi.fn(),
@@ -115,6 +136,34 @@ vi.mock('@prisma/client', () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+    $transaction: vi.fn(async (callback: any) => {
+      const tx = {
+        riftTransaction: {
+          findUnique: vi.fn(),
+          findFirst: vi.fn(),
+          update: vi.fn(),
+        },
+        walletAccount: {
+          findUnique: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+        },
+        walletLedgerEntry: {
+          create: vi.fn(),
+        },
+        vault_assets: {
+          findMany: vi.fn(),
+          create: vi.fn(),
+        },
+        vault_events: {
+          create: vi.fn(),
+        },
+        timelineEvent: {
+          create: vi.fn(),
+        },
+      }
+      return callback(tx)
+    }),
     $disconnect: vi.fn(),
     $connect: vi.fn(),
   })),
@@ -125,6 +174,12 @@ vi.mock('@prisma/client', () => ({
   ProofType: {},
   VaultEventType: {},
   VaultActorRole: {},
+  RiftEventActorType: {
+    SYSTEM: 'SYSTEM',
+    BUYER: 'BUYER',
+    SELLER: 'SELLER',
+    ADMIN: 'ADMIN',
+  },
   WalletLedgerType: {
     CREDIT_RELEASE: 'CREDIT_RELEASE',
     DEBIT_WITHDRAWAL: 'DEBIT_WITHDRAWAL',

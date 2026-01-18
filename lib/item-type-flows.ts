@@ -14,8 +14,8 @@ export interface ItemTypeConfig {
 }
 
 /**
- * Item type configs for launch scope
- * LAUNCH ITEM TYPES: SERVICES, OWNERSHIP_TRANSFER, DIGITAL_GOODS
+ * Item type configs for UGC scope
+ * SUPPORTED ITEM TYPES: SERVICES, DIGITAL_GOODS
  */
 export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
   SERVICES: {
@@ -24,13 +24,6 @@ export const ITEM_TYPE_CONFIGS: Partial<Record<ItemType, ItemTypeConfig>> = {
     requiresTracking: false,
     allowsAutoRelease: true, // Auto-release after seller submits proof + 72 hours
     description: 'Seller submits proof → 72-hour protection window → Auto-release (unless buyer disputes)',
-  },
-  OWNERSHIP_TRANSFER: {
-    gracePeriodHours: 48, // 48-hour protection window for ownership transfers
-    requiresShipmentProof: false,
-    requiresTracking: false,
-    allowsAutoRelease: true, // Auto-release after seller submits proof + 48 hours
-    description: 'Seller submits proof → 48-hour protection window → Auto-release (unless buyer disputes)',
   },
   DIGITAL_GOODS: {
     gracePeriodHours: 24, // 24-hour protection window - auto-release if no dispute

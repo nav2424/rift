@@ -1,6 +1,6 @@
 /**
  * Proof validation system
- * Validates proof submissions based on item type
+ * Validates proof submissions based on item type (UGC scope)
  */
 
 import { ProofType, ProofStatus } from '@prisma/client'
@@ -136,14 +136,11 @@ export function validateProof(
  */
 export function getProofTypeFromItemType(itemType: string): ProofType {
   switch (itemType) {
-    case 'PHYSICAL':
-      return ProofType.PHYSICAL
     case 'SERVICES':
       return ProofType.SERVICE
     case 'DIGITAL_GOODS':
-    case 'OWNERSHIP_TRANSFER':
       return ProofType.DIGITAL
     default:
-      return ProofType.PHYSICAL
+      return ProofType.DIGITAL
   }
 }

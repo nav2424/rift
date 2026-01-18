@@ -10,6 +10,9 @@
 
 import OpenAI from 'openai'
 import { prisma } from '../prisma'
+import { generateNextSupportTicketNumber } from '../support-ticket-number'
+import { randomUUID } from 'crypto'
+import { SupportTicketPriority, SupportTicketCategory, SupportTicketStatus } from '@prisma/client'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -148,18 +151,14 @@ Respond with JSON:
 }
 
 /**
- * Generate a pre-populated support ticket with context
+ * Generate and create a support ticket with context
+ * Returns the created ticket ID
  */
 export async function generateSupportTicket(
   userId: string,
   userMessage: string,
   category: string
-): Promise<{
-  title: string
-  description: string
-  priority: 'low' | 'medium' | 'high' | 'critical'
-  context: Record<string, any>
-}> {
+): Promise<string | null> {
   // Get user context
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -226,18 +225,95 @@ Generate a professional support ticket in JSON:
       temperature: 0.3,
     })
 
-    const ticket = JSON.parse(completion.choices[0].message.content || '{}')
-    ticket.context = context
-
-    return ticket
-  } catch (error) {
-    console.error('Support ticket generation failed:', error)
+    const ticketData = JSON.parse(completion.choices[0].message.content || '{}')
     
-    return {
-      title: `Support Request: ${category}`,
-      description: userMessage,
-      priority: 'medium',
-      context,
+    // Map priority string to enum
+    const priorityMap: Record<string, SupportTicketPriority> = {
+      low: 'LOW',
+      medium: 'MEDIUM',
+      high: 'HIGH',
+      critical: 'CRITICAL',
+    }
+    
+    // Map category string to enum
+    const categoryMap: Record<string, SupportTicketCategory> = {
+      technical: 'TECHNICAL',
+      account: 'ACCOUNT',
+      payment: 'PAYMENT',
+      dispute: 'DISPUTE',
+      general: 'GENERAL',
+    }
+    
+    const priority = priorityMap[ticketData.priority?.toLowerCase()] || 'MEDIUM'
+    const ticketCategory = categoryMap[category?.toLowerCase()] || 'GENERAL'
+    
+    // Generate ticket number
+    const ticketNumber = await generateNextSupportTicketNumber()
+    
+    // Create ticket in database
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        id: randomUUID(),
+        ticketNumber,
+        userId,
+        title: ticketData.title || `Support Request: ${category}`,
+        description: ticketData.description || userMessage,
+        status: 'OPEN',
+        priority,
+        category: ticketCategory,
+        metadata: ticketData.context || context,
+        conversationHistory: [{
+          role: 'user',
+          content: userMessage,
+          timestamp: new Date().toISOString(),
+        }],
+      },
+    })
+    
+    return ticket.id
+  } catch (error) {
+    console.error('Support ticket creation failed:', error)
+    
+    // Fallback: create ticket with basic info
+    try {
+      const ticketNumber = await generateNextSupportTicketNumber()
+      const priorityMap: Record<string, SupportTicketPriority> = {
+        low: 'LOW',
+        medium: 'MEDIUM',
+        high: 'HIGH',
+        critical: 'CRITICAL',
+      }
+      const categoryMap: Record<string, SupportTicketCategory> = {
+        technical: 'TECHNICAL',
+        account: 'ACCOUNT',
+        payment: 'PAYMENT',
+        dispute: 'DISPUTE',
+        general: 'GENERAL',
+      }
+      
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          id: randomUUID(),
+          ticketNumber,
+          userId,
+          title: `Support Request: ${category}`,
+          description: userMessage,
+          status: 'OPEN',
+          priority: 'MEDIUM',
+          category: categoryMap[category?.toLowerCase()] || 'GENERAL',
+          metadata: context,
+          conversationHistory: [{
+            role: 'user',
+            content: userMessage,
+            timestamp: new Date().toISOString(),
+          }],
+        },
+      })
+      
+      return ticket.id
+    } catch (fallbackError) {
+      console.error('Support ticket fallback creation failed:', fallbackError)
+      return null
     }
   }
 }

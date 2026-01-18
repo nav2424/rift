@@ -2,6 +2,21 @@
 
 **Last Updated:** [Insert Date]
 
+## ⚠️ CRITICAL DISCLAIMER - READ THIS FIRST
+
+**RIFT IS A TECHNOLOGY PLATFORM ONLY. RIFT IS NOT LIABLE FOR ANYTHING.**
+
+**By using Rift, you acknowledge and agree that:**
+* **Rift is not a party to any transaction**
+* **Rift does not guarantee, insure, or protect against any losses**
+* **Rift is not liable for fraud, disputes, or transaction failures**
+* **You use Rift entirely at your own risk**
+* **Rift's maximum liability is limited to fees paid in the prior 12 months or $10, whichever is less**
+
+**If you do not agree to these terms, you must not use the Platform.**
+
+---
+
 ## 1. Acceptance of Terms
 
 By accessing or using the Rift platform ("Rift", "Platform", "we", "us"), you agree to be legally bound by these Terms of Service ("Terms"). If you do not agree, you must not access or use the Platform.
@@ -10,18 +25,33 @@ These Terms incorporate by reference all policies listed on Rift, including but 
 
 ---
 
-## 2. Platform Role & Disclaimer (Critical)
+## 2. Platform Role & Disclaimer (CRITICAL - READ CAREFULLY)
 
-Rift is a **technology platform only**. Rift does **not**:
+**RIFT IS A TECHNOLOGY PLATFORM ONLY. RIFT IS NOT LIABLE FOR ANYTHING.**
+
+Rift provides a software platform that facilitates communication and conditional fund holding between users. Rift does **not**:
 
 * Act as a buyer or seller
 * Act as a broker, agent, or representative
 * Act as a fiduciary or trustee
-* Act as an rift agent
+* Act as an escrow agent
 * Provide financial, legal, or insurance services
 * Guarantee transactions, delivery, or outcomes
+* Verify the identity, legitimacy, or quality of users, goods, or services
+* Insure or protect against fraud, loss, or disputes
+* Assume any responsibility for transaction outcomes
 
-All transactions occur **solely between users**. Rift is not a party to any transaction and disclaims all responsibility for the performance, legality, quality, safety, or delivery of any goods or services.
+**ALL TRANSACTIONS OCCUR SOLELY BETWEEN USERS. RIFT IS NOT A PARTY TO ANY TRANSACTION.**
+
+Rift disclaims **ALL** responsibility for:
+* The performance, legality, quality, safety, or delivery of any goods or services
+* Fraud, misrepresentation, or deceptive conduct by users
+* Transaction disputes, chargebacks, or payment issues
+* Loss of funds, data, or property
+* Technical failures, system outages, or data breaches
+* Any damages, losses, or harm arising from use of the Platform
+
+**YOU USE RIFT AT YOUR OWN RISK. RIFT MAKES NO WARRANTIES AND ASSUMES NO LIABILITY.**
 
 ---
 
@@ -57,17 +87,44 @@ Funds paid by buyers may be temporarily withheld pending transaction conditions,
 
 ---
 
-## 7. No Guarantees
+## 7. No Guarantees - AS IS BASIS
 
-Rift provides the Platform on an **"AS IS"** and **"AS AVAILABLE"** basis. Rift makes no warranties of any kind, express or implied.
+Rift provides the Platform on an **"AS IS"** and **"AS AVAILABLE"** basis **WITHOUT ANY WARRANTIES WHATSOEVER**.
+
+Rift makes **NO WARRANTIES** of any kind, express or implied, including but not limited to:
+* Warranties of merchantability
+* Warranties of fitness for a particular purpose
+* Warranties of non-infringement
+* Warranties that the Platform will be uninterrupted, secure, or error-free
+* Warranties that transactions will be successful or disputes will be resolved favorably
+* Warranties regarding the accuracy, reliability, or completeness of any information on the Platform
+
+**YOU EXPRESSLY ACKNOWLEDGE THAT USE OF THE PLATFORM IS AT YOUR SOLE RISK.**
 
 ---
 
-## 8. Limitation of Liability
+## 8. LIMITATION OF LIABILITY - CRITICAL
 
-To the maximum extent permitted by law, Rift's total liability shall not exceed the total fees paid to Rift by the user in the twelve (12) months preceding the claim.
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE TOTAL FEES PAID TO RIFT BY THE USER IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
 
-Rift shall not be liable for indirect, incidental, consequential, or punitive damages.
+**RIFT SHALL NOT BE LIABLE FOR ANY OF THE FOLLOWING, REGARDLESS OF THE THEORY OF LIABILITY (CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR OTHERWISE):**
+
+* **INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, EXEMPLARY, OR PUNITIVE DAMAGES**
+* **LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES**
+* **LOSS OF FUNDS, TRANSACTION AMOUNTS, OR FINANCIAL LOSSES**
+* **FRAUD, THEFT, OR MISAPPROPRIATION OF FUNDS**
+* **DISPUTES BETWEEN USERS OR TRANSACTION FAILURES**
+* **TECHNICAL FAILURES, SYSTEM OUTAGES, OR DATA BREACHES**
+* **UNAUTHORIZED ACCESS TO ACCOUNTS OR DATA**
+* **ERRORS, OMISSIONS, OR INACCURACIES IN THE PLATFORM**
+* **DELAYS IN PROCESSING, RELEASING, OR HOLDING FUNDS**
+* **PAYMENT PROCESSOR ACTIONS, HOLDS, REVERSALS, OR CHARGEBACKS**
+* **LEGAL FEES, COURT COSTS, OR LITIGATION EXPENSES**
+* **ANY OTHER DAMAGES ARISING FROM USE OR INABILITY TO USE THE PLATFORM**
+
+**THIS LIMITATION APPLIES EVEN IF RIFT HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF WHETHER SUCH DAMAGES WERE FORESEEABLE.**
+
+**IN JURISDICTIONS WHERE SUCH LIMITATIONS ARE NOT PERMITTED, RIFT'S LIABILITY SHALL BE LIMITED TO THE MAXIMUM EXTENT PERMITTED BY LAW.**
 
 ---
 
@@ -144,15 +201,28 @@ Rift does not act on behalf of any User and owes no fiduciary duties.
 
 ---
 
-## 3. User Assumption of Risk
+## 3. User Assumption of Risk - CRITICAL
 
-You expressly acknowledge and agree that:
+**YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT:**
 
-* All transactions are conducted solely between Users
-* Rift does not verify the truthfulness, legality, or accuracy of listings or representations
-* Transactions involve inherent risk
+* **ALL TRANSACTIONS ARE CONDUCTED SOLELY BETWEEN USERS - RIFT IS NOT A PARTY**
+* **RIFT DOES NOT VERIFY THE TRUTHFULNESS, LEGALITY, OR ACCURACY OF LISTINGS OR REPRESENTATIONS**
+* **RIFT DOES NOT VERIFY USER IDENTITY, CREDIBILITY, OR LEGITIMACY**
+* **TRANSACTIONS INVOLVE INHERENT AND SIGNIFICANT RISK**
+* **RIFT PROVIDES NO PROTECTION, INSURANCE, OR GUARANTEE AGAINST LOSS**
 
-You assume all risks associated with participation, including financial loss, fraud, non-performance, or disputes.
+**YOU ASSUME ALL RISKS ASSOCIATED WITH PARTICIPATION, INCLUDING BUT NOT LIMITED TO:**
+
+* **FINANCIAL LOSS, FRAUD, THEFT, OR MISAPPROPRIATION**
+* **NON-PERFORMANCE, BREACH OF CONTRACT, OR FAILURE TO DELIVER**
+* **DISPUTES, CHARGEBACKS, OR PAYMENT REVERSALS**
+* **LOSS OF FUNDS, DATA, OR PROPERTY**
+* **TECHNICAL FAILURES OR SYSTEM OUTAGES**
+* **UNAUTHORIZED ACCESS TO ACCOUNTS OR TRANSACTIONS**
+* **LEGAL LIABILITY ARISING FROM YOUR TRANSACTIONS**
+* **ANY OTHER RISKS ASSOCIATED WITH ONLINE TRANSACTIONS**
+
+**YOU ACKNOWLEDGE THAT RIFT CANNOT AND DOES NOT PROTECT YOU FROM THESE RISKS.**
 
 ---
 
@@ -217,9 +287,20 @@ Such actions may be taken without notice.
 
 ---
 
-## 9. Limitation of Liability
+## 9. Limitation of Liability - CRITICAL
 
-To the maximum extent permitted by law, Rift shall not be liable for any damages arising from marketplace participation. Total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIFT SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM MARKETPLACE PARTICIPATION.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **FINANCIAL LOSSES, FRAUD, OR THEFT**
+* **TRANSACTION DISPUTES OR FAILURES**
+* **PAYMENT PROCESSOR ACTIONS OR CHARGEBACKS**
+* **TECHNICAL FAILURES OR SYSTEM OUTAGES**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -367,9 +448,20 @@ Such actions may be taken without notice.
 
 ---
 
-## 10. Limitation of Liability
+## 10. Limitation of Liability - CRITICAL
 
-To the maximum extent permitted by law, Rift shall not be liable for any losses arising from your seller activities. Total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIFT SHALL NOT BE LIABLE FOR ANY LOSSES ARISING FROM YOUR SELLER ACTIVITIES.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **LOSS OF FUNDS, PAYOUTS, OR TRANSACTION AMOUNTS**
+* **CHARGEBACKS, REFUNDS, OR PAYMENT REVERSALS**
+* **DISPUTES, CLAIMS, OR BUYER COMPLAINTS**
+* **TECHNICAL FAILURES OR PROCESSING DELAYS**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -465,9 +557,21 @@ Refunds are not guaranteed and may be issued at Rift's sole discretion to protec
 
 ---
 
-## 8. Limitation of Liability
+## 8. Limitation of Liability - CRITICAL
 
-To the maximum extent permitted by law, Rift shall not be liable for losses arising from buyer transactions. Rift's total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIFT SHALL NOT BE LIABLE FOR LOSSES ARISING FROM BUYER TRANSACTIONS.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **LOSS OF FUNDS, PAYMENT AMOUNTS, OR TRANSACTION VALUE**
+* **FRAUD, NON-DELIVERY, OR POOR QUALITY OF GOODS/SERVICES**
+* **SELLER MISCONDUCT, BREACH OF CONTRACT, OR NON-PERFORMANCE**
+* **DISPUTE RESOLUTION OUTCOMES OR DELAYS**
+* **TECHNICAL FAILURES OR PROCESSING ERRORS**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -582,9 +686,21 @@ Payment Processor determinations are final.
 
 ---
 
-## 8. Limitation of Liability
+## 8. Limitation of Liability - CRITICAL
 
-To the maximum extent permitted by law, Rift shall not be liable for any losses arising from payment processing activities. Rift's total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIFT SHALL NOT BE LIABLE FOR ANY LOSSES ARISING FROM PAYMENT PROCESSING ACTIVITIES.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **PAYMENT PROCESSOR ACTIONS, HOLDS, REVERSALS, OR CHARGEBACKS**
+* **PROCESSING DELAYS, FAILURES, OR ERRORS**
+* **LOSS OF FUNDS DUE TO PROCESSOR POLICIES OR REQUIREMENTS**
+* **ACCOUNT FREEZES, SUSPENSIONS, OR TERMINATIONS BY PROCESSORS**
+* **COMPLIANCE REQUIREMENTS OR VERIFICATION DELAYS**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -620,7 +736,7 @@ This Conditional Funds Hold & Release Policy ("Policy") governs how payments are
 
 ## 1. Policy Purpose
 
-Rift provides a conditional transaction workflow designed to reduce fraud, disputes, and chargebacks. Rift does **not** provide rift services, fiduciary services, or trust accounts.
+Rift provides a conditional transaction workflow designed to reduce fraud, disputes, and chargebacks. Rift does **not** provide escrow services, fiduciary services, or trust accounts.
 
 Funds are conditionally held as part of a platform-controlled transaction flow.
 
@@ -696,9 +812,21 @@ Payment processor actions, including holds, reserves, reversals, or freezes, ove
 
 ---
 
-## 9. Limitation of Liability
+## 9. Limitation of Liability - CRITICAL
 
-Rift shall not be liable for losses arising from conditional fund handling. Total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**RIFT SHALL NOT BE LIABLE FOR LOSSES ARISING FROM CONDITIONAL FUND HANDLING.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **DELAYS IN RELEASING, HOLDING, OR PROCESSING FUNDS**
+* **FUNDS BEING WITHHELD, REVERSED, OR REFUNDED**
+* **LOSS OF FUNDS DUE TO DISPUTES, CHARGEBACKS, OR PROCESSOR ACTIONS**
+* **ERRORS IN FUND CALCULATIONS OR DISTRIBUTIONS**
+* **TECHNICAL FAILURES AFFECTING FUND AVAILABILITY**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -791,9 +919,20 @@ Rift does not guarantee resolution in favor of any party and makes no warranties
 
 ---
 
-## 8. Limitation of Liability
+## 8. Limitation of Liability - CRITICAL
 
-Rift shall not be liable for losses arising from dispute handling. Total liability shall not exceed fees paid to Rift in the prior twelve (12) months.
+**RIFT SHALL NOT BE LIABLE FOR LOSSES ARISING FROM DISPUTE HANDLING.**
+
+**RIFT'S TOTAL LIABILITY SHALL NOT EXCEED THE FEES PAID TO RIFT IN THE PRIOR TWELVE (12) MONTHS, OR $10.00 (TEN DOLLARS), WHICHEVER IS LESS.**
+
+**RIFT SHALL NOT BE LIABLE FOR:**
+* **DISPUTE RESOLUTION OUTCOMES OR DECISIONS**
+* **DELAYS IN DISPUTE PROCESSING OR RESOLUTION**
+* **LOSS OF FUNDS DUE TO DISPUTE DETERMINATIONS**
+* **ERRORS IN DISPUTE REVIEW OR EVIDENCE EVALUATION**
+* **ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES**
+
+**THIS LIMITATION APPLIES REGARDLESS OF THE THEORY OF LIABILITY.**
 
 ---
 
@@ -806,4 +945,3 @@ Rift may amend this Policy at any time. Continued use of the Platform constitute
 ## 10. Acceptance
 
 By using Rift, you acknowledge and agree to this Dispute Resolution Policy.
-

@@ -11,6 +11,8 @@ import { checkAndAwardMilestones } from './milestones'
 import { checkAndAwardBadges } from './badges'
 import { transitionRiftState } from './rift-state'
 import { canAutoRelease } from './state-machine'
+import { normalizeMilestones, getNextUnreleasedMilestoneIndex } from './milestone-utils'
+import { RiftEventActorType } from '@prisma/client'
 
 /**
  * Check and process auto-releases for rifts past review window
@@ -46,6 +48,9 @@ export async function processAutoReleases() {
         where: { status: 'VALID' },
         take: 1,
       },
+      MilestoneRelease: {
+        where: { status: 'RELEASED' },
+      },
     },
   })
 
@@ -69,6 +74,31 @@ export async function processAutoReleases() {
       // Verify state allows auto-release
       if (!canAutoRelease(rift.status)) {
         console.log(`Skipping auto-release for ${rift.id}: invalid state ${rift.status}`)
+        continue
+      }
+
+      // Milestone-based services: auto-release the next milestone instead of full release
+      if (rift.itemType === 'SERVICES' && rift.allowsPartialRelease && rift.milestones) {
+        const milestones = normalizeMilestones(rift.milestones)
+        const nextIndex = getNextUnreleasedMilestoneIndex(milestones, rift.MilestoneRelease)
+        if (nextIndex === null) {
+          console.log(`Skipping auto-release for ${rift.id}: all milestones already released`)
+          continue
+        }
+        const { releaseMilestone } = await import('./milestone-release')
+        await releaseMilestone({
+          riftId: rift.id,
+          milestoneIndex: nextIndex,
+          releasedById: null,
+          actorType: RiftEventActorType.SYSTEM,
+          allowedStatuses: ['PROOF_SUBMITTED', 'UNDER_REVIEW'],
+          requireBuyer: false,
+          requireProofAfterLastRelease: nextIndex > 0,
+          allowPendingProof: false,
+          autoRelease: true,
+        })
+
+        results.push({ riftId: rift.id, success: true, autoReleasedMilestone: nextIndex })
         continue
       }
 

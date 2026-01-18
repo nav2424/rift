@@ -18,6 +18,15 @@ import { checkProofRateLimit } from '@/lib/rate-limits-proof'
 import { createServerClient } from '@/lib/supabase'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
 import { RiftEventActorType } from '@prisma/client'
+import {
+  normalizeMilestones,
+  getNextUnreleasedMilestoneIndex,
+  getLatestReleasedAt,
+  getMilestoneRevisionLimit,
+  getMilestoneReviewWindowDays,
+  calculateMilestoneAutoReleaseAt,
+  getAllowedProofSubmissions,
+} from '@/lib/milestone-utils'
 
 /**
  * Submit proof of delivery
@@ -69,6 +78,51 @@ export async function POST(
       return NextResponse.json({ error: 'Only seller can submit proof' }, { status: 403 })
     }
 
+    // Enforce revision limits for milestone-based service rifts
+    if (rift.itemType === 'SERVICES' && rift.allowsPartialRelease && rift.milestones) {
+      const milestones = normalizeMilestones(rift.milestones)
+      if (milestones.length > 0) {
+        const releases = await prisma.milestoneRelease.findMany({
+          where: { riftId: id, status: 'RELEASED' },
+          select: { releasedAt: true, milestoneIndex: true, status: true },
+          orderBy: { releasedAt: 'desc' },
+        })
+        const nextIndex = getNextUnreleasedMilestoneIndex(milestones, releases)
+        if (nextIndex !== null) {
+          const revisionLimit = getMilestoneRevisionLimit(milestones[nextIndex])
+          const lastReleaseAt = getLatestReleasedAt(releases) || new Date(0)
+          const revisionEvents = await prisma.rift_events.findMany({
+            where: {
+              riftId: id,
+              eventType: 'MILESTONE_REVISION_REQUESTED',
+              createdAt: { gt: lastReleaseAt },
+            },
+            select: { payload: true },
+          })
+          const revisionRequests = revisionEvents.filter((event) => {
+            const milestoneIndex = (event.payload as any)?.milestoneIndex
+            return milestoneIndex === nextIndex
+          }).length
+          const proofCount = await prisma.proof.count({
+            where: {
+              riftId: id,
+              submittedAt: { gt: lastReleaseAt },
+            },
+          })
+          const allowedSubmissions = getAllowedProofSubmissions(revisionRequests, revisionLimit)
+          if (proofCount >= allowedSubmissions) {
+            return NextResponse.json(
+              {
+                error: 'Revision limit reached for this milestone',
+                message: 'This milestone includes one revision round. Further revisions require a new milestone or mutual agreement.',
+              },
+              { status: 400 }
+            )
+          }
+        }
+      }
+    }
+
     // Verify state
     if (!canSellerSubmitProof(rift.status)) {
       return NextResponse.json(
@@ -95,6 +149,7 @@ export async function POST(
     let proofPayload: any = {}
     let uploadedFiles: string[] = []
     const vaultAssetIds: string[] = []
+    let payloadVaultAssets: Array<any> = []
     
     // Check content-type to determine if it's FormData or JSON
     const contentType = request.headers.get('content-type') || ''
@@ -337,6 +392,7 @@ export async function POST(
       const body = await request.json()
       proofPayload = body.proofPayload || {}
       uploadedFiles = body.uploadedFiles || []
+      payloadVaultAssets = body.vaultAssets || []
       
       // Handle vault assets from JSON - with cleanup on failure
       if (body.vaultAssets) {
@@ -394,15 +450,74 @@ export async function POST(
     }
 
     // TYPE-LOCKED VALIDATION: Ensure proof matches item type requirements
-    // Do quick validation on payload only - skip asset validation to avoid blocking
-    // Full validation with assets happens asynchronously in verification job
     if (vaultAssetIds.length === 0) {
       return NextResponse.json(
         {
           error: 'Proof assets are required',
-          message: 'Please upload at least one proof asset (file, tracking number, license key, etc.)',
+          message: 'Please upload at least one proof asset (file or link)',
         },
         { status: 400 }
+      )
+    }
+
+    const assetRecords = await prisma.vault_assets.findMany({
+      where: { id: { in: vaultAssetIds } },
+      select: { assetType: true, sha256: true, id: true },
+    })
+
+    const assetTypesFromDb = assetRecords
+      .map(asset => asset.assetType)
+      .filter((type): type is VaultAssetType => Boolean(type))
+    const allowedAssetTypes = new Set<VaultAssetType>([
+      'FILE',
+      'LICENSE_KEY',
+      'TRACKING',
+      'TICKET_PROOF',
+      'URL',
+      'TEXT_INSTRUCTIONS',
+    ])
+    const assetTypesFromPayload = Array.isArray(payloadVaultAssets)
+      ? payloadVaultAssets
+          .map((asset: any) => asset?.assetType)
+          .filter((type: any): type is VaultAssetType =>
+            allowedAssetTypes.has(type as VaultAssetType)
+          )
+      : []
+    const assetTypes = assetTypesFromDb.length > 0 ? assetTypesFromDb : assetTypesFromPayload
+    const assetHashes = assetRecords
+      .map(asset => asset.sha256)
+      .filter((hash): hash is string => Boolean(hash))
+
+    const typeLockValidation = validateProofTypeLock(
+      rift.itemType as any,
+      assetTypes,
+      proofPayload
+    )
+
+    if (!typeLockValidation.valid) {
+      return NextResponse.json(
+        {
+          error: 'Proof does not meet item type requirements',
+          details: typeLockValidation.errors,
+        },
+        { status: 400 }
+      )
+    }
+
+    const duplicateCheck = await checkDuplicateProofs(
+      assetHashes,
+      rift.id,
+      auth.userId,
+      vaultAssetIds
+    )
+
+    if (duplicateCheck.isDuplicate) {
+      return NextResponse.json(
+        {
+          error: 'Duplicate proof detected',
+          details: duplicateCheck,
+        },
+        { status: 409 }
       )
     }
 
@@ -481,77 +596,52 @@ export async function POST(
     // This ensures the user sees immediate success
     Promise.resolve().then(async () => {
       try {
-        // Get asset types for validation (in background)
-        const assets = await prisma.vault_assets.findMany({
-          where: { id: { in: vaultAssetIds } },
-          select: { assetType: true, sha256: true, id: true },
-        })
-        
-        const assetTypes = assets.map(a => a.assetType)
-        const assetHashes = assets.map(a => a.sha256)
+        // Set auto-release deadline for milestone-based service rifts
+        try {
+          const riftForAutoRelease = await prisma.riftTransaction.findUnique({
+            where: { id: rift.id },
+            select: {
+              id: true,
+              itemType: true,
+              allowsPartialRelease: true,
+              milestones: true,
+              proofSubmittedAt: true,
+              status: true,
+            },
+          })
 
-        // Validate type lock in background
-        try {
-          const typeLockValidation = validateProofTypeLock(
-            rift.itemType as any,
-            assetTypes,
-            proofPayload
-          )
-          
-          if (!typeLockValidation.valid) {
-            // Log but don't block - flag for admin review
-            await prisma.riftTransaction.update({
-              where: { id: rift.id },
-              data: {
-                requiresManualReview: true,
-              },
+          if (
+            riftForAutoRelease?.itemType === 'SERVICES' &&
+            riftForAutoRelease.allowsPartialRelease &&
+            riftForAutoRelease.proofSubmittedAt &&
+            ['PROOF_SUBMITTED', 'UNDER_REVIEW'].includes(riftForAutoRelease.status)
+          ) {
+            const milestones = normalizeMilestones(riftForAutoRelease.milestones)
+            const releases = await prisma.milestoneRelease.findMany({
+              where: { riftId: rift.id, status: 'RELEASED' },
+              select: { milestoneIndex: true, status: true },
             })
-            
-            await prisma.timelineEvent.create({
-              data: {
-                id: randomUUID(),
-                escrowId: rift.id,
-                type: 'PROOF_VALIDATION_WARNING',
-                message: `⚠️ Proof validation warning: ${typeLockValidation.errors.join(', ')}`,
-                createdById: null,
-              },
-            })
+            const nextIndex = getNextUnreleasedMilestoneIndex(milestones, releases)
+            if (nextIndex !== null) {
+              const reviewWindowDays = getMilestoneReviewWindowDays(milestones[nextIndex])
+              const autoReleaseAt = calculateMilestoneAutoReleaseAt(
+                riftForAutoRelease.proofSubmittedAt,
+                reviewWindowDays
+              )
+              await prisma.riftTransaction.update({
+                where: { id: rift.id },
+                data: {
+                  autoReleaseAt,
+                  autoReleaseScheduled: true,
+                },
+              })
+            }
           }
-        } catch (error) {
-          console.error('Type lock validation error (non-critical):', error)
+        } catch (autoReleaseError) {
+          console.error('Failed to schedule milestone auto-release:', autoReleaseError)
         }
-        
-        // Duplicate detection in background
-        try {
-          const duplicateCheck = await checkDuplicateProofs(
-            assetHashes,
-            rift.id,
-            auth.userId
-          )
-          
-          if (duplicateCheck.isDuplicate) {
-            // Log duplicate detection but don't block submission
-            await prisma.riftTransaction.update({
-              where: { id: rift.id },
-              data: {
-                requiresManualReview: true,
-                riskScore: Math.max(rift.riskScore || 0, duplicateCheck.riskLevel === 'CRITICAL' ? 90 : duplicateCheck.riskLevel === 'HIGH' ? 70 : 50),
-              },
-            })
-            
-            await prisma.timelineEvent.create({
-              data: {
-                id: randomUUID(),
-                escrowId: rift.id,
-                type: 'DUPLICATE_PROOF_DETECTED',
-                message: `⚠️ Duplicate proof detected (${duplicateCheck.riskLevel} risk). ${duplicateCheck.recommendations.join(' ')}`,
-                createdById: null,
-              },
-            })
-          }
-        } catch (error) {
-          console.error('Duplicate check error (non-critical):', error)
-        }
+
+        // Proof validation and duplicate detection are enforced synchronously above.
         
         // Get final status for review check
         const finalRift = await prisma.riftTransaction.findUnique({

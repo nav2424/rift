@@ -81,12 +81,12 @@ describe('Proof Submission API', () => {
       vi.mocked(canSellerSubmitProof).mockReturnValue(true)
     })
 
-    it('should accept valid TICKETS proof submission', async () => {
+    it('should accept valid DIGITAL_GOODS proof submission', async () => {
       const { canSellerSubmitProof } = await import('@/lib/state-machine')
       const seller = createTestUser()
       const sellerId = seller.id
       // Create rift with seller ID from the start
-      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PAID', sellerId })
+      const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PAID', sellerId })
       // Ensure fundedAt is set for deadline check (within deadline)
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
       const riftId = rift.id
@@ -109,7 +109,7 @@ describe('Proof Submission API', () => {
           id: riftId,
           sellerId, // ✅ Must match auth.userId
           status: 'PAID',
-          itemType: 'OWNERSHIP_TRANSFER',
+          itemType: 'DIGITAL_GOODS',
           fundedAt: rift.fundedAt,
           proofSubmittedAt: null,
           serviceDate: null,
@@ -160,7 +160,7 @@ describe('Proof Submission API', () => {
         .mockResolvedValueOnce([ // First call: return asset types for validation (by id in vaultAssetIds)
           {
             id: 'asset-id-123',
-            assetType: 'TICKET_PROOF',
+            assetType: 'FILE',
             sha256: 'test-hash-123',
           },
         ] as any)
@@ -195,7 +195,7 @@ describe('Proof Submission API', () => {
               id: 'proof1', 
               status: 'VALID',
               riftId: rift.id,
-              proofType: 'TICKET_PROOF',
+              proofType: 'DIGITAL',
               proofPayload: {},
               uploadedFiles: [],
               submittedAt: new Date(),
@@ -218,15 +218,11 @@ describe('Proof Submission API', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          proofPayload: {
-            eventName: 'Concert',
-            eventDate: '2025-02-01',
-            platform: 'Ticketmaster',
-          },
+          proofPayload: {},
           vaultAssets: [
             {
-              assetType: 'TICKET_PROOF',
-              fileName: 'ticket-qr.png',
+              assetType: 'FILE',
+              fileName: 'ugc-deliverable.png',
               fileContent: Buffer.from('test').toString('base64'),
             },
           ],
@@ -456,10 +452,10 @@ describe('Proof Submission API', () => {
       expect(data.error).toContain('Proof does not meet item type requirements')
     })
 
-    it('should reject proof with missing required fields', async () => {
+    it('should reject SERVICES proof with missing required fields', async () => {
       const { canSellerSubmitProof } = await import('@/lib/state-machine')
       const seller = createTestUser()
-      const rift = createTestRift({ itemType: 'OWNERSHIP_TRANSFER', status: 'PAID', sellerId: seller.id })
+      const rift = createTestRift({ itemType: 'SERVICES', status: 'PAID', sellerId: seller.id })
       rift.fundedAt = new Date(Date.now() - 12 * 60 * 60 * 1000) // 12 hours ago
       const riftId = rift.id
       const sellerId = seller.id
@@ -483,7 +479,7 @@ describe('Proof Submission API', () => {
           id: riftId,
           sellerId: sellerId, // ✅ Explicitly use the variable to ensure it matches
           status: 'PAID',
-          itemType: 'OWNERSHIP_TRANSFER',
+          itemType: 'SERVICES',
           fundedAt: rift.fundedAt,
           proofSubmittedAt: null,
           serviceDate: null,
@@ -539,7 +535,7 @@ describe('Proof Submission API', () => {
         .mockResolvedValueOnce([ // First call: return asset types for validation (by id)
           {
             id: 'asset-id-123',
-            assetType: 'TICKET_PROOF',
+            assetType: 'FILE',
             sha256: 'test-hash',
           },
         ] as any)
@@ -550,12 +546,12 @@ describe('Proof Submission API', () => {
         const tx = {
           riftTransaction: {
             findUnique: vi.fn().mockResolvedValue({ 
-              ...riftWithSeller,
+              ...rift,
               status: 'FUNDED',
               version: 1 
             }),
             update: vi.fn().mockResolvedValue({
-              ...riftWithSeller,
+              ...rift,
             }),
           },
           proof: {
@@ -571,13 +567,11 @@ describe('Proof Submission API', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          proofPayload: {
-            // Missing eventName, eventDate, platform
-          },
+          proofPayload: {},
           vaultAssets: [
             {
-              assetType: 'TICKET_PROOF',
-              fileName: 'ticket.png',
+              assetType: 'FILE',
+              fileName: 'deliverable.png',
             },
           ],
         }),
@@ -621,9 +615,18 @@ describe('Proof Submission API', () => {
           },
         } as any)
       
-      // Mock vaultAsset.findMany - first call for duplicate check (finds duplicate), second for validation
+      vi.mocked(prisma.riftTransaction.findMany).mockResolvedValue([])
+
+      // Mock vaultAsset.findMany - first call for validation, second for duplicate detection
       vi.mocked(prisma.vault_assets.findMany)
-        .mockResolvedValueOnce([ // First call: duplicate detection
+        .mockResolvedValueOnce([ // First call: return asset types for validation (by id)
+          {
+            id: 'asset1',
+            assetType: 'FILE',
+            sha256: 'duplicate-hash',
+          },
+        ] as any)
+        .mockResolvedValueOnce([ // Second call: duplicate detection
           {
             id: 'asset1',
             sha256: 'duplicate-hash',
@@ -636,12 +639,6 @@ describe('Proof Submission API', () => {
               buyerId: 'buyer2',
               createdAt: new Date(),
             },
-          },
-        ] as any)
-        .mockResolvedValueOnce([ // Second call: return asset types for validation (if it gets that far)
-          {
-            assetType: 'FILE',
-            sha256: 'duplicate-hash',
           },
         ] as any)
       

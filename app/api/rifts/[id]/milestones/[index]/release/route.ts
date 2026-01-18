@@ -123,6 +123,54 @@ export async function POST(
       )
     }
 
+    // For service rifts with milestones: After first milestone is released, require proof again
+    // UNLESS this is the first milestone (index 0) or all milestones are being released at once
+    const releasedMilestones = rift.MilestoneRelease.filter((r) => r.status === 'RELEASED')
+    const hasReleasedFirstMilestone = releasedMilestones.some((r) => r.milestoneIndex === 0)
+    
+    // If first milestone has been released AND we're trying to release a subsequent milestone (index > 0)
+    // Require proof to be submitted after the first milestone was released
+    if (hasReleasedFirstMilestone && milestoneIndex > 0) {
+      // Find the first milestone release timestamp
+      const firstMilestoneRelease = releasedMilestones.find((r) => r.milestoneIndex === 0)
+      const firstReleaseTimestamp = firstMilestoneRelease?.releasedAt || new Date(0)
+      
+      // Check if proof was submitted after the first milestone was released
+      const proofAfterFirstRelease = await prisma.proof.findFirst({
+        where: {
+          riftId: id,
+          status: { in: ['VALID', 'PENDING'] }, // Either valid or pending (not rejected)
+          submittedAt: {
+            gt: firstReleaseTimestamp, // Submitted after first milestone release
+          },
+        },
+        orderBy: {
+          submittedAt: 'desc',
+        },
+      })
+      
+      if (!proofAfterFirstRelease) {
+        return NextResponse.json(
+          {
+            error: 'Proof is required again after the first milestone is released. Please wait for the seller to submit proof before releasing subsequent milestones.',
+            requiresProof: true,
+          },
+          { status: 400 }
+        )
+      }
+      
+      // Also check that rift status allows release (should be PROOF_SUBMITTED or UNDER_REVIEW)
+      if (rift.status !== 'PROOF_SUBMITTED' && rift.status !== 'UNDER_REVIEW') {
+        return NextResponse.json(
+          {
+            error: `Cannot release milestone. Rift status must be PROOF_SUBMITTED or UNDER_REVIEW (current: ${rift.status}). Please wait for seller to submit proof.`,
+            requiresProof: true,
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Acquire concurrency lock for milestone release
     const { acquireMilestoneReleaseLock, completeReleaseLock, releaseFailedLock } = await import('@/lib/release-concurrency')
     const lock = await acquireMilestoneReleaseLock(id, milestoneIndex)
@@ -298,9 +346,53 @@ export async function POST(
       },
     })
 
-    // Check if all milestones have been released
-    const releasedMilestones = rift.MilestoneRelease.filter((r) => r.status === 'RELEASED').length + 1
-    const allMilestonesReleased = releasedMilestones >= milestones.length
+    // Check if all milestones have been released (including this one)
+    const allReleasedMilestones = await prisma.milestoneRelease.count({
+      where: {
+        riftId: id,
+        status: 'RELEASED',
+      },
+    })
+    const allMilestonesReleased = allReleasedMilestones >= milestones.length
+
+    // For service rifts with milestones: After first milestone is released, reset proof status
+    // This allows seller to submit proof again for subsequent milestones
+    // Only reset if this is the first milestone (index 0) AND not all milestones are released
+    if (milestoneIndex === 0 && !allMilestonesReleased) {
+      // Reset proof status after first milestone release
+      // Set status back to FUNDED so seller can submit proof again
+      await prisma.riftTransaction.update({
+        where: { id },
+        data: {
+          status: 'FUNDED', // Reset to FUNDED so seller can submit proof again
+          proofSubmittedAt: null, // Clear proof submission timestamp
+          autoReleaseScheduled: false,
+          autoReleaseAt: null,
+        },
+      })
+
+      // Create timeline event
+      await prisma.timelineEvent.create({
+        data: {
+          id: crypto.randomUUID(),
+          escrowId: id,
+          type: 'PROOF_REQUIRED_AGAIN',
+          message: `First milestone "${milestone.title}" released. Seller must submit proof again for remaining milestones.`,
+          createdById: auth.userId,
+        },
+      })
+    }
+
+    // Clear any scheduled auto-release for this milestone
+    if (!allMilestonesReleased && milestoneIndex !== 0) {
+      await prisma.riftTransaction.update({
+        where: { id },
+        data: {
+          autoReleaseScheduled: false,
+          autoReleaseAt: null,
+        },
+      })
+    }
 
     // If all milestones are released, update rift status to RELEASED
     if (allMilestonesReleased) {
@@ -309,6 +401,8 @@ export async function POST(
         data: {
           status: 'RELEASED',
           releasedAt: new Date(),
+          autoReleaseScheduled: false,
+          autoReleaseAt: null,
         },
       })
 

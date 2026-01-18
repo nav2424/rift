@@ -61,6 +61,13 @@ export async function POST(
     // Rift stays in UNDER_REVIEW - seller can resubmit proof
     // Status remains UNDER_REVIEW so seller can submit a new proof
     // The canSellerSubmitProof function allows submission when status is UNDER_REVIEW
+    await prisma.riftTransaction.update({
+      where: { id: proof.riftId },
+      data: {
+        autoReleaseScheduled: false,
+        autoReleaseAt: null,
+      },
+    })
 
     // Create timeline event
     await prisma.timelineEvent.create({

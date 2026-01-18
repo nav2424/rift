@@ -111,7 +111,8 @@ export default function EscrowDetailScreen() {
       }
 
       // 2. Initialize Payment Sheet
-      // Note: Only allow card payments (no Link, no wallets)
+      // PaymentIntent now supports both us_bank_account (Plaid) and card
+      // Bank transfers are prioritized and shown first
       const { error: initError } = await initPaymentSheet({
         merchantDisplayName: 'Rift',
         paymentIntentClientSecret: clientSecret,
@@ -119,9 +120,9 @@ export default function EscrowDetailScreen() {
           email: user?.email || undefined,
           name: user?.name || undefined,
         },
-        allowsDelayedPaymentMethods: false,
+        allowsDelayedPaymentMethods: true, // Required for ACH bank transfers (us_bank_account)
         returnURL: 'rift://payment-result',
-        // Disable wallets - only card payments
+        // Disable wallets - prioritize bank transfers and cards
         applePay: undefined,
         googlePay: undefined,
       });
@@ -333,7 +334,6 @@ export default function EscrowDetailScreen() {
     // Determine proof type based on item type
     const proofType = 
       rift.itemType === 'DIGITAL_GOODS' ? 'proof of digital goods transfer (screenshot, license key, etc.)' :
-      rift.itemType === 'OWNERSHIP_TRANSFER' ? 'proof of ownership transfer (screenshot of transfer confirmation, email, etc.)' :
       'proof of service completion (photos, completion certificate, etc.)';
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();

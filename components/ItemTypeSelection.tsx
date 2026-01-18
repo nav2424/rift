@@ -4,7 +4,7 @@ import { useState } from 'react'
 import GlassCard from './ui/GlassCard'
 import PremiumButton from './ui/PremiumButton'
 
-export type ItemType = 'SERVICES' | 'OWNERSHIP_TRANSFER' | 'DIGITAL_GOODS'
+export type ItemType = 'SERVICES' | 'DIGITAL_GOODS'
 
 interface ItemTypeSelectionProps {
   onSelect: (type: ItemType) => void
@@ -14,37 +14,25 @@ interface ItemTypeSelectionProps {
 const itemTypes = [
   {
     type: 'SERVICES' as ItemType,
-    title: 'Service',
-    description: 'Consulting, freelance work, professional services',
+    title: 'Brand Deal / Service',
+    description: 'Influencer partnerships, UGC content, sponsored posts, and milestone-based creator work',
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
-    features: ['Milestone-based release', 'Delivery confirmation', 'Dispute protection built-in']
-  },
-  {
-    type: 'OWNERSHIP_TRANSFER' as ItemType,
-    title: 'Ownership Transfer',
-    description: 'Assets that require verified transfer',
-    icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-      </svg>
-    ),
-    features: ['Ownership change confirmation', 'Released only after transfer', 'Best for high-value deals']
+    features: ['Milestone-based payments', 'Content approval workflow', 'Secure file delivery']
   },
   {
     type: 'DIGITAL_GOODS' as ItemType,
-    title: 'Digital Goods',
-    description: 'Software, licenses, downloads, and digital assets',
+    title: 'Content Deliverables',
+    description: 'Video files, images, creative assets, and digital content with secure delivery',
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
-    features: ['Secure file or key delivery', 'Buyer verification before release', 'Instant or scheduled delivery']
+    features: ['Secure file delivery', 'Brand approval before release', 'High-quality asset storage']
   }
 ]
 
@@ -56,15 +44,15 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
   return (
     <div className="space-y-12">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-light text-white mb-4">What are you {actionVerb}?</h2>
-        <p className="text-lg text-white/60 font-light max-w-xl mx-auto mb-2">Select the type of item to customize the rift process</p>
-        <p className="text-sm text-white/50 font-light max-w-xl mx-auto">Funds are released only when delivery is confirmed.</p>
+        <h2 className="text-3xl md:text-4xl font-light text-white mb-4">What type of {isBuying ? 'project' : 'work'} is this?</h2>
+        <p className="text-lg text-white/60 font-light max-w-xl mx-auto mb-2">Select the deliverable type to customize the payment workflow</p>
+        <p className="text-sm text-white/50 font-light max-w-xl mx-auto">Funds are secured upfront and released when content is approved.</p>
       </div>
 
       <div className="space-y-6">
-        {/* First two items in a 2-column grid */}
+        {/* Items in a 2-column grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {itemTypes.slice(0, 2).map((item) => (
+          {itemTypes.map((item) => (
             <button
               key={item.type}
               onClick={() => setSelectedType(item.type)}
@@ -116,64 +104,6 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
               </GlassCard>
             </button>
           ))}
-        </div>
-
-        {/* Third item in a single column (centered) */}
-        <div className="flex justify-center">
-          <div className="w-full md:max-w-[calc(50%-12px)]">
-            {itemTypes.slice(2).map((item) => (
-              <button
-                key={item.type}
-                onClick={() => setSelectedType(item.type)}
-                className={`text-left transition-all duration-300 group w-full ${
-                  selectedType === item.type
-                    ? 'scale-[1.02]'
-                    : 'hover:scale-[1.01]'
-                }`}
-              >
-                <GlassCard
-                  variant="glass"
-                  hover
-                  className={`p-8 cursor-pointer border-2 transition-all h-full ${
-                    selectedType === item.type
-                      ? 'border-white/30 bg-white/5'
-                      : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-start gap-5">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      selectedType === item.type
-                        ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 text-blue-400'
-                        : 'bg-white/5 border border-white/10 text-white/60 group-hover:bg-white/10 group-hover:text-white/80'
-                    }`}>
-                      {item.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-2xl font-light text-white mb-3">{item.title}</h3>
-                      <p className="text-white/70 text-sm font-light mb-6 leading-relaxed">{item.description}</p>
-                      <ul className="space-y-2.5">
-                        {item.features.map((feature, idx) => (
-                          <li key={idx} className="text-white/60 text-sm font-light flex items-center gap-3">
-                            <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              selectedType === item.type ? 'bg-blue-400' : 'bg-white/40'
-                            }`} />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {selectedType === item.type && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-400/50 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                </GlassCard>
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

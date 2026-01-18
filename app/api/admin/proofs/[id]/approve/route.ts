@@ -4,6 +4,12 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { transitionRiftState } from '@/lib/rift-state'
 import { calculateAutoReleaseDeadline } from '@/lib/rift-state'
+import {
+  normalizeMilestones,
+  getNextUnreleasedMilestoneIndex,
+  getMilestoneReviewWindowDays,
+  calculateMilestoneAutoReleaseAt,
+} from '@/lib/milestone-utils'
 
 /**
  * Admin endpoint to approve a proof
@@ -91,11 +97,24 @@ export async function POST(
     }
 
     // Calculate auto-release deadline
-    const autoReleaseAt = calculateAutoReleaseDeadline(
+    let autoReleaseAt = calculateAutoReleaseDeadline(
       updatedRift.itemType,
       new Date(),
       updatedRift.fundedAt
     )
+
+    if (updatedRift.itemType === 'SERVICES' && updatedRift.allowsPartialRelease && updatedRift.milestones) {
+      const milestones = normalizeMilestones(updatedRift.milestones)
+      const releases = await prisma.milestoneRelease.findMany({
+        where: { riftId: updatedRift.id, status: 'RELEASED' },
+        select: { milestoneIndex: true, status: true },
+      })
+      const nextIndex = getNextUnreleasedMilestoneIndex(milestones, releases)
+      if (nextIndex !== null) {
+        const reviewWindowDays = getMilestoneReviewWindowDays(milestones[nextIndex])
+        autoReleaseAt = calculateMilestoneAutoReleaseAt(new Date(), reviewWindowDays)
+      }
+    }
 
     // Update auto-release deadline
     if (autoReleaseAt) {

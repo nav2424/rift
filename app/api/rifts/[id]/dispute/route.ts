@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { createServerClient } from '@/lib/supabase'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
+import { getReviewWindowDeadline } from '@/lib/review-window'
 import { RiftEventActorType } from '@prisma/client'
 
 /**
@@ -68,6 +69,11 @@ export async function POST(
         sellerId: true,
         itemType: true,
         status: true,
+        autoReleaseAt: true,
+        proofSubmittedAt: true,
+        fundedAt: true,
+        allowsPartialRelease: true,
+        milestones: true,
       },
     })
 
@@ -97,6 +103,31 @@ export async function POST(
     if (!allowedStatuses.includes(rift.status)) {
       return NextResponse.json(
         { error: `Cannot open dispute in current status: ${rift.status}. Disputes can only be opened for active transactions after payment has been made.` },
+        { status: 400 }
+      )
+    }
+
+    const milestoneReleases = rift.allowsPartialRelease
+      ? await prisma.milestoneRelease.findMany({
+          where: { riftId, status: 'RELEASED' },
+          select: { milestoneIndex: true, status: true },
+        })
+      : []
+
+    // Enforce review window deadline for disputes (protects creators from payment stalling)
+    const reviewDeadline = getReviewWindowDeadline({
+      autoReleaseAt: rift.autoReleaseAt,
+      itemType: rift.itemType,
+      allowsPartialRelease: rift.allowsPartialRelease,
+      milestones: rift.milestones,
+      proofSubmittedAt: rift.proofSubmittedAt,
+      fundedAt: rift.fundedAt,
+      milestoneReleases,
+    })
+
+    if (reviewDeadline && new Date() > reviewDeadline) {
+      return NextResponse.json(
+        { error: 'Review window has expired. Disputes must be submitted before the auto-release deadline.' },
         { status: 400 }
       )
     }

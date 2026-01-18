@@ -10,6 +10,7 @@ import StatusPill from '@/components/ui/StatusPill'
 import EmptyState from '@/components/ui/EmptyState'
 import { subscribeToUserRifts } from '@/lib/realtime-rifts'
 import { useToast } from '@/components/ui/Toast'
+import { getItemTypeShortLabel } from '@/lib/item-type-labels'
 
 interface RiftTransaction {
   id: string
@@ -271,8 +272,8 @@ export default function Dashboard() {
         // Legacy statuses
         case 'AWAITING_PAYMENT':
           message = isBuyer 
-            ? `Rift #${riftNumber} — You created a rift with ${name} — awaiting payment`
-            : `Rift #${riftNumber} — ${name} created a rift — awaiting payment`
+            ? `Rift #${riftNumber} — You created a Rift with ${name} — awaiting payment`
+            : `Rift #${riftNumber} — ${name} created a Rift — awaiting payment`
           break
         case 'AWAITING_SHIPMENT':
           message = isBuyer
@@ -700,7 +701,7 @@ export default function Dashboard() {
                             </div>
                             <p className="text-sm sm:text-base text-white/90 font-light truncate mb-1 sm:mb-1.5">{rift.itemTitle}</p>
                             <p className="text-xs sm:text-sm text-white/50 font-light truncate">
-                              {otherParty.name || otherParty.email.split('@')[0]} • {rift.itemType.replace(/_/g, ' ')}
+                              {otherParty.name || otherParty.email.split('@')[0]} • {getItemTypeShortLabel(rift.itemType)}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 flex flex-col items-end">

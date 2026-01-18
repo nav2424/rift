@@ -14,17 +14,10 @@ export interface ProofDeadlineConfig {
 }
 
 /**
- * Proof deadline configs for launch scope
- * LAUNCH ITEM TYPES: TICKETS, DIGITAL, SERVICES, LICENSE_KEYS
+ * Proof deadline configs for UGC scope
+ * SUPPORTED ITEM TYPES: DIGITAL_GOODS, SERVICES
  */
 export const PROOF_DEADLINE_CONFIGS: Partial<Record<ItemType, ProofDeadlineConfig>> = {
-  OWNERSHIP_TRANSFER: {
-    deadlineHours: 48, // 24-48 hours as per spec (using 48 as max)
-    minHours: 24,
-    maxHours: 48,
-    autoReleaseAfterAccessHours: 24, // Auto-release 24h after buyer views QR/ticket
-    autoReleaseAfterSubmissionHours: 48, // Fallback: 48h after submission
-  },
   DIGITAL_GOODS: {
     deadlineHours: 24, // 24 hours for digital files
     minHours: 24,

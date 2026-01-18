@@ -173,12 +173,7 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
     throw new Error('Failed to acquire release lock')
   }
 
-  // If already released, return early
-  if (lock.status === 'CREATED' && lock.releaseId !== 'already_released') {
-    console.log(`Rift ${riftId} already released with transfer ${lock.releaseId}`)
-    return
-  }
-
+  // Get rift first to check if wallet was credited
   const rift = await prisma.riftTransaction.findUnique({
     where: { id: riftId },
     include: { seller: true },
@@ -186,6 +181,33 @@ async function handleRelease(riftId: string, userId?: string): Promise<void> {
 
   if (!rift) {
     throw new Error('Rift not found')
+  }
+
+  // If already released, check if wallet was credited before returning early
+  if (lock.status === 'CREATED' && lock.releaseId !== 'already_released') {
+    // Check if wallet was already credited for this rift
+    const wallet = await prisma.walletAccount.findUnique({
+      where: { userId: rift.sellerId },
+    })
+
+    if (wallet) {
+      const ledgerEntry = await prisma.walletLedgerEntry.findFirst({
+        where: {
+          walletAccountId: wallet.id,
+          relatedRiftId: riftId,
+          type: 'CREDIT_RELEASE',
+        },
+      })
+
+      if (ledgerEntry) {
+        // Wallet already credited, safe to return early
+        console.log(`Rift ${riftId} already released with transfer ${lock.releaseId} and wallet credited`)
+        return
+      }
+    }
+
+    // Wallet not credited - continue to credit it
+    console.log(`Rift ${riftId} already released but wallet not credited - crediting now`)
   }
 
   // Get sellerPayout from PaymentIntent metadata (source of truth)

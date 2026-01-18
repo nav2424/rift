@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import GlassCard from './ui/GlassCard'
@@ -51,6 +52,38 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
       setElementsError(null)
     }
   }, [stripe, elements])
+
+  // Handle change events from PaymentElement to track user interaction
+  // This must be called before any conditional returns to satisfy Rules of Hooks
+  useEffect(() => {
+    if (!elements) return
+    
+    try {
+      const paymentElement = elements.getElement('payment')
+      if (!paymentElement) {
+        console.warn('PaymentElement not found in elements')
+        return
+      }
+
+      const handleChange = () => {
+        setHasInteracted(true)
+        setElementsError(null)
+      }
+
+      paymentElement.on('change', handleChange)
+      
+      return () => {
+        try {
+          paymentElement.off('change', handleChange)
+        } catch (err) {
+          // Ignore errors when cleaning up
+        }
+      }
+    } catch (err: any) {
+      console.error('Error setting up PaymentElement:', err)
+      setElementsError('Failed to initialize payment form. Please try again.')
+    }
+  }, [elements])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -309,43 +342,15 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
     )
   }
 
-  // Handle change events from PaymentElement to track user interaction
-  useEffect(() => {
-    if (!elements) return
-    
-    try {
-      const paymentElement = elements.getElement('payment')
-      if (!paymentElement) {
-        console.warn('PaymentElement not found in elements')
-        return
-      }
-
-      const handleChange = () => {
-        setHasInteracted(true)
-        setElementsError(null)
-      }
-
-      paymentElement.on('change', handleChange)
-      
-      return () => {
-        try {
-          paymentElement.off('change', handleChange)
-        } catch (err) {
-          // Ignore errors when cleaning up
-        }
-      }
-    } catch (err: any) {
-      console.error('Error setting up PaymentElement:', err)
-      setElementsError('Failed to initialize payment form. Please try again.')
-    }
-  }, [elements])
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement 
         options={{
-          // PaymentIntent already restricts to cards only via payment_method_types: ['card']
-          // This ensures only card input is shown, no Link or other payment methods
+          // PaymentIntent supports us_bank_account (Plaid) for USD, card for all currencies
+          // Bank transfers are prioritized for USD payments based on payment_method_types order
+          fields: {
+            billingDetails: 'auto' as const,
+          },
         }}
         onReady={() => {
           setElementsError(null)
@@ -410,10 +415,22 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
   // Disable background scroll while modal is open
   useEffect(() => {
     if (!isOpen) return
-    const prev = document.body.style.overflow
+    
+    // Lock body scroll and prevent content from showing behind modal
+    const prevOverflow = document.body.style.overflow
+    const prevPosition = document.body.style.position
+    const prevWidth = document.body.style.width
+    
     document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    document.body.classList.add('modal-open')
+    
     return () => {
-      document.body.style.overflow = prev
+      document.body.style.overflow = prevOverflow
+      document.body.style.position = prevPosition
+      document.body.style.width = prevWidth
+      document.body.classList.remove('modal-open')
     }
   }, [isOpen])
 
@@ -451,8 +468,6 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
     fundRift()
   }, [isOpen, escrowId])
 
-  if (!isOpen) return null
-
   // Memoize options to prevent Elements from re-initializing
   const options: StripeElementsOptions = useMemo(() => ({
     clientSecret: clientSecret || undefined,
@@ -468,16 +483,44 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
         borderRadius: '12px',
       },
     },
-    // Note: paymentMethodTypes is not needed here when using clientSecret
-    // The PaymentIntent already restricts to cards only via payment_method_types: ['card']
+    // PaymentIntent now supports both us_bank_account (Plaid) and card
+    // Bank transfers are prioritized and shown first in the payment method selector
   }), [clientSecret])
+
+  // Render modal in portal to ensure it's above all other content
+  if (!isOpen) return null
 
   // Show error if Stripe publishable key is missing
   if (!publishableKey || !stripePromise) {
-    return (
-      <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
-        <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
-        <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
+    const errorModalContent = (
+      <>
+        <div
+          data-modal-backdrop
+          className="fixed inset-0 bg-black pointer-events-auto"
+          style={{
+            zIndex: 2147483647,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+          }}
+          onClick={onClose}
+        />
+        <div
+          data-modal-content
+          className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
+          style={{
+            zIndex: 2147483647,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        >
           <GlassCard variant="strong" className="relative w-full max-w-lg p-8 pointer-events-auto">
             <div className="text-center">
               <p className="text-red-400 mb-4">Payment system is not configured</p>
@@ -488,16 +531,43 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
             </div>
           </GlassCard>
         </div>
-      </div>
+      </>
     )
+    if (typeof window === 'undefined') return null
+    return createPortal(errorModalContent, document.body)
   }
 
-  return (
-    <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
+  const modalContent = (
+    <>
       {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-      <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
-      {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
+      <div
+        data-modal-backdrop
+        className="fixed inset-0 bg-black pointer-events-auto"
+        style={{
+          zIndex: 2147483647,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+        }}
+        onClick={onClose}
+      />
+      {/* Modal Container */}
+      <div
+        data-modal-content
+        className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
+        style={{
+          zIndex: 2147483647,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+      >
         <GlassCard variant="strong" className="relative w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto pointer-events-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-light text-white">Complete Payment</h2>
@@ -566,7 +636,11 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
         )}
         </GlassCard>
       </div>
-    </div>
+    </>
   )
+
+  // Use portal to render at document.body level, ensuring it's above all content
+  if (typeof window === 'undefined') return null
+  return createPortal(modalContent, document.body)
 }
 

@@ -86,79 +86,111 @@ export async function GET(request: NextRequest) {
     }
 
     // Get total count for pagination
+    // Use raw SQL from the start to avoid enum validation errors with old 'TICKETS' values
     let total: number
     let rifts: any[]
 
     try {
-      // Try count first - if it fails due to enum issues, we'll use raw SQL
-      try {
-        total = await prisma.riftTransaction.count({
-          where: whereClause,
-        })
-      } catch (countError: any) {
-        // If count fails due to enum issues, we'll calculate in raw SQL fallback
-        throw countError
+      // Build SQL WHERE clause
+      let conditions: string[] = []
+      const params: any[] = [userId, userId]
+      let paramIndex = 3
+      
+      conditions.push(`("buyerId" = $1 OR "sellerId" = $2)`)
+
+      if (whereClause.status) {
+        if (typeof whereClause.status === 'string') {
+          conditions.push(`"status" = $${paramIndex}`)
+          params.push(whereClause.status)
+          paramIndex++
+        } else if (whereClause.status.in) {
+          const placeholders = whereClause.status.in.map((_: any, i: number) => `$${paramIndex + i}`).join(',')
+          conditions.push(`"status" IN (${placeholders})`)
+          params.push(...whereClause.status.in)
+          paramIndex += whereClause.status.in.length
+        }
       }
 
-      // Get paginated rifts where user is buyer or seller
-      // Note: Using explicit select to avoid selecting buyerArchived/sellerArchived
-      rifts = await prisma.riftTransaction.findMany({
-        where: whereClause,
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          riftNumber: true,
-          itemTitle: true,
-          itemDescription: true,
-          itemType: true, // This will fail if old enum values exist in DB
-          amount: true,
-          subtotal: true,
-          buyerFee: true,
-          sellerFee: true,
-          sellerNet: true,
-          currency: true,
-          status: true,
-          buyerId: true,
-          sellerId: true,
-          shippingAddress: true,
-          notes: true,
-          paymentReference: true,
-          platformFee: true,
-          sellerPayoutAmount: true,
-          shipmentVerifiedAt: true,
-          trackingVerified: true,
-          deliveryVerifiedAt: true,
-          gracePeriodEndsAt: true,
-          autoReleaseScheduled: true,
-          eventDate: true,
-          venue: true,
-          transferMethod: true,
-          downloadLink: true,
-          licenseKey: true,
-          serviceDate: true,
-          createdAt: true,
-          updatedAt: true,
-          buyer: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          seller: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
+      // Handle search query in raw SQL
+      if (whereClause.AND) {
+        const searchConditions: string[] = []
+        whereClause.AND.forEach((condition: any) => {
+          if (condition.OR) {
+            condition.OR.forEach((orCondition: any) => {
+              if (orCondition.itemTitle?.contains) {
+                searchConditions.push(`LOWER("itemTitle") LIKE $${paramIndex}`)
+                params.push(`%${orCondition.itemTitle.contains.toLowerCase()}%`)
+                paramIndex++
+              }
+              if (orCondition.itemDescription?.contains) {
+                searchConditions.push(`LOWER("itemDescription") LIKE $${paramIndex}`)
+                params.push(`%${orCondition.itemDescription.contains.toLowerCase()}%`)
+                paramIndex++
+              }
+              if (orCondition.riftNumber !== undefined) {
+                searchConditions.push(`"riftNumber" = $${paramIndex}`)
+                params.push(orCondition.riftNumber)
+                paramIndex++
+              }
+            })
+            if (searchConditions.length > 0) {
+              conditions.push(`(${searchConditions.join(' OR ')})`)
+            }
+          }
+        })
+      }
+
+      const whereClauseSQL = conditions.join(' AND ')
+
+      // Get count using raw SQL with text casting to avoid enum validation
+      const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+        `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereClauseSQL}`,
+        ...params
+      )
+      total = Number(countResult[0]?.count || 0)
+
+      // Get paginated rifts using raw SQL with text casting to avoid enum validation
+      // Cast itemType and status to text to bypass enum validation
+      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT 
+            id, "riftNumber", "itemTitle", "itemDescription", 
+            "itemType"::text as "itemType",
+            amount, subtotal, "buyerFee", "sellerFee", "sellerNet",
+            currency, status::text as status,
+            "buyerId", "sellerId", "shippingAddress", notes, "paymentReference",
+            "platformFee", "sellerPayoutAmount", "shipmentVerifiedAt", "trackingVerified",
+            "deliveryVerifiedAt", "gracePeriodEndsAt", "autoReleaseScheduled",
+            "eventDate", venue, "transferMethod", "downloadLink", "licenseKey",
+            "serviceDate", "createdAt", "updatedAt"
+          FROM "EscrowTransaction"
+          WHERE ${whereClauseSQL}
+          ORDER BY "createdAt" DESC
+          LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+        ...params,
+        limit,
+        skip
+      )
+
+      // Fetch buyer and seller info separately
+      const allRiftIds = fetchedRifts.map(r => r.id)
+      const allUserIds = [...new Set([...fetchedRifts.map(r => r.buyerId), ...fetchedRifts.map(r => r.sellerId)])]
+      
+      const users = await prisma.user.findMany({
+        where: { id: { in: allUserIds } },
+        select: { id: true, name: true, email: true },
       })
+      
+      const userMap = new Map(users.map(u => [u.id, u]))
+      
+      // Map the results and transform itemType
+      rifts = fetchedRifts.map(r => ({
+        ...r,
+        itemType: mapItemType(r.itemType),
+        buyer: userMap.get(r.buyerId) || null,
+        seller: userMap.get(r.sellerId) || null,
+      }))
     } catch (error: any) {
+      // Fallback error handling (shouldn't be needed now, but keep for safety)
       // If Prisma fails due to enum deserialization or missing columns (migration not applied), use raw SQL
       const isEnumError = error?.message?.includes('not found in enum') || 
                           error?.message?.includes('ItemType') ||

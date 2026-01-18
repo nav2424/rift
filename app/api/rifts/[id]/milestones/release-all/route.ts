@@ -306,6 +306,8 @@ export async function POST(
         data: {
           status: 'RELEASED',
           releasedAt: new Date(),
+          autoReleaseScheduled: false,
+          autoReleaseAt: null,
         },
       })
 
@@ -317,6 +319,17 @@ export async function POST(
           type: 'FUNDS_RELEASED',
           message: `All milestones completed. Full payment released.`,
           createdById: auth.userId,
+        },
+      })
+    }
+
+    // Clear any scheduled auto-release after manual release-all
+    if (!allMilestonesReleased) {
+      await prisma.riftTransaction.update({
+        where: { id },
+        data: {
+          autoReleaseScheduled: false,
+          autoReleaseAt: null,
         },
       })
     }

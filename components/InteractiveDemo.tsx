@@ -20,19 +20,19 @@ export default function InteractiveDemo() {
     {
       id: 'create',
       title: 'Create a Rift',
-      description: 'Buyer sets terms and amount',
+      description: 'Brand sets terms and amount',
       status: currentStep >= 0 ? 'completed' : 'pending',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
       ),
-      details: 'Transaction amount: $500\nCounterparty: Secure ID\nTerms: Digital license key'
+      details: 'Deal amount: $500\nCounterparty: Creator ID\nTerms: 2 UGC videos + usage rights'
     },
     {
       id: 'secure',
       title: 'Secure Payment',
-      description: 'Buyer pays; funds are secured',
+      description: 'Brand funds the deal',
       status: currentStep >= 1 ? 'completed' : currentStep === 0 ? 'active' : 'pending',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,31 +44,31 @@ export default function InteractiveDemo() {
     {
       id: 'deliver',
       title: 'Deliver to Vault',
-      description: 'Seller submits proof',
+      description: 'Creator submits deliverables',
       status: currentStep >= 2 ? 'completed' : currentStep === 1 ? 'active' : 'pending',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      details: 'Proof uploaded: License key file\nVault access: Buyer + Admin\nVerification window: 24 hours'
+      details: 'Files uploaded: 2 videos + captions\nVault access: Brand + Admin\nVerification window: 24 hours'
     },
     {
       id: 'verify',
       title: 'Verify',
-      description: 'Review and confirm',
+      description: 'Brand reviews and confirms',
       status: currentStep >= 3 ? 'completed' : currentStep === 2 ? 'active' : 'pending',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      details: 'Buyer reviews proof\nVerification: Approved\nReady for release'
+      details: 'Brand reviews deliverables\nVerification: Approved\nReady for release'
     },
     {
       id: 'release',
       title: 'Release',
-      description: 'Funds released to seller',
+      description: 'Funds released to creator',
       status: currentStep >= 4 ? 'completed' : currentStep === 3 ? 'active' : 'pending',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

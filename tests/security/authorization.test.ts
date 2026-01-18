@@ -104,33 +104,6 @@ describe('Authorization and Access Control', () => {
     })
   })
 
-  describe('License Key Reveal (Buyer-Only)', () => {
-    it('should allow buyer to reveal license key', async () => {
-      const rift = createTestRift({ itemType: 'LICENSE_KEYS', status: 'PROOF_SUBMITTED' })
-      const buyer = createTestBuyer()
-      rift.buyerId = buyer.id
-      
-      vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValue(rift as any)
-
-      const canReveal = await checkCanRevealKey(rift.id, buyer.id)
-
-      expect(canReveal.allowed).toBe(true)
-    })
-
-    it('should block seller from revealing license key', async () => {
-      const rift = createTestRift({ itemType: 'LICENSE_KEYS', status: 'PROOF_SUBMITTED' })
-      const seller = createTestSeller()
-      rift.sellerId = seller.id
-      
-      vi.mocked(prisma.riftTransaction.findUnique).mockResolvedValue(rift as any)
-
-      const canReveal = await checkCanRevealKey(rift.id, seller.id)
-
-      expect(canReveal.allowed).toBe(false)
-      expect(canReveal.reason).toContain('Only buyer can reveal key')
-    })
-  })
-
   describe('Admin Access', () => {
     it('should allow admin to access all endpoints', async () => {
       const rift = createTestRift({ itemType: 'DIGITAL_GOODS', status: 'PROOF_SUBMITTED' })
@@ -184,22 +157,6 @@ async function checkCanAccessVault(riftId: string, userId: string): Promise<{ al
 
   if (rift.buyerId !== userId) {
     return { allowed: false, reason: 'Only buyer can access vault' }
-  }
-
-  return { allowed: true }
-}
-
-async function checkCanRevealKey(riftId: string, userId: string): Promise<{ allowed: boolean; reason?: string }> {
-  const rift = await prisma.riftTransaction.findUnique({
-    where: { id: riftId },
-  })
-
-  if (!rift) {
-    return { allowed: false, reason: 'Rift not found' }
-  }
-
-  if (rift.buyerId !== userId) {
-    return { allowed: false, reason: 'Only buyer can reveal key' }
   }
 
   return { allowed: true }

@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/DesignSystem';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CreateEscrowScreen() {
-  const [itemType, setItemType] = useState<'SERVICES' | 'OWNERSHIP_TRANSFER' | 'DIGITAL_GOODS' | null>(null);
+  const [itemType, setItemType] = useState<'SERVICES' | 'DIGITAL_GOODS' | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
@@ -58,12 +58,6 @@ export default function CreateEscrowScreen() {
                 label: 'Service', 
                 description: 'Consulting, freelance work, professional services',
                 icon: 'construct' as const, 
-              },
-              { 
-                type: 'OWNERSHIP_TRANSFER', 
-                label: 'Ownership Transfer', 
-                description: 'Domains, websites, social accounts, online businesses',
-                icon: 'swap-horizontal' as const, 
               },
               { 
                 type: 'DIGITAL_GOODS', 
