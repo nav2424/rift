@@ -13,16 +13,22 @@ import { stripe } from '@/lib/stripe'
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify cron secret if configured
-    const cronSecret = process.env.CRON_SECRET
+    const isTestEnv = process.env.NODE_ENV === 'test'
+    // Fail closed outside tests if cron secret is missing.
+    const cronSecret = process.env.CRON_SECRET?.trim()
+    if (!cronSecret && !isTestEnv) {
+      console.error('CRON_SECRET is not set. Refusing to run cron process endpoint.')
+      return NextResponse.json(
+        { error: 'Cron endpoint is not configured' },
+        { status: 503 }
+      )
+    }
+
+    // Verify cron secret when configured.
     if (cronSecret) {
       const authHeader = request.headers.get('authorization')
       if (authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    } else {
-      if (process.env.NODE_ENV === 'production') {
-        console.warn('WARNING: CRON_SECRET not set. Cron endpoint is unprotected!')
       }
     }
 

@@ -3,10 +3,29 @@
  * Uses HMAC to sign tokens for secure, stateless access
  */
 
-import { createHmac, timingSafeEqual } from 'crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
 
-const INVOICE_TOKEN_SECRET = process.env.INVOICE_TOKEN_SECRET || process.env.JWT_SECRET || 'invoice-token-secret-change-in-production'
+let cachedNonProdSecret: string | null = null
 const TOKEN_EXPIRY_HOURS = 30 * 24 // 30 days
+
+function getInvoiceTokenSecret(): string {
+  const configuredSecret = process.env.INVOICE_TOKEN_SECRET?.trim()
+  if (configuredSecret) {
+    return configuredSecret
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('INVOICE_TOKEN_SECRET is required in production')
+  }
+
+  if (!cachedNonProdSecret) {
+    // In non-production, use an ephemeral process-local secret instead of a static fallback.
+    cachedNonProdSecret = randomBytes(32).toString('hex')
+    console.warn('INVOICE_TOKEN_SECRET is not set; using ephemeral non-production secret')
+  }
+
+  return cachedNonProdSecret
+}
 
 /**
  * Generate a signed token for invoice access
@@ -15,7 +34,7 @@ const TOKEN_EXPIRY_HOURS = 30 * 24 // 30 days
 export function generateInvoiceToken(invoiceId: string): string {
   const timestamp = Date.now()
   const message = `${invoiceId}:${timestamp}`
-  const hmac = createHmac('sha256', INVOICE_TOKEN_SECRET)
+  const hmac = createHmac('sha256', getInvoiceTokenSecret())
   hmac.update(message)
   const signature = hmac.digest('hex')
   const token = `${message}:${signature}`
@@ -50,7 +69,7 @@ export function verifyInvoiceToken(token: string): string | null {
 
     // Verify signature
     const message = `${invoiceId}:${timestamp}`
-    const hmac = createHmac('sha256', INVOICE_TOKEN_SECRET)
+    const hmac = createHmac('sha256', getInvoiceTokenSecret())
     hmac.update(message)
     const expectedSignature = hmac.digest('hex')
 

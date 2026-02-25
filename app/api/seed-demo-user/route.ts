@@ -6,10 +6,17 @@ import { randomUUID } from 'crypto'
 
 export async function POST(request: Request) {
   try {
-    if (process.env.NODE_ENV === 'production') {
-      const secret = process.env.SEED_DEMO_SECRET
+    const isTestEnv = process.env.NODE_ENV === 'test'
+    if (!isTestEnv) {
+      const secret = process.env.SEED_DEMO_SECRET?.trim()
       const provided = request.headers.get('x-seed-secret')
-      if (!secret || provided !== secret) {
+      if (!secret) {
+        return NextResponse.json(
+          { error: 'SEED_DEMO_SECRET is not configured' },
+          { status: 503 }
+        )
+      }
+      if (provided !== secret) {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 403 }
@@ -46,8 +53,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         message: 'Demo user updated',
         email: demoEmail,
-        password: demoPassword,
         phone: demoPhone,
+        userId: existingUser.id,
       })
     }
 
@@ -79,7 +86,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: 'Demo user created successfully',
       email: demoEmail,
-      password: demoPassword,
       phone: demoPhone,
       userId: user.id,
     })
