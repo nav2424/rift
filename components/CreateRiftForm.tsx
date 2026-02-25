@@ -684,7 +684,6 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           errorObject: error,
           rawErrorText: errorText,
           details: error.details,
-          payload: payload, // Log payload for debugging
         })
         
         if (response.status === 401) {
