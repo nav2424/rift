@@ -26,15 +26,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const results = {
-      autoRelease: { processed: 0, results: [] as any[] },
-      ugcAutoApprove: {
-        processed: 0,
-        approved: [] as string[],
-        skipped: [] as string[],
-        error: undefined as string | undefined,
-      },
-      payouts: { processed: 0, results: [] as any[] },
+    const results: {
+      autoRelease: { processed: number; results: any[] }
+      ugcAutoApprove: { processed: number; approved: string[]; skipped: string[]; error?: string }
+      payouts: { processed: number; results: any[] }
+    } = {
+      autoRelease: { processed: 0, results: [] },
+      ugcAutoApprove: { processed: 0, approved: [], skipped: [] },
+      payouts: { processed: 0, results: [] },
     }
 
     // Step 1: Process auto-releases
@@ -57,11 +56,15 @@ export async function POST(request: NextRequest) {
         processed: ugcResult.processed,
         approved: ugcResult.approved,
         skipped: ugcResult.skipped,
-        error: undefined,
       }
     } catch (error: any) {
       console.error('UGC auto-approve error:', error)
-      results.ugcAutoApprove = { processed: 0, approved: [], skipped: [], error: error.message }
+      results.ugcAutoApprove = {
+        processed: 0,
+        approved: [],
+        skipped: [],
+        error: error?.message,
+      }
     }
 
     // Step 2: Process scheduled payouts
