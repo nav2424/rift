@@ -159,12 +159,10 @@ export async function generateSupportTicket(
   userMessage: string,
   category: string
 ): Promise<string | null> {
-  // Get user context
+  // Get minimal user context (avoid sending direct identifiers to third-party AI APIs)
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      email: true,
-      name: true,
       createdAt: true,
     },
   })
@@ -185,10 +183,8 @@ export async function generateSupportTicket(
   })
 
   const context = {
-    User: {
-      email: user?.email,
-      name: user?.name,
-      accountAge: user ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 0,
+    user: {
+      accountAgeDays: user ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 0,
     },
     recentTransactions: recentRifts.length,
     recentEscrowStatuses: recentRifts.map(r => r.status),

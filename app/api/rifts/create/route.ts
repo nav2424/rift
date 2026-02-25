@@ -13,12 +13,11 @@ import { MIN_TRANSACTION_AMOUNT } from '@/lib/constants'
 
 export async function POST(request: NextRequest) {
   try {
-    // Enhanced logging before auth check
-    const authHeader = request.headers.get('authorization')
+    // Log only auth/cookie presence to avoid leaking token fragments.
+    const hasAuthHeader = Boolean(request.headers.get('authorization'))
     const cookieHeader = request.headers.get('cookie')
     console.log('Create rift request:', {
-      hasAuthHeader: authHeader ? 'present' : 'missing',
-      authHeaderPrefix: authHeader ? authHeader.substring(0, 20) : 'none',
+      hasAuthHeader: hasAuthHeader ? 'present' : 'missing',
       hasCookies: cookieHeader ? 'present' : 'missing',
     })
     
