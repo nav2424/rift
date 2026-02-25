@@ -28,7 +28,12 @@ export async function POST(request: NextRequest) {
 
     const results = {
       autoRelease: { processed: 0, results: [] as any[] },
-      ugcAutoApprove: { processed: 0, approved: [] as string[], skipped: [] as string[] },
+      ugcAutoApprove: {
+        processed: 0,
+        approved: [] as string[],
+        skipped: [] as string[],
+        error: undefined as string | undefined,
+      },
       payouts: { processed: 0, results: [] as any[] },
     }
 
