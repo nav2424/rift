@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
 
     const results = {
       autoRelease: { processed: 0, results: [] as any[] },
+      ugcAutoApprove: { processed: 0, approved: [] as string[], skipped: [] as string[] },
       payouts: { processed: 0, results: [] as any[] },
     }
 
@@ -41,6 +42,20 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       console.error('Auto-release processing error:', error)
       results.autoRelease.results.push({ error: error.message })
+    }
+
+    // Step 1b: UGC milestone auto-approve (delivered + past acceptance window, no dispute)
+    try {
+      const { autoApproveMilestonesJob } = await import('@/lib/ugc/auto-approve')
+      const ugcResult = await autoApproveMilestonesJob()
+      results.ugcAutoApprove = {
+        processed: ugcResult.processed,
+        approved: ugcResult.approved,
+        skipped: ugcResult.skipped,
+      }
+    } catch (error: any) {
+      console.error('UGC auto-approve error:', error)
+      results.ugcAutoApprove = { processed: 0, approved: [], skipped: [], error: error.message }
     }
 
     // Step 2: Process scheduled payouts

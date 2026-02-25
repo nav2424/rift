@@ -203,7 +203,7 @@ export async function PUT(
       }
     }
 
-    // Transition to PAID
+    // Transition to FUNDED
     try {
       await transitionRiftState(rift.id, 'FUNDED', { userId: auth.userId })
     } catch (transitionError: any) {
@@ -212,6 +212,14 @@ export async function PUT(
         error: 'Failed to update rift status',
         details: transitionError.message || 'State transition failed'
       }, { status: 500 })
+    }
+
+    // UGC: if deal has contract + milestones, record escrow and fund all milestones
+    try {
+      const { onDealFunded } = await import('@/lib/ugc/deal-room')
+      await onDealFunded(rift.id)
+    } catch (e) {
+      console.error('UGC onDealFunded:', e)
     }
 
     // Create timeline event

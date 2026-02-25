@@ -10,7 +10,7 @@ export type ItemType = 'PHYSICAL' | 'DIGITAL_GOODS' | 'OWNERSHIP_TRANSFER' | 'SE
 export function getItemTypeLabel(itemType: string): string {
   switch (itemType) {
     case 'SERVICES':
-      return 'Brand Deal / Service'
+      return 'UGC Brand Deal'
     case 'DIGITAL_GOODS':
       return 'Content Deliverables'
     case 'PHYSICAL':
@@ -36,7 +36,7 @@ export function getItemTypeLabel(itemType: string): string {
 export function getItemTypeShortLabel(itemType: string): string {
   switch (itemType) {
     case 'SERVICES':
-      return 'Service'
+      return 'UGC'
     case 'DIGITAL_GOODS':
       return 'Digital'
     case 'PHYSICAL':

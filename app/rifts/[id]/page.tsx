@@ -14,6 +14,7 @@ import MilestoneCard from '@/components/MilestoneCard'
 import InvoiceCard from '@/components/InvoiceCard'
 import RiskScoreBadge from '@/components/RiskScoreBadge'
 import DisputeWizard from '@/components/DisputeWizard'
+import UGCDealPanels from '@/components/UGCDealPanels'
 import { useToast } from '@/components/ui/Toast'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 import { getItemTypeLabel } from '@/lib/item-type-labels'
@@ -389,12 +390,22 @@ export default function RiftDetailPage() {
           {/* Left column - Details */}
           <div className="lg:col-span-7 space-y-8">
             {/* Payment Milestones - Only for service rifts with partial release */}
-            {rift.itemType === 'SERVICES' && rift.allowsPartialRelease && (
+            {rift.itemType === 'SERVICES' && rift.allowsPartialRelease && rift.milestones && (
               <MilestoneCard
                 riftId={rift.id}
                 currency={rift.currency}
                 isBuyer={isBuyer}
                 riftStatus={rift.status}
+              />
+            )}
+
+            {/* UGC deal panels (milestones + contract + timeline + trust) */}
+            {rift.itemType === 'SERVICES' && rift.allowsPartialRelease && !rift.milestones && (
+              <UGCDealPanels
+                riftId={rift.id}
+                isBuyer={isBuyer}
+                isSeller={isSeller}
+                currency={rift.currency}
               />
             )}
 

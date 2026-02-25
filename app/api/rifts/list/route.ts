@@ -361,6 +361,21 @@ export async function GET(request: NextRequest) {
       meta: error?.meta,
       stack: error?.stack,
     })
+
+    const { getDatabaseErrorDetails } = await import('@/lib/db-error-handler')
+    const dbError = getDatabaseErrorDetails(error)
+
+    if (dbError.statusCode === 503 || dbError.statusCode === 401) {
+      return NextResponse.json(
+        {
+          error: dbError.message,
+          actionable: dbError.actionable,
+          code: error?.code || 'DATABASE_ERROR',
+        },
+        { status: dbError.statusCode }
+      )
+    }
+
     return NextResponse.json(
       { 
         error: 'Internal server error',

@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("PRISMA_DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 model Activity {
@@ -45,9 +46,19 @@ model Dispute {
   resolvedAt                      DateTime?
   createdAt                       DateTime           @default(now())
   updatedAt                       DateTime
+  // UGC: optional milestone-scoped dispute
+  milestoneId                     String?
+  reasonCode                      UGCDisputeReasonCode?
+  description                     String?
+  outcome                         DisputeOutcome?
+  decisionNote                    String?
   RiftTransaction                 RiftTransaction    @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  Milestone                       Milestone?         @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   User_Dispute_raisedByIdToUser   User               @relation("Dispute_raisedByIdToUser", fields: [raisedById], references: [id])
   User_Dispute_resolvedByIdToUser User?              @relation("Dispute_resolvedByIdToUser", fields: [resolvedById], references: [id])
+  DisputeEvidence                 DisputeEvidence[]
+
+  @@index([milestoneId])
 }
 
 model RiftTransaction {
@@ -127,6 +138,12 @@ model RiftTransaction {
   vault_assets              vault_assets[]
   vault_events              vault_events[]
   SupportTicket             SupportTicket[]
+  // UGC deal trust + workflow
+  Contract                  Contract?
+  ContractAmendment        ContractAmendment[]
+  Milestone                 Milestone[]
+  DealTimelineEvent         DealTimelineEvent[]
+  LedgerTransaction         LedgerTransaction[]
 
   @@map("EscrowTransaction")
 }
@@ -151,6 +168,153 @@ model MilestoneRelease {
   @@index([releasedAt])
   @@index([releasedBy])
   @@index([riftId])
+}
+
+// UGC deal: structured contract stored with deal
+model Contract {
+  id           String          @id
+  riftId       String          @unique
+  contractJson Json
+  version      Int             @default(1)
+  status       String          @default("ACTIVE")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime
+  RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+
+  @@index([riftId])
+}
+
+model ContractAmendment {
+  id           String   @id
+  riftId       String
+  proposedById String
+  patchJson    Json
+  status       String   @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  acceptedById String?
+  acceptedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  User         User     @relation(fields: [proposedById], references: [id])
+
+  @@index([riftId])
+  @@index([status])
+}
+
+// UGC: first-class milestone with status and delivery
+model Milestone {
+  id                    String           @id
+  riftId                String
+  index                 Int
+  title                 String
+  description           String?
+  amount                Float
+  currency              String           @default("CAD")
+  dueAt                 DateTime?
+  acceptanceWindowDays  Int              @default(3)
+  autoApprove           Boolean          @default(true)
+  status                MilestoneStatus  @default(DRAFT)
+  fundedAt              DateTime?
+  deliveredAt           DateTime?
+  approvedAt            DateTime?
+  autoApprovedAt        DateTime?
+  revisionCount         Int              @default(0)
+  maxRevisions          Int              @default(1)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime
+  RiftTransaction       RiftTransaction  @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  Dispute               Dispute[]
+  MilestoneDelivery     MilestoneDelivery[]
+  MilestoneRevision     MilestoneRevision[]
+  LedgerTransaction     LedgerTransaction[]
+  vault_assets          vault_assets[]
+
+  @@unique([riftId, index])
+  @@index([riftId])
+  @@index([status])
+}
+
+model MilestoneDelivery {
+  id          String    @id
+  milestoneId String
+  submittedById String
+  note        String?
+  createdAt   DateTime  @default(now())
+  Milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  User        User      @relation(fields: [submittedById], references: [id])
+  DisputeEvidence DisputeEvidence[]
+
+  @@index([milestoneId])
+}
+
+model MilestoneRevision {
+  id            String    @id
+  milestoneId   String
+  requestedById String
+  revisionNumber Int
+  note          String?
+  createdAt     DateTime  @default(now())
+  Milestone     Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  User          User      @relation(fields: [requestedById], references: [id])
+
+  @@index([milestoneId])
+}
+
+model DisputeEvidence {
+  id                  String    @id
+  disputeId           String
+  type                EvidenceType
+  fileId              String?
+  messageId           String?
+  milestoneDeliveryId String?
+  url                 String?
+  note                String?
+  createdAt           DateTime  @default(now())
+  Dispute             Dispute   @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  MilestoneDelivery   MilestoneDelivery? @relation(fields: [milestoneDeliveryId], references: [id], onDelete: SetNull)
+
+  @@index([disputeId])
+}
+
+model DealTimelineEvent {
+  id           String   @id
+  riftId       String
+  type         String
+  actorId      String?
+  metadataJson Json?
+  createdAt    DateTime @default(now())
+  RiftTransaction RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+
+  @@index([riftId, createdAt])
+}
+
+model ReputationRollup {
+  id          String   @id
+  userId      String
+  role        String   // CREATOR | BRAND
+  metricsJson Json
+  updatedAt   DateTime
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId])
+}
+
+model LedgerTransaction {
+  id          String                @id
+  riftId      String
+  milestoneId String?
+  type        LedgerTransactionType
+  amount      Float
+  currency    String                @default("CAD")
+  status      String                @default("COMPLETED")
+  metadata    Json?
+  createdAt   DateTime              @default(now())
+  RiftTransaction RiftTransaction   @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  Milestone   Milestone?            @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+
+  @@index([riftId])
+  @@index([milestoneId])
 }
 
 model Payout {
@@ -266,6 +430,10 @@ model User {
   SupportTicket_SupportTicket_createdBy  SupportTicket[]    @relation("SupportTicket_createdBy")
   SupportTicket_SupportTicket_assignedTo SupportTicket[]    @relation("SupportTicket_assignedTo")
   SupportTicket_SupportTicket_resolvedBy SupportTicket[]    @relation("SupportTicket_resolvedBy")
+  ContractAmendment                      ContractAmendment[]
+  MilestoneDelivery                      MilestoneDelivery[]
+  MilestoneRevision                      MilestoneRevision[]
+  ReputationRollup                       ReputationRollup[]
 
   @@index([riftUserId])
 }
@@ -618,7 +786,10 @@ model vault_assets {
   canonicalSha256    String?
   perceptualHash     String?
   averageHash        String?
+  milestoneId        String?
+  messageId          String?
   RiftTransaction    RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  Milestone          Milestone?      @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   vault_assets       vault_assets?   @relation("vault_assetsTovault_assets", fields: [supersedesAssetId], references: [id])
   other_vault_assets vault_assets[]  @relation("vault_assetsTovault_assets")
   User               User            @relation(fields: [uploaderId], references: [id])
@@ -628,6 +799,7 @@ model vault_assets {
   @@index([canonicalSha256])
   @@index([perceptualHash])
   @@index([riftId])
+  @@index([milestoneId])
   @@index([scanStatus])
   @@index([sha256])
   @@index([uploaderId])
@@ -759,6 +931,8 @@ enum DisputeResolution {
 
 enum DisputeStatus {
   OPEN
+  NEGOTIATION
+  ADMIN_REVIEW
   RESOLVED
   UNDER_REVIEW
 }
@@ -769,6 +943,53 @@ enum DisputeType {
   ITEM_DAMAGED
   WRONG_ITEM
   WRONG_ADDRESS
+  OTHER
+}
+
+// UGC deal trust + workflow
+enum MilestoneStatus {
+  DRAFT
+  PENDING_FUNDING
+  FUNDED
+  IN_PROGRESS
+  DELIVERED
+  IN_REVISION
+  APPROVED
+  DISPUTED
+  RELEASED
+  CANCELED
+}
+
+enum UGCDisputeReasonCode {
+  DELIVERABLE_NOT_RECEIVED
+  DELIVERABLE_NOT_AS_SPECIFIED
+  LATE_DELIVERY
+  SCOPE_CHANGE_REQUESTED
+  IP_RIGHTS_CONFLICT
+  PAYMENT_ISSUE
+  OTHER
+}
+
+enum DisputeOutcome {
+  RELEASE_TO_CREATOR
+  REFUND_TO_BRAND
+  SPLIT
+  REQUIRE_REVISION
+}
+
+enum LedgerTransactionType {
+  ESCROW_FUND
+  RELEASE_TO_CREATOR
+  REFUND_TO_BRAND
+  SPLIT_RELEASE
+  KILL_FEE_RELEASE
+}
+
+enum EvidenceType {
+  FILE
+  MESSAGE
+  DELIVERY
+  CONTRACT
   OTHER
 }
 

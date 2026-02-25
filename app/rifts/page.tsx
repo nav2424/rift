@@ -122,9 +122,29 @@ export default function AllRiftsPage() {
           setHasMore(false)
         }
       } else {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('API error response:', response.status, errorData)
-        showToast(errorData.details || 'Failed to load rifts. Please try again.', 'error')
+        let errorData: any = {}
+        let fallbackMessage = ''
+
+        try {
+          errorData = await response.json()
+        } catch {
+          try {
+            fallbackMessage = await response.text()
+          } catch {
+            fallbackMessage = ''
+          }
+        }
+
+        console.error('API error response:', response.status, errorData || fallbackMessage)
+
+        const message =
+          errorData?.details ||
+          errorData?.error ||
+          errorData?.actionable ||
+          fallbackMessage ||
+          'Failed to load rifts. Please try again.'
+
+        showToast(message, 'error')
       }
     } catch (error) {
       console.error('Error loading rifts:', error)

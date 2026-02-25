@@ -215,6 +215,14 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
     // Then transition to FUNDED
     await transitionRiftState(rift.id, 'FUNDED')
 
+    // UGC: if deal has contract + milestones, record escrow and fund all milestones
+    try {
+      const { onDealFunded } = await import('@/lib/ugc/deal-room')
+      await onDealFunded(riftId)
+    } catch (e) {
+      console.error(`UGC onDealFunded for ${riftId}:`, e)
+    }
+
     // Capture policy acceptance for buyer at checkout
     try {
       const requestMeta = request ? extractRequestMetadata(request) : undefined

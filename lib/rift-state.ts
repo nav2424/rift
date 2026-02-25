@@ -47,6 +47,7 @@ export async function transitionRiftState(
   switch (newStatus) {
     case 'FUNDED':
       updateData.paidAt = now
+      updateData.fundedAt = now
       break
     case 'PROOF_SUBMITTED':
       updateData.proofSubmittedAt = now

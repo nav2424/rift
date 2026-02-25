@@ -193,10 +193,7 @@ describe('Ledger Constraints', () => {
         currency: 'CAD',
       }
 
-      vi.mocked(prisma.walletAccount.findUnique).mockImplementation(async () => ({
-        ...wallet,
-        availableBalance: balance,
-      } as any))
+      vi.mocked(prisma.walletAccount.findUnique).mockResolvedValue(wallet as any)
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
         const tx = {
           walletAccount: {
@@ -237,7 +234,10 @@ describe('Ledger Constraints', () => {
       let balance = initialBalance
       let updateCount = 0
 
-      vi.mocked(prisma.walletAccount.findUnique).mockResolvedValue(wallet as any)
+      vi.mocked(prisma.walletAccount.findUnique).mockImplementation(async () => ({
+        ...wallet,
+        availableBalance: balance,
+      } as any))
       
       // Mock transaction to simulate concurrent withdrawals
       vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {

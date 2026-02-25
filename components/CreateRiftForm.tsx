@@ -11,6 +11,9 @@ import DatePicker from './ui/DatePicker'
 import { ItemType } from './ItemTypeSelection'
 import { calculateBuyerFee, calculateSellerFee, calculateSellerNet, calculateBuyerTotal } from '@/lib/fees'
 import { useToast } from './ui/Toast'
+import UGCContractBuilder from './UGCContractBuilder'
+import UGCContractPreview from './UGCContractPreview'
+import type { UGCDeliverableFormat, UGCAspectRatio } from '@/lib/ugc/contract-template'
 
 interface User {
   id: string
@@ -23,6 +26,33 @@ interface CreateEscrowFormProps {
   users: User[]
   itemType: ItemType
   creatorRole: 'BUYER' | 'SELLER'
+}
+
+type PaidUsageTerritoryOption = 'Canada' | 'USA' | 'Global' | 'Custom'
+
+type UGCPaidUsageDurationOption = 30 | 90 | 180 | 365
+
+export interface UGCContractBuilderState {
+  deliverableCount: number
+  deliverableFormat: UGCDeliverableFormat
+  aspectRatio: UGCAspectRatio
+  durationSeconds?: number
+  resolution: string
+  rawFilesIncluded: boolean
+  draftDueDate: string
+  finalDueDate: string
+  revisionCount: number
+  revisionDefinitionText: string
+  organicUseAllowed: boolean
+  paidUsageEnabled: boolean
+  paidUsageDurationDays?: UGCPaidUsageDurationOption
+  paidUsageTerritory: PaidUsageTerritoryOption
+  paidUsageTerritoryCustom?: string
+  paidUsagePlatforms: string[]
+  whitelistingEnabled: boolean
+  whitelistingTermsText: string
+  acceptanceWindowDays: number
+  killFeePercentAfterDraft: number
 }
 
 // Get today's date in YYYY-MM-DD format
@@ -83,6 +113,29 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
   }
 
   const [formData, setFormData] = useState(defaultFormData)
+  const [ugcContractState, setUgcContractState] = useState<UGCContractBuilderState>({
+    deliverableCount: 1,
+    deliverableFormat: 'video',
+    aspectRatio: '9:16',
+    durationSeconds: 15,
+    resolution: '1080p',
+    rawFilesIncluded: false,
+    draftDueDate: getTodayDateString(),
+    finalDueDate: addDays(getTodayDateString(), 7),
+    revisionCount: 1,
+    revisionDefinitionText:
+      'One revision means a single consolidated round of changes requested by the Brand after receiving a delivered version. Multiple messages within 24 hours count as one round.',
+    organicUseAllowed: true,
+    paidUsageEnabled: false,
+    paidUsageDurationDays: 30,
+    paidUsageTerritory: 'Global',
+    paidUsageTerritoryCustom: '',
+    paidUsagePlatforms: [],
+    whitelistingEnabled: false,
+    whitelistingTermsText: '',
+    acceptanceWindowDays: 3,
+    killFeePercentAfterDraft: 25,
+  })
 
   const getDefaultReviewWindowDays = (dealType: string) => {
     switch (dealType) {
@@ -198,6 +251,139 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         return ''
       default:
         return ''
+    }
+  }
+
+  const validateUGCContractState = (state: UGCContractBuilderState): string | null => {
+    if (!state.deliverableCount || state.deliverableCount <= 0) {
+      return 'Deliverable count must be at least 1'
+    }
+    if (!state.resolution.trim()) {
+      return 'Resolution is required'
+    }
+    if (state.deliverableFormat === 'video' && (!state.durationSeconds || state.durationSeconds <= 0)) {
+      return 'Video duration must be positive'
+    }
+    if (!state.draftDueDate || !state.finalDueDate) {
+      return 'Draft and final due dates are required'
+    }
+    const draft = new Date(`${state.draftDueDate}T00:00:00`)
+    const final = new Date(`${state.finalDueDate}T00:00:00`)
+    if (Number.isNaN(draft.getTime()) || Number.isNaN(final.getTime()) || final < draft) {
+      return 'Final due date must be on or after draft due date'
+    }
+    if (state.revisionCount < 0) {
+      return 'Revision count cannot be negative'
+    }
+    if (!state.revisionDefinitionText.trim()) {
+      return 'Revision definition text is required'
+    }
+    if (state.paidUsageEnabled) {
+      if (!state.paidUsageDurationDays) {
+        return 'Paid usage duration is required'
+      }
+      if (!state.paidUsagePlatforms || state.paidUsagePlatforms.length === 0) {
+        return 'Select at least one paid usage platform'
+      }
+      if (state.paidUsageTerritory === 'Custom' && !state.paidUsageTerritoryCustom?.trim()) {
+        return 'Enter custom territory text'
+      }
+    }
+    if (state.whitelistingEnabled && !state.whitelistingTermsText.trim()) {
+      return 'Whitelisting terms are required when whitelisting is enabled'
+    }
+    if (!state.acceptanceWindowDays || state.acceptanceWindowDays <= 0) {
+      return 'Acceptance window must be at least 1 day'
+    }
+    if (state.killFeePercentAfterDraft < 0 || state.killFeePercentAfterDraft > 100) {
+      return 'Kill fee percent must be between 0 and 100'
+    }
+    return null
+  }
+
+  type UGCContractOverrides = {
+    deliverables?: {
+      count?: number
+      format?: UGCDeliverableFormat
+      aspectRatio?: UGCAspectRatio
+      duration?: number
+      resolution?: string
+      rawFilesIncluded?: boolean
+    }
+    deadlines?: {
+      draftDueDate?: string
+      finalDueDate?: string
+    }
+    revisions?: {
+      revisionCount?: number
+      revisionDefinition?: string
+    }
+    usageRights?: {
+      organicUseAllowed?: boolean
+      paidUsage?: {
+        enabled: boolean
+        durationDays?: 30 | 90 | 180 | 365
+        territory?: 'country' | 'global'
+        platforms?: Array<'meta' | 'tiktok' | 'youtube' | 'other'>
+      }
+    }
+    whitelisting?: {
+      enabled?: boolean
+      termDescription?: string
+    }
+    currency?: 'CAD' | 'USD'
+    killFeePercent?: number
+    acceptanceWindowDays?: number
+  }
+
+  const buildUGCContractOverridesFromState = (
+    state: UGCContractBuilderState,
+    currency: string
+  ): UGCContractOverrides => {
+    const territory: 'country' | 'global' =
+      state.paidUsageTerritory === 'Global' ? 'global' : 'country'
+    const platformsMap: Record<string, 'meta' | 'tiktok' | 'youtube' | 'other'> = {
+      Meta: 'meta',
+      TikTok: 'tiktok',
+      YouTube: 'youtube',
+      Other: 'other',
+    }
+    const platforms =
+      state.paidUsagePlatforms?.map((p) => platformsMap[p] || 'other') || []
+
+    return {
+      deliverables: {
+        count: state.deliverableCount,
+        format: state.deliverableFormat,
+        aspectRatio: state.aspectRatio,
+        duration: state.durationSeconds,
+        resolution: state.resolution,
+        rawFilesIncluded: state.rawFilesIncluded,
+      },
+      deadlines: {
+        draftDueDate: state.draftDueDate,
+        finalDueDate: state.finalDueDate,
+      },
+      revisions: {
+        revisionCount: state.revisionCount,
+        revisionDefinition: state.revisionDefinitionText,
+      },
+      usageRights: {
+        organicUseAllowed: state.organicUseAllowed,
+        paidUsage: {
+          enabled: state.paidUsageEnabled,
+          durationDays: state.paidUsageEnabled ? state.paidUsageDurationDays : undefined,
+          territory: state.paidUsageEnabled ? territory : undefined,
+          platforms: state.paidUsageEnabled ? platforms : undefined,
+        },
+      },
+      whitelisting: {
+        enabled: state.whitelistingEnabled,
+        termDescription: state.whitelistingTermsText || undefined,
+      },
+      currency: (currency as 'CAD' | 'USD') || 'CAD',
+      killFeePercent: state.killFeePercentAfterDraft,
+      acceptanceWindowDays: state.acceptanceWindowDays,
     }
   }
 
@@ -333,11 +519,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
       // No validation needed for digital items during creation
       // Proof of delivery (files, links) will be submitted after payment
     } else if (itemType === 'SERVICES') {
-      const serviceFields = ['serviceDate', 'serviceScope', 'serviceDeliverables', 'completionCriteria']
-      serviceFields.forEach((key) => {
-        const error = validateField(key, formData[key as keyof typeof formData] as string)
-        if (error) allErrors[key] = error
-      })
+      const contractError = validateUGCContractState(ugcContractState)
+      if (contractError) {
+        allErrors.contract = contractError
+      }
     }
     
     // Validate partner selection
@@ -404,92 +589,73 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         return
       }
 
-      const payload: any = {
+      const amountNumber = parseFloat(formData.amount)
+      const basePayload: any = {
         itemTitle: formData.itemTitle,
         itemDescription: formData.itemDescription,
-        amount: parseFloat(formData.amount),
+        amount: amountNumber,
         currency: formData.currency,
         itemType,
         creatorRole,
         notes: formData.notes || null,
       }
 
-      // Set buyer/seller based on creator role
+      let brandId: string | undefined
+      let creatorId: string | undefined
+
       if (creatorRole === 'BUYER') {
-        // User is buyer, they select seller
-        payload.sellerId = formData.sellerId
-        payload.sellerEmail = formData.sellerEmail
-        payload.buyerId = session?.user?.id
+        brandId = session?.user?.id
+        creatorId = formData.sellerId
+        basePayload.sellerId = formData.sellerId
+        basePayload.sellerEmail = formData.sellerEmail
+        basePayload.buyerId = session?.user?.id
       } else {
-        // User is seller, they select buyer
-        payload.buyerId = formData.buyerId
-        payload.buyerEmail = formData.buyerEmail
-        payload.sellerId = session?.user?.id
+        brandId = formData.buyerId
+        creatorId = session?.user?.id
+        basePayload.buyerId = formData.buyerId
+        basePayload.buyerEmail = formData.buyerEmail
+        basePayload.sellerId = session?.user?.id
       }
 
-      // Add type-specific fields
-    if (itemType === 'DIGITAL_GOODS') {
-      // No digital-specific fields during creation
-      // Files and links will be added during proof submission after payment
-    } else if (itemType === 'SERVICES') {
-        payload.serviceDate = formData.serviceDate
-        payload.serviceScope = formData.serviceScope
-        payload.serviceDeliverables = formData.serviceDeliverables
-        payload.completionCriteria = formData.completionCriteria
-        payload.allowsPartialRelease = formData.allowsPartialRelease
-        if (formData.allowsPartialRelease && formData.milestones && formData.milestones.length > 0) {
-          // Validate milestones sum equals total amount
-          const milestoneTotal = formData.milestones.reduce((sum, m) => sum + parseFloat(m.amount || '0'), 0)
-          if (Math.abs(milestoneTotal - parseFloat(formData.amount || '0')) > 0.01) {
-            showToast('Milestone amounts must equal the total rift amount', 'error')
-            return
-          }
-          // Validate all milestones have required fields
-          const milestones = formData.milestones || []
-          for (const milestone of milestones) {
-            if (!milestone.title || !milestone.amount || !milestone.dueDate || !milestone.deliverables) {
-              showToast('All milestones must have a title, deliverables, amount, and due date', 'error')
-              return
-            }
-          }
-          // Validate milestone due dates are sequential and within service date
-          for (let i = 0; i < milestones.length; i += 1) {
-            const currentDate = new Date(`${milestones[i].dueDate}T00:00:00`)
-            if (i > 0) {
-              const prevDate = new Date(`${milestones[i - 1].dueDate}T00:00:00`)
-              if (currentDate <= prevDate) {
-                showToast('Each milestone date must be after the previous milestone date', 'error')
-                return
-              }
-            }
-            if (formData.serviceDate) {
-              const serviceDate = new Date(`${formData.serviceDate}T00:00:00`)
-              if (currentDate > serviceDate) {
-                showToast('Final milestone date cannot be after the service delivery date', 'error')
-                return
-              }
-            }
-          }
-          payload.milestones = milestones.map(m => ({
-            title: m.title,
-            description: m.description || '',
-            deliverables: m.deliverables || '',
-            amount: parseFloat(m.amount),
-            dueDate: m.dueDate,
-            reviewWindowDays: m.reviewWindowDays || getDefaultReviewWindowDays(formData.dealType),
-            revisionLimit: 1,
-            dealType: formData.dealType,
-          }))
+      let response: Response
+
+      if (itemType === 'SERVICES') {
+        const contractError = validateUGCContractState(ugcContractState)
+        if (contractError) {
+          showToast(`Please fix contract: ${contractError}`, 'error')
+          setErrors((prev) => ({ ...prev, contract: contractError }))
+          setLoading(false)
+          return
         }
-      }
 
-      // Create rift first
-      const response = await fetch('/api/rifts/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      })
+        const contractOverrides = buildUGCContractOverridesFromState(
+          ugcContractState,
+          formData.currency
+        )
+
+        response = await fetch('/api/ugc/deals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            brandId,
+            creatorId,
+            itemTitle: formData.itemTitle,
+            itemDescription: formData.itemDescription,
+            totalAmount: amountNumber,
+            currency: formData.currency,
+            contractOverrides,
+          }),
+        })
+      } else {
+        // DIGITAL_GOODS and other item types use legacy path
+        response = await fetch('/api/rifts/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(basePayload),
+        })
+      }
 
       if (!response.ok) {
         let error: any = {}
@@ -583,14 +749,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           // No validation needed for digital items during creation
           // Proof of delivery (files, links) will be submitted after payment
         } else if (itemType === 'SERVICES') {
-          const serviceError = validateField('serviceDate', formData.serviceDate)
-          const scopeError = validateField('serviceScope', formData.serviceScope)
-          const deliverablesError = validateField('serviceDeliverables', formData.serviceDeliverables)
-          const criteriaError = validateField('completionCriteria', formData.completionCriteria)
-          if (serviceError) stepErrors.serviceDate = serviceError
-          if (scopeError) stepErrors.serviceScope = scopeError
-          if (deliverablesError) stepErrors.serviceDeliverables = deliverablesError
-          if (criteriaError) stepErrors.completionCriteria = criteriaError
+          const contractError = validateUGCContractState(ugcContractState)
+          if (contractError) {
+            stepErrors.contract = contractError
+          }
         }
         break
     }
@@ -615,8 +777,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
     'Basic Information',
     'Payment Details',
     'Partner Selection',
-    itemType === 'DIGITAL_GOODS' ? 'Content Details' 
-      : itemType === 'SERVICES' ? 'Service Details'
+    itemType === 'DIGITAL_GOODS' ? 'Content Details'
+      : itemType === 'SERVICES' ? 'Contract Details'
       : 'Details',
     'Review & Submit'
   ]
