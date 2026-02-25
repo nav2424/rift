@@ -92,6 +92,8 @@ interface RiftTransaction {
       email: string
     }
   }>
+  // Legacy services-only milestones field; undefined for UGC deals using UGC Milestone table
+  milestones?: any
 }
 
 export default function RiftDetailPage() {
