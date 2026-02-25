@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
         processed: ugcResult.processed,
         approved: ugcResult.approved,
         skipped: ugcResult.skipped,
+        error: undefined,
       }
     } catch (error: any) {
       console.error('UGC auto-approve error:', error)
