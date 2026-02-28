@@ -231,7 +231,7 @@ export async function confirmPaymentIntent(
       // - 'succeeded': Payment completed
       // - 'processing': Payment confirmed and processing (will succeed)
       // - 'requires_capture': Payment authorized and ready to capture
-      const successStatuses = ['succeeded', 'processing', 'requires_capture']
+      const successStatuses = ['succeeded']
       
       if (successStatuses.includes(paymentIntent.status)) {
         return true

@@ -37,6 +37,25 @@ export async function processPayment(
     }
   }
 
+  // Verify payment amount matches rift total
+  if (paymentIntentId) {
+    try {
+      const { stripe: stripeClient } = await import('./stripe')
+      if (stripeClient) {
+        const pi = await stripeClient.paymentIntents.retrieve(paymentIntentId)
+        const { calculateBuyerFee } = await import('./fees')
+        const expectedBuyerFee = calculateBuyerFee(rift.subtotal)
+        const expectedAmountCents = Math.round((rift.subtotal + expectedBuyerFee) * 100)
+        if (Math.abs(pi.amount - expectedAmountCents) > 1) {
+          throw new Error(`Payment amount mismatch: expected ${expectedAmountCents} cents, got ${pi.amount} cents`)
+        }
+      }
+    } catch (verifyError: any) {
+      if (verifyError.message?.includes('Payment amount mismatch')) throw verifyError
+      // If Stripe is unavailable in dev, continue
+    }
+  }
+
   // Generate a payment reference
   const paymentReference = paymentIntentId || `PAY-${transactionId.slice(0, 8).toUpperCase()}`
   

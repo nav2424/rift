@@ -190,6 +190,18 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
     return
   }
 
+  // Verify payment amount matches expected rift total
+  if (paymentIntent.amount) {
+    const { calculateBuyerFee } = await import('@/lib/fees')
+    const expectedBuyerFee = calculateBuyerFee(rift.subtotal)
+    const expectedAmountCents = Math.round((rift.subtotal + expectedBuyerFee) * 100)
+    
+    if (Math.abs(paymentIntent.amount - expectedAmountCents) > 1) {
+      console.error(`Payment amount mismatch for rift ${riftId}: expected ${expectedAmountCents} cents, got ${paymentIntent.amount} cents`)
+      return
+    }
+  }
+
   // Only transition if still in DRAFT or AWAITING_PAYMENT
   // DRAFT is legacy, AWAITING_PAYMENT is current status when payment intent is created
   if (rift.status === 'DRAFT' || rift.status === 'AWAITING_PAYMENT') {

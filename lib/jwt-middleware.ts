@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production-make-sure-to-change-this'
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET
 
 export interface JWTPayload {
   id: string

@@ -44,7 +44,7 @@ export async function proposeAmendment(riftId: string, proposedById: string, pat
       id: crypto.randomUUID(),
       riftId,
       proposedById,
-      patchJson,
+      patchJson: patchJson as any,
       status: 'PENDING',
       updatedAt: new Date(),
     },
