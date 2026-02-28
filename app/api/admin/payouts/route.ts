@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { requireAdmin } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
 
@@ -64,27 +65,21 @@ export async function GET(request: NextRequest) {
       
       if (isEnumError) {
         // Use raw SQL with text casting to avoid enum validation
-        const whereConditions: string[] = []
-        const params: any[] = []
-        let paramIndex = 1
+        const whereConditions: Prisma.Sql[] = []
 
         if (where.status) {
-          whereConditions.push(`p.status = $${paramIndex}`)
-          params.push(where.status)
-          paramIndex++
+          whereConditions.push(Prisma.sql`p.status = ${where.status}`)
         }
         if (where.userId) {
-          whereConditions.push(`p."userId" = $${paramIndex}`)
-          params.push(where.userId)
-          paramIndex++
+          whereConditions.push(Prisma.sql`p."userId" = ${where.userId}`)
         }
 
-        const whereClause = whereConditions.length > 0 
-          ? `WHERE ${whereConditions.join(' AND ')}`
-          : ''
+        const whereClauseSql = whereConditions.length > 0 
+          ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
+          : Prisma.empty
 
-        const fetchedPayouts = await prisma.$queryRawUnsafe<any[]>(`
-          SELECT 
+        const fetchedPayouts = await prisma.$queryRaw<any[]>(
+          Prisma.sql`SELECT 
             p.id, p."userId", p."riftId", p.amount, p.currency, p.status,
             p."scheduledAt", p."processedAt", p."createdAt", p."stripePayoutId",
             p."stripeTransferId", p."failureReason",
@@ -95,9 +90,9 @@ export async function GET(request: NextRequest) {
           FROM "Payout" p
           LEFT JOIN "User" u ON p."userId" = u.id
           LEFT JOIN "EscrowTransaction" r ON p."riftId" = r.id
-          ${whereClause}
+          ${whereClauseSql}
           ORDER BY p."scheduledAt" ASC NULLS LAST, p."createdAt" DESC
-        `, ...params)
+        `)
 
         // Map raw SQL results to match Prisma structure
         payouts = fetchedPayouts.map(p => ({

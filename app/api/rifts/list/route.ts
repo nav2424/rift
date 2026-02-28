@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { parsePaginationParams, createPaginatedResponse } from '@/lib/pagination'
@@ -91,68 +92,54 @@ export async function GET(request: NextRequest) {
     let rifts: any[]
 
     try {
-      // Build SQL WHERE clause
-      let conditions: string[] = []
-      const params: any[] = [userId, userId]
-      let paramIndex = 3
+      // Build SQL WHERE clause using Prisma.sql for defense-in-depth
+      const conditions: Prisma.Sql[] = []
       
-      conditions.push(`("buyerId" = $1 OR "sellerId" = $2)`)
+      conditions.push(Prisma.sql`("buyerId" = ${userId} OR "sellerId" = ${userId})`)
 
       if (whereClause.status) {
         if (typeof whereClause.status === 'string') {
-          conditions.push(`"status" = $${paramIndex}`)
-          params.push(whereClause.status)
-          paramIndex++
+          conditions.push(Prisma.sql`"status" = ${whereClause.status}`)
         } else if (whereClause.status.in) {
-          const placeholders = whereClause.status.in.map((_: any, i: number) => `$${paramIndex + i}`).join(',')
-          conditions.push(`"status" IN (${placeholders})`)
-          params.push(...whereClause.status.in)
-          paramIndex += whereClause.status.in.length
+          conditions.push(Prisma.sql`"status" IN (${Prisma.join(whereClause.status.in)})`)
         }
       }
 
       // Handle search query in raw SQL
       if (whereClause.AND) {
-        const searchConditions: string[] = []
         whereClause.AND.forEach((condition: any) => {
           if (condition.OR) {
+            const searchConditions: Prisma.Sql[] = []
             condition.OR.forEach((orCondition: any) => {
               if (orCondition.itemTitle?.contains) {
-                searchConditions.push(`LOWER("itemTitle") LIKE $${paramIndex}`)
-                params.push(`%${orCondition.itemTitle.contains.toLowerCase()}%`)
-                paramIndex++
+                searchConditions.push(Prisma.sql`LOWER("itemTitle") LIKE ${`%${orCondition.itemTitle.contains.toLowerCase()}%`}`)
               }
               if (orCondition.itemDescription?.contains) {
-                searchConditions.push(`LOWER("itemDescription") LIKE $${paramIndex}`)
-                params.push(`%${orCondition.itemDescription.contains.toLowerCase()}%`)
-                paramIndex++
+                searchConditions.push(Prisma.sql`LOWER("itemDescription") LIKE ${`%${orCondition.itemDescription.contains.toLowerCase()}%`}`)
               }
               if (orCondition.riftNumber !== undefined) {
-                searchConditions.push(`"riftNumber" = $${paramIndex}`)
-                params.push(orCondition.riftNumber)
-                paramIndex++
+                searchConditions.push(Prisma.sql`"riftNumber" = ${orCondition.riftNumber}`)
               }
             })
             if (searchConditions.length > 0) {
-              conditions.push(`(${searchConditions.join(' OR ')})`)
+              conditions.push(Prisma.sql`(${Prisma.join(searchConditions, ' OR ')})`)
             }
           }
         })
       }
 
-      const whereClauseSQL = conditions.join(' AND ')
+      const whereSql = Prisma.join(conditions, ' AND ')
 
       // Get count using raw SQL with text casting to avoid enum validation
-      const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-        `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereClauseSQL}`,
-        ...params
+      const countResult = await prisma.$queryRaw<Array<{ count: bigint }>>(
+        Prisma.sql`SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereSql}`
       )
       total = Number(countResult[0]?.count || 0)
 
       // Get paginated rifts using raw SQL with text casting to avoid enum validation
       // Cast itemType and status to text to bypass enum validation
-      const fetchedRifts = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT 
+      const fetchedRifts = await prisma.$queryRaw<any[]>(
+        Prisma.sql`SELECT 
             id, "riftNumber", "itemTitle", "itemDescription", 
             "itemType"::text as "itemType",
             amount, subtotal, "buyerFee", "sellerFee", "sellerNet",
@@ -163,12 +150,9 @@ export async function GET(request: NextRequest) {
             "eventDate", venue, "transferMethod", "downloadLink", "licenseKey",
             "serviceDate", "createdAt", "updatedAt"
           FROM "EscrowTransaction"
-          WHERE ${whereClauseSQL}
+          WHERE ${whereSql}
           ORDER BY "createdAt" DESC
-          LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-        ...params,
-        limit,
-        skip
+          LIMIT ${limit} OFFSET ${skip}`
       )
 
       // Fetch buyer and seller info separately
@@ -210,101 +194,80 @@ export async function GET(request: NextRequest) {
           console.warn('Prisma enum deserialization failed, using raw SQL fallback (expected behavior)')
         }
         
-        // Build SQL WHERE clause
-        let conditions: string[] = []
-        const params: any[] = [userId, userId]
-        let paramIndex = 3
+        // Build SQL WHERE clause using Prisma.sql for defense-in-depth
+        const conditions: Prisma.Sql[] = []
         
         // Handle archive filtering in raw SQL (columns may not exist if migration hasn't run)
         // For now, just filter by user - archive filtering will work after migration is applied
         // The raw SQL fallback will check for columns and apply filtering if they exist
-        conditions.push(`("buyerId" = $1 OR "sellerId" = $2)`)
+        conditions.push(Prisma.sql`("buyerId" = ${userId} OR "sellerId" = ${userId})`)
         
         // Note: Archive filtering is disabled until migration is applied
         // After migration, this will be handled by checking column existence
 
         if (whereClause.status) {
           if (typeof whereClause.status === 'string') {
-            conditions.push(`"status" = $${paramIndex}`)
-            params.push(whereClause.status)
-            paramIndex++
+            conditions.push(Prisma.sql`"status" = ${whereClause.status}`)
           } else if (whereClause.status.in) {
-            const placeholders = whereClause.status.in.map((_: any, i: number) => `$${paramIndex + i}`).join(',')
-            conditions.push(`"status" IN (${placeholders})`)
-            params.push(...whereClause.status.in)
-            paramIndex += whereClause.status.in.length
+            conditions.push(Prisma.sql`"status" IN (${Prisma.join(whereClause.status.in)})`)
           }
         }
 
         // Handle search query in raw SQL
         if (whereClause.AND) {
-          const searchConditions: string[] = []
           whereClause.AND.forEach((condition: any) => {
             if (condition.OR) {
+              const searchConditions: Prisma.Sql[] = []
               condition.OR.forEach((orCondition: any) => {
                 if (orCondition.itemTitle?.contains) {
-                  searchConditions.push(`LOWER("itemTitle") LIKE $${paramIndex}`)
-                  params.push(`%${orCondition.itemTitle.contains.toLowerCase()}%`)
-                  paramIndex++
+                  searchConditions.push(Prisma.sql`LOWER("itemTitle") LIKE ${`%${orCondition.itemTitle.contains.toLowerCase()}%`}`)
                 }
                 if (orCondition.itemDescription?.contains) {
-                  searchConditions.push(`LOWER("itemDescription") LIKE $${paramIndex}`)
-                  params.push(`%${orCondition.itemDescription.contains.toLowerCase()}%`)
-                  paramIndex++
+                  searchConditions.push(Prisma.sql`LOWER("itemDescription") LIKE ${`%${orCondition.itemDescription.contains.toLowerCase()}%`}`)
                 }
                 if (orCondition.riftNumber !== undefined) {
-                  searchConditions.push(`"riftNumber" = $${paramIndex}`)
-                  params.push(orCondition.riftNumber)
-                  paramIndex++
+                  searchConditions.push(Prisma.sql`"riftNumber" = ${orCondition.riftNumber}`)
                 }
               })
               if (searchConditions.length > 0) {
-                conditions.push(`(${searchConditions.join(' OR ')})`)
+                conditions.push(Prisma.sql`(${Prisma.join(searchConditions, ' OR ')})`)
               }
             }
           })
         }
 
-        const whereClauseSQL = conditions.join(' AND ')
+        const whereSql = Prisma.join(conditions, ' AND ')
 
         // Get count - use try-catch in case archive columns don't exist yet
         try {
-          const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-            `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereClauseSQL}`,
-            ...params
+          const countResult = await prisma.$queryRaw<Array<{ count: bigint }>>(
+            Prisma.sql`SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${whereSql}`
           )
           total = Number(countResult[0]?.count || 0)
         } catch (countError: any) {
           // If count fails (e.g., archive columns don't exist), use simplified query
           console.warn('Count query failed, using simplified query:', countError.message)
-          const simplifiedConditions = [`("buyerId" = $1 OR "sellerId" = $2)`]
-          const simplifiedParams = [userId, userId]
-          let simplifiedParamIndex = 3
+          const simplifiedConditions: Prisma.Sql[] = [Prisma.sql`("buyerId" = ${userId} OR "sellerId" = ${userId})`]
           
           // Add status filter if present (without archive filtering)
           if (whereClause.status) {
             if (typeof whereClause.status === 'string') {
-              simplifiedConditions.push(`"status" = $${simplifiedParamIndex}`)
-              simplifiedParams.push(whereClause.status)
-              simplifiedParamIndex++
+              simplifiedConditions.push(Prisma.sql`"status" = ${whereClause.status}`)
             } else if (whereClause.status.in) {
-              const placeholders = whereClause.status.in.map((_: any, i: number) => `$${simplifiedParamIndex + i}`).join(',')
-              simplifiedConditions.push(`"status" IN (${placeholders})`)
-              simplifiedParams.push(...whereClause.status.in)
+              simplifiedConditions.push(Prisma.sql`"status" IN (${Prisma.join(whereClause.status.in)})`)
             }
           }
           
-          const simplifiedWhere = simplifiedConditions.join(' AND ')
-          const countResult = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-            `SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${simplifiedWhere}`,
-            ...simplifiedParams
+          const simplifiedWhere = Prisma.join(simplifiedConditions, ' AND ')
+          const countResult = await prisma.$queryRaw<Array<{ count: bigint }>>(
+            Prisma.sql`SELECT COUNT(*)::int as count FROM "EscrowTransaction" WHERE ${simplifiedWhere}`
           )
           total = Number(countResult[0]?.count || 0)
         }
 
         // Get paginated results with itemType cast to text to avoid enum validation
-        const riftsRaw = await prisma.$queryRawUnsafe<any[]>(
-          `SELECT 
+        const riftsRaw = await prisma.$queryRaw<any[]>(
+          Prisma.sql`SELECT 
             id, "riftNumber", "itemTitle", "itemDescription", 
             "itemType"::text as "itemType",
             amount, subtotal, "buyerFee", "sellerFee", "sellerNet",
@@ -315,12 +278,9 @@ export async function GET(request: NextRequest) {
             "eventDate", venue, "transferMethod", "downloadLink", "licenseKey",
             "serviceDate", "createdAt", "updatedAt"
           FROM "EscrowTransaction"
-          WHERE ${whereClauseSQL}
+          WHERE ${whereSql}
           ORDER BY "createdAt" DESC
-          LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-          ...params,
-          limit,
-          skip
+          LIMIT ${limit} OFFSET ${skip}`
         )
 
         // Get buyer and seller info
