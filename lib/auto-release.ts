@@ -71,6 +71,12 @@ export async function processAutoReleases() {
         continue
       }
 
+      // Verify payment was actually received (check for stripePaymentIntentId or paymentReference)
+      if (!rift.paymentReference && !rift.stripePaymentIntentId) {
+        console.log(`Skipping auto-release for ${rift.id}: no payment confirmation found`)
+        continue
+      }
+
       // Verify state allows auto-release
       if (!canAutoRelease(rift.status)) {
         console.log(`Skipping auto-release for ${rift.id}: invalid state ${rift.status}`)
