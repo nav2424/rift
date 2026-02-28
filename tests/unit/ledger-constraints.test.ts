@@ -32,6 +32,7 @@ vi.mock('@/lib/prisma', () => {
     update: vi.fn(),
   }
   const walletLedgerEntry = {
+    findFirst: vi.fn().mockResolvedValue(null),
     create: vi.fn(),
   }
 
@@ -363,6 +364,7 @@ describe('Ledger Constraints', () => {
             }),
           },
           walletLedgerEntry: {
+            findFirst: vi.fn().mockResolvedValue(null),
             create: vi.fn().mockResolvedValue({
               id: 'ledger-1',
             } as any),

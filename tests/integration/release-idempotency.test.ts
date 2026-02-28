@@ -54,6 +54,7 @@ vi.mock('@/lib/prisma', () => ({
           update: vi.fn(),
         },
         walletLedgerEntry: {
+          findFirst: vi.fn(),
           create: vi.fn(),
         },
       }

@@ -99,6 +99,7 @@ vi.mock('@prisma/client', () => ({
     walletLedgerEntry: {
       count: vi.fn(),
       findMany: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
     },
     timelineEvent: {
@@ -149,6 +150,7 @@ vi.mock('@prisma/client', () => ({
           update: vi.fn(),
         },
         walletLedgerEntry: {
+          findFirst: vi.fn(),
           create: vi.fn(),
         },
         vault_assets: {

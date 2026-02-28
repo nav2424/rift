@@ -60,6 +60,14 @@ export async function POST(
       )
     }
 
+    // Prevent double-payment: verify rift is still in DISPUTED state
+    if (rift.status !== 'DISPUTED') {
+      return NextResponse.json(
+        { error: `Cannot resolve dispute: rift is in ${rift.status} state, expected DISPUTED` },
+        { status: 409 }
+      )
+    }
+
     // Update dispute status
     const { error: updateError } = await supabase
       .from('disputes')

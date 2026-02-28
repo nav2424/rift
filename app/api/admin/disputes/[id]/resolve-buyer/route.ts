@@ -48,6 +48,7 @@ export async function POST(
       where: { id: dispute.rift_id },
       select: {
         id: true,
+        status: true,
         stripePaymentIntentId: true,
         stripeChargeId: true,
         subtotal: true,
@@ -62,6 +63,14 @@ export async function POST(
       return NextResponse.json(
         { error: 'Rift not found' },
         { status: 404 }
+      )
+    }
+
+    // Prevent double-payment: verify rift is still in DISPUTED state
+    if (rift.status !== 'DISPUTED') {
+      return NextResponse.json(
+        { error: `Cannot resolve dispute: rift is in ${rift.status} state, expected DISPUTED` },
+        { status: 409 }
       )
     }
 

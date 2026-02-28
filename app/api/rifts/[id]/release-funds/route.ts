@@ -123,19 +123,31 @@ export async function POST(
       )
     }
 
-    // Update rift status and store fee information
-    // For early release from IN_TRANSIT, cancel auto-release since buyer is releasing early
-    await prisma.riftTransaction.update({
-      where: { id },
-      data: {
-        status: 'RELEASED',
-        platformFee,
-        sellerPayoutAmount,
-        autoReleaseScheduled: false, // Cancel auto-release if buyer releases early
-        paymentReference: payoutId
-          ? `${rift.paymentReference} | Payout: ${payoutId}`
-          : rift.paymentReference,
-      },
+    // Use transaction with optimistic locking to prevent race conditions
+    const updatedRift = await prisma.$transaction(async (tx) => {
+      // Re-read with version check inside transaction
+      const currentRift = await tx.riftTransaction.findUnique({
+        where: { id },
+        select: { version: true, status: true },
+      })
+      
+      if (!currentRift || currentRift.status === 'RELEASED' || currentRift.status === 'PAYOUT_SCHEDULED' || currentRift.status === 'PAID_OUT') {
+        throw new Error('Rift has already been released or is no longer available')
+      }
+
+      return tx.riftTransaction.update({
+        where: { id, version: currentRift.version },
+        data: {
+          status: 'RELEASED',
+          platformFee,
+          sellerPayoutAmount,
+          autoReleaseScheduled: false,
+          paymentReference: payoutId
+            ? `${rift.paymentReference} | Payout: ${payoutId}`
+            : rift.paymentReference,
+          version: { increment: 1 },
+        },
+      })
     })
 
     // Update seller balance (move from pending to processed)

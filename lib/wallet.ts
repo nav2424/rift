@@ -60,8 +60,20 @@ export async function creditSellerOnRelease(
   }
   const wallet = await getOrCreateWalletAccount(sellerId, currency)
 
-  // Use transaction to ensure atomicity
   await prisma.$transaction(async (tx) => {
+    // Check for existing credit to prevent double-credit
+    const existingCredit = await tx.walletLedgerEntry.findFirst({
+      where: {
+        walletAccountId: wallet.id,
+        type: WalletLedgerType.CREDIT_RELEASE,
+        relatedRiftId: riftId,
+      },
+    })
+
+    if (existingCredit) {
+      throw new Error(`Wallet already credited for rift ${riftId}`)
+    }
+
     // Create ledger entry
     await tx.walletLedgerEntry.create({
       data: {
