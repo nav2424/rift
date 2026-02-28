@@ -89,7 +89,7 @@ async function handlePOST(request: NextRequest) {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 12)
 
     // Combine firstName and lastName into name
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()

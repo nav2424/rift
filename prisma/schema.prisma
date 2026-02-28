@@ -59,6 +59,7 @@ model Dispute {
   DisputeEvidence                 DisputeEvidence[]
 
   @@index([milestoneId])
+  @@index([status, createdAt])
 }
 
 model RiftTransaction {
@@ -145,6 +146,9 @@ model RiftTransaction {
   DealTimelineEvent         DealTimelineEvent[]
   LedgerTransaction         LedgerTransaction[]
 
+  @@index([status, createdAt])
+  @@index([buyerId, status])
+  @@index([sellerId, status])
   @@map("EscrowTransaction")
 }
 

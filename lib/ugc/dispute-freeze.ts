@@ -15,7 +15,7 @@ export async function checkUGCDisputeFreeze(
   riftId: string,
   milestoneId?: string
 ): Promise<UGCDisputeFreezeCheck> {
-  const where: { escrowId: string; status: string; milestoneId?: string } = {
+  const where: { escrowId: string; status: any; milestoneId?: string } = {
     escrowId: riftId,
     status: { in: ['OPEN', 'NEGOTIATION', 'ADMIN_REVIEW'] },
   }

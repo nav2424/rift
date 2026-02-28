@@ -20,10 +20,8 @@ export async function POST(request: NextRequest) {
       if (authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
-    } else {
-      if (process.env.NODE_ENV === 'production') {
-        console.warn('WARNING: CRON_SECRET not set. Cron endpoint is unprotected!')
-      }
+    } else if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
     }
 
     const results: {

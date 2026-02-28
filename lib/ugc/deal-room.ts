@@ -51,7 +51,7 @@ export async function createDealRoom(input: CreateDealRoomInput): Promise<{ rift
       sellerId: input.creatorId,
       status: 'AWAITING_PAYMENT',
       allowsPartialRelease: true,
-      milestones: null, // UGC uses Milestone table
+      milestones: undefined, // UGC uses Milestone table
     },
   })
 
@@ -104,7 +104,7 @@ export async function createMilestonesFromContract(riftId: string): Promise<{ mi
   if (!rift.Contract) throw new Error('Apply contract template first')
   if (rift.Milestone.length > 0) throw new Error('Milestones already exist')
 
-  const payload = rift.Contract.contractJson as UGCContractPayload
+  const payload = rift.Contract.contractJson as unknown as UGCContractPayload
   const totalAmount = rift.subtotal
   const currency = payload.currency ?? rift.currency
   const acceptanceWindowDays = payload.acceptanceWindowDays ?? 3
@@ -131,6 +131,7 @@ export async function createMilestonesFromContract(riftId: string): Promise<{ mi
         autoApprove: tmpl.autoApprove,
         status: MilestoneStatus.PENDING_FUNDING,
         maxRevisions: tmpl.maxRevisions,
+        updatedAt: new Date(),
       },
     })
     ids.push(milestone.id)

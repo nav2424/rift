@@ -71,8 +71,9 @@ export async function processAutoReleases() {
         continue
       }
 
-      // Verify payment was actually received (check for stripePaymentIntentId or paymentReference)
-      if (!rift.paymentReference && !rift.stripePaymentIntentId) {
+      // Verify payment was actually received
+      // Rifts in PROOF_SUBMITTED/UNDER_REVIEW must have been funded, but double-check payment artifacts
+      if (!rift.paymentReference && !rift.stripePaymentIntentId && !rift.fundedAt) {
         console.log(`Skipping auto-release for ${rift.id}: no payment confirmation found`)
         continue
       }

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 12)
 
     // Set password in signup session
     await setSignupPassword(sessionId, passwordHash)

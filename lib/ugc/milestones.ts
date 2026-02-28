@@ -12,7 +12,7 @@ import { calculateSellerFee, calculateSellerNet } from '@/lib/fees'
 
 /** Ensure deal is funded (escrow) and no dispute freezes this milestone. */
 async function ensureCanProceedMilestone(milestoneId: string): Promise<{
-  milestone: { id: string; riftId: string; status: MilestoneStatus; amount: number; currency: string; sellerId: string }
+  milestone: { id: string; riftId: string; status: MilestoneStatus; amount: number; currency: string; sellerId: string; revisionCount: number; maxRevisions: number }
   rift: { id: string; sellerId: string; fundedAt: Date | null; status: string }
 }> {
   const milestone = await prisma.milestone.findUnique({
@@ -30,6 +30,8 @@ async function ensureCanProceedMilestone(milestoneId: string): Promise<{
       amount: milestone.amount,
       currency: milestone.currency,
       sellerId: rift.sellerId,
+      revisionCount: milestone.revisionCount,
+      maxRevisions: milestone.maxRevisions,
     },
     rift: {
       id: rift.id,

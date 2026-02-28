@@ -76,7 +76,7 @@ export async function acceptAmendment(riftId: string, amendmentId: string, accep
     await tx.contract.update({
       where: { id: rift.Contract!.id },
       data: {
-        contractJson: nextContract,
+        contractJson: nextContract as any,
         version: { increment: 1 },
         updatedAt: new Date(),
       },

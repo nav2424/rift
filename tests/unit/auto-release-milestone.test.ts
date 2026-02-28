@@ -30,6 +30,8 @@ describe('processAutoReleases (milestone)', () => {
       currency: 'USD',
       itemTitle: 'UGC Batch',
       subtotal: 100,
+      fundedAt: new Date('2026-01-01T00:00:00Z'),
+      paymentReference: 'PAY-TEST',
       Dispute: [],
       Proof: [{ status: 'VALID' }],
       MilestoneRelease: [],

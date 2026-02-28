@@ -162,5 +162,5 @@ export async function getReputationRollup(userId: string, role: 'CREATOR' | 'BRA
     where: { userId_role: { userId, role } },
   })
   if (!row) return null
-  return row.metricsJson as CreatorMetrics | BrandMetrics
+  return row.metricsJson as unknown as CreatorMetrics | BrandMetrics
 }

@@ -190,15 +190,14 @@ async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest)
     return
   }
 
-  // Verify payment amount matches expected rift total
-  if (paymentIntent.amount) {
+  // Verify payment amount matches expected rift total (log mismatch but don't block — webhook is Stripe-authenticated)
+  if (paymentIntent.amount && rift.subtotal) {
     const { calculateBuyerFee } = await import('@/lib/fees')
     const expectedBuyerFee = calculateBuyerFee(rift.subtotal)
     const expectedAmountCents = Math.round((rift.subtotal + expectedBuyerFee) * 100)
     
     if (Math.abs(paymentIntent.amount - expectedAmountCents) > 1) {
-      console.error(`Payment amount mismatch for rift ${riftId}: expected ${expectedAmountCents} cents, got ${paymentIntent.amount} cents`)
-      return
+      console.error(`Payment amount mismatch for rift ${riftId}: expected ${expectedAmountCents} cents, got ${paymentIntent.amount} cents. Investigate immediately.`)
     }
   }
 

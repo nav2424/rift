@@ -149,12 +149,6 @@ describe('Double-Charge Prevention', () => {
         client_secret: 'secret_existing',
       } as any)
 
-      const { stripe } = await import('@/lib/stripe')
-      vi.mocked(stripe.paymentIntents.retrieve).mockResolvedValueOnce({
-        id: existingPaymentIntentId,
-        client_secret: 'secret_existing',
-      } as any)
-
       const request = new NextRequest('http://localhost:3000/api/rifts/test/payment-intent', {
         method: 'POST',
       })

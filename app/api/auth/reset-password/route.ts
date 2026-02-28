@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash the new password
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 12)
 
     // Update user password
     // verification.userId should always be set for password reset (not a signup session)
