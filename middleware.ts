@@ -11,6 +11,10 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
 
+  // Add request ID for log correlation
+  const requestId = crypto.randomUUID().slice(0, 8)
+  response.headers.set('X-Request-Id', requestId)
+
   // CSP header - restrictive but allows Next.js to work
   const cspDirectives = [
     "default-src 'self'",

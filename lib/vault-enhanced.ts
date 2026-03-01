@@ -9,6 +9,7 @@ import { uploadToVault, generateFileHash, getSecureFileUrl, validateFileType, ge
 import { createHash, randomUUID } from 'crypto'
 import { logVaultEvent } from './vault-logging'
 import { createServerClient } from './supabase'
+import { scanFileContent } from './file-scanner'
 
 export interface VaultAssetInput {
   assetType: VaultAssetType
@@ -89,12 +90,21 @@ export async function uploadVaultAsset(
         }
       }
       
+      // Scan file content for safety before upload
+      const scanBuffer = input.file instanceof Buffer
+        ? input.file
+        : Buffer.from(await (input.file as File).arrayBuffer())
+      const scanMimeType = input.file instanceof Buffer
+        ? (input.mimeType || 'application/octet-stream')
+        : (input.file as File).type || 'application/octet-stream'
+      const scanResult = scanFileContent(scanBuffer, scanMimeType)
+      if (!scanResult.safe) {
+        throw new Error(`File rejected: ${scanResult.reason}`)
+      }
+
       // Handle both File and Buffer
       let fileForUpload: File
       if (input.file instanceof Buffer) {
-        // Convert Buffer to File-like object for uploadToVault
-        // Note: uploadToVault expects File, but we can work around this
-        // For now, we'll compute hash directly and store separately
         sha256 = await generateFileHash(input.file)
         // Store file using Supabase directly
         const supabase = createServerClient()
