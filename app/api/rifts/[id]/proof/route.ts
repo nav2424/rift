@@ -14,6 +14,7 @@ import { validateProofTypeLock } from '@/lib/proof-type-validation'
 import { checkDuplicateProofs } from '@/lib/duplicate-proof-detection'
 import { isProofDeadlinePassed, calculateProofDeadline, getHoursUntilProofDeadline } from '@/lib/proof-deadlines'
 import { logVaultEvent } from '@/lib/vault-logging'
+import { scanFileContent } from '@/lib/file-scanner'
 import { checkProofRateLimit } from '@/lib/rate-limits-proof'
 import { createServerClient } from '@/lib/supabase'
 import { logEvent, extractRequestMetadata } from '@/lib/rift-events'
@@ -45,7 +46,7 @@ export async function POST(
     // Rate limit: Proof submissions (10/hour)
     // Set userId in request for rate limiter
     ;(request as any).userId = auth.userId
-    const rateLimitResult = checkProofRateLimit(request as any, 'submission')
+    const rateLimitResult = await checkProofRateLimit(request as any, 'submission')
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         {
@@ -193,6 +194,13 @@ export async function POST(
       for (const file of files) {
         if (file && file.size > 0) {
           try {
+            // Scan file content for safety before upload
+            const fileBuffer = Buffer.from(await file.arrayBuffer())
+            const scanResult = scanFileContent(fileBuffer, file.type || 'application/octet-stream')
+            if (!scanResult.safe) {
+              throw new Error(`File rejected: ${scanResult.reason}`)
+            }
+
             // Determine asset type based on item type
             let assetType: VaultAssetType = 'FILE'
             

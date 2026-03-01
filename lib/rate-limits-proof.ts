@@ -9,11 +9,11 @@ import { rateLimit, RateLimitOptions } from './rate-limit'
  * Rate limit configuration for proof submissions
  * Prevents spam submissions and abuse
  */
-export const proofSubmissionRateLimit: (request: Request | any) => {
+export const proofSubmissionRateLimit: (request: Request | any) => Promise<{
   allowed: boolean
   remaining: number
   resetTime: number
-} = rateLimit({
+}> = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 10, // 10 proof submissions per hour per user
   keyGenerator: (request: Request | any) => {
@@ -32,11 +32,11 @@ export const proofSubmissionRateLimit: (request: Request | any) => {
  * Rate limit configuration for vault asset downloads
  * Prevents excessive downloads
  */
-export const vaultDownloadRateLimit: (request: Request | any) => {
+export const vaultDownloadRateLimit: (request: Request | any) => Promise<{
   allowed: boolean
   remaining: number
   resetTime: number
-} = rateLimit({
+}> = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   maxRequests: 50, // 50 downloads per hour per user
   keyGenerator: (request: Request | any) => {
@@ -54,11 +54,11 @@ export const vaultDownloadRateLimit: (request: Request | any) => {
  * Rate limit configuration for license key reveals
  * Very strict - prevents key harvesting
  */
-export const licenseKeyRevealRateLimit: (request: Request | any) => {
+export const licenseKeyRevealRateLimit: (request: Request | any) => Promise<{
   allowed: boolean
   remaining: number
   resetTime: number
-} = rateLimit({
+}> = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
   maxRequests: 5, // 5 key reveals per day per user
   keyGenerator: (request: Request | any) => {
@@ -76,11 +76,11 @@ export const licenseKeyRevealRateLimit: (request: Request | any) => {
  * Rate limit configuration for vault asset views
  * Less strict than downloads but still prevents abuse
  */
-export const vaultViewRateLimit: (request: Request | any) => {
+export const vaultViewRateLimit: (request: Request | any) => Promise<{
   allowed: boolean
   remaining: number
   resetTime: number
-} = rateLimit({
+}> = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   maxRequests: 100, // 100 views per 15 minutes per user
   keyGenerator: (request: Request | any) => {
@@ -98,10 +98,10 @@ export const vaultViewRateLimit: (request: Request | any) => {
  * Check rate limit and return result
  * Extracts user ID from NextRequest if available
  */
-export function checkProofRateLimit(
+export async function checkProofRateLimit(
   request: Request | any, // Accept NextRequest or any for flexibility
   operation: 'submission' | 'download' | 'reveal' | 'view'
-): { allowed: boolean; remaining: number; resetTime: number; error?: string } {
+): Promise<{ allowed: boolean; remaining: number; resetTime: number; error?: string }> {
   // Extract user ID from NextRequest if it's a NextRequest
   const nextRequest = request as any
   if (nextRequest.userId) {
@@ -120,16 +120,16 @@ export function checkProofRateLimit(
   
   switch (operation) {
     case 'submission':
-      result = proofSubmissionRateLimit(request)
+      result = await proofSubmissionRateLimit(request)
       break
     case 'download':
-      result = vaultDownloadRateLimit(request)
+      result = await vaultDownloadRateLimit(request)
       break
     case 'reveal':
-      result = licenseKeyRevealRateLimit(request)
+      result = await licenseKeyRevealRateLimit(request)
       break
     case 'view':
-      result = vaultViewRateLimit(request)
+      result = await vaultViewRateLimit(request)
       break
     default:
       return {

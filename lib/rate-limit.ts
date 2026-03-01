@@ -1,81 +1,126 @@
 /**
- * Simple in-memory rate limiting middleware
- * For production, consider using Redis or a dedicated rate limiting service
+ * Rate limiting with Redis (Upstash) backend
+ * Falls back to in-memory when Redis is unavailable
  */
 
-interface RateLimitStore {
-  [key: string]: {
-    count: number
-    resetTime: number
+import { Redis } from '@upstash/redis'
+
+let redis: Redis | null = null
+
+try {
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.REDIS_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+
+  if (url && token) {
+    redis = new Redis({ url, token })
   }
+} catch {
+  // Redis not available, will use in-memory fallback
 }
 
-const store: RateLimitStore = {}
+// In-memory fallback store
+const memoryStore = new Map<string, { count: number; resetTime: number }>()
 
 export interface RateLimitOptions {
-  windowMs: number // Time window in milliseconds
-  maxRequests: number // Max requests per window
-  keyGenerator?: (request: Request) => string // Custom key generator
+  windowMs: number
+  maxRequests: number
+  keyGenerator?: (request: Request) => string
+  keyPrefix?: string
 }
 
 const defaultKeyGenerator = (request: Request): string => {
-  // Get IP address from headers (works with proxies)
   const forwarded = request.headers.get('x-forwarded-for')
   const ip = forwarded ? forwarded.split(',')[0] : request.headers.get('x-real-ip') || 'unknown'
-  
-  // Also include user ID if available in headers (for authenticated requests)
   const userId = request.headers.get('x-user-id')
   return userId ? `${userId}:${ip}` : ip
 }
 
-export function rateLimit(options: RateLimitOptions) {
-  const { windowMs, maxRequests, keyGenerator = defaultKeyGenerator } = options
+async function redisRateLimit(
+  key: string,
+  windowMs: number,
+  maxRequests: number
+): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
+  if (!redis) {
+    return memoryRateLimit(key, windowMs, maxRequests)
+  }
 
-  return (request: Request): { allowed: boolean; remaining: number; resetTime: number } => {
-    const key = keyGenerator(request)
-    const now = Date.now()
-
-    // Clean up old entries periodically (every 1000 requests roughly)
-    if (Math.random() < 0.001) {
-      Object.keys(store).forEach((k) => {
-        if (store[k].resetTime < now) {
-          delete store[k]
-        }
-      })
+  try {
+    const windowSec = Math.ceil(windowMs / 1000)
+    const redisKey = `rl:${key}`
+    
+    const pipe = redis.pipeline()
+    pipe.incr(redisKey)
+    pipe.pttl(redisKey)
+    const results = await pipe.exec<[number, number]>()
+    
+    const count = results[0] as number
+    const ttl = results[1] as number
+    
+    // Set expiry on first request in window
+    if (count === 1 || ttl === -1) {
+      await redis.expire(redisKey, windowSec)
     }
-
-    let record = store[key]
-
-    // If no record or window expired, create new record
-    if (!record || record.resetTime < now) {
-      record = {
-        count: 1,
-        resetTime: now + windowMs,
-      }
-      store[key] = record
-      return { allowed: true, remaining: maxRequests - 1, resetTime: record.resetTime }
+    
+    const resetTime = Date.now() + (ttl > 0 ? ttl : windowMs)
+    const remaining = Math.max(0, maxRequests - count)
+    
+    return {
+      allowed: count <= maxRequests,
+      remaining,
+      resetTime,
     }
-
-    // Increment count
-    record.count++
-
-    // Check if limit exceeded
-    if (record.count > maxRequests) {
-      return { allowed: false, remaining: 0, resetTime: record.resetTime }
-    }
-
-    return { allowed: true, remaining: maxRequests - record.count, resetTime: record.resetTime }
+  } catch {
+    // Redis error, fall back to memory
+    return memoryRateLimit(key, windowMs, maxRequests)
   }
 }
 
-/**
- * Rate limit middleware for Next.js API routes
- */
+function memoryRateLimit(
+  key: string,
+  windowMs: number,
+  maxRequests: number
+): { allowed: boolean; remaining: number; resetTime: number } {
+  const now = Date.now()
+
+  // Periodic cleanup
+  if (Math.random() < 0.01) {
+    for (const [k, v] of memoryStore) {
+      if (v.resetTime < now) memoryStore.delete(k)
+    }
+  }
+
+  let record = memoryStore.get(key)
+
+  if (!record || record.resetTime < now) {
+    record = { count: 1, resetTime: now + windowMs }
+    memoryStore.set(key, record)
+    return { allowed: true, remaining: maxRequests - 1, resetTime: record.resetTime }
+  }
+
+  record.count++
+
+  if (record.count > maxRequests) {
+    return { allowed: false, remaining: 0, resetTime: record.resetTime }
+  }
+
+  return { allowed: true, remaining: maxRequests - record.count, resetTime: record.resetTime }
+}
+
+export function rateLimit(options: RateLimitOptions) {
+  const { windowMs, maxRequests, keyGenerator = defaultKeyGenerator, keyPrefix = '' } = options
+
+  return async (request: Request): Promise<{ allowed: boolean; remaining: number; resetTime: number }> => {
+    const baseKey = keyGenerator(request)
+    const key = keyPrefix ? `${keyPrefix}:${baseKey}` : baseKey
+    return redisRateLimit(key, windowMs, maxRequests)
+  }
+}
+
 export function createRateLimitMiddleware(options: RateLimitOptions) {
   const limiter = rateLimit(options)
 
   return async (request: Request): Promise<Response | null> => {
-    const result = limiter(request)
+    const result = await limiter(request)
 
     if (!result.allowed) {
       return new Response(
@@ -96,23 +141,25 @@ export function createRateLimitMiddleware(options: RateLimitOptions) {
       )
     }
 
-    // Add rate limit headers to successful requests
-    return null // Continue to next middleware/handler
+    return null
   }
 }
 
 // Pre-configured rate limiters
 export const apiRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 100, // 100 requests per 15 minutes
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 100,
+  keyPrefix: 'api',
 })
 
 export const strictApiRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 30, // 30 requests per 15 minutes (for sensitive endpoints)
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 30,
+  keyPrefix: 'strict',
 })
 
 export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 login attempts per 15 minutes
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 5,
+  keyPrefix: 'auth',
 })

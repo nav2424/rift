@@ -128,7 +128,7 @@ describe('Security/Abuse Tests', () => {
   })
 
   describe('Spam Prevention', () => {
-    it('should rate limit proof submissions', () => {
+    it('should rate limit proof submissions', async () => {
       const mockRequest = {
         headers: new Headers({
           'x-user-id': 'spammer',
@@ -138,14 +138,14 @@ describe('Security/Abuse Tests', () => {
 
       // Exceed rate limit
       for (let i = 0; i < 11; i++) {
-        const result = checkProofRateLimit(mockRequest, 'submission')
+        const result = await checkProofRateLimit(mockRequest, 'submission')
         if (i >= 10) {
           expect(result.allowed).toBe(false)
         }
       }
     })
 
-    it('should rate limit license key reveals', () => {
+    it('should rate limit license key reveals', async () => {
       const mockRequest = {
         headers: new Headers({
           'x-user-id': 'harvester',
@@ -155,7 +155,7 @@ describe('Security/Abuse Tests', () => {
 
       // Exceed strict limit (5/day)
       for (let i = 0; i < 6; i++) {
-        const result = checkProofRateLimit(mockRequest, 'reveal')
+        const result = await checkProofRateLimit(mockRequest, 'reveal')
         if (i >= 5) {
           expect(result.allowed).toBe(false)
         }
@@ -334,7 +334,7 @@ describe('Security/Abuse Tests', () => {
   })
 
   describe('Rate Limit Bypass', () => {
-    it('should track rate limits per user+IP combination', () => {
+    it('should track rate limits per user+IP combination', async () => {
       const user1Request = {
         headers: new Headers({
           'x-user-id': 'user1',
@@ -351,14 +351,14 @@ describe('Security/Abuse Tests', () => {
 
       // Exhaust limit for user1+IP1
       for (let i = 0; i < 10; i++) {
-        checkProofRateLimit(user1Request, 'submission')
+        await checkProofRateLimit(user1Request, 'submission')
       }
 
-      const result1 = checkProofRateLimit(user1Request, 'submission')
+      const result1 = await checkProofRateLimit(user1Request, 'submission')
       expect(result1.allowed).toBe(false)
 
       // Different IP should have separate limit
-      const result2 = checkProofRateLimit(user1DifferentIP, 'submission')
+      const result2 = await checkProofRateLimit(user1DifferentIP, 'submission')
       // Note: Current implementation may track by user+IP, so this might still be blocked
       // This test documents the expected behavior
     })

@@ -43,7 +43,7 @@ vi.mock('@/lib/vault-enhanced', () => ({
 
 // Mock rate limits
 vi.mock('@/lib/rate-limits-proof', () => ({
-  checkProofRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 10, resetTime: Date.now() + 3600000 }),
+  checkProofRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 10, resetTime: Date.now() + 3600000 }),
 }))
 
 // Mock state machine

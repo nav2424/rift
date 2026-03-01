@@ -20,11 +20,11 @@ export function withRateLimit<T = any>(
     // Choose rate limiter
     let result
     if (options?.rateLimit === 'strict') {
-      result = strictApiRateLimit(request)
+      result = await strictApiRateLimit(request)
     } else if (options?.rateLimit === 'auth') {
-      result = authRateLimit(request)
+      result = await authRateLimit(request)
     } else {
-      result = apiRateLimit(request)
+      result = await apiRateLimit(request)
     }
 
     if (!result.allowed) {

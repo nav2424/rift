@@ -28,7 +28,7 @@ export async function GET(
     // Rate limit: Vault views (100/15min)
     // Set userId in request for rate limiter
     ;(request as any).userId = session.user.id
-    const rateLimitResult = checkProofRateLimit(request as any, 'view')
+    const rateLimitResult = await checkProofRateLimit(request as any, 'view')
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         {
@@ -159,7 +159,7 @@ export async function POST(
     // Set userId in request for rate limiter
     ;(request as any).userId = session.user.id
     const operation = action === 'reveal_license_key' ? 'reveal' : 'download'
-    const rateLimitResult = checkProofRateLimit(request as any, operation)
+    const rateLimitResult = await checkProofRateLimit(request as any, operation)
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
         {
