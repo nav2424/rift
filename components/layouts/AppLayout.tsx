@@ -142,24 +142,24 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white text-[#1d1d1f] flex">
+    <div className="min-h-screen bg-transparent text-[#1d1d1f] flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-white/20 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/10 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Left Sidebar */}
+      {/* Left Sidebar — glassmorphism */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 md:translate-x-0 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 bg-white/70 backdrop-blur-2xl backdrop-saturate-[1.8] border-r border-black/[0.06] transition-all duration-300 md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'} w-64`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+          <div className="flex items-center justify-between h-16 px-6 border-b border-black/[0.04]">
             <Link 
               href="/dashboard" 
               className={`flex items-center hover:opacity-80 transition-opacity ${sidebarCollapsed ? 'justify-center w-full' : ''}`}
@@ -211,8 +211,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
                   } ${
                     active
-                      ? 'bg-gray-100 text-[#1d1d1f] border-l-2 border-gray-300'
-                      : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-gray-50'
+                      ? 'bg-black/[0.06] text-[#1d1d1f] font-medium'
+                      : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.03]'
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
@@ -229,7 +229,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* User Section */}
           {session && (
-            <div className={`border-t border-gray-200 ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
+            <div className={`border-t border-black/[0.04] ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
               <div className={`flex items-center py-2 ${sidebarCollapsed ? 'justify-center' : 'gap-3 px-4'}`}>
                 <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-medium text-[#1d1d1f]">
@@ -250,7 +250,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-black/[0.04]">
           <div className="flex items-center justify-between h-16 px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3">
             {/* Mobile Menu Button */}
             <button
@@ -338,7 +338,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                           Admin
                         </Link>
                       )}
-                      <div className="border-t border-gray-200 my-2" />
+                      <div className="border-t border-black/[0.04] my-2" />
                       <button
                         onClick={() => {
                           setProfileMenuOpen(false)
