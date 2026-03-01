@@ -158,12 +158,12 @@ export async function acquireMilestoneReleaseLock(
           }
         }
 
-        // Still in progress
+        // Lock already held by another process
         return {
           releaseId: existing?.id || 'in_progress',
           riftId,
           milestoneIndex,
-          status: 'CREATING',
+          status: 'CREATED',
         }
       }
 

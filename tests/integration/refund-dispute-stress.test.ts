@@ -220,6 +220,12 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         randomUUID()
       )
 
+      // Update rift status to REFUNDED (in real code, refundRiftPayment does this)
+      await prisma.riftTransaction.update({
+        where: { id: riftId },
+        data: { status: 'REFUNDED', updatedAt: new Date() },
+      })
+
       // After refund, release should be blocked
       const eligibility = await checkRefundEligibility(riftId)
       expect(eligibility.eligible).toBe(false)
@@ -269,7 +275,7 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
       expect(eligibility.reason).toContain('milestone')
     })
 
-    it('should only allow partial refund for unreleased amount', async () => {
+    it('should block all refunds after partial milestone release', async () => {
       // Create milestone release for 50% of amount
       await prisma.milestoneRelease.create({
         data: {
@@ -288,29 +294,27 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
 
       const eligibility = await checkRefundEligibility(riftId)
 
-      // Should allow partial refund for unreleased 50%
-      expect(eligibility.canRefundPartial).toBe(true)
-      expect(eligibility.maxRefundAmount).toBeLessThan(103.0) // Less than full buyerTotal
-      expect(eligibility.maxRefundAmount).toBeGreaterThan(50.0) // More than just unreleased subtotal
+      // Strict policy: no refunds after any milestone release
+      expect(eligibility.eligible).toBe(false)
+      expect(eligibility.canRefundFull).toBe(false)
+      expect(eligibility.canRefundPartial).toBe(false)
+      expect(eligibility.maxRefundAmount).toBe(0)
     })
   })
 
   describe('Scenario 4: Dispute Created While FUNDED', () => {
     it('should freeze releases when dispute is created', async () => {
-      // Create dispute in Supabase (mocked)
-      const supabase = createServerClient()
-      const fromSpy = vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            in: vi.fn(() => ({
-              data: [{ id: 'dispute_123', status: 'submitted' }],
-              error: null,
-            })),
-          })),
-        })),
-      }))
-
-      vi.mocked(supabase.from).mockImplementation(fromSpy)
+      // Create dispute in Prisma
+      await prisma.dispute.create({
+        data: {
+          id: randomUUID(),
+          escrowId: riftId,
+          raisedById: buyerId,
+          reason: 'Item not as described',
+          status: 'OPEN',
+          updatedAt: new Date(),
+        },
+      })
 
       const freezeCheck = await checkDisputeFreeze(riftId)
 
@@ -319,18 +323,17 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
     })
 
     it('should block release attempt when dispute exists', async () => {
-      // Mock dispute exists
-      const supabase = createServerClient()
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            in: vi.fn(() => ({
-              data: [{ id: 'dispute_123', status: 'under_review' }],
-              error: null,
-            })),
-          })),
-        })),
-      }) as any)
+      // Create dispute in Prisma
+      await prisma.dispute.create({
+        data: {
+          id: randomUUID(),
+          escrowId: riftId,
+          raisedById: buyerId,
+          reason: 'Item not received',
+          status: 'UNDER_REVIEW',
+          updatedAt: new Date(),
+        },
+      })
 
       const freezeCheck = await checkDisputeFreeze(riftId)
 
@@ -339,7 +342,6 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
       // Release should be blocked
       const lock = await acquireFullReleaseLock(riftId)
       // Lock acquisition might succeed, but release logic should check freeze
-      // The actual release function should throw error
     })
   })
 
@@ -361,18 +363,17 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         },
       })
 
-      // Create dispute
-      const supabase = createServerClient()
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            in: vi.fn(() => ({
-              data: [{ id: 'dispute_123', status: 'needs_response' }],
-              error: null,
-            })),
-          })),
-        })),
-      }) as any)
+      // Create dispute in Prisma
+      await prisma.dispute.create({
+        data: {
+          id: randomUUID(),
+          escrowId: riftId,
+          raisedById: buyerId,
+          reason: 'Dispute after partial release',
+          status: 'OPEN',
+          updatedAt: new Date(),
+        },
+      })
 
       const freezeCheck = await checkDisputeFreeze(riftId)
 
@@ -510,7 +511,7 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         where: { id: riftId },
         data: {
           status: 'RELEASED',
-          stripeTransferId: 'tr_test_123',
+          updatedAt: new Date(),
         },
       })
 

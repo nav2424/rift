@@ -46,6 +46,19 @@ export async function checkRefundEligibility(
     }
   }
 
+  // Check if rift has already been refunded
+  if (rift.status === 'REFUNDED' || rift.status === 'CANCELED') {
+    return {
+      eligible: false,
+      reason: 'Rift has already been refunded. No further refunds allowed.',
+      unreleasedAmount: 0,
+      releasedAmount: 0,
+      canRefundFull: false,
+      canRefundPartial: false,
+      maxRefundAmount: 0,
+    }
+  }
+
   // Check if rift is fully released
   if (rift.status === 'RELEASED') {
     return {
@@ -67,21 +80,18 @@ export async function checkRefundEligibility(
   )
 
   if (totalReleased > 0) {
-    // Some milestones released - can only refund unreleased portion
+    // Policy: No refunds after any milestone has been released
     const subtotal = rift.subtotal || 0
     const unreleasedAmount = subtotal - totalReleased
-    const buyerTotal = subtotal + (rift.buyerFee || 0)
 
     return {
-      eligible: unreleasedAmount > 0,
-      reason: unreleasedAmount > 0
-        ? `Partial refund allowed for unreleased amount: ${rift.currency} ${unreleasedAmount.toFixed(2)}`
-        : 'All milestones have been released. No refunds allowed.',
+      eligible: false,
+      reason: `No refunds allowed after milestone release. ${releasedMilestones.length} milestone(s) already released totaling ${rift.currency} ${totalReleased.toFixed(2)}.`,
       unreleasedAmount,
       releasedAmount: totalReleased,
-      canRefundFull: false, // Can't refund full if any milestone released
-      canRefundPartial: unreleasedAmount > 0,
-      maxRefundAmount: unreleasedAmount + (rift.buyerFee || 0), // Can refund unreleased + buyer fee
+      canRefundFull: false,
+      canRefundPartial: false,
+      maxRefundAmount: 0,
     }
   }
 
