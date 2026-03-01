@@ -88,7 +88,7 @@ export default function Home() {
           <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="group w-full sm:w-auto rounded-full bg-[#1d1d1f] px-8 py-4 text-[15px] font-semibold text-[#1d1d1f] hover:bg-white transition-all duration-300 flex items-center justify-center gap-2"
+              className="group w-full sm:w-auto rounded-full bg-[#1d1d1f] px-8 py-4 text-[15px] font-semibold text-white hover:bg-white transition-all duration-300 flex items-center justify-center gap-2"
             >
               Start for free
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
@@ -260,7 +260,7 @@ export default function Home() {
           <p className="text-[#86868b] text-lg max-w-xl mx-auto mb-10">
             Join thousands of creators and agencies securing their brand deals with Rift.
           </p>
-          <Link href="/auth/signup" className="group inline-flex items-center gap-2 rounded-full bg-[#1d1d1f] px-10 py-4.5 text-[15px] font-semibold text-[#1d1d1f] hover:bg-white transition-all duration-300">
+          <Link href="/auth/signup" className="group inline-flex items-center gap-2 rounded-full bg-[#1d1d1f] px-10 py-4.5 text-[15px] font-semibold text-white hover:bg-white transition-all duration-300">
             Get Started Free
             <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
           </Link>

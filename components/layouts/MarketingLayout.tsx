@@ -55,7 +55,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                   <Link href="/auth/signin" className="px-4 py-2 text-[#1d1d1f]/60 hover:text-[#1d1d1f] transition-colors rounded-lg font-light ml-4 min-h-[44px] flex items-center">
                     Sign In
                   </Link>
-                  <Link href="/auth/signup" className="ml-2 rounded-full bg-[#1d1d1f] px-5 py-2.5 text-sm font-medium text-[#1d1d1f] hover:bg-[#1d1d1f]/90 transition min-h-[44px] flex items-center">
+                  <Link href="/auth/signup" className="ml-2 rounded-full bg-[#1d1d1f] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#1d1d1f]/90 transition min-h-[44px] flex items-center">
                     Get Started
                   </Link>
                 </>
@@ -94,7 +94,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
             ) : (
               <>
                 <Link href="/auth/signin" className="py-4 text-[#1d1d1f] text-lg font-light border-b border-gray-100" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
-                <Link href="/auth/signup" className="mt-6 rounded-full bg-[#1d1d1f] py-4 text-center text-[#1d1d1f] font-medium" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                <Link href="/auth/signup" className="mt-6 rounded-full bg-[#1d1d1f] py-4 text-center text-white font-medium" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
               </>
             )}
           </div>
