@@ -157,6 +157,7 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         email: `buyer-${randomUUID()}@test-stress.com`,
         passwordHash: 'hashed',
         name: 'Test Buyer',
+        updatedAt: new Date(),
       },
     })
 
@@ -167,6 +168,7 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         passwordHash: 'hashed',
         name: 'Test Seller',
         stripeConnectAccountId: 'acct_test_seller',
+        updatedAt: new Date(),
       },
     })
 
@@ -191,6 +193,7 @@ integrationDescribe('Refund & Dispute Stress Tests', () => {
         status: 'FUNDED',
         stripePaymentIntentId: `pi_test_${randomUUID()}`,
         version: 0,
+        updatedAt: new Date(),
       },
     })
 
