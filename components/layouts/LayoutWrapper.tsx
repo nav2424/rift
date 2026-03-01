@@ -32,8 +32,8 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     return (
       <>
         <BackgroundLayer />
-        <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-          <div className="text-white/60 font-light">Loading...</div>
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+          <div className="text-gray-400 font-light">Loading...</div>
         </div>
       </>
     )

@@ -25,17 +25,17 @@ function getMetadataBase(): URL {
     const url = process.env.NEXT_PUBLIC_APP_URL || 
                 process.env.APP_URL || 
                 process.env.NEXTAUTH_URL || 
-                (process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000')
+                (process.env.NODE_ENV === 'production' ? '[REDACTED]' : 'http://localhost:3000')
     
     // Validate URL format
     if (!url || url.trim() === '') {
-      const fallback = process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000'
+      const fallback = process.env.NODE_ENV === 'production' ? '[REDACTED]' : 'http://localhost:3000'
       return new URL(fallback)
     }
     return new URL(url)
   } catch (error) {
     console.error('Invalid URL in environment variables, using fallback:', error)
-    const fallback = process.env.NODE_ENV === 'production' ? 'https://www.joinrift.co' : 'http://localhost:3000'
+    const fallback = process.env.NODE_ENV === 'production' ? '[REDACTED]' : 'http://localhost:3000'
     return new URL(fallback)
   }
 }
@@ -74,7 +74,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#000000',
+  themeColor: '#ffffff',
 };
 
 export default function RootLayout({
@@ -83,9 +83,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-[#1d1d1f] min-h-screen flex flex-col`}
       >
         <Providers>
           <ScrollToTop />

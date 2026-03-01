@@ -6,46 +6,18 @@ interface RiftLogoProps {
 }
 
 export default function RiftLogo({ size = 'md', className = '' }: RiftLogoProps) {
-  const sizes = {
-    sm: 60,
-    md: 80,
-    lg: 120,
-    xl: 160,
+  const fontSizes = {
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
+    xl: 'text-3xl',
   }
 
-  const height = sizes[size]
-
   return (
-    <div 
-      className={`inline-flex items-center ${className}`} 
-      style={{ 
-        margin: 0, 
-        padding: 0, 
-        lineHeight: 0,
-        background: 'transparent',
-        backgroundColor: 'transparent'
-      }}
-    >
-      <img
-        src="/rift-logo.png"
-        alt="Rift"
-        width={height}
-        height={height}
-        className="object-contain"
-        style={{ 
-          display: 'block', 
-          margin: 0,
-          padding: 0,
-          border: 'none',
-          outline: 'none',
-          boxShadow: 'none',
-          verticalAlign: 'middle',
-          background: 'transparent',
-          backgroundColor: 'transparent',
-          mixBlendMode: 'screen'
-        }}
-      />
+    <div className={`inline-flex items-center ${className}`}>
+      <span className={`${fontSizes[size]} font-semibold tracking-[-0.04em] text-[#1d1d1f]`}>
+        RIFT
+      </span>
     </div>
   )
 }
-
