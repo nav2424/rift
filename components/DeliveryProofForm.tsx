@@ -71,10 +71,10 @@ export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofF
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Proof of Delivery <span className="text-red-400">*</span>
         </label>
-        <p className="text-white/50 text-xs font-light mb-2">
+        <p className="text-[#86868b] text-xs font-light mb-2">
           Upload {getProofTypeText()}
         </p>
         <input
@@ -82,17 +82,17 @@ export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofF
           onChange={(e) => setFile(e.target.files?.[0] || null)}
           accept="image/*,.pdf"
           required
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-white/10 file:text-white file:cursor-pointer hover:file:bg-white/20 transition-all"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-gray-100 file:text-[#1d1d1f] file:cursor-pointer hover:file:bg-white/20 transition-all"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Notes (Optional)
         </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
           rows={3}
           placeholder="Additional notes or instructions..."
         />
@@ -100,7 +100,7 @@ export default function DeliveryProofForm({ escrowId, itemType }: DeliveryProofF
       <PremiumButton type="submit" disabled={loading || !file} className="w-full">
         {loading ? 'Uploading...' : 'Mark as Delivered & Upload Proof'}
       </PremiumButton>
-      <p className="text-white/40 text-xs font-light">
+      <p className="text-gray-400 text-xs font-light">
         Once proof is uploaded, funds will auto-release after 24 hours unless the buyer raises a dispute.
       </p>
     </form>

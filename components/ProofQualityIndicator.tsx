@@ -77,7 +77,7 @@ export default function ProofQualityIndicator({
   return (
     <GlassCard className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/70">Proof Quality</h3>
+        <h3 className="text-sm font-medium text-gray-600">Proof Quality</h3>
         {qualityData && (
           <div className={`text-sm font-light ${getQualityColor(qualityData.overall)}`}>
             {qualityData.overall}/100 - {getQualityLabel(qualityData.overall)}
@@ -86,23 +86,23 @@ export default function ProofQualityIndicator({
       </div>
 
       {loading ? (
-        <div className="text-white/40 text-xs">Analyzing proof quality...</div>
+        <div className="text-gray-400 text-xs">Analyzing proof quality...</div>
       ) : qualityData ? (
         <>
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between text-white/60">
+            <div className="flex justify-between text-[#86868b]">
               <span>Completeness:</span>
               <span className={getQualityColor(qualityData.completeness)}>
                 {qualityData.completeness}/100
               </span>
             </div>
-            <div className="flex justify-between text-white/60">
+            <div className="flex justify-between text-[#86868b]">
               <span>Relevance:</span>
               <span className={getQualityColor(qualityData.relevance)}>
                 {qualityData.relevance}/100
               </span>
             </div>
-            <div className="flex justify-between text-white/60">
+            <div className="flex justify-between text-[#86868b]">
               <span>Quality:</span>
               <span className={getQualityColor(qualityData.quality)}>
                 {qualityData.quality}/100
@@ -111,11 +111,11 @@ export default function ProofQualityIndicator({
           </div>
 
           {qualityData.warnings.length > 0 && (
-            <div className="pt-2 border-t border-white/10">
+            <div className="pt-2 border-t border-gray-200">
               <p className="text-xs text-orange-400 mb-1">Warnings:</p>
               <ul className="space-y-1">
                 {qualityData.warnings.map((warning, i) => (
-                  <li key={i} className="text-xs text-white/60 flex items-start gap-2">
+                  <li key={i} className="text-xs text-[#86868b] flex items-start gap-2">
                     <span className="text-orange-400 mt-0.5">⚠</span>
                     <span>{warning}</span>
                   </li>
@@ -125,12 +125,12 @@ export default function ProofQualityIndicator({
           )}
 
           {qualityData.recommendations.length > 0 && (
-            <div className="pt-2 border-t border-white/10">
-              <p className="text-xs text-white/50 mb-1">Recommendations:</p>
+            <div className="pt-2 border-t border-gray-200">
+              <p className="text-xs text-[#86868b] mb-1">Recommendations:</p>
               <ul className="space-y-1">
                 {qualityData.recommendations.map((rec, i) => (
-                  <li key={i} className="text-xs text-white/60 flex items-start gap-2">
-                    <span className="text-white/40 mt-0.5">•</span>
+                  <li key={i} className="text-xs text-[#86868b] flex items-start gap-2">
+                    <span className="text-gray-400 mt-0.5">•</span>
                     <span>{rec}</span>
                   </li>
                 ))}
@@ -139,7 +139,7 @@ export default function ProofQualityIndicator({
           )}
 
           {qualityData.passed && (
-            <div className="pt-2 border-t border-white/10">
+            <div className="pt-2 border-t border-gray-200">
               <div className="flex items-center gap-2 text-green-400 text-xs">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

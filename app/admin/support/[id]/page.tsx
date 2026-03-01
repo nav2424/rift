@@ -202,10 +202,10 @@ export default function AdminSupportTicketDetailPage() {
       OPEN: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       IN_PROGRESS: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
       RESOLVED: 'bg-green-500/20 text-green-400 border-green-500/30',
-      CLOSED: 'bg-white/10 text-white/60 border-white/20',
+      CLOSED: 'bg-gray-100 text-[#86868b] border-gray-300',
     }
     return (
-      <span className={`px-3 py-1 text-sm font-light rounded border ${styles[status as keyof typeof styles] || 'bg-white/10 text-white/60 border-white/20'}`}>
+      <span className={`px-3 py-1 text-sm font-light rounded border ${styles[status as keyof typeof styles] || 'bg-gray-100 text-[#86868b] border-gray-300'}`}>
         {status.replace('_', ' ')}
       </span>
     )
@@ -219,7 +219,7 @@ export default function AdminSupportTicketDetailPage() {
       CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/30',
     }
     return (
-      <span className={`px-3 py-1 text-sm font-light rounded border ${styles[priority as keyof typeof styles] || 'bg-white/10 text-white/60 border-white/20'}`}>
+      <span className={`px-3 py-1 text-sm font-light rounded border ${styles[priority as keyof typeof styles] || 'bg-gray-100 text-[#86868b] border-gray-300'}`}>
         {priority}
       </span>
     )
@@ -227,11 +227,11 @@ export default function AdminSupportTicketDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-white/10 rounded w-1/3"></div>
-            <div className="h-64 bg-white/10 rounded"></div>
+            <div className="h-10 bg-gray-100 rounded w-1/3"></div>
+            <div className="h-64 bg-gray-100 rounded"></div>
           </div>
         </div>
       </div>
@@ -245,13 +245,13 @@ export default function AdminSupportTicketDetailPage() {
   const conversation = ticket.conversationHistory || []
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link
             href="/admin/support"
-            className="text-white/60 hover:text-white font-light flex items-center gap-2 transition-colors"
+            className="text-[#86868b] hover:text-[#1d1d1f] font-light flex items-center gap-2 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -265,28 +265,28 @@ export default function AdminSupportTicketDetailPage() {
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-2xl font-light text-white">
+                <h1 className="text-2xl font-light text-[#1d1d1f]">
                   Ticket #{ticket.ticketNumber}
                 </h1>
                 {getStatusBadge(ticket.status)}
                 {getPriorityBadge(ticket.priority)}
               </div>
-              <h2 className="text-xl font-light text-white mb-4">{ticket.title}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/60 font-light">
+              <h2 className="text-xl font-light text-[#1d1d1f] mb-4">{ticket.title}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-[#86868b] font-light">
                 <div>
-                  <p className="text-white/80 mb-1">Created by:</p>
+                  <p className="text-gray-700 mb-1">Created by:</p>
                   <p>{ticket.createdBy.name || ticket.createdBy.email}</p>
                   {ticket.createdBy.riftUserId && (
                     <p className="font-mono text-xs">{ticket.createdBy.riftUserId}</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-white/80 mb-1">Category:</p>
+                  <p className="text-gray-700 mb-1">Category:</p>
                   <p>{ticket.category}</p>
                 </div>
                 {ticket.RiftTransaction && (
                   <div>
-                    <p className="text-white/80 mb-1">Related Rift:</p>
+                    <p className="text-gray-700 mb-1">Related Rift:</p>
                     <Link
                       href={`/rifts/${ticket.RiftTransaction.id}`}
                       className="text-blue-400 hover:text-blue-300"
@@ -296,7 +296,7 @@ export default function AdminSupportTicketDetailPage() {
                   </div>
                 )}
                 <div>
-                  <p className="text-white/80 mb-1">Created:</p>
+                  <p className="text-gray-700 mb-1">Created:</p>
                   <p>{formatDate(ticket.createdAt)}</p>
                 </div>
               </div>
@@ -306,14 +306,14 @@ export default function AdminSupportTicketDetailPage() {
 
         {/* Ticket Management (Admin) */}
         <GlassCard className="p-6 mb-6">
-          <h2 className="text-lg font-light text-white mb-4">Manage Ticket</h2>
+          <h2 className="text-lg font-light text-[#1d1d1f] mb-4">Manage Ticket</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="block text-sm text-white/60 font-light mb-2">Status</label>
+              <label className="block text-sm text-[#86868b] font-light mb-2">Status</label>
               <select
                 value={updateData.status}
                 onChange={(e) => setUpdateData({ ...updateData, status: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 <option value="OPEN">Open</option>
                 <option value="IN_PROGRESS">In Progress</option>
@@ -322,11 +322,11 @@ export default function AdminSupportTicketDetailPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-white/60 font-light mb-2">Priority</label>
+              <label className="block text-sm text-[#86868b] font-light mb-2">Priority</label>
               <select
                 value={updateData.priority}
                 onChange={(e) => setUpdateData({ ...updateData, priority: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -335,12 +335,12 @@ export default function AdminSupportTicketDetailPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-white/60 font-light mb-2">Assign To</label>
+              <label className="block text-sm text-[#86868b] font-light mb-2">Assign To</label>
               <input
                 type="text"
                 value={updateData.assignedToId}
                 onChange={(e) => setUpdateData({ ...updateData, assignedToId: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
                 placeholder="User ID (optional)"
               />
             </div>
@@ -359,15 +359,15 @@ export default function AdminSupportTicketDetailPage() {
 
         {/* Conversation */}
         <GlassCard className="p-6 mb-6">
-          <h2 className="text-lg font-light text-white mb-4">Conversation</h2>
+          <h2 className="text-lg font-light text-[#1d1d1f] mb-4">Conversation</h2>
           <div className="space-y-4">
             {/* Initial description */}
-            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-light text-white">{ticket.createdBy.name || ticket.createdBy.email}</span>
-                <span className="text-xs text-white/50 font-light">{formatDate(ticket.createdAt)}</span>
+                <span className="text-sm font-light text-[#1d1d1f]">{ticket.createdBy.name || ticket.createdBy.email}</span>
+                <span className="text-xs text-[#86868b] font-light">{formatDate(ticket.createdAt)}</span>
               </div>
-              <p className="text-white/80 font-light whitespace-pre-wrap">{ticket.description}</p>
+              <p className="text-gray-700 font-light whitespace-pre-wrap">{ticket.description}</p>
             </div>
 
             {/* Conversation history */}
@@ -377,16 +377,16 @@ export default function AdminSupportTicketDetailPage() {
                 className={`p-4 rounded-lg border ${
                   msg.role === 'admin'
                     ? 'bg-blue-500/10 border-blue-500/20'
-                    : 'bg-white/5 border-white/10'
+                    : 'bg-gray-50 border-gray-200'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-light text-white">
+                  <span className="text-sm font-light text-[#1d1d1f]">
                     {msg.role === 'admin' ? 'Admin' : ticket.createdBy.name || ticket.createdBy.email}
                   </span>
-                  <span className="text-xs text-white/50 font-light">{formatDate(msg.timestamp)}</span>
+                  <span className="text-xs text-[#86868b] font-light">{formatDate(msg.timestamp)}</span>
                 </div>
-                <p className="text-white/80 font-light whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-gray-700 font-light whitespace-pre-wrap">{msg.content}</p>
               </div>
             ))}
           </div>
@@ -394,12 +394,12 @@ export default function AdminSupportTicketDetailPage() {
 
         {/* Add Message */}
         <GlassCard className="p-6">
-          <h2 className="text-lg font-light text-white mb-4">Add Response</h2>
+          <h2 className="text-lg font-light text-[#1d1d1f] mb-4">Add Response</h2>
           <form onSubmit={handleSendMessage} className="space-y-4">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20 min-h-[120px]"
+              className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300 min-h-[120px]"
               placeholder="Type your response here..."
               required
             />

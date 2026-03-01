@@ -24,21 +24,21 @@ export default function LandingPage() {
 
   if (status === 'authenticated' || status === 'loading') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
         {/* Hero */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 lg:pt-32 lg:pb-24">
           <div className={`text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-white mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-[#1d1d1f] mb-6 tracking-tight">
               Why Rift beats sending money first
             </h1>
-            <p className="text-xl sm:text-2xl text-white/80 max-w-3xl mx-auto font-light mb-8">
+            <p className="text-xl sm:text-2xl text-gray-700 max-w-3xl mx-auto font-light mb-8">
               The execution layer that makes online deals executable.
             </p>
           </div>
@@ -47,13 +47,13 @@ export default function LandingPage() {
         {/* The Problem */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-light text-white mb-4">The problem</h2>
+            <h2 className="text-3xl sm:text-4xl font-light text-[#1d1d1f] mb-4">The problem</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <GlassCard className="p-8">
-              <h3 className="text-xl font-light text-white mb-4">Buyer risk</h3>
-              <ul className="space-y-3 text-white/70 font-light text-sm">
+              <h3 className="text-xl font-light text-[#1d1d1f] mb-4">Buyer risk</h3>
+              <ul className="space-y-3 text-gray-600 font-light text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-red-400 mt-1">•</span>
                   <span>Payment sent, goods never arrive</span>
@@ -74,8 +74,8 @@ export default function LandingPage() {
             </GlassCard>
 
             <GlassCard className="p-8">
-              <h3 className="text-xl font-light text-white mb-4">Seller risk</h3>
-              <ul className="space-y-3 text-white/70 font-light text-sm">
+              <h3 className="text-xl font-light text-[#1d1d1f] mb-4">Seller risk</h3>
+              <ul className="space-y-3 text-gray-600 font-light text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-red-400 mt-1">•</span>
                   <span>Goods shipped, payment never received</span>
@@ -100,8 +100,8 @@ export default function LandingPage() {
         {/* Rift Protocol */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-light text-white mb-4">Rift Protocol</h2>
-            <p className="text-white/60 font-light max-w-2xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-light text-[#1d1d1f] mb-4">Rift Protocol</h2>
+            <p className="text-[#86868b] font-light max-w-2xl mx-auto">
               How we execute deals without trust
             </p>
           </div>
@@ -131,12 +131,12 @@ export default function LandingPage() {
             ].map((item, index) => (
               <GlassCard key={index} className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/60 flex-shrink-0 text-sm font-light">
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-[#86868b] flex-shrink-0 text-sm font-light">
                     {index + 1}
                   </div>
                   <div>
-                    <h3 className="text-lg font-light text-white mb-2">{item.title}</h3>
-                    <p className="text-white/60 font-light text-sm">{item.description}</p>
+                    <h3 className="text-lg font-light text-[#1d1d1f] mb-2">{item.title}</h3>
+                    <p className="text-[#86868b] font-light text-sm">{item.description}</p>
                   </div>
                 </div>
               </GlassCard>
@@ -147,7 +147,7 @@ export default function LandingPage() {
         {/* Safety by Design */}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-light text-white mb-4">Safety by design</h2>
+            <h2 className="text-3xl sm:text-4xl font-light text-[#1d1d1f] mb-4">Safety by design</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -160,10 +160,10 @@ export default function LandingPage() {
             ].map((item, index) => (
               <GlassCard key={index} className="p-6">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <p className="text-white/80 font-light text-sm">{item}</p>
+                  <p className="text-gray-700 font-light text-sm">{item}</p>
                 </div>
               </GlassCard>
             ))}
@@ -174,9 +174,9 @@ export default function LandingPage() {
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <GlassCard className="p-8 lg:p-12">
             <div className="text-center mb-8">
-              <h2 className="text-3xl sm:text-4xl font-light text-white mb-4">Built for scale</h2>
+              <h2 className="text-3xl sm:text-4xl font-light text-[#1d1d1f] mb-4">Built for scale</h2>
             </div>
-            <div className="max-w-2xl mx-auto space-y-4 text-white/70 font-light text-sm">
+            <div className="max-w-2xl mx-auto space-y-4 text-gray-600 font-light text-sm">
               <p>
                 Rift is API-ready and designed for integration. Future integrations will enable automated workflows, 
                 marketplace connections, and enterprise-grade features.

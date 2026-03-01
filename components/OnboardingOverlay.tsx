@@ -191,7 +191,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
     <>
       {/* Backdrop overlay */}
       <div
-        className="fixed inset-0 bg-black z-[9998] transition-opacity"
+        className="fixed inset-0 bg-white z-[9998] transition-opacity"
         onClick={currentStepData.position === 'center' ? undefined : handleNext}
       />
 
@@ -219,14 +219,14 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
         <GlassCard variant="liquid" className="p-6">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-light text-white">
+              <h3 className="text-xl font-light text-[#1d1d1f]">
                 {currentStepData.title}
               </h3>
-              <span className="text-sm text-white/60">
+              <span className="text-sm text-[#86868b]">
                 {currentStep + 1} / {steps.length}
               </span>
             </div>
-            <p className="text-white/70 font-light text-sm leading-relaxed">
+            <p className="text-gray-600 font-light text-sm leading-relaxed">
               {currentStepData.description}
             </p>
           </div>
@@ -242,7 +242,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                 </PremiumButton>
                 <button
                   onClick={handleNext}
-                  className="px-4 py-2 text-white/60 hover:text-white transition-colors text-sm font-light"
+                  className="px-4 py-2 text-[#86868b] hover:text-[#1d1d1f] transition-colors text-sm font-light"
                 >
                   Skip
                 </button>
@@ -258,7 +258,7 @@ export default function OnboardingOverlay({ onComplete }: OnboardingOverlayProps
                 {currentStep < steps.length - 1 && (
                   <button
                     onClick={handleSkip}
-                    className="px-4 py-2 text-white/60 hover:text-white transition-colors text-sm font-light"
+                    className="px-4 py-2 text-[#86868b] hover:text-[#1d1d1f] transition-colors text-sm font-light"
                   >
                     Skip
                   </button>

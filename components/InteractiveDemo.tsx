@@ -113,22 +113,22 @@ export default function InteractiveDemo() {
             <button
               key={step.id}
               onClick={() => setCurrentStep(index)}
-              className={`w-full rounded-2xl px-5 py-4 text-left glass-soft hover:bg-white/[0.04] hover:border-white/15 transition-all duration-300 border ${
+              className={`w-full rounded-2xl px-5 py-4 text-left glass-soft hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 border ${
                 step.status === 'active'
-                  ? 'bg-white/[0.05] border-emerald-400/30 shadow-lg shadow-emerald-400/10'
+                  ? 'bg-gray-100 border-emerald-400/30 shadow-lg shadow-emerald-400/10'
                   : step.status === 'completed'
-                  ? 'opacity-70 border-white/5 hover:opacity-90'
-                  : 'border-white/5'
+                  ? 'opacity-70 border-gray-100 hover:opacity-90'
+                  : 'border-gray-100'
               }`}
             >
               <div className="flex items-start gap-4">
                 <div
                   className={`flex-shrink-0 w-10 h-10 rounded-xl glass-soft flex items-center justify-center transition-all duration-300 ${
                     step.status === 'active'
-                      ? 'bg-emerald-400/20 border border-emerald-400/30 text-emerald-400 scale-110'
+                      ? 'bg-emerald-500/20 border border-emerald-400/30 text-emerald-600 scale-110'
                       : step.status === 'completed'
-                      ? 'bg-emerald-400/10 border border-emerald-400/20 text-emerald-400'
-                      : 'bg-white/5 border border-white/10 text-white/50'
+                      ? 'bg-emerald-500/10 border border-emerald-400/20 text-emerald-600'
+                      : 'bg-gray-50 border border-gray-200 text-[#86868b]'
                   }`}
                 >
                   {step.status === 'completed' ? (
@@ -141,12 +141,12 @@ export default function InteractiveDemo() {
                 </div>
                 <div className="flex-1 text-left">
                   <div className={`text-base font-medium mb-1 transition-colors ${
-                    step.status === 'active' ? 'text-white' : step.status === 'completed' ? 'text-white/90' : 'text-white/70'
+                    step.status === 'active' ? 'text-[#1d1d1f]' : step.status === 'completed' ? 'text-gray-800' : 'text-gray-600'
                   }`}>
                     {step.title}
                   </div>
                   <div className={`text-sm leading-relaxed transition-colors ${
-                    step.status === 'active' ? 'text-white/60' : 'text-white/50'
+                    step.status === 'active' ? 'text-[#86868b]' : 'text-[#86868b]'
                   }`}>
                     {step.description}
                   </div>
@@ -161,19 +161,19 @@ export default function InteractiveDemo() {
           <div className="rounded-2xl glass-soft p-6 h-full opacity-95">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg glass-soft flex items-center justify-center text-white/70">
+                <div className="w-10 h-10 rounded-lg glass-soft flex items-center justify-center text-gray-600">
                   {activeStep.icon}
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">{activeStep.title}</h3>
-                  <p className="text-sm text-white/60">{activeStep.description}</p>
+                  <h3 className="text-xl font-semibold text-[#1d1d1f]">{activeStep.title}</h3>
+                  <p className="text-sm text-[#86868b]">{activeStep.description}</p>
                 </div>
               </div>
             </div>
 
             {activeStep.details && (
               <div className="mt-6 p-4 rounded-xl glass-soft">
-                <pre className="text-xs text-white/60 font-mono whitespace-pre-line leading-relaxed">
+                <pre className="text-xs text-[#86868b] font-mono whitespace-pre-line leading-relaxed">
                   {activeStep.details}
                 </pre>
               </div>
@@ -206,12 +206,12 @@ export default function InteractiveDemo() {
                     className={`h-1 flex-1 rounded-full transition-all ${
                       index <= currentStep
                         ? 'bg-blue-500'
-                        : 'bg-white/10'
+                        : 'bg-gray-100'
                     }`}
                   />
                 ))}
               </div>
-              <p className="text-xs text-white/50 mt-2 text-center">
+              <p className="text-xs text-[#86868b] mt-2 text-center">
                 Step {currentStep + 1} of {steps.length}
               </p>
             </div>

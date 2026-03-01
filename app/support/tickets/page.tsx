@@ -134,10 +134,10 @@ export default function SupportTicketsPage() {
       OPEN: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       IN_PROGRESS: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
       RESOLVED: 'bg-green-500/20 text-green-400 border-green-500/30',
-      CLOSED: 'bg-white/10 text-white/60 border-white/20',
+      CLOSED: 'bg-gray-100 text-[#86868b] border-gray-300',
     }
     return (
-      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[status as keyof typeof styles] || 'bg-white/10 text-white/60 border-white/20'}`}>
+      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[status as keyof typeof styles] || 'bg-gray-100 text-[#86868b] border-gray-300'}`}>
         {status.replace('_', ' ')}
       </span>
     )
@@ -151,7 +151,7 @@ export default function SupportTicketsPage() {
       CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/30',
     }
     return (
-      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[priority as keyof typeof styles] || 'bg-white/10 text-white/60 border-white/20'}`}>
+      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[priority as keyof typeof styles] || 'bg-gray-100 text-[#86868b] border-gray-300'}`}>
         {priority}
       </span>
     )
@@ -159,13 +159,13 @@ export default function SupportTicketsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-white/10 rounded w-1/3"></div>
+            <div className="h-10 bg-gray-100 rounded w-1/3"></div>
             <div className="grid grid-cols-1 gap-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-white/10 rounded"></div>
+                <div key={i} className="h-32 bg-gray-100 rounded"></div>
               ))}
             </div>
           </div>
@@ -179,15 +179,15 @@ export default function SupportTicketsPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-2">
+            <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] tracking-tight mb-2">
               Support Tickets
             </h1>
-            <p className="text-white/60 font-light">
+            <p className="text-[#86868b] font-light">
               View and manage your support requests
             </p>
           </div>
@@ -202,42 +202,42 @@ export default function SupportTicketsPage() {
         {/* Create Ticket Form */}
         {showCreateForm && (
           <GlassCard className="p-6 mb-8">
-            <h2 className="text-xl font-light text-white mb-4">Create Support Ticket</h2>
+            <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Create Support Ticket</h2>
             <form onSubmit={handleCreateTicket} className="space-y-4">
               <div>
-                <label className="block text-sm text-white/60 font-light mb-2">
+                <label className="block text-sm text-[#86868b] font-light mb-2">
                   Title *
                 </label>
                 <input
                   type="text"
                   value={newTicket.title}
                   onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                  className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
                   placeholder="Brief description of your issue"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm text-white/60 font-light mb-2">
+                <label className="block text-sm text-[#86868b] font-light mb-2">
                   Description *
                 </label>
                 <textarea
                   value={newTicket.description}
                   onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20 min-h-[120px]"
+                  className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300 min-h-[120px]"
                   placeholder="Please provide details about your issue..."
                   required
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-white/60 font-light mb-2">
+                  <label className="block text-sm text-[#86868b] font-light mb-2">
                     Category
                   </label>
                   <select
                     value={newTicket.category}
                     onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
                   >
                     <option value="GENERAL">General</option>
                     <option value="TECHNICAL">Technical</option>
@@ -247,13 +247,13 @@ export default function SupportTicketsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-white/60 font-light mb-2">
+                  <label className="block text-sm text-[#86868b] font-light mb-2">
                     Priority
                   </label>
                   <select
                     value={newTicket.priority}
                     onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -281,11 +281,11 @@ export default function SupportTicketsPage() {
         {/* Filter */}
         <GlassCard className="p-4 mb-6">
           <div className="flex items-center gap-4">
-            <label className="text-sm text-white/60 font-light">Filter:</label>
+            <label className="text-sm text-[#86868b] font-light">Filter:</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               <option value="all">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -307,22 +307,22 @@ export default function SupportTicketsPage() {
         <div className="space-y-4">
           {tickets.map((ticket) => (
             <Link key={ticket.id} href={`/support/tickets/${ticket.id}`}>
-              <GlassCard className="p-6 hover:bg-white/5 transition-colors cursor-pointer">
+              <GlassCard className="p-6 hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-light text-white">
+                      <h3 className="text-xl font-light text-[#1d1d1f]">
                         #{ticket.ticketNumber} - {ticket.title}
                       </h3>
                       {getStatusBadge(ticket.status)}
                       {getPriorityBadge(ticket.priority)}
                     </div>
-                    <p className="text-white/60 font-light line-clamp-2">
+                    <p className="text-[#86868b] font-light line-clamp-2">
                       {ticket.description}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-sm text-white/50 font-light">
+                <div className="flex items-center justify-between text-sm text-[#86868b] font-light">
                   <div className="flex items-center gap-4">
                     <span>{ticket.category}</span>
                     {ticket.assignedTo && (
@@ -338,7 +338,7 @@ export default function SupportTicketsPage() {
 
         {tickets.length === 0 && !loading && (
           <GlassCard className="p-12 text-center">
-            <p className="text-white/60 font-light text-lg">
+            <p className="text-[#86868b] font-light text-lg">
               No tickets found{filterStatus !== 'all' ? ` with status "${filterStatus}"` : ''}
             </p>
             {!showCreateForm && (

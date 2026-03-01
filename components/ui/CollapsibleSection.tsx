@@ -23,14 +23,14 @@ export default function CollapsibleSection({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-4 text-left hover:opacity-80 transition-opacity group mb-6"
       >
-        <h2 className="text-2xl font-light text-white">
+        <h2 className="text-2xl font-light text-[#1d1d1f]">
           {title}
           {count !== undefined && (
-            <span className="ml-2 text-white/60 font-light">({count})</span>
+            <span className="ml-2 text-[#86868b] font-light">({count})</span>
           )}
         </h2>
         <svg 
-          className={`w-6 h-6 text-white/60 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-6 h-6 text-[#86868b] flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"

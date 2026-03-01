@@ -25,7 +25,7 @@ export default function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
   return (
     <div className={className}>
       {/* Tab buttons */}
-      <div className="flex gap-2 border-b border-white/10 mb-6">
+      <div className="flex gap-2 border-b border-gray-200 mb-6">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id
           return (
@@ -34,8 +34,8 @@ export default function Tabs({ tabs, defaultTab, className = '' }: TabsProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2 text-sm font-light transition-colors border-b-2 -mb-px ${
                 isActive
-                  ? 'text-white border-white/30'
-                  : 'text-white/60 border-transparent hover:text-white/80 hover:border-white/10'
+                  ? 'text-[#1d1d1f] border-gray-300'
+                  : 'text-[#86868b] border-transparent hover:text-gray-700 hover:border-gray-200'
               }`}
             >
               {tab.label}

@@ -279,26 +279,26 @@ export default function AdminVaultPage() {
       case 'PENDING':
         return 'text-yellow-400'
       default:
-        return 'text-white/60'
+        return 'text-[#86868b]'
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading vault data...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading vault data...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <GlassCard className="p-8">
             <div className="text-center">
               <p className="text-red-400 mb-4">{error}</p>
-              <Link href="/admin" className="text-white/80 hover:text-white underline">
+              <Link href="/admin" className="text-gray-700 hover:text-[#1d1d1f] underline">
                 Back to Admin Panel
               </Link>
             </div>
@@ -313,20 +313,20 @@ export default function AdminVaultPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-4xl font-light text-white tracking-tight">Vault Console</h1>
-              <p className="text-white/60 font-light mt-2">
+              <h1 className="text-4xl font-light text-[#1d1d1f] tracking-tight">Vault Console</h1>
+              <p className="text-[#86868b] font-light mt-2">
                 Rift #{vaultData.rift.riftNumber} - {vaultData.rift.itemTitle}
               </p>
             </div>
             <Link 
               href="/admin"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -340,27 +340,27 @@ export default function AdminVaultPage() {
         <GlassCard className="mb-6 p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-white/40 font-light mb-1">Status</p>
-              <p className="text-white font-light">{vaultData.rift.status}</p>
+              <p className="text-xs text-gray-400 font-light mb-1">Status</p>
+              <p className="text-[#1d1d1f] font-light">{vaultData.rift.status}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40 font-light mb-1">Item Type</p>
-              <p className="text-white font-light">{vaultData.rift.itemType}</p>
+              <p className="text-xs text-gray-400 font-light mb-1">Item Type</p>
+              <p className="text-[#1d1d1f] font-light">{vaultData.rift.itemType}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40 font-light mb-1">Buyer</p>
-              <p className="text-white font-light text-sm">{vaultData.rift.buyer.email}</p>
+              <p className="text-xs text-gray-400 font-light mb-1">Buyer</p>
+              <p className="text-[#1d1d1f] font-light text-sm">{vaultData.rift.buyer.email}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40 font-light mb-1">Seller</p>
-              <p className="text-white font-light text-sm">{vaultData.rift.seller.email}</p>
+              <p className="text-xs text-gray-400 font-light mb-1">Seller</p>
+              <p className="text-[#1d1d1f] font-light text-sm">{vaultData.rift.seller.email}</p>
             </div>
           </div>
         </GlassCard>
 
         {/* Duplicate Check & Hash Search */}
         <GlassCard className="mb-6 p-6">
-          <h2 className="text-xl font-light text-white mb-4">Proof Verification Tools</h2>
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Proof Verification Tools</h2>
           <div className="flex gap-4 mb-4">
             <PremiumButton
               onClick={checkDuplicates}
@@ -395,12 +395,12 @@ export default function AdminVaultPage() {
               </div>
               
               {duplicateCheck.isDuplicate && (
-                <div className="space-y-2 text-sm text-white/80">
+                <div className="space-y-2 text-sm text-gray-700">
                   <p className="font-medium">Duplicate Rifts:</p>
-                  <ul className="list-disc list-inside space-y-1 text-white/60">
+                  <ul className="list-disc list-inside space-y-1 text-[#86868b]">
                     {duplicateCheck.duplicateRifts?.map((rift: any) => (
                       <li key={rift.id}>
-                        <Link href={`/admin/rifts/${rift.id}`} className="hover:text-white underline">
+                        <Link href={`/admin/rifts/${rift.id}`} className="hover:text-[#1d1d1f] underline">
                           Rift #{rift.riftNumber} - {rift.itemTitle} ({rift.status})
                         </Link>
                         {' '}by {rift.seller.email}
@@ -411,7 +411,7 @@ export default function AdminVaultPage() {
                   {duplicateCheck.recommendations.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-current/20">
                       <p className="font-medium mb-1">Recommendations:</p>
-                      <ul className="list-disc list-inside space-y-1 text-white/70">
+                      <ul className="list-disc list-inside space-y-1 text-gray-600">
                         {duplicateCheck.recommendations.map((rec: string, idx: number) => (
                           <li key={idx}>{rec}</li>
                         ))}
@@ -426,34 +426,34 @@ export default function AdminVaultPage() {
 
         {/* Assets */}
         <GlassCard className="mb-6 p-6">
-          <h2 className="text-xl font-light text-white mb-6">Vault Assets ({vaultData.assets.length})</h2>
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Vault Assets ({vaultData.assets.length})</h2>
 
           {vaultData.assets.length === 0 ? (
-            <p className="text-white/60 font-light">No assets in vault yet.</p>
+            <p className="text-[#86868b] font-light">No assets in vault yet.</p>
           ) : (
             <div className="space-y-4">
               {vaultData.assets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="p-4 border border-white/10 rounded-lg hover:border-white/20 transition-colors"
+                  className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-white font-light">{getAssetTypeLabel(asset.assetType)}</span>
+                        <span className="text-[#1d1d1f] font-light">{getAssetTypeLabel(asset.assetType)}</span>
                         {asset.fileName && (
-                          <span className="text-white/60 font-light text-sm">{asset.fileName}</span>
+                          <span className="text-[#86868b] font-light text-sm">{asset.fileName}</span>
                         )}
                         <span className={`text-xs px-2 py-1 rounded ${getScanStatusColor(asset.scanStatus)} bg-current/10`}>
                           {asset.scanStatus}
                         </span>
                         {asset.qualityScore !== null && asset.qualityScore !== undefined && (
-                          <span className="text-white/40 text-xs">
+                          <span className="text-gray-400 text-xs">
                             Quality: {asset.qualityScore}/100
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-white/40 font-light font-mono flex items-center gap-2">
+                      <div className="text-xs text-gray-400 font-light font-mono flex items-center gap-2">
                         <span>SHA256: {asset.sha256.substring(0, 16)}...</span>
                         <button
                           onClick={() => {
@@ -468,7 +468,7 @@ export default function AdminVaultPage() {
                         </button>
                       </div>
                       {asset.metadataJson && (
-                        <div className="mt-2 text-xs text-white/40">
+                        <div className="mt-2 text-xs text-gray-400">
                           {asset.metadataJson.pageCount && <span>Pages: {asset.metadataJson.pageCount} </span>}
                           {asset.metadataJson.textLength && <span>Text: {asset.metadataJson.textLength} chars </span>}
                         </div>
@@ -477,7 +477,7 @@ export default function AdminVaultPage() {
                     <div className="flex gap-2 ml-4">
                       <button
                         onClick={() => viewAsset(asset.id)}
-                        className="px-3 py-1.5 text-xs font-light text-white/80 hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors"
+                        className="px-3 py-1.5 text-xs font-light text-gray-700 hover:text-[#1d1d1f] border border-gray-300 hover:border-white/40 rounded transition-colors"
                       >
                         View
                       </button>
@@ -492,12 +492,12 @@ export default function AdminVaultPage() {
 
                   {/* Buyer Access History */}
                   {asset.buyerAccessHistory.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/10">
-                      <p className="text-xs text-white/40 font-light mb-2">Buyer Access History:</p>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-400 font-light mb-2">Buyer Access History:</p>
                       <div className="space-y-1">
                         {asset.buyerAccessHistory.map((event, idx) => (
-                          <div key={idx} className="text-xs text-white/60 font-light">
-                            <span className="text-white/80">{event.eventType.replace(/_/g, ' ')}</span>
+                          <div key={idx} className="text-xs text-[#86868b] font-light">
+                            <span className="text-gray-700">{event.eventType.replace(/_/g, ' ')}</span>
                             {' '}at {new Date(event.timestampUtc).toLocaleString()}
                           </div>
                         ))}
@@ -514,21 +514,21 @@ export default function AdminVaultPage() {
         {viewingAsset && viewerUrl && (
           <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
             {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-            <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={() => {
+            <div className="fixed inset-0 bg-white pointer-events-auto" style={{ zIndex: 99998 }} onClick={() => {
               setViewingAsset(null)
               setViewerUrl(null)
             }}></div>
             {/* Modal */}
             <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
-              <div className="bg-black border border-white/20 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col pointer-events-auto">
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h3 className="text-white font-light">Asset Viewer</h3>
+              <div className="bg-white border border-gray-300 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col pointer-events-auto">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-[#1d1d1f] font-light">Asset Viewer</h3>
                 <button
                   onClick={() => {
                     setViewingAsset(null)
                     setViewerUrl(null)
                   }}
-                  className="text-white/60 hover:text-white"
+                  className="text-[#86868b] hover:text-[#1d1d1f]"
                 >
                   ✕
                 </button>
@@ -545,30 +545,30 @@ export default function AdminVaultPage() {
 
         {/* Events Log */}
         <GlassCard className="mb-6 p-6">
-          <h2 className="text-xl font-light text-white mb-6">Recent Events ({vaultData.events.length})</h2>
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Recent Events ({vaultData.events.length})</h2>
           {vaultData.events.length === 0 ? (
-            <p className="text-white/60 font-light">No events logged yet.</p>
+            <p className="text-[#86868b] font-light">No events logged yet.</p>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {vaultData.events.map((event) => (
                 <div
                   key={event.id}
-                  className="p-3 border border-white/10 rounded text-sm"
+                  className="p-3 border border-gray-200 rounded text-sm"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-white font-light">{event.eventType.replace(/_/g, ' ')}</span>
+                      <span className="text-[#1d1d1f] font-light">{event.eventType.replace(/_/g, ' ')}</span>
                       {event.asset && (
-                        <span className="text-white/60 ml-2">
+                        <span className="text-[#86868b] ml-2">
                           - {event.asset.fileName || event.asset.assetType}
                         </span>
                       )}
                     </div>
-                    <div className="text-white/40 text-xs">
+                    <div className="text-gray-400 text-xs">
                       {new Date(event.timestampUtc).toLocaleString()}
                     </div>
                   </div>
-                  <div className="text-white/60 text-xs mt-1">
+                  <div className="text-[#86868b] text-xs mt-1">
                     Actor: {event.actorRole}
                   </div>
                 </div>
@@ -581,24 +581,24 @@ export default function AdminVaultPage() {
         {hashSearchResults && (
           <GlassCard className="mb-6 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-light text-white">Hash Search Results</h2>
+              <h2 className="text-xl font-light text-[#1d1d1f]">Hash Search Results</h2>
               <button
                 onClick={() => setHashSearchResults(null)}
-                className="text-white/60 hover:text-white"
+                className="text-[#86868b] hover:text-[#1d1d1f]"
               >
                 ✕
               </button>
             </div>
             {hashSearchResults.found ? (
               <div className="space-y-4">
-                <div className="text-sm text-white/80">
+                <div className="text-sm text-gray-700">
                   Found {hashSearchResults.totalAssets} asset(s) across {hashSearchResults.totalRifts} Rift(s)
                 </div>
                 <div className="space-y-3">
                   {hashSearchResults.rifts.map((rift: any) => (
-                    <div key={rift.id} className="p-3 border border-white/10 rounded">
+                    <div key={rift.id} className="p-3 border border-gray-200 rounded">
                       <div className="flex items-center justify-between mb-2">
-                        <Link href={`/admin/rifts/${rift.id}`} className="text-white hover:underline font-medium">
+                        <Link href={`/admin/rifts/${rift.id}`} className="text-[#1d1d1f] hover:underline font-medium">
                           Rift #{rift.riftNumber} - {rift.itemTitle}
                         </Link>
                         <span className={`text-xs px-2 py-1 rounded ${
@@ -608,7 +608,7 @@ export default function AdminVaultPage() {
                           {rift.status}
                         </span>
                       </div>
-                      <div className="text-xs text-white/60 space-y-1">
+                      <div className="text-xs text-[#86868b] space-y-1">
                         <div>Seller: {rift.seller.email}</div>
                         <div>Buyer: {rift.buyer.email}</div>
                         <div>Submitted: {new Date(rift.proofSubmittedAt).toLocaleString()}</div>
@@ -619,7 +619,7 @@ export default function AdminVaultPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-white/60">No other transactions found with this hash.</p>
+              <p className="text-[#86868b]">No other transactions found with this hash.</p>
             )}
           </GlassCard>
         )}
@@ -627,23 +627,23 @@ export default function AdminVaultPage() {
         {/* Admin Reviews */}
         {vaultData.reviews.length > 0 && (
           <GlassCard className="p-6">
-            <h2 className="text-xl font-light text-white mb-6">Admin Reviews</h2>
+            <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Admin Reviews</h2>
             <div className="space-y-3">
               {vaultData.reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="p-3 border border-white/10 rounded"
+                  className="p-3 border border-gray-200 rounded"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-white font-light">{review.status}</span>
+                      <span className="text-[#1d1d1f] font-light">{review.status}</span>
                       {review.reviewer && (
-                        <span className="text-white/60 ml-2 text-sm">
+                        <span className="text-[#86868b] ml-2 text-sm">
                           by {review.reviewer.name || review.reviewer.email}
                         </span>
                       )}
                     </div>
-                    <div className="text-white/40 text-xs">
+                    <div className="text-gray-400 text-xs">
                       {new Date(review.createdAt).toLocaleString()}
                     </div>
                   </div>

@@ -93,11 +93,11 @@ export default function UserLevelBadge({
   return (
     <div className={`${className}`}>
       <div className="flex items-center gap-3 mb-3">
-        <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-xl">
-          <span className="text-sm font-light text-white/60 uppercase tracking-wide">
+        <div className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl">
+          <span className="text-sm font-light text-[#86868b] uppercase tracking-wide">
             Level
           </span>
-          <div className="text-xl font-light text-white mt-1">
+          <div className="text-xl font-light text-[#1d1d1f] mt-1">
             {displayName}
           </div>
         </div>
@@ -105,22 +105,22 @@ export default function UserLevelBadge({
 
       {progress.nextLevel && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-white/50">
+          <div className="flex items-center justify-between text-xs text-[#86868b]">
             <span>Progress to {getLevelDisplayName(progress.nextLevel)}</span>
             <span>{Math.round(progress.progress * 100)}%</span>
           </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500/50 to-purple-500/50 transition-all duration-500"
               style={{ width: `${progress.progress * 100}%` }}
             />
           </div>
-          <p className="text-xs text-white/40 font-light">{progress.message}</p>
+          <p className="text-xs text-gray-400 font-light">{progress.message}</p>
         </div>
       )}
 
       {!progress.nextLevel && (
-        <div className="flex items-center gap-2 text-xs text-white/50 font-light">
+        <div className="flex items-center gap-2 text-xs text-[#86868b] font-light">
           <svg className="w-4 h-4 text-yellow-400/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>

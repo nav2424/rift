@@ -22,8 +22,8 @@ export default async function AdminChargebackDetailPage({
 
   if (!dispute) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Dispute not found.</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Dispute not found.</div>
       </div>
     )
   }
@@ -49,9 +49,9 @@ export default async function AdminChargebackDetailPage({
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
-        <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-8">
+        <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] tracking-tight mb-8">
           Stripe Dispute: {disputeId.slice(-8)}
         </h1>
         <ChargebackDetail dispute={dispute} rift={rift} />

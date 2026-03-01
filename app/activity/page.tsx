@@ -223,7 +223,7 @@ export default function ActivityPage() {
 
   const getStatusColor = (status?: string) => {
     if (!status) {
-      return { text: 'text-white/60', bg: 'bg-white/5', border: 'border-white/10' }
+      return { text: 'text-[#86868b]', bg: 'bg-gray-50', border: 'border-gray-200' }
     }
     switch (status) {
       case 'RELEASED': return { text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30' }
@@ -235,7 +235,7 @@ export default function ActivityPage() {
       case 'IN_TRANSIT': return { text: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30' }
       case 'DELIVERED_PENDING_RELEASE': return { text: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/30' }
       case 'FUNDED': return { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }
-      default: return { text: 'text-white/60', bg: 'bg-white/5', border: 'border-white/10' }
+      default: return { text: 'text-[#86868b]', bg: 'bg-gray-50', border: 'border-gray-200' }
     }
   }
 
@@ -297,7 +297,7 @@ export default function ActivityPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-white/60 font-light">Loading...</div>
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -309,7 +309,7 @@ export default function ActivityPage() {
   return (
     <div className="space-y-8">
         {/* Header */}
-        <div className="mb-10 pb-6 border-b border-white/10">
+        <div className="mb-10 pb-6 border-b border-gray-200">
           <div className="flex items-center gap-4 mb-3">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-500/10 flex items-center justify-center border border-cyan-500/20 shadow-lg shadow-cyan-500/10">
               <svg className="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,14 +317,14 @@ export default function ActivityPage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-1">
+              <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] tracking-tight mb-1">
                 Recent Activity
               </h1>
-              <p className="text-white/50 font-light text-sm">All your transaction activity</p>
+              <p className="text-[#86868b] font-light text-sm">All your transaction activity</p>
             </div>
             <Link 
               href="/api/rifts/export"
-              className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 border border-white/20 text-white/80 font-light flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 border border-gray-300 text-gray-700 font-light flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -343,8 +343,8 @@ export default function ActivityPage() {
                 onClick={() => setFilter(f)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-light transition-all duration-200 ${
                   filter === f
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
-                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:border-white/20'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-[#1d1d1f] border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
+                    : 'bg-gray-50 text-[#86868b] border border-gray-200 hover:bg-white/8 hover:border-gray-300'
                 }`}
               >
                 {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -354,7 +354,7 @@ export default function ActivityPage() {
 
           <div className="relative">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
-              <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -363,7 +363,7 @@ export default function ActivityPage() {
               placeholder="Search by Rift number, item title, or user..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-[#1d1d1f] placeholder-gray-400 font-light focus:outline-none focus:border-cyan-500/30 focus:bg-white/8 transition-all duration-200"
             />
           </div>
         </div>
@@ -389,14 +389,14 @@ export default function ActivityPage() {
               const statusColors = getStatusColor(activity.status)
               return (
                 <Link key={activity.id} href={`/rifts/${activity.id}`}>
-                  <GlassCard className="hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer group">
+                  <GlassCard className="hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 cursor-pointer group">
                     <div className="p-6">
                       <div className="flex items-start gap-4">
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4 mb-3">
-                            <p className="text-white font-light leading-relaxed text-base">{activity.message}</p>
-                            <span className="text-white/40 font-light text-xs whitespace-nowrap flex-shrink-0 pt-1">
+                            <p className="text-[#1d1d1f] font-light leading-relaxed text-base">{activity.message}</p>
+                            <span className="text-gray-400 font-light text-xs whitespace-nowrap flex-shrink-0 pt-1">
                               {new Date(activity.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -408,7 +408,7 @@ export default function ActivityPage() {
                           <div className="flex items-center gap-4 flex-wrap">
                             {activity.status && <StatusPill status={activity.status} />}
                             {activity.amount !== null && activity.amount !== undefined && (
-                              <span className="text-white/70 font-light text-sm font-mono">
+                              <span className="text-gray-600 font-light text-sm font-mono">
                                 {formatCurrency(activity.amount, activity.currency || 'CAD')}
                               </span>
                             )}

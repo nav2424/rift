@@ -87,7 +87,7 @@ export default function MessagingPreview({ transactionId }: MessagingPreviewProp
   if (loading) {
     return (
       <div className="p-4">
-        <div className="text-white/40 font-light text-xs">Loading messages...</div>
+        <div className="text-gray-400 font-light text-xs">Loading messages...</div>
       </div>
     )
   }
@@ -97,12 +97,12 @@ export default function MessagingPreview({ transactionId }: MessagingPreviewProp
     return (
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <h3 className="text-sm font-light text-white/60">Messages</h3>
+          <h3 className="text-sm font-light text-[#86868b]">Messages</h3>
         </div>
-        <p className="text-white/40 font-light text-xs">No conversation yet</p>
+        <p className="text-gray-400 font-light text-xs">No conversation yet</p>
       </div>
     )
   }
@@ -114,7 +114,7 @@ export default function MessagingPreview({ transactionId }: MessagingPreviewProp
           <svg className="w-4 h-4 text-blue-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <h3 className="text-sm font-light text-white/70">Messages</h3>
+          <h3 className="text-sm font-light text-gray-600">Messages</h3>
         </div>
         <PremiumButton
           variant="ghost"
@@ -126,8 +126,8 @@ export default function MessagingPreview({ transactionId }: MessagingPreviewProp
       </div>
 
       {messages.length === 0 ? (
-        <div className="py-4 text-center border-t border-white/5 pt-4">
-          <p className="text-white/40 font-light text-xs mb-3">No messages yet</p>
+        <div className="py-4 text-center border-t border-gray-100 pt-4">
+          <p className="text-gray-400 font-light text-xs mb-3">No messages yet</p>
           <PremiumButton
             variant="outline"
             onClick={handleOpenConversation}
@@ -149,13 +149,13 @@ export default function MessagingPreview({ transactionId }: MessagingPreviewProp
                   className={`max-w-[90%] rounded-lg px-3 py-2 ${
                     isMine
                       ? 'bg-gradient-to-br from-blue-500/30 to-blue-600/25 border border-blue-400/30'
-                      : 'bg-white/5 border border-white/10'
+                      : 'bg-gray-50 border border-gray-200'
                   }`}
                 >
-                  <p className="text-white text-xs font-light leading-relaxed break-words line-clamp-3">
+                  <p className="text-[#1d1d1f] text-xs font-light leading-relaxed break-words line-clamp-3">
                     {message.body}
                   </p>
-                  <p className={`text-[9px] mt-1.5 ${isMine ? 'text-blue-100/50' : 'text-white/30'} font-light`}>
+                  <p className={`text-[9px] mt-1.5 ${isMine ? 'text-blue-100/50' : 'text-gray-400'} font-light`}>
                     {formatTime(message.createdAt)}
                   </p>
                 </div>

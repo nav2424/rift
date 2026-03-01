@@ -43,25 +43,25 @@ export default function UGCContractBuilder({
   return (
     <div className="space-y-6">
       {/* Deliverables */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Deliverables</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Deliverables</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-white/70 mb-1">Number of assets</label>
+            <label className="block text-xs text-gray-600 mb-1">Number of assets</label>
             <input
               type="number"
               min={1}
               value={state.deliverableCount}
               onChange={(e) => update({ deliverableCount: parseInt(e.target.value, 10) || 0 })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
           <div>
-            <label className="block text-xs text-white/70 mb-1">Format</label>
+            <label className="block text-xs text-gray-600 mb-1">Format</label>
             <select
               value={state.deliverableFormat}
               onChange={(e) => update({ deliverableFormat: e.target.value as any })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               <option value="video">Video</option>
               <option value="photo">Photo</option>
@@ -70,11 +70,11 @@ export default function UGCContractBuilder({
         </div>
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           <div>
-            <label className="block text-xs text-white/70 mb-1">Aspect ratio</label>
+            <label className="block text-xs text-gray-600 mb-1">Aspect ratio</label>
             <select
               value={state.aspectRatio}
               onChange={(e) => update({ aspectRatio: e.target.value as any })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               <option value="9:16">9:16 (vertical)</option>
               <option value="1:1">1:1 (square)</option>
@@ -82,25 +82,25 @@ export default function UGCContractBuilder({
             </select>
           </div>
           <div>
-            <label className="block text-xs text-white/70 mb-1">Resolution</label>
+            <label className="block text-xs text-gray-600 mb-1">Resolution</label>
             <input
               type="text"
               value={state.resolution}
               onChange={(e) => update({ resolution: e.target.value })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
               placeholder="e.g., 1080x1920"
             />
           </div>
         </div>
         {state.deliverableFormat === 'video' && (
           <div className="mt-4">
-            <label className="block text-xs text-white/70 mb-1">Duration (seconds)</label>
+            <label className="block text-xs text-gray-600 mb-1">Duration (seconds)</label>
             <input
               type="number"
               min={1}
               value={state.durationSeconds ?? ''}
               onChange={(e) => update({ durationSeconds: parseInt(e.target.value, 10) || 0 })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
         )}
@@ -110,68 +110,68 @@ export default function UGCContractBuilder({
             type="checkbox"
             checked={state.rawFilesIncluded}
             onChange={(e) => update({ rawFilesIncluded: e.target.checked })}
-            className="w-4 h-4 rounded border border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
+            className="w-4 h-4 rounded border border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
           />
-          <label htmlFor="ugc-raw-files" className="text-xs text-white/70">
+          <label htmlFor="ugc-raw-files" className="text-xs text-gray-600">
             Raw files (project files, unedited footage) included
           </label>
         </div>
       </div>
 
       {/* Deadlines */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Deadlines</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Deadlines</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-white/70 mb-1">Draft due date</label>
+            <label className="block text-xs text-gray-600 mb-1">Draft due date</label>
             <input
               type="date"
               value={state.draftDueDate}
               onChange={(e) => update({ draftDueDate: e.target.value })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
           <div>
-            <label className="block text-xs text-white/70 mb-1">Final due date</label>
+            <label className="block text-xs text-gray-600 mb-1">Final due date</label>
             <input
               type="date"
               value={state.finalDueDate}
               onChange={(e) => update({ finalDueDate: e.target.value })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
         </div>
       </div>
 
       {/* Revisions */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Revisions</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Revisions</h3>
         <div className="grid md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs text-white/70 mb-1">Revision rounds</label>
+            <label className="block text-xs text-gray-600 mb-1">Revision rounds</label>
             <input
               type="number"
               min={0}
               value={state.revisionCount}
               onChange={(e) => update({ revisionCount: parseInt(e.target.value, 10) || 0 })}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs text-white/70 mb-1">Definition of a revision</label>
+            <label className="block text-xs text-gray-600 mb-1">Definition of a revision</label>
             <textarea
               value={state.revisionDefinitionText}
               onChange={(e) => update({ revisionDefinitionText: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
             />
           </div>
         </div>
       </div>
 
       {/* Usage rights */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Usage rights</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Usage rights</h3>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <input
@@ -179,26 +179,26 @@ export default function UGCContractBuilder({
               type="checkbox"
               checked={state.organicUseAllowed}
               onChange={(e) => update({ organicUseAllowed: e.target.checked })}
-              className="w-4 h-4 rounded border border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
+              className="w-4 h-4 rounded border border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
             />
-            <label htmlFor="ugc-organic" className="text-xs text-white/70">
+            <label htmlFor="ugc-organic" className="text-xs text-gray-600">
               Organic use allowed on brand channels
             </label>
           </div>
           <div className="flex items-center justify-between mt-2">
             <div>
-              <p className="text-xs text-white/70">Paid usage / ads</p>
-              <p className="text-[11px] text-white/50">
+              <p className="text-xs text-gray-600">Paid usage / ads</p>
+              <p className="text-[11px] text-[#86868b]">
                 Allow brand to run paid ads using the content.
               </p>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs text-white/80">
+            <label className="inline-flex items-center gap-2 text-xs text-gray-700">
               <span>Enabled</span>
               <input
                 type="checkbox"
                 checked={state.paidUsageEnabled}
                 onChange={(e) => update({ paidUsageEnabled: e.target.checked })}
-                className="w-4 h-4 rounded border border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
+                className="w-4 h-4 rounded border border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
               />
             </label>
           </div>
@@ -207,13 +207,13 @@ export default function UGCContractBuilder({
             <div className="mt-3 space-y-3">
               <div className="grid md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-white/70 mb-1">Duration</label>
+                  <label className="block text-xs text-gray-600 mb-1">Duration</label>
                   <select
                     value={state.paidUsageDurationDays ?? 30}
                     onChange={(e) =>
                       update({ paidUsageDurationDays: parseInt(e.target.value, 10) as any })
                     }
-                    className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
                   >
                     <option value={30}>30 days</option>
                     <option value={90}>90 days</option>
@@ -222,11 +222,11 @@ export default function UGCContractBuilder({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-white/70 mb-1">Territory</label>
+                  <label className="block text-xs text-gray-600 mb-1">Territory</label>
                   <select
                     value={state.paidUsageTerritory}
                     onChange={(e) => update({ paidUsageTerritory: e.target.value as any })}
-                    className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
                   >
                     <option value="Global">Global</option>
                     <option value="Canada">Canada</option>
@@ -235,7 +235,7 @@ export default function UGCContractBuilder({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-white/70 mb-1">Platforms</label>
+                  <label className="block text-xs text-gray-600 mb-1">Platforms</label>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {['Meta', 'TikTok', 'YouTube', 'Other'].map((p) => (
                       <button
@@ -251,7 +251,7 @@ export default function UGCContractBuilder({
                         className={`px-2 py-1 rounded-full text-[11px] border ${
                           state.paidUsagePlatforms.includes(p)
                             ? 'bg-blue-500/30 border-blue-400 text-blue-100'
-                            : 'bg-white/[0.04] border-white/20 text-white/60'
+                            : 'bg-gray-50 border-gray-300 text-[#86868b]'
                         }`}
                       >
                         {p}
@@ -262,12 +262,12 @@ export default function UGCContractBuilder({
               </div>
               {state.paidUsageTerritory === 'Custom' && (
                 <div>
-                  <label className="block text-xs text-white/70 mb-1">Custom territory</label>
+                  <label className="block text-xs text-gray-600 mb-1">Custom territory</label>
                   <input
                     type="text"
                     value={state.paidUsageTerritoryCustom ?? ''}
                     onChange={(e) => update({ paidUsageTerritoryCustom: e.target.value })}
-                    className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
                     placeholder="e.g., North America, EU only"
                   />
                 </div>
@@ -278,17 +278,17 @@ export default function UGCContractBuilder({
       </div>
 
       {/* Whitelisting */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Whitelisting</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Whitelisting</h3>
         <div className="flex items-center gap-2 mb-3">
           <input
             id="ugc-whitelisting"
             type="checkbox"
             checked={state.whitelistingEnabled}
             onChange={(e) => update({ whitelistingEnabled: e.target.checked })}
-            className="w-4 h-4 rounded border border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
+            className="w-4 h-4 rounded border border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/40"
           />
-          <label htmlFor="ugc-whitelisting" className="text-xs text-white/70">
+          <label htmlFor="ugc-whitelisting" className="text-xs text-gray-600">
             Allow brand to run ads from creator’s handle (whitelisting)
           </label>
         </div>
@@ -297,18 +297,18 @@ export default function UGCContractBuilder({
             value={state.whitelistingTermsText}
             onChange={(e) => update({ whitelistingTermsText: e.target.value })}
             rows={3}
-            className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-xs text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+            className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-xs text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
             placeholder="Describe whitelisting terms: duration, spend caps, approval process..."
           />
         )}
       </div>
 
       {/* Acceptance window + kill fee + commercials */}
-      <div className="p-5 border border-white/10 rounded-xl bg-white/[0.03]">
-        <h3 className="text-sm font-light text-white mb-3">Acceptance window & kill fee</h3>
+      <div className="p-5 border border-gray-200 rounded-xl bg-gray-50">
+        <h3 className="text-sm font-light text-[#1d1d1f] mb-3">Acceptance window & kill fee</h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-white/70 mb-1">Acceptance window (days)</label>
+            <label className="block text-xs text-gray-600 mb-1">Acceptance window (days)</label>
             <input
               type="number"
               min={1}
@@ -316,11 +316,11 @@ export default function UGCContractBuilder({
               onChange={(e) =>
                 update({ acceptanceWindowDays: parseInt(e.target.value, 10) || 0 })
               }
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
           <div>
-            <label className="block text-xs text-white/70 mb-1">Kill fee after draft (%)</label>
+            <label className="block text-xs text-gray-600 mb-1">Kill fee after draft (%)</label>
             <input
               type="number"
               min={0}
@@ -329,16 +329,16 @@ export default function UGCContractBuilder({
               onChange={(e) =>
                 update({ killFeePercentAfterDraft: parseInt(e.target.value, 10) || 0 })
               }
-              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
           </div>
         </div>
 
-        <div className="mt-5 border-t border-white/10 pt-4 space-y-2">
-          <p className="text-xs text-white/60 font-light uppercase tracking-widest">
+        <div className="mt-5 border-t border-gray-200 pt-4 space-y-2">
+          <p className="text-xs text-[#86868b] font-light uppercase tracking-widest">
             Milestone Split Preview
           </p>
-          <div className="space-y-1 text-xs text-white/80">
+          <div className="space-y-1 text-xs text-gray-700">
             <div className="flex items-center justify-between">
               <span>Draft Delivery (40%)</span>
               <span>

@@ -209,8 +209,8 @@ export default function AccountPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -244,7 +244,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -252,57 +252,57 @@ export default function AccountPage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl md:text-4xl font-light text-white mb-3 tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-light text-[#1d1d1f] mb-3 tracking-tight">
             Account
           </h1>
-          <p className="text-white/60 font-light">Profile & support</p>
+          <p className="text-[#86868b] font-light">Profile & support</p>
         </div>
 
         {/* Transaction Summary */}
         {metrics.totalValue > 0 && (
-          <GlassCard className="mb-6 hover:border-white/20 transition-all duration-300">
+          <GlassCard className="mb-6 hover:border-gray-300 transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
-                  <svg className="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-200 flex-shrink-0">
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-light text-white">Transaction Summary</h2>
-                  <p className="text-white/40 font-light text-sm">Total of active and completed transactions</p>
+                  <h2 className="text-xl font-light text-[#1d1d1f]">Transaction Summary</h2>
+                  <p className="text-gray-400 font-light text-sm">Total of active and completed transactions</p>
                 </div>
               </div>
               <div className="mb-6">
-                <p className="text-3xl font-light text-white tracking-tight mb-2">
+                <p className="text-3xl font-light text-[#1d1d1f] tracking-tight mb-2">
                   {formatCurrency(metrics.totalValue, 'USD')}
                 </p>
-                <p className="text-sm text-white/50 font-light">
+                <p className="text-sm text-[#86868b] font-light">
                   {metrics.totalTransactions} total transaction{metrics.totalTransactions !== 1 ? 's' : ''}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                 <div>
-                  <p className="text-sm text-white/50 font-light mb-1">In Rifts</p>
-                  <p className="text-lg font-light text-white">
+                  <p className="text-sm text-[#86868b] font-light mb-1">In Rifts</p>
+                  <p className="text-lg font-light text-[#1d1d1f]">
                     {formatCurrency(metrics.activeValue, 'USD')}
                   </p>
-                  <p className="text-xs text-white/40 font-light mt-1">
+                  <p className="text-xs text-gray-400 font-light mt-1">
                     {metrics.activeCount} active
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-white/50 font-light mb-1">Settled</p>
-                  <p className="text-lg font-light text-white">
+                  <p className="text-sm text-[#86868b] font-light mb-1">Settled</p>
+                  <p className="text-lg font-light text-[#1d1d1f]">
                     {formatCurrency(metrics.completedValue, 'USD')}
                   </p>
-                  <p className="text-xs text-white/40 font-light mt-1">
+                  <p className="text-xs text-gray-400 font-light mt-1">
                     {metrics.completedCount} completed
                   </p>
                 </div>
@@ -315,67 +315,67 @@ export default function AccountPage() {
         <GlassCard className="mb-6">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-gray-200">
+                <svg className="w-6 h-6 text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-light text-white">Profile</h2>
-                <p className="text-white/40 font-light text-sm">Manage your account information</p>
+                <h2 className="text-xl font-light text-[#1d1d1f]">Profile</h2>
+                <p className="text-gray-400 font-light text-sm">Manage your account information</p>
               </div>
             </div>
             
             <div className="space-y-1 mb-6">
-              <div className="flex justify-between items-center py-4 border-b border-white/10">
+              <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span className="text-white/60 font-light">Name</span>
+                  <span className="text-[#86868b] font-light">Name</span>
                 </div>
-                <span className="text-white font-light">{userProfile.name || 'Not set'}</span>
+                <span className="text-[#1d1d1f] font-light">{userProfile.name || 'Not set'}</span>
               </div>
               
-              <div className="flex justify-between items-center py-4 border-b border-white/10">
+              <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-white/60 font-light">Email</span>
+                  <span className="text-[#86868b] font-light">Email</span>
                 </div>
-                <span className="text-white font-light">{userProfile.email}</span>
+                <span className="text-[#1d1d1f] font-light">{userProfile.email}</span>
               </div>
               
-              <div className="flex justify-between items-center py-4 border-b border-white/10">
+              <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <span className="text-white/60 font-light">Phone</span>
+                  <span className="text-[#86868b] font-light">Phone</span>
                 </div>
-                <span className="text-white font-light">{userProfile.phone || 'Not set'}</span>
+                <span className="text-[#1d1d1f] font-light">{userProfile.phone || 'Not set'}</span>
               </div>
               
-              <div className="flex justify-between items-center py-4 border-b border-white/10">
+              <div className="flex justify-between items-center py-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
-                  <span className="text-white/60 font-light">Rift ID</span>
+                  <span className="text-[#86868b] font-light">Rift ID</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-white font-light tracking-wider">{userProfile.riftUserId || 'Not assigned'}</span>
+                  <span className="text-[#1d1d1f] font-light tracking-wider">{userProfile.riftUserId || 'Not assigned'}</span>
                   {userProfile.riftUserId && (
                     <button
                       onClick={handleCopyRiftId}
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 transition-all duration-200 group"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-white/15 border border-gray-300 hover:border-gray-300 transition-all duration-200 group"
                       title="Copy Rift ID"
                     >
-                      <svg className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#86868b] group-hover:text-[#1d1d1f] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-white/70 group-hover:text-white text-xs font-light">Copy</span>
+                      <span className="text-gray-600 group-hover:text-[#1d1d1f] text-xs font-light">Copy</span>
                     </button>
                   )}
                 </div>
@@ -384,7 +384,7 @@ export default function AccountPage() {
             
             <Link 
               href="/account/edit-profile"
-              className="block w-full text-center py-3 px-6 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light hover:border-white/30"
+              className="block w-full text-center py-3 px-6 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 text-[#1d1d1f] font-light hover:border-gray-300"
             >
               Edit Profile
             </Link>
@@ -401,20 +401,20 @@ export default function AccountPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-light text-white">Verification Status</h2>
-                <p className="text-white/40 font-light text-sm">Phone verification required for withdrawals</p>
+                <h2 className="text-xl font-light text-[#1d1d1f]">Verification Status</h2>
+                <p className="text-gray-400 font-light text-sm">Phone verification required for withdrawals</p>
               </div>
             </div>
             
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-                <span className="text-white/70 font-light">Email Verified</span>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                <span className="text-gray-600 font-light">Email Verified</span>
                 <span className="text-green-400">
                   ✓ Verified
                 </span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-                <span className="text-white/70 font-light">Phone Verified</span>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                <span className="text-gray-600 font-light">Phone Verified</span>
                 <span className="text-green-400">
                   ✓ Verified
                 </span>
@@ -433,17 +433,17 @@ export default function AccountPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-light text-white">Your Disputes</h2>
-                <p className="text-white/40 font-light text-sm">View and manage disputes</p>
+                <h2 className="text-xl font-light text-[#1d1d1f]">Your Disputes</h2>
+                <p className="text-gray-400 font-light text-sm">View and manage disputes</p>
               </div>
             </div>
             
             <Link 
               href="/account/disputes"
-              className="flex justify-between items-center p-4 rounded-xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/10 group"
+              className="flex justify-between items-center p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 group"
             >
               <div>
-                <p className="text-white font-light mb-1">View any active or resolved disputes</p>
+                <p className="text-[#1d1d1f] font-light mb-1">View any active or resolved disputes</p>
                 {activeDisputes.length > 0 && (
                   <p className="text-yellow-400 text-sm font-light flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-yellow-400"></span>
@@ -451,7 +451,7 @@ export default function AccountPage() {
                   </p>
                 )}
               </div>
-              <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-400 group-hover:text-[#86868b] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
@@ -468,28 +468,28 @@ export default function AccountPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-light text-white">Support & Help Center</h2>
-                <p className="text-white/40 font-light text-sm">Get help and answers</p>
+                <h2 className="text-xl font-light text-[#1d1d1f]">Support & Help Center</h2>
+                <p className="text-gray-400 font-light text-sm">Get help and answers</p>
               </div>
             </div>
             
             <div className="space-y-2">
               <Link 
                 href="/account/support?type=contact"
-                className="flex justify-between items-center p-4 rounded-xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/10 group"
+                className="flex justify-between items-center p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 group"
               >
-                <span className="text-white font-light">Contact Support</span>
-                <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-[#1d1d1f] font-light">Contact Support</span>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#86868b] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
               
               <Link 
                 href="/account/support?type=report"
-                className="flex justify-between items-center p-4 rounded-xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/10 group"
+                className="flex justify-between items-center p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 group"
               >
-                <span className="text-white font-light">Report a problem</span>
-                <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-[#1d1d1f] font-light">Report a problem</span>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#86868b] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -508,17 +508,17 @@ export default function AccountPage() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-light text-white">Admin</h2>
-                  <p className="text-white/40 font-light text-sm">Administrative tools</p>
+                  <h2 className="text-xl font-light text-[#1d1d1f]">Admin</h2>
+                  <p className="text-gray-400 font-light text-sm">Administrative tools</p>
                 </div>
               </div>
               
               <Link 
                 href="/admin"
-                className="flex justify-between items-center p-4 rounded-xl hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-white/10 group"
+                className="flex justify-between items-center p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 group"
               >
                 <span className="text-purple-400 font-light">Admin Dashboard</span>
-                <svg className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#86868b] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -529,8 +529,8 @@ export default function AccountPage() {
         {/* Delete Account */}
         <GlassCard className="mb-6 border-red-500/20">
           <div className="p-6">
-            <h3 className="text-lg font-light text-white mb-2">Danger Zone</h3>
-            <p className="text-white/60 font-light text-sm mb-4">
+            <h3 className="text-lg font-light text-[#1d1d1f] mb-2">Danger Zone</h3>
+            <p className="text-[#86868b] font-light text-sm mb-4">
               Permanently delete your account and all associated data
             </p>
             <Link
@@ -545,7 +545,7 @@ export default function AccountPage() {
         {/* Sign Out */}
         <button
           onClick={handleSignOut}
-          className="w-full py-4 px-6 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 hover:border-white/30 text-white font-light"
+          className="w-full py-4 px-6 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 hover:border-gray-300 text-[#1d1d1f] font-light"
         >
           Sign Out
         </button>

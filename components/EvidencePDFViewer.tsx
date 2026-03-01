@@ -76,7 +76,7 @@ export default function EvidencePDFViewer({
     return (
       <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
         {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-        <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }}></div>
+        <div className="fixed inset-0 bg-white pointer-events-auto" style={{ zIndex: 99998 }}></div>
         {/* Modal */}
         <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
           <GlassCard variant="strong" className="p-8 pointer-events-auto">
@@ -87,7 +87,7 @@ export default function EvidencePDFViewer({
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </div>
-            <p className="text-white/80 font-light">Loading PDF...</p>
+            <p className="text-gray-700 font-light">Loading PDF...</p>
           </div>
           </GlassCard>
         </div>
@@ -99,7 +99,7 @@ export default function EvidencePDFViewer({
     return (
       <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
         {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-        <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
+        <div className="fixed inset-0 bg-white pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
         {/* Modal */}
         <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
           <GlassCard variant="strong" className="p-8 max-w-md pointer-events-auto">
@@ -110,8 +110,8 @@ export default function EvidencePDFViewer({
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-light text-white mb-2">Error Loading PDF</h3>
-              <p className="text-white/60 text-sm font-light">{error}</p>
+              <h3 className="text-lg font-light text-[#1d1d1f] mb-2">Error Loading PDF</h3>
+              <p className="text-[#86868b] text-sm font-light">{error}</p>
             </div>
             <PremiumButton onClick={onClose} className="w-full">Close</PremiumButton>
           </div>
@@ -124,12 +124,12 @@ export default function EvidencePDFViewer({
   return (
     <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
       {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-      <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
+      <div className="fixed inset-0 bg-white pointer-events-auto" style={{ zIndex: 99998 }} onClick={onClose}></div>
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
-        <div className="bg-black/95 border border-white/20 rounded-xl w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl pointer-events-auto">
+        <div className="bg-white/95 border border-gray-300 rounded-xl w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl pointer-events-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/30 flex items-center justify-center">
               <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,8 +137,8 @@ export default function EvidencePDFViewer({
               </svg>
             </div>
             <div>
-              <h3 className="text-white font-light text-sm">{fileName || 'Evidence PDF'}</h3>
-              <p className="text-white/50 text-xs font-light">PDF Viewer</p>
+              <h3 className="text-[#1d1d1f] font-light text-sm">{fileName || 'Evidence PDF'}</h3>
+              <p className="text-[#86868b] text-xs font-light">PDF Viewer</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -154,7 +154,7 @@ export default function EvidencePDFViewer({
             </PremiumButton>
             <button
               onClick={onClose}
-              className="text-white/50 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+              className="text-[#86868b] hover:text-[#1d1d1f] transition-colors p-1.5 rounded-lg hover:bg-gray-100"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -174,14 +174,14 @@ export default function EvidencePDFViewer({
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-white/60 font-light">No content to display</p>
+              <p className="text-[#86868b] font-light">No content to display</p>
             </div>
           )}
         </div>
 
         {/* Footer with controls */}
-        <div className="p-3 border-t border-white/10 bg-black/50">
-          <div className="flex items-center justify-between text-xs text-white/50">
+        <div className="p-3 border-t border-gray-200 bg-gray-200/50">
+          <div className="flex items-center justify-between text-xs text-[#86868b]">
             <span className="font-light">Use browser controls to navigate</span>
             <span className="font-light">Press ESC or click X to close</span>
           </div>

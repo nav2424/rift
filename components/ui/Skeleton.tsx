@@ -13,7 +13,7 @@ export function Skeleton({
   width,
   height 
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-white/10 rounded'
+  const baseClasses = 'animate-pulse bg-gray-100 rounded'
   
   const variantClasses = {
     text: 'h-4 w-full',
@@ -37,7 +37,7 @@ export function Skeleton({
 
 export function SkeletonCard() {
   return (
-    <div className="p-6 space-y-4 border border-white/10 rounded-xl bg-white/5 backdrop-blur-xl">
+    <div className="p-6 space-y-4 border border-gray-200 rounded-xl bg-gray-50 backdrop-blur-xl">
       <div className="flex items-start justify-between">
         <div className="flex-1 space-y-3">
           <Skeleton variant="text" width="40%" height={24} />

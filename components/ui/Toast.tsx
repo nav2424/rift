@@ -73,7 +73,7 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
             <p className="text-sm font-light flex-1">{toast.message}</p>
             <button
               onClick={() => onRemove(toast.id)}
-              className="text-white/40 hover:text-white/60 transition-colors flex-shrink-0"
+              className="text-gray-400 hover:text-[#86868b] transition-colors flex-shrink-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

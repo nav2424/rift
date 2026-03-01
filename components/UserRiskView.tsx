@@ -75,8 +75,8 @@ export default function UserRiskView({
     <div className="space-y-8">
       {/* User Info */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">User Information</h2>
-        <div className="space-y-2 text-white/80 text-sm">
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">User Information</h2>
+        <div className="space-y-2 text-gray-700 text-sm">
           <p><strong>Name:</strong> {user.name || 'N/A'}</p>
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Role:</strong> {user.role}</p>
@@ -86,24 +86,24 @@ export default function UserRiskView({
 
       {/* Risk Profile */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">Risk Profile</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Risk Profile</h2>
         {riskProfile ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-white/60 text-sm mb-1">Buyer Risk Score</p>
+                <p className="text-[#86868b] text-sm mb-1">Buyer Risk Score</p>
                 <Badge className={getRiskScoreColor(riskProfile.buyer_risk_score)}>
                   {riskProfile.buyer_risk_score}/100
                 </Badge>
               </div>
               <div>
-                <p className="text-white/60 text-sm mb-1">Seller Risk Score</p>
+                <p className="text-[#86868b] text-sm mb-1">Seller Risk Score</p>
                 <Badge className={getRiskScoreColor(riskProfile.seller_risk_score)}>
                   {riskProfile.seller_risk_score}/100
                 </Badge>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-white/80 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-gray-700 text-sm">
               <div>
                 <p><strong>Strikes:</strong> {riskProfile.strikes}</p>
                 <p><strong>Chargebacks:</strong> {riskProfile.chargebacks}</p>
@@ -123,19 +123,19 @@ export default function UserRiskView({
             </div>
           </div>
         ) : (
-          <p className="text-white/60 text-sm">No risk profile found. Profile will be created on first transaction.</p>
+          <p className="text-[#86868b] text-sm">No risk profile found. Profile will be created on first transaction.</p>
         )}
       </GlassCard>
 
       {/* Restrictions */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">Current Restrictions</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Current Restrictions</h2>
         {restrictions ? (
           <div className="space-y-4">
-            <div className="text-white/80 text-sm">
+            <div className="text-gray-700 text-sm">
               <p><strong>Funds Frozen:</strong> {restrictions.funds_frozen ? 'Yes' : 'No'}</p>
               {restrictions.frozen_reason && (
-                <p className="text-white/60 mt-1">{restrictions.frozen_reason}</p>
+                <p className="text-[#86868b] mt-1">{restrictions.frozen_reason}</p>
               )}
               {restrictions.disputes_restricted_until && (
                 <p className="mt-2">
@@ -158,20 +158,20 @@ export default function UserRiskView({
             </div>
           </div>
         ) : (
-          <p className="text-white/60 text-sm">No restrictions currently active.</p>
+          <p className="text-[#86868b] text-sm">No restrictions currently active.</p>
         )}
       </GlassCard>
 
       {/* Admin Actions */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">Admin Actions</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Admin Actions</h2>
         <div className="space-y-4">
           {restrictions?.disputes_restricted_until && (
             <Button
               onClick={() => handleRestrictionAction('removeDisputesRestriction')}
               disabled={loading}
               variant="outline"
-              className="w-full bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+              className="w-full bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Remove Disputes Restriction'}
             </Button>
@@ -181,15 +181,15 @@ export default function UserRiskView({
               onClick={() => handleRestrictionAction('unfreezeFunds')}
               disabled={loading}
               variant="outline"
-              className="w-full bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+              className="w-full bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Unfreeze Funds'}
             </Button>
           )}
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-white/80">Category</Label>
+            <Label htmlFor="category" className="text-gray-700">Category</Label>
             <Select value={categoryToBlock} onChange={(e) => setCategoryToBlock(e.target.value)}>
-              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+              <SelectTrigger className="bg-zinc-800 border-zinc-700 text-[#1d1d1f]">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -203,7 +203,7 @@ export default function UserRiskView({
                 onClick={() => handleRestrictionAction('addCategoryBlock', categoryToBlock)}
                 disabled={loading || !categoryToBlock}
                 variant="outline"
-                className="flex-1 bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                className="flex-1 bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700"
               >
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Block Category'}
               </Button>
@@ -211,7 +211,7 @@ export default function UserRiskView({
                 onClick={() => handleRestrictionAction('clearCategoryBlock', categoryToBlock)}
                 disabled={loading || !categoryToBlock}
                 variant="outline"
-                className="flex-1 bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+                className="flex-1 bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700"
               >
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Unblock Category'}
               </Button>
@@ -222,19 +222,19 @@ export default function UserRiskView({
 
       {/* Enforcement Actions History */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">Enforcement Actions History</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Enforcement Actions History</h2>
         {enforcementActions.length > 0 ? (
           <div className="space-y-2">
             {enforcementActions.map((action: any) => (
               <div
                 key={action.id}
-                className="p-3 rounded-lg bg-white/5 border border-white/10 text-white/80 text-sm"
+                className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-700 text-sm"
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium">{action.action_type.replace(/_/g, ' ')}</p>
-                    <p className="text-white/60 mt-1">{action.reason}</p>
-                    <p className="text-white/40 text-xs mt-1">
+                    <p className="text-[#86868b] mt-1">{action.reason}</p>
+                    <p className="text-gray-400 text-xs mt-1">
                       {format(new Date(action.created_at), 'MMM dd, yyyy HH:mm')}
                     </p>
                   </div>
@@ -243,7 +243,7 @@ export default function UserRiskView({
             ))}
           </div>
         ) : (
-          <p className="text-white/60 text-sm">No enforcement actions recorded.</p>
+          <p className="text-[#86868b] text-sm">No enforcement actions recorded.</p>
         )}
       </GlassCard>
     </div>

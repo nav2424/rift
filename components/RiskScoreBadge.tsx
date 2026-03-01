@@ -55,7 +55,7 @@ export default function RiskScoreBadge({ riftId, compact = false }: RiskScoreBad
       case 'CRITICAL':
         return 'text-red-400 border-red-400/30 bg-red-400/10'
       default:
-        return 'text-white/60 border-white/10 bg-white/5'
+        return 'text-[#86868b] border-gray-200 bg-gray-50'
     }
   }
 
@@ -73,39 +73,39 @@ export default function RiskScoreBadge({ riftId, compact = false }: RiskScoreBad
   return (
     <GlassCard className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/70">Risk Assessment</h3>
+        <h3 className="text-sm font-medium text-gray-600">Risk Assessment</h3>
         <div className={`px-3 py-1 rounded-lg border text-xs font-light ${getRiskColor(riskData.riskTier)}`}>
           {riskData.riskTier} ({riskData.overallRisk}/100)
         </div>
       </div>
 
       <div className="space-y-2 text-xs">
-        <div className="flex justify-between text-white/60">
+        <div className="flex justify-between text-[#86868b]">
           <span>Buyer Risk:</span>
-          <span className={riskData.buyerRisk >= 60 ? 'text-orange-400' : 'text-white/60'}>
+          <span className={riskData.buyerRisk >= 60 ? 'text-orange-400' : 'text-[#86868b]'}>
             {riskData.buyerRisk}/100
           </span>
         </div>
-        <div className="flex justify-between text-white/60">
+        <div className="flex justify-between text-[#86868b]">
           <span>Seller Risk:</span>
-          <span className={riskData.sellerRisk >= 60 ? 'text-orange-400' : 'text-white/60'}>
+          <span className={riskData.sellerRisk >= 60 ? 'text-orange-400' : 'text-[#86868b]'}>
             {riskData.sellerRisk}/100
           </span>
         </div>
-        <div className="flex justify-between text-white/60">
+        <div className="flex justify-between text-[#86868b]">
           <span>Transaction Risk:</span>
-          <span className={riskData.transactionRisk >= 60 ? 'text-orange-400' : 'text-white/60'}>
+          <span className={riskData.transactionRisk >= 60 ? 'text-orange-400' : 'text-[#86868b]'}>
             {riskData.transactionRisk}/100
           </span>
         </div>
       </div>
 
       {riskData.flags.length > 0 && (
-        <div className="pt-2 border-t border-white/10">
-          <p className="text-xs text-white/50 mb-1">Flags:</p>
+        <div className="pt-2 border-t border-gray-200">
+          <p className="text-xs text-[#86868b] mb-1">Flags:</p>
           <div className="flex flex-wrap gap-1">
             {riskData.flags.map((flag, i) => (
-              <span key={i} className="px-2 py-0.5 rounded bg-white/5 text-xs text-white/60">
+              <span key={i} className="px-2 py-0.5 rounded bg-gray-50 text-xs text-[#86868b]">
                 {flag}
               </span>
             ))}
@@ -114,12 +114,12 @@ export default function RiskScoreBadge({ riftId, compact = false }: RiskScoreBad
       )}
 
       {riskData.recommendations.length > 0 && (
-        <div className="pt-2 border-t border-white/10">
-          <p className="text-xs text-white/50 mb-1">Recommendations:</p>
+        <div className="pt-2 border-t border-gray-200">
+          <p className="text-xs text-[#86868b] mb-1">Recommendations:</p>
           <ul className="space-y-1">
             {riskData.recommendations.slice(0, 3).map((rec, i) => (
-              <li key={i} className="text-xs text-white/60 flex items-start gap-2">
-                <span className="text-white/40 mt-0.5">•</span>
+              <li key={i} className="text-xs text-[#86868b] flex items-start gap-2">
+                <span className="text-gray-400 mt-0.5">•</span>
                 <span>{rec}</span>
               </li>
             ))}

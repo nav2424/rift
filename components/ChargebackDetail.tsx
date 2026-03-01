@@ -70,8 +70,8 @@ export default function ChargebackDetail({ dispute, rift }: ChargebackDetailProp
     <div className="space-y-8">
       {/* Dispute Info */}
       <GlassCard className="p-6">
-        <h2 className="text-xl font-light text-white mb-4">Dispute Information</h2>
-        <div className="space-y-3 text-white/80 text-sm">
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Dispute Information</h2>
+        <div className="space-y-3 text-gray-700 text-sm">
           <p><strong>Stripe Dispute ID:</strong> <code className="font-mono">{dispute.stripe_dispute_id}</code></p>
           <p><strong>Status:</strong> <Badge className={getStatusColor(dispute.status)}>{dispute.status.replace(/_/g, ' ')}</Badge></p>
           <p><strong>Amount:</strong> {new Intl.NumberFormat('en-US', {
@@ -94,8 +94,8 @@ export default function ChargebackDetail({ dispute, rift }: ChargebackDetailProp
       {/* Rift Info */}
       {rift ? (
         <GlassCard className="p-6">
-          <h2 className="text-xl font-light text-white mb-4">Related Rift</h2>
-          <div className="space-y-3 text-white/80 text-sm">
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Related Rift</h2>
+          <div className="space-y-3 text-gray-700 text-sm">
             <p><strong>Rift Number:</strong> #{rift.riftNumber}</p>
             <p><strong>Title:</strong> {rift.itemTitle}</p>
             <p><strong>Category:</strong> {rift.itemType}</p>
@@ -106,7 +106,7 @@ export default function ChargebackDetail({ dispute, rift }: ChargebackDetailProp
             <p><strong>Status:</strong> {rift.status}</p>
             <div className="flex gap-2 mt-4">
               <Link href={`/admin/rifts/${rift.id}`}>
-                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700">
                   View Rift
                 </Button>
               </Link>
@@ -115,20 +115,20 @@ export default function ChargebackDetail({ dispute, rift }: ChargebackDetailProp
         </GlassCard>
       ) : (
         <GlassCard className="p-6">
-          <p className="text-white/60 text-sm">No rift found for this dispute.</p>
+          <p className="text-[#86868b] text-sm">No rift found for this dispute.</p>
         </GlassCard>
       )}
 
       {/* Evidence Actions */}
       {rift && (
         <GlassCard className="p-6">
-          <h2 className="text-xl font-light text-white mb-4">Evidence Packet</h2>
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Evidence Packet</h2>
           <div className="space-y-4">
             <div className="flex gap-2">
               <Button
                 onClick={handleGenerateEvidence}
                 disabled={generating}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-[#1d1d1f]"
               >
                 {generating ? (
                   <>
@@ -140,12 +140,12 @@ export default function ChargebackDetail({ dispute, rift }: ChargebackDetailProp
                 )}
               </Button>
               <Link href={`/admin/evidence/${rift.id}?disputeId=${dispute.stripe_dispute_id}`}>
-                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700">
                   View Print View
                 </Button>
               </Link>
               <Link href={`/api/admin/evidence/${rift.id}/json?disputeId=${dispute.stripe_dispute_id}`}>
-                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+                <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700">
                   Download JSON
                 </Button>
               </Link>

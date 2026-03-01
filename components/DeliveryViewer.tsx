@@ -146,7 +146,7 @@ export default function DeliveryViewer({ riftId, delivery, onClose }: DeliveryVi
   if (loading) {
     return (
       <div className="p-6 text-center">
-        <div className="text-white/60 font-light">Opening delivery viewer...</div>
+        <div className="text-[#86868b] font-light">Opening delivery viewer...</div>
       </div>
     )
   }
@@ -154,11 +154,11 @@ export default function DeliveryViewer({ riftId, delivery, onClose }: DeliveryVi
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-light text-white">Digital Delivery</h3>
+        <h3 className="text-lg font-light text-[#1d1d1f]">Digital Delivery</h3>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
+            className="text-[#86868b] hover:text-[#1d1d1f] transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -168,12 +168,12 @@ export default function DeliveryViewer({ riftId, delivery, onClose }: DeliveryVi
       </div>
 
       <div className="space-y-4">
-        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-white/90 font-medium">{delivery.fileName}</span>
-            <span className="text-white/50 text-sm">{formatFileSize(delivery.sizeBytes)}</span>
+            <span className="text-gray-800 font-medium">{delivery.fileName}</span>
+            <span className="text-[#86868b] text-sm">{formatFileSize(delivery.sizeBytes)}</span>
           </div>
-          <div className="text-white/60 text-sm">{delivery.mimeType}</div>
+          <div className="text-[#86868b] text-sm">{delivery.mimeType}</div>
         </div>
 
         <div className="flex gap-3">
@@ -187,7 +187,7 @@ export default function DeliveryViewer({ riftId, delivery, onClose }: DeliveryVi
           </PremiumButton>
         </div>
 
-        <div className="text-xs text-white/40 font-light">
+        <div className="text-xs text-gray-400 font-light">
           Time viewed: {Math.floor(secondsViewed / 60)}m {secondsViewed % 60}s
         </div>
       </div>

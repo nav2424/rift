@@ -92,7 +92,7 @@ function SupportContent() {
   const colors = colorClasses[color as keyof typeof colorClasses]
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -100,7 +100,7 @@ function SupportContent() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
@@ -111,15 +111,15 @@ function SupportContent() {
                 {getIcon()}
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                   {getTitle()}
                 </h1>
-                <p className="text-white/60 font-light">Get help and answers</p>
+                <p className="text-[#86868b] font-light">Get help and answers</p>
               </div>
             </div>
             <Link 
               href="/account"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -164,13 +164,13 @@ function SupportContent() {
                   return (
                     <div 
                       key={idx} 
-                      className={`border-b border-white/10 last:border-0 transition-all ${isOpen ? 'pb-6' : 'pb-0'}`}
+                      className={`border-b border-gray-200 last:border-0 transition-all ${isOpen ? 'pb-6' : 'pb-0'}`}
                     >
                       <button
                         onClick={() => setOpenFaq(isOpen ? null : idx)}
                         className="w-full text-left py-6 flex items-start justify-between gap-4 hover:opacity-80 transition-opacity group"
                       >
-                        <h3 className="text-white font-light text-xl flex-1">
+                        <h3 className="text-[#1d1d1f] font-light text-xl flex-1">
                           {item.question}
                         </h3>
                         <svg 
@@ -187,7 +187,7 @@ function SupportContent() {
                           isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <p className="text-white/70 font-light leading-relaxed pr-12">
+                        <p className="text-gray-600 font-light leading-relaxed pr-12">
                           {item.answer}
                         </p>
                       </div>
@@ -199,13 +199,13 @@ function SupportContent() {
 
             {type === 'contact' && (
               <div className="space-y-6">
-                <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-                  <p className="text-white/80 leading-relaxed font-light mb-4 text-lg">
+                <div className="p-6 rounded-xl bg-gray-50 border border-gray-200">
+                  <p className="text-gray-700 leading-relaxed font-light mb-4 text-lg">
                     Need help? Contact our support team and we'll get back to you as soon as possible.
                   </p>
                   <a 
                     href="mailto:support@joinrift.co" 
-                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-white transition-all font-light text-lg group/link`}
+                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-[#1d1d1f] transition-all font-light text-lg group/link`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -216,11 +216,11 @@ function SupportContent() {
                     </svg>
                   </a>
                 </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
-                  <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                  <svg className="w-5 h-5 text-[#86868b] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-white/70 font-light leading-relaxed">
+                  <p className="text-gray-600 font-light leading-relaxed">
                     We typically respond within 24 hours during business days.
                   </p>
                 </div>
@@ -229,13 +229,13 @@ function SupportContent() {
 
             {type === 'report' && (
               <div className="space-y-6">
-                <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-                  <p className="text-white/80 leading-relaxed font-light mb-4 text-lg">
+                <div className="p-6 rounded-xl bg-gray-50 border border-gray-200">
+                  <p className="text-gray-700 leading-relaxed font-light mb-4 text-lg">
                     If you've encountered a bug, issue, or have a feature request, please email us with details.
                   </p>
                   <a 
                     href="mailto:support@joinrift.co" 
-                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-white transition-all font-light text-lg group/link`}
+                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${colors.button} text-[#1d1d1f] transition-all font-light text-lg group/link`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -247,19 +247,19 @@ function SupportContent() {
                   </a>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                    <svg className="w-5 h-5 text-[#86868b] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-white/70 font-light leading-relaxed">
+                    <p className="text-gray-600 font-light leading-relaxed">
                       Please include as much detail as possible, including screenshots if applicable.
                     </p>
                   </div>
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-white/5 border border-white/10">
-                    <svg className="w-5 h-5 text-white/60 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-start gap-3 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                    <svg className="w-5 h-5 text-[#86868b] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-white/70 font-light leading-relaxed">
+                    <p className="text-gray-600 font-light leading-relaxed">
                       We review all reports and prioritize issues based on severity and impact.
                     </p>
                   </div>
@@ -276,8 +276,8 @@ function SupportContent() {
 export default function SupportPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     }>
       <SupportContent />

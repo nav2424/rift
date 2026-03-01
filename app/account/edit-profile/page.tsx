@@ -119,8 +119,8 @@ export default function EditProfilePage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -130,7 +130,7 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -138,28 +138,28 @@ export default function EditProfilePage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex items-start gap-4 flex-1">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 mt-1">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-gray-200 flex-shrink-0 mt-1">
+                <svg className="w-6 h-6 text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                   Edit Profile
                 </h1>
-                <p className="text-white/60 font-light">Update your personal information</p>
+                <p className="text-[#86868b] font-light">Update your personal information</p>
               </div>
             </div>
             <Link 
               href="/account"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -179,7 +179,7 @@ export default function EditProfilePage() {
               )}
 
               <div>
-                <label className="block text-white/60 font-light mb-3 flex items-center gap-2">
+                <label className="block text-[#86868b] font-light mb-3 flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -190,12 +190,12 @@ export default function EditProfilePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 font-light focus:outline-none focus:border-white/30 transition-colors"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#1d1d1f] placeholder-gray-400 font-light focus:outline-none focus:border-gray-300 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-white/60 font-light mb-3 flex items-center gap-2">
+                <label className="block text-[#86868b] font-light mb-3 flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
@@ -207,13 +207,13 @@ export default function EditProfilePage() {
                   readOnly
                   disabled
                   placeholder="No phone number set"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 font-light cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#86868b] font-light cursor-not-allowed"
                 />
-                <p className="mt-2 text-white/40 text-sm font-light">Phone number cannot be changed here. Use the verification page to update your phone number.</p>
+                <p className="mt-2 text-gray-400 text-sm font-light">Phone number cannot be changed here. Use the verification page to update your phone number.</p>
               </div>
 
               <div>
-                <label className="block text-white/60 font-light mb-3 flex items-center gap-2">
+                <label className="block text-[#86868b] font-light mb-3 flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
@@ -223,15 +223,15 @@ export default function EditProfilePage() {
                   type="email"
                   value={session?.user?.email || ''}
                   disabled
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 font-light cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#86868b] font-light cursor-not-allowed"
                 />
-                <p className="mt-2 text-white/40 text-sm font-light">Email cannot be changed</p>
+                <p className="mt-2 text-gray-400 text-sm font-light">Email cannot be changed</p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 px-6 rounded-xl bg-white/10 hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-white/20 hover:border-white/30 text-white font-light"
+                className="w-full py-4 px-6 rounded-xl bg-gray-100 hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-300 hover:border-gray-300 text-[#1d1d1f] font-light"
               >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>

@@ -212,9 +212,9 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
     return (
       <GlassCard className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-white/10 rounded w-1/3"></div>
-          <div className="h-4 bg-white/10 rounded"></div>
-          <div className="h-4 bg-white/10 rounded w-2/3"></div>
+          <div className="h-6 bg-gray-100 rounded w-1/3"></div>
+          <div className="h-4 bg-gray-100 rounded"></div>
+          <div className="h-4 bg-gray-100 rounded w-2/3"></div>
         </div>
       </GlassCard>
     )
@@ -237,8 +237,8 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-light text-white">Payment Milestones</h3>
-          <p className="text-sm text-white/50 font-light">
+          <h3 className="text-xl font-light text-[#1d1d1f]">Payment Milestones</h3>
+          <p className="text-sm text-[#86868b] font-light">
             {milestones.filter((m) => m.released).length} of {milestones.length} released
           </p>
         </div>
@@ -269,13 +269,13 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
                   ? 'bg-green-500/10 border-green-500/30'
                   : isOverdue
                   ? 'bg-red-500/10 border-red-500/30'
-                  : 'bg-white/5 border-white/10'
+                  : 'bg-gray-50 border-gray-200'
               }`}
             >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs px-2 py-1 rounded-lg bg-white/10 text-white/60 font-light">
+                    <span className="text-xs px-2 py-1 rounded-lg bg-gray-100 text-[#86868b] font-light">
                       Milestone {index + 1}
                     </span>
                     {milestone.released && (
@@ -289,39 +289,39 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
                       </span>
                     )}
                   </div>
-                  <h4 className="text-lg font-light text-white mb-1">{milestone.title}</h4>
+                  <h4 className="text-lg font-light text-[#1d1d1f] mb-1">{milestone.title}</h4>
                   {milestone.description && (
-                    <p className="text-sm text-white/60 font-light mb-2">{milestone.description}</p>
+                    <p className="text-sm text-[#86868b] font-light mb-2">{milestone.description}</p>
                   )}
                 {milestone.deliverables && (
-                  <p className="text-sm text-white/70 font-light mb-2">
+                  <p className="text-sm text-gray-600 font-light mb-2">
                     Deliverables: {milestone.deliverables}
                   </p>
                 )}
-                <p className="text-xs text-white/50 font-light">
+                <p className="text-xs text-[#86868b] font-light">
                   Review window: {milestone.reviewWindowDays} day{milestone.reviewWindowDays === 1 ? '' : 's'} • 1 revision included
                 </p>
                 {typeof milestone.revisionRequests === 'number' && (
-                  <p className="text-xs text-white/40 font-light mt-1">
+                  <p className="text-xs text-gray-400 font-light mt-1">
                     Revisions used: {Math.min(milestone.revisionRequests, milestone.revisionLimit)} / {milestone.revisionLimit}
                   </p>
                 )}
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-light text-white">
+                  <p className="text-xl font-light text-[#1d1d1f]">
                     {currencySymbol} {milestone.amount.toFixed(2)}
                   </p>
                   {milestone.released && milestone.sellerNet && !isBuyer && (
-                    <p className="text-xs text-white/50 font-light mt-1">
+                    <p className="text-xs text-[#86868b] font-light mt-1">
                       You'll receive: {currencySymbol} {milestone.sellerNet.toFixed(2)}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                 <div>
-                  <p className="text-xs text-white/50 font-light">
+                  <p className="text-xs text-[#86868b] font-light">
                     Due: {new Date(milestone.dueDate).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -376,7 +376,7 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
 
       {/* Release All Funds button - Supreme button, works unconditionally */}
       {canRelease && !allReleased && (
-        <div className="mt-6 pt-6 border-t border-white/10">
+        <div className="mt-6 pt-6 border-t border-gray-200">
           <PremiumButton
             onClick={handleReleaseAll}
             disabled={releasingAll}
@@ -385,7 +385,7 @@ export default function MilestoneCard({ riftId, currency, isBuyer, riftStatus }:
           >
             {releasingAll ? 'Releasing All Funds...' : 'Release All Funds'}
           </PremiumButton>
-          <p className="text-xs text-white/50 font-light text-center mt-2">
+          <p className="text-xs text-[#86868b] font-light text-center mt-2">
             Release all remaining milestone funds to the seller at once
           </p>
         </div>

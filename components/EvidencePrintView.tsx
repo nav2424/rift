@@ -20,11 +20,11 @@ export default function EvidencePrintView({ packet }: EvidencePrintViewProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:py-4">
         {/* Print controls (hidden when printing) */}
         <div className="mb-6 print:hidden flex gap-2">
-          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-[#1d1d1f]">
             Print
           </Button>
           <Link href={`/api/admin/evidence/${packet.packet_meta.rift_id}/json${packet.packet_meta.stripe_dispute_id ? `?disputeId=${packet.packet_meta.stripe_dispute_id}` : ''}`}>
-            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <Button variant="outline" className="bg-zinc-800 border-zinc-700 text-[#1d1d1f] hover:bg-zinc-700">
               Download JSON
             </Button>
           </Link>

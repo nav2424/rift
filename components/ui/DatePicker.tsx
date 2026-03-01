@@ -116,7 +116,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           value={month}
           onChange={handleMonthChange}
           size={1}
-          className={`w-full ${paddingClass} bg-white/[0.05] border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
+          className={`w-full ${paddingClass} bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='white' fill-opacity='0.6' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',
@@ -125,7 +125,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           }}
         >
           {months.map((m) => (
-            <option key={m.value} value={m.value} className="bg-black text-white py-2">
+            <option key={m.value} value={m.value} className="bg-white text-[#1d1d1f] py-2">
               {m.label}
             </option>
           ))}
@@ -138,7 +138,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           value={day}
           onChange={handleDayChange}
           size={1}
-          className={`w-full ${paddingClass} bg-white/[0.05] border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
+          className={`w-full ${paddingClass} bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='white' fill-opacity='0.6' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',
@@ -147,7 +147,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           }}
         >
           {days.map((d) => (
-            <option key={d} value={d} className="bg-black text-white py-2">
+            <option key={d} value={d} className="bg-white text-[#1d1d1f] py-2">
               {d.toString().padStart(2, '0')}
             </option>
           ))}
@@ -160,7 +160,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           value={year}
           onChange={handleYearChange}
           size={1}
-          className={`w-full ${paddingClass} bg-white/[0.05] border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
+          className={`w-full ${paddingClass} bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all backdrop-blur-sm font-light appearance-none cursor-pointer ${textSizeClass}`}
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='white' fill-opacity='0.6' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'no-repeat',
@@ -169,7 +169,7 @@ export default function DatePicker({ value, onChange, maxDate, minDate, classNam
           }}
         >
           {years.map((y) => (
-            <option key={y} value={y} className="bg-black text-white py-2">
+            <option key={y} value={y} className="bg-white text-[#1d1d1f] py-2">
               {y}
             </option>
           ))}

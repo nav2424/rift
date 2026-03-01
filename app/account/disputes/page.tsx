@@ -105,8 +105,8 @@ export default function DisputesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -116,7 +116,7 @@ export default function DisputesPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -124,7 +124,7 @@ export default function DisputesPage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
@@ -137,15 +137,15 @@ export default function DisputesPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                   Your Disputes
                 </h1>
-                <p className="text-white/60 font-light">View and manage your disputes</p>
+                <p className="text-[#86868b] font-light">View and manage your disputes</p>
               </div>
             </div>
             <Link 
               href="/account"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -158,13 +158,13 @@ export default function DisputesPage() {
         {disputes.length === 0 ? (
           <GlassCard>
             <div className="p-12 text-center">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-light text-white mb-2">No disputes yet</h3>
-              <p className="text-white/60 font-light text-sm">
+              <h3 className="text-xl font-light text-[#1d1d1f] mb-2">No disputes yet</h3>
+              <p className="text-[#86868b] font-light text-sm">
                 All your transactions are running smoothly
               </p>
             </div>
@@ -174,23 +174,23 @@ export default function DisputesPage() {
             {/* Active Disputes */}
             {activeDisputes.length > 0 && (
               <div>
-                <h2 className="text-xl font-light text-white mb-4 pb-2 border-b border-white/10">
+                <h2 className="text-xl font-light text-[#1d1d1f] mb-4 pb-2 border-b border-gray-200">
                   Active Disputes ({activeDisputes.length})
                 </h2>
                 <div className="space-y-4">
                   {activeDisputes.map((dispute) => (
                     <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
-                      <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer">
+                      <GlassCard className="hover:bg-gray-50 transition-colors cursor-pointer">
                         <div className="p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex-1">
-                              <h3 className="text-lg font-light text-white mb-2">
+                              <h3 className="text-lg font-light text-[#1d1d1f] mb-2">
                                 {dispute.rift.itemTitle}
                               </h3>
-                              <p className="text-white/80 font-light text-sm mb-3">
+                              <p className="text-gray-700 font-light text-sm mb-3">
                                 {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
                               </p>
-                              <p className="text-white/60 font-light text-sm">
+                              <p className="text-[#86868b] font-light text-sm">
                                 Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}
                                 {dispute.raisedBy.id === session?.user?.id && (
                                   <span className="ml-2 text-blue-400">(You)</span>
@@ -203,19 +203,19 @@ export default function DisputesPage() {
                           </div>
                           
                           {dispute.reason && (
-                            <div className="pt-4 border-t border-white/10">
-                              <p className="text-white/60 font-light text-sm">
-                                <span className="text-white/40">Reason: </span>
+                            <div className="pt-4 border-t border-gray-200">
+                              <p className="text-[#86868b] font-light text-sm">
+                                <span className="text-gray-400">Reason: </span>
                                 {dispute.reason.replace(/_/g, ' ')}
                               </p>
                             </div>
                           )}
 
-                          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                            <span className="text-white/40 font-light text-xs">
+                          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                            <span className="text-gray-400 font-light text-xs">
                               {new Date(dispute.createdAt).toLocaleDateString()}
                             </span>
-                            <span className="text-white/60 font-light text-sm flex items-center gap-2">
+                            <span className="text-[#86868b] font-light text-sm flex items-center gap-2">
                               View Transaction
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -233,23 +233,23 @@ export default function DisputesPage() {
             {/* Resolved Disputes */}
             {resolvedDisputes.length > 0 && (
               <div>
-                <h2 className="text-xl font-light text-white mb-4 pb-2 border-b border-white/10">
+                <h2 className="text-xl font-light text-[#1d1d1f] mb-4 pb-2 border-b border-gray-200">
                   Resolved Disputes ({resolvedDisputes.length})
                 </h2>
                 <div className="space-y-4">
                   {resolvedDisputes.map((dispute) => (
                     <Link key={dispute.id} href={`/rifts/${dispute.rift.id}`}>
-                      <GlassCard className="hover:bg-white/5 transition-colors cursor-pointer opacity-75">
+                      <GlassCard className="hover:bg-gray-50 transition-colors cursor-pointer opacity-75">
                         <div className="p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div className="flex-1">
-                              <h3 className="text-lg font-light text-white mb-2">
+                              <h3 className="text-lg font-light text-[#1d1d1f] mb-2">
                                 {dispute.rift.itemTitle}
                               </h3>
-                              <p className="text-white/80 font-light text-sm mb-3">
+                              <p className="text-gray-700 font-light text-sm mb-3">
                                 {formatCurrency(dispute.rift.amount, dispute.rift.currency)}
                               </p>
-                              <p className="text-white/60 font-light text-sm">
+                              <p className="text-[#86868b] font-light text-sm">
                                 Raised by: {dispute.raisedBy.name || dispute.raisedBy.email}
                                 {dispute.raisedBy.id === session?.user?.id && (
                                   <span className="ml-2 text-blue-400">(You)</span>
@@ -262,19 +262,19 @@ export default function DisputesPage() {
                           </div>
                           
                           {dispute.reason && (
-                            <div className="pt-4 border-t border-white/10">
-                              <p className="text-white/60 font-light text-sm">
-                                <span className="text-white/40">Reason: </span>
+                            <div className="pt-4 border-t border-gray-200">
+                              <p className="text-[#86868b] font-light text-sm">
+                                <span className="text-gray-400">Reason: </span>
                                 {dispute.reason.replace(/_/g, ' ')}
                               </p>
                             </div>
                           )}
 
-                          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                            <span className="text-white/40 font-light text-xs">
+                          <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                            <span className="text-gray-400 font-light text-xs">
                               {new Date(dispute.createdAt).toLocaleDateString()}
                             </span>
-                            <span className="text-white/60 font-light text-sm flex items-center gap-2">
+                            <span className="text-[#86868b] font-light text-sm flex items-center gap-2">
                               View Transaction
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

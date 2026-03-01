@@ -293,7 +293,7 @@ export default function WalletPage() {
   const getLedgerTypeColor = (type: string) => {
     if (type.includes('CREDIT')) return 'text-green-400'
     if (type.includes('DEBIT')) return 'text-red-400'
-    return 'text-white/60'
+    return 'text-[#86868b]'
   }
 
   // Format Stripe requirement strings to be user-friendly
@@ -389,8 +389,8 @@ export default function WalletPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -401,14 +401,14 @@ export default function WalletPage() {
 
   if (!wallet) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Unable to load wallet</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Unable to load wallet</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
         backgroundSize: '50px 50px'
@@ -418,12 +418,12 @@ export default function WalletPage() {
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">Your Wallet</h1>
-              <p className="text-white/60 font-light">Manage your balance and withdrawals</p>
+              <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-2 tracking-tight">Your Wallet</h1>
+              <p className="text-[#86868b] font-light">Manage your balance and withdrawals</p>
             </div>
             <Link 
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -438,12 +438,12 @@ export default function WalletPage() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Available Balance</p>
-                <p className="text-2xl md:text-3xl font-light text-white mb-2 tracking-tight">
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Available Balance</p>
+                <p className="text-2xl md:text-3xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                   {formatCurrency(wallet.wallet.availableBalance, wallet.wallet.currency)}
                 </p>
                 {wallet.wallet.pendingBalance > 0 && (
-                  <p className="text-sm text-white/40 font-light">
+                  <p className="text-sm text-gray-400 font-light">
                     {formatCurrency(wallet.wallet.pendingBalance, wallet.wallet.currency)} pending
                   </p>
                 )}
@@ -456,13 +456,13 @@ export default function WalletPage() {
             </div>
 
             {/* Stripe Connect Status */}
-            <div className="pt-6 border-t border-white/10">
+            <div className="pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-light text-white">Payment Account</h3>
+                <h3 className="text-lg font-light text-[#1d1d1f]">Payment Account</h3>
                 {stripeStatus && stripeStatus.connected && (
                   <button
                     onClick={loadStripeStatus}
-                    className="text-white/40 hover:text-white/60 transition-colors"
+                    className="text-gray-400 hover:text-[#86868b] transition-colors"
                     title="Refresh status"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,11 +476,11 @@ export default function WalletPage() {
                   <p className="text-blue-400/90 font-light text-sm mb-3">
                     Connect your Stripe account to receive payouts. You'll be redirected to Stripe to complete the setup.
                   </p>
-                  <div className="mb-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-white/60 font-light text-xs mb-2">
-                      <strong className="text-white/80">About Stripe's onboarding:</strong>
+                  <div className="mb-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-[#86868b] font-light text-xs mb-2">
+                      <strong className="text-gray-700">About Stripe's onboarding:</strong>
                     </p>
-                    <ul className="text-white/50 font-light text-xs space-y-1 list-disc list-inside">
+                    <ul className="text-[#86868b] font-light text-xs space-y-1 list-disc list-inside">
                       <li><strong>Account type:</strong> Set up as individual (not business)</li>
                       <li><strong>Tax information (SIN/SSN):</strong> Required by law for payment reporting</li>
                       <li><strong>Business fields:</strong> Stripe may ask for business name/description - you can use your personal name and "Personal transactions"</li>
@@ -498,9 +498,9 @@ export default function WalletPage() {
                   </PremiumButton>
                 </div>
               ) : (
-                <div className="mb-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="mb-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-white/70 font-light">Stripe Account</span>
+                    <span className="text-gray-600 font-light">Stripe Account</span>
                     <span className={`px-3 py-1 rounded-lg text-xs font-light ${
                       stripeStatus.status === 'approved'
                         ? 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -543,9 +543,9 @@ export default function WalletPage() {
                     stripeStatus.requirements.pastDue.length > 0 ||
                     stripeStatus.requirements.pendingVerification.length > 0
                   ) && (
-                    <div className="mt-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                      <p className="text-white/60 font-light text-xs mb-3">
-                        <strong className="text-white/80">Action Required:</strong>
+                    <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                      <p className="text-[#86868b] font-light text-xs mb-3">
+                        <strong className="text-gray-700">Action Required:</strong>
                       </p>
                       <div className="space-y-2">
                         {stripeStatus.requirements.currentlyDue.length > 0 && (
@@ -553,12 +553,12 @@ export default function WalletPage() {
                             <p className="text-yellow-400 font-light text-xs mb-1">
                               <strong>Required:</strong>
                             </p>
-                            <ul className="text-white/60 font-light text-xs space-y-1 ml-4 list-disc">
+                            <ul className="text-[#86868b] font-light text-xs space-y-1 ml-4 list-disc">
                               {stripeStatus.requirements.currentlyDue.slice(0, 5).map((req: string, idx: number) => (
                                 <li key={idx}>{formatRequirement(req)}</li>
                               ))}
                               {stripeStatus.requirements.currentlyDue.length > 5 && (
-                                <li className="text-white/40 italic">+{stripeStatus.requirements.currentlyDue.length - 5} more</li>
+                                <li className="text-gray-400 italic">+{stripeStatus.requirements.currentlyDue.length - 5} more</li>
                               )}
                             </ul>
                           </div>
@@ -568,12 +568,12 @@ export default function WalletPage() {
                             <p className="text-red-400 font-light text-xs mb-1">
                               <strong>Past Due:</strong>
                             </p>
-                            <ul className="text-white/60 font-light text-xs space-y-1 ml-4 list-disc">
+                            <ul className="text-[#86868b] font-light text-xs space-y-1 ml-4 list-disc">
                               {stripeStatus.requirements.pastDue.slice(0, 5).map((req: string, idx: number) => (
                                 <li key={idx}>{formatRequirement(req)}</li>
                               ))}
                               {stripeStatus.requirements.pastDue.length > 5 && (
-                                <li className="text-white/40 italic">+{stripeStatus.requirements.pastDue.length - 5} more</li>
+                                <li className="text-gray-400 italic">+{stripeStatus.requirements.pastDue.length - 5} more</li>
                               )}
                             </ul>
                           </div>
@@ -583,12 +583,12 @@ export default function WalletPage() {
                             <p className="text-blue-400 font-light text-xs mb-1">
                               <strong>Verifying:</strong>
                             </p>
-                            <ul className="text-white/60 font-light text-xs space-y-1 ml-4 list-disc">
+                            <ul className="text-[#86868b] font-light text-xs space-y-1 ml-4 list-disc">
                               {stripeStatus.requirements.pendingVerification.slice(0, 5).map((req: string, idx: number) => (
                                 <li key={idx}>{formatRequirement(req)}</li>
                               ))}
                               {stripeStatus.requirements.pendingVerification.length > 5 && (
-                                <li className="text-white/40 italic">+{stripeStatus.requirements.pendingVerification.length - 5} more</li>
+                                <li className="text-gray-400 italic">+{stripeStatus.requirements.pendingVerification.length - 5} more</li>
                               )}
                             </ul>
                           </div>
@@ -627,8 +627,8 @@ export default function WalletPage() {
 
             {/* Withdrawal Form */}
             {wallet.wallet.availableBalance > 0 && (
-              <div className="pt-6 border-t border-white/10">
-                <h3 className="text-lg font-light text-white mb-4">Request Withdrawal</h3>
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-light text-[#1d1d1f] mb-4">Request Withdrawal</h3>
                 
                 {/* First-time withdrawal info */}
                 {isFirstWithdrawal && canWithdraw && (
@@ -692,11 +692,11 @@ export default function WalletPage() {
                 )}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-white/80 font-light mb-2">
-                      Amount <span className="text-white/50 font-light">({wallet.wallet.currency})</span>
+                    <label className="block text-gray-700 font-light mb-2">
+                      Amount <span className="text-[#86868b] font-light">({wallet.wallet.currency})</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 font-light">
+                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#86868b] font-light">
                         {wallet.wallet.currency}
                       </span>
                       <input
@@ -707,12 +707,12 @@ export default function WalletPage() {
                         min="0"
                         step="0.01"
                         disabled={!canWithdraw || withdrawing}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 pl-12 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 disabled:opacity-50 font-light"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 pl-12 py-3 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 disabled:opacity-50 font-light"
                         placeholder="0.00"
                       />
                     </div>
-                    <p className="text-xs text-white/40 font-light mt-2">
-                      Maximum: <span className="text-white/60">{formatCurrency(wallet.wallet.availableBalance, wallet.wallet.currency)}</span>
+                    <p className="text-xs text-gray-400 font-light mt-2">
+                      Maximum: <span className="text-[#86868b]">{formatCurrency(wallet.wallet.availableBalance, wallet.wallet.currency)}</span>
                     </p>
                   </div>
                   <PremiumButton
@@ -736,18 +736,18 @@ export default function WalletPage() {
         {payouts.length > 0 && (
           <GlassCard className="mb-6">
             <div className="p-6">
-              <h2 className="text-xl font-light text-white mb-6">Withdrawal History</h2>
+              <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Withdrawal History</h2>
               <div className="space-y-3">
                 {payouts.map((payout) => (
-                  <div key={payout.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div key={payout.id} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <p className="text-white/90 font-light">Withdrawal</p>
+                        <p className="text-gray-800 font-light">Withdrawal</p>
                         <span className={`px-2 py-1 rounded-full text-xs font-light border ${getPayoutStatusColor(payout.status)}`}>
                           {getPayoutStatusLabel(payout.status, payout)}
                         </span>
                       </div>
-                      <p className="text-xs text-white/50 font-light mt-1">
+                      <p className="text-xs text-[#86868b] font-light mt-1">
                         {new Date(payout.createdAt).toLocaleString()}
                       </p>
                       {(() => {
@@ -780,16 +780,16 @@ export default function WalletPage() {
         {/* Ledger */}
         <GlassCard>
           <div className="p-6">
-            <h2 className="text-xl font-light text-white mb-6">Transaction History</h2>
+            <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Transaction History</h2>
             {wallet.ledgerEntries.length === 0 ? (
-              <p className="text-white/60 font-light text-center py-8">No transactions yet</p>
+              <p className="text-[#86868b] font-light text-center py-8">No transactions yet</p>
             ) : (
               <div className="space-y-3">
                 {wallet.ledgerEntries.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div key={entry.id} className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
                     <div className="flex-1">
-                      <p className="text-white/90 font-light">{getLedgerTypeLabel(entry.type)}</p>
-                      <p className="text-xs text-white/50 font-light mt-1">
+                      <p className="text-gray-800 font-light">{getLedgerTypeLabel(entry.type)}</p>
+                      <p className="text-xs text-[#86868b] font-light mt-1">
                         {new Date(entry.createdAt).toLocaleString()}
                       </p>
                       {entry.relatedRiftId && (

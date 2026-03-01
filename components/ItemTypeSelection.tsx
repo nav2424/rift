@@ -44,9 +44,9 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
   return (
     <div className="space-y-12">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-light text-white mb-4">What type of {isBuying ? 'project' : 'work'} is this?</h2>
-        <p className="text-lg text-white/60 font-light max-w-xl mx-auto mb-2">Select the deliverable type to customize the payment workflow</p>
-        <p className="text-sm text-white/50 font-light max-w-xl mx-auto">Funds are secured upfront and released when content is approved.</p>
+        <h2 className="text-3xl md:text-4xl font-light text-[#1d1d1f] mb-4">What type of {isBuying ? 'project' : 'work'} is this?</h2>
+        <p className="text-lg text-[#86868b] font-light max-w-xl mx-auto mb-2">Select the deliverable type to customize the payment workflow</p>
+        <p className="text-sm text-[#86868b] font-light max-w-xl mx-auto">Funds are secured upfront and released when content is approved.</p>
       </div>
 
       <div className="space-y-6">
@@ -67,24 +67,24 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
                 hover
                 className={`p-8 cursor-pointer border-2 transition-all h-full ${
                   selectedType === item.type
-                    ? 'border-white/30 bg-white/5'
-                    : 'border-white/10 hover:border-white/20'
+                    ? 'border-gray-300 bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-start gap-5">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                     selectedType === item.type
                       ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 text-blue-400'
-                      : 'bg-white/5 border border-white/10 text-white/60 group-hover:bg-white/10 group-hover:text-white/80'
+                      : 'bg-gray-50 border border-gray-200 text-[#86868b] group-hover:bg-gray-100 group-hover:text-gray-700'
                   }`}>
                     {item.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-2xl font-light text-white mb-3">{item.title}</h3>
-                    <p className="text-white/70 text-sm font-light mb-6 leading-relaxed">{item.description}</p>
+                    <h3 className="text-2xl font-light text-[#1d1d1f] mb-3">{item.title}</h3>
+                    <p className="text-gray-600 text-sm font-light mb-6 leading-relaxed">{item.description}</p>
                     <ul className="space-y-2.5">
                       {item.features.map((feature, idx) => (
-                        <li key={idx} className="text-white/60 text-sm font-light flex items-center gap-3">
+                        <li key={idx} className="text-[#86868b] text-sm font-light flex items-center gap-3">
                           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                             selectedType === item.type ? 'bg-blue-400' : 'bg-white/40'
                           }`} />
@@ -111,7 +111,7 @@ export default function ItemTypeSelection({ onSelect, role }: ItemTypeSelectionP
         <div className="flex justify-center pt-6">
           <button
             onClick={() => onSelect(selectedType)}
-            className="min-w-[260px] px-12 py-4 group relative overflow-hidden backdrop-blur-xl bg-white/[0.06] border border-white/20 hover:border-white/30 hover:bg-white/10 transition-all duration-300 shadow-lg shadow-black/20 rounded-lg text-white font-light text-base focus:outline-none focus:ring-2 focus:ring-white/20 active:scale-[0.98]"
+            className="min-w-[260px] px-12 py-4 group relative overflow-hidden backdrop-blur-xl bg-gray-100 border border-gray-300 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 shadow-lg shadow-black/20 rounded-lg text-[#1d1d1f] font-light text-base focus:outline-none focus:ring-2 focus:ring-gray-300 active:scale-[0.98]"
             style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
           >
             <span className="flex items-center justify-center gap-3 relative z-10">

@@ -103,7 +103,7 @@ export default async function AdminPage() {
   const openDisputesCount = disputesCount || 0
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -111,82 +111,82 @@ export default async function AdminPage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-12">
         <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-light text-white mb-3 tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-light text-[#1d1d1f] mb-3 tracking-tight">
             Admin Panel
           </h1>
-          <p className="text-white/60 font-light">Manage all users, transactions, and disputes</p>
+          <p className="text-[#86868b] font-light">Manage all users, transactions, and disputes</p>
         </div>
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
           <GlassCard>
             <div className="p-6">
-              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Users</p>
-              <p className="text-4xl font-light text-white mb-2 tracking-tight">{allUsers.length}</p>
-              <p className="text-sm text-white/40 font-light">
+              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Total Users</p>
+              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{allUsers.length}</p>
+              <p className="text-sm text-gray-400 font-light">
                 {allUsers.filter(u => u.role === 'ADMIN').length} admins
               </p>
             </div>
           </GlassCard>
           <GlassCard>
             <div className="p-6">
-              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Volume</p>
-              <p className="text-4xl font-light text-white mb-2 tracking-tight">
+              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Total Volume</p>
+              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                 ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm text-white/40 font-light">
+              <p className="text-sm text-gray-400 font-light">
                 {allUsers.reduce((sum, u) => sum + u.numCompletedTransactions, 0)} transactions
               </p>
             </div>
           </GlassCard>
           <Link href="/admin/disputes">
-            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
             <div className="p-6">
-              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Open Disputes</p>
-              <p className="text-4xl font-light text-white mb-2 tracking-tight">{openDisputesCount}</p>
-                <p className="text-sm text-white/40 font-light">Click to review →</p>
+              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Open Disputes</p>
+              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{openDisputesCount}</p>
+                <p className="text-sm text-gray-400 font-light">Click to review →</p>
             </div>
           </GlassCard>
           </Link>
           <Link href="/admin/proofs">
-            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Pending Proofs</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">{pendingProofsCount}</p>
-                <p className="text-sm text-white/40 font-light">Awaiting review</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Pending Proofs</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{pendingProofsCount}</p>
+                <p className="text-sm text-gray-400 font-light">Awaiting review</p>
               </div>
             </GlassCard>
           </Link>
           <Link href="/admin/payouts">
-            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Payout Tracking</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">→</p>
-                <p className="text-sm text-white/40 font-light">Track payouts & amounts owed</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Payout Tracking</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
+                <p className="text-sm text-gray-400 font-light">Track payouts & amounts owed</p>
               </div>
             </GlassCard>
           </Link>
           <Link href="/admin/support">
-            <GlassCard className="cursor-pointer hover:bg-white/5 transition-colors">
+            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Support Tickets</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">→</p>
-                <p className="text-sm text-white/40 font-light">Manage user support requests</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Support Tickets</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
+                <p className="text-sm text-gray-400 font-light">Manage user support requests</p>
               </div>
             </GlassCard>
           </Link>
           <GlassCard>
             <div className="p-6">
-              <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Verified Users</p>
-              <p className="text-4xl font-light text-white mb-2 tracking-tight">
+              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Verified Users</p>
+              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                 {allUsers.filter(u => u.emailVerified && u.phoneVerified).length}
               </p>
-              <p className="text-sm text-white/40 font-light">
+              <p className="text-sm text-gray-400 font-light">
                 {allUsers.filter(u => u.emailVerified && u.phoneVerified && u.idVerified && u.bankVerified).length} fully verified
               </p>
             </div>
@@ -201,7 +201,7 @@ export default async function AdminPage() {
           <div className="mb-6">
             <Link 
               href="/admin/disputes"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 border border-white/20 text-white font-light text-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 text-[#1d1d1f] font-light text-sm"
             >
               View All Disputes ({openDisputesCount})
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,8 +210,8 @@ export default async function AdminPage() {
             </Link>
           </div>
           <GlassCard variant="strong" className="p-8">
-            <p className="text-white/60 font-light text-center">
-              View all disputes in the <Link href="/admin/disputes" className="text-white/80 hover:text-white underline">Dispute Queue</Link>
+            <p className="text-[#86868b] font-light text-center">
+              View all disputes in the <Link href="/admin/disputes" className="text-gray-700 hover:text-[#1d1d1f] underline">Dispute Queue</Link>
             </p>
           </GlassCard>
         </CollapsibleSection>

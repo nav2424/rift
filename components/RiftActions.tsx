@@ -359,7 +359,7 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
           }
         }}
         disabled={loading === 'archive' || loading === 'unarchive'}
-        className="w-full text-white/60 hover:text-white/80 hover:bg-white/5"
+        className="w-full text-[#86868b] hover:text-gray-700 hover:bg-gray-50"
       >
         {loading === 'archive' ? 'Archiving...' : loading === 'unarchive' ? 'Unarchiving...' : isArchived ? 'Unarchive Rift' : 'Archive Rift'}
       </PremiumButton>
@@ -479,11 +479,11 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
     <>
       {!showDisputeWizard && (
         <Card>
-          <h2 className="text-xl font-light text-white mb-6">Actions</h2>
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Actions</h2>
           {actions.length > 0 ? (
             <div className="space-y-3">{actions}</div>
           ) : (
-            <p className="text-white/60 font-light text-sm">No actions required at this time</p>
+            <p className="text-[#86868b] font-light text-sm">No actions required at this time</p>
           )}
         </Card>
       )}
@@ -502,7 +502,7 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
         <>
           {/* Backdrop - rendered first, covers everything */}
           <div
-            className="fixed inset-0 bg-black pointer-events-auto"
+            className="fixed inset-0 bg-white pointer-events-auto"
             style={{ 
               zIndex: 2147483647,
               position: 'fixed',
@@ -531,14 +531,14 @@ export default function RiftActions({ rift, currentUserRole, userId, isBuyer, is
             {/* Close button - outside modal window */}
             <button
               onClick={handleDisputeWizardClose}
-              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              className="absolute top-6 right-6 z-30 text-gray-700 hover:text-[#1d1d1f] transition-colors p-3 rounded-lg hover:bg-gray-100 pointer-events-auto"
               style={{ zIndex: 2147483647 }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-gray-200 bg-white/90 shadow-2xl pointer-events-auto">
               <div className="overflow-y-auto max-h-[90vh]">
                 <DisputeWizard
                   riftId={rift.id}

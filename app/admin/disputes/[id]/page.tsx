@@ -10,7 +10,7 @@ export default async function AdminDisputeCasePage({
   const { id } = await params
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-20">
         <DisputeCaseView disputeId={id} />
       </div>

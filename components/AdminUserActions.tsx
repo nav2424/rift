@@ -120,7 +120,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
 
   return (
     <div>
-      <h2 className="text-xl font-light text-white mb-4">Admin Actions</h2>
+      <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Admin Actions</h2>
       
       {error && (
         <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
@@ -130,7 +130,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
 
       {!isEditing && !showDeleteConfirm && (
         <div className="space-y-4">
-          <p className="text-white/60 text-sm font-light">
+          <p className="text-[#86868b] text-sm font-light">
             Warning: These actions cannot be undone. Use with caution.
           </p>
           
@@ -155,38 +155,38 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
       {isEditing && !showDeleteConfirm && (
         <div className="space-y-4">
           <div>
-            <label className="block text-white/70 font-light text-sm mb-2">Name</label>
+            <label className="block text-gray-600 font-light text-sm mb-2">Name</label>
             <input
               type="text"
               value={editForm.name}
               onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
+              className="w-full px-4 py-3 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
             />
           </div>
           <div>
-            <label className="block text-white/70 font-light text-sm mb-2">Email</label>
+            <label className="block text-gray-600 font-light text-sm mb-2">Email</label>
             <input
               type="email"
               value={editForm.email}
               onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
+              className="w-full px-4 py-3 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
             />
           </div>
           <div>
-            <label className="block text-white/70 font-light text-sm mb-2">Phone</label>
+            <label className="block text-gray-600 font-light text-sm mb-2">Phone</label>
             <input
               type="tel"
               value={editForm.phone}
               onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
+              className="w-full px-4 py-3 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
             />
           </div>
           <div>
-            <label className="block text-white/70 font-light text-sm mb-2">Role</label>
+            <label className="block text-gray-600 font-light text-sm mb-2">Role</label>
             <select
               value={editForm.role}
               onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
+              className="w-full px-4 py-3 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-lg text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-light"
             >
               <option value="USER">USER</option>
               <option value="ADMIN">ADMIN</option>
@@ -196,7 +196,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
             <button
               onClick={handleEdit}
               disabled={isSaving}
-              className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-[#1d1d1f] rounded-lg transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -212,7 +212,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
                 setError(null)
               }}
               disabled={isSaving}
-              className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors font-light disabled:opacity-50"
+              className="flex-1 px-6 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#1d1d1f] rounded-lg transition-colors font-light disabled:opacity-50"
             >
               Cancel
           </button>
@@ -223,18 +223,18 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
       {showDeleteConfirm && (
         <div className="space-y-4">
           <div>
-            <p className="text-white/80 font-light mb-2">
+            <p className="text-gray-700 font-light mb-2">
               Are you sure you want to delete this user? This action cannot be undone.
             </p>
-            <p className="text-white/60 text-sm font-light mb-4">
-              Type <span className="font-mono text-white/80">{user.email}</span> to confirm:
+            <p className="text-[#86868b] text-sm font-light mb-4">
+              Type <span className="font-mono text-gray-700">{user.email}</span> to confirm:
             </p>
             <input
               type="text"
               value={deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}
               placeholder={user.email}
-              className="w-full px-4 py-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all font-light"
+              className="w-full px-4 py-3 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all font-light"
             />
           </div>
           
@@ -242,7 +242,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
             <button
               onClick={handleDelete}
               disabled={isDeleting || deleteConfirm !== user.email || user.role === 'ADMIN'}
-              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-[#1d1d1f] rounded-lg transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? 'Deleting...' : 'Confirm Delete'}
             </button>
@@ -253,7 +253,7 @@ export default function AdminUserActions({ user }: AdminUserActionsProps) {
                 setError(null)
               }}
               disabled={isDeleting}
-              className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors font-light disabled:opacity-50"
+              className="px-6 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-[#1d1d1f] rounded-lg transition-colors font-light disabled:opacity-50"
             >
               Cancel
             </button>

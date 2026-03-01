@@ -69,8 +69,8 @@ export default function DeliveryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -78,12 +78,12 @@ export default function DeliveryPage() {
   // Show vault assets if they exist (for proof files)
   if (hasVaultAssets) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <div className="mb-6">
             <button
               onClick={() => router.push(`/rifts/${riftId}`)}
-              className="text-white/60 hover:text-white transition-colors text-sm"
+              className="text-[#86868b] hover:text-[#1d1d1f] transition-colors text-sm"
             >
               ← Back to Rift
             </button>
@@ -97,9 +97,9 @@ export default function DeliveryPage() {
   // Show digital delivery viewer if it exists
   if (delivery) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
-          <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
+          <div className="relative p-6 rounded-2xl border border-gray-200 bg-gray-50 backdrop-blur-sm">
             <DeliveryViewer
               riftId={riftId}
               delivery={delivery}

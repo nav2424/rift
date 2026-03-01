@@ -287,7 +287,7 @@ export default function RiftDetailPage() {
       case 'DELIVERED_PENDING_RELEASE': return 'text-teal-400 border-teal-500/30 bg-teal-500/10'
       case 'PROOF_SUBMITTED': return 'text-purple-400 border-purple-500/30 bg-purple-500/10'
       case 'UNDER_REVIEW': return 'text-purple-400 border-purple-500/30 bg-purple-500/10'
-      default: return 'text-white/60 border-white/20 bg-white/5'
+      default: return 'text-[#86868b] border-gray-300 bg-gray-50'
     }
   }
 
@@ -308,8 +308,8 @@ export default function RiftDetailPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -325,7 +325,7 @@ export default function RiftDetailPage() {
   const otherParty = isBuyer ? rift.seller : rift.buyer
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -333,7 +333,7 @@ export default function RiftDetailPage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-24">
@@ -342,44 +342,44 @@ export default function RiftDetailPage() {
           <div className="flex items-center gap-4 mb-8">
             <Link 
               href="/rifts"
-              className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center group"
+              className="flex-shrink-0 w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center group"
             >
-              <svg className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-[#86868b] group-hover:text-[#1d1d1f] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-light text-[#1d1d1f] tracking-tight">
                   {rift.itemTitle}
                 </h1>
                 <span className={`px-4 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm ${getStatusColor(rift.status)}`}>
                   {getStatusLabel(rift.status)}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-sm text-white/50 font-light">
-                <span className="text-white/60">
+              <div className="flex items-center gap-4 text-sm text-[#86868b] font-light">
+                <span className="text-[#86868b]">
                   Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                 </span>
-                <span className="text-white/20">•</span>
-                <span className="text-white/60">
+                <span className="text-gray-300">•</span>
+                <span className="text-[#86868b]">
                   {getItemTypeLabel(rift.itemType)}
                 </span>
-                <span className="text-white/20">•</span>
-                <span className="text-white/60">{isBuyer ? 'Buyer' : 'Seller'}</span>
-                <span className="text-white/20">•</span>
-                <span className="text-white/60">
+                <span className="text-gray-300">•</span>
+                <span className="text-[#86868b]">{isBuyer ? 'Buyer' : 'Seller'}</span>
+                <span className="text-gray-300">•</span>
+                <span className="text-[#86868b]">
                   {(otherParty.name || otherParty.email.split('@')[0]).split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </span>
               </div>
             </div>
             <div className="hidden md:block">
-              <div className="text-right p-5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                <p className="text-white/50 font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
-                <p className="text-white font-light text-4xl mb-1">
+              <div className="text-right p-5 rounded-2xl bg-gray-50 border border-gray-200 backdrop-blur-sm">
+                <p className="text-[#86868b] font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
+                <p className="text-[#1d1d1f] font-light text-4xl mb-1">
                   {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
                 </p>
-                <p className="text-white/40 font-light text-xs">
+                <p className="text-gray-400 font-light text-xs">
                   Created {new Date(rift.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
@@ -427,8 +427,8 @@ export default function RiftDetailPage() {
 
             {/* Description */}
             <GlassCard className="p-8">
-              <h2 className="text-sm font-light text-white/60 mb-5 tracking-wider uppercase">Description</h2>
-              <p className="text-white/80 font-light leading-relaxed text-lg">{rift.itemDescription}</p>
+              <h2 className="text-sm font-light text-[#86868b] mb-5 tracking-wider uppercase">Description</h2>
+              <p className="text-gray-700 font-light leading-relaxed text-lg">{rift.itemDescription}</p>
             </GlassCard>
 
             {/* Timeline */}
@@ -451,7 +451,7 @@ export default function RiftDetailPage() {
             {/* Disputes */}
             {rift.Dispute && rift.Dispute.length > 0 && (
               <GlassCard className="p-8">
-                <h2 className="text-sm font-light text-white/60 mb-6 tracking-wider uppercase">Disputes</h2>
+                <h2 className="text-sm font-light text-[#86868b] mb-6 tracking-wider uppercase">Disputes</h2>
                 <div className="space-y-4">
                   {rift.Dispute.map((dispute) => {
                     const isDraft = dispute.status === 'draft' || dispute.status === 'needs_info'
@@ -486,10 +486,10 @@ export default function RiftDetailPage() {
                             }
                           }
                         }}
-                        className="w-full text-left p-5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] hover:border-white/20 transition-all cursor-pointer"
+                        className="w-full text-left p-5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
                       >
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-white/90">
+                          <span className="text-sm font-medium text-gray-800">
                             {dispute.type ? dispute.type.replace(/_/g, ' ') : dispute.reason || 'Dispute'}
                           </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${
@@ -501,17 +501,17 @@ export default function RiftDetailPage() {
                             {dispute.status || 'Unknown'}
                           </span>
                         </div>
-                        <p className="text-sm text-white/70 font-light leading-relaxed mb-3">{dispute.reason || dispute.summary || 'No reason provided'}</p>
-                        <p className="text-xs text-white/50 font-light pt-3 border-t border-white/5">
+                        <p className="text-sm text-gray-600 font-light leading-relaxed mb-3">{dispute.reason || dispute.summary || 'No reason provided'}</p>
+                        <p className="text-xs text-[#86868b] font-light pt-3 border-t border-gray-100">
                           Raised by {dispute.raisedBy?.name || dispute.raisedBy?.email || 'Unknown user'}
                           {isDraft && canEdit && (
                             <span className="ml-2 text-blue-400 text-xs">(Click to edit)</span>
                           )}
                           {!isDraft && (
-                            <span className="ml-2 text-white/40 text-xs">(Click to view)</span>
+                            <span className="ml-2 text-gray-400 text-xs">(Click to view)</span>
                           )}
                           {isDraft && !canEdit && (
-                            <span className="ml-2 text-white/40 text-xs">(Click to view)</span>
+                            <span className="ml-2 text-gray-400 text-xs">(Click to view)</span>
                           )}
                         </p>
                       </button>
@@ -544,11 +544,11 @@ export default function RiftDetailPage() {
               {/* Mobile: Rift Value */}
               <div className="md:hidden">
                 <GlassCard className="p-6">
-                  <p className="text-white/50 font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
-                  <p className="text-white font-light text-3xl mb-1">
+                  <p className="text-[#86868b] font-light text-xs mb-2 uppercase tracking-wider">Rift Value</p>
+                  <p className="text-[#1d1d1f] font-light text-3xl mb-1">
                     {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
                   </p>
-                  <p className="text-white/40 font-light text-xs">
+                  <p className="text-gray-400 font-light text-xs">
                     Created {new Date(rift.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </GlassCard>
@@ -556,25 +556,25 @@ export default function RiftDetailPage() {
 
               {/* Transaction Info */}
               <GlassCard className="p-6">
-              <h2 className="text-sm font-light text-white/60 mb-6 tracking-wider uppercase">Transaction Details</h2>
+              <h2 className="text-sm font-light text-[#86868b] mb-6 tracking-wider uppercase">Transaction Details</h2>
               <div className="space-y-4">
                   {isBuyer ? (
                     // Buyer View: Show processing fee
                     <>
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-white/60 font-light text-sm">Rift Value</span>
-                        <span className="text-white font-medium text-base">
+                        <span className="text-[#86868b] font-light text-sm">Rift Value</span>
+                        <span className="text-[#1d1d1f] font-medium text-base">
                           {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-white/60 font-light text-sm">Processing Fee (3%)</span>
-                        <span className="text-white/70 font-light text-sm">
+                        <span className="text-[#86868b] font-light text-sm">Processing Fee (3%)</span>
+                        <span className="text-gray-600 font-light text-sm">
                           +{formatCurrency(calculateBuyerFee(rift.subtotal || rift.amount || 0), rift.currency)}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                        <span className="text-white font-light">You Pay</span>
+                      <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                        <span className="text-[#1d1d1f] font-light">You Pay</span>
                         <span className="text-green-400 font-medium text-lg">
                           {formatCurrency(calculateBuyerTotal(rift.subtotal || rift.amount || 0), rift.currency)}
                         </span>
@@ -584,19 +584,19 @@ export default function RiftDetailPage() {
                     // Seller View: Show platform fee and net amount
                     <>
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-white/60 font-light text-sm">Rift Value</span>
-                        <span className="text-white font-medium text-base">
+                        <span className="text-[#86868b] font-light text-sm">Rift Value</span>
+                        <span className="text-[#1d1d1f] font-medium text-base">
                           {formatCurrency(rift.subtotal || rift.amount || 0, rift.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-white/60 font-light text-sm">Platform Fee (5%)</span>
-                        <span className="text-white/70 font-light text-sm">
+                        <span className="text-[#86868b] font-light text-sm">Platform Fee (5%)</span>
+                        <span className="text-gray-600 font-light text-sm">
                           -{formatCurrency(calculateSellerFee(rift.subtotal || rift.amount || 0), rift.currency)}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                        <span className="text-white font-light">You Receive</span>
+                      <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                        <span className="text-[#1d1d1f] font-light">You Receive</span>
                         <span className="text-green-400 font-medium text-lg">
                           {formatCurrency(calculateSellerNet(rift.subtotal || rift.amount || 0), rift.currency)}
                         </span>
@@ -604,20 +604,20 @@ export default function RiftDetailPage() {
                     </>
                   )}
                   {rift.shippingAddress && (
-                    <div className="pt-4 border-t border-white/10">
-                      <span className="text-white/60 font-light text-xs block mb-2 uppercase tracking-wide">Shipping Address</span>
-                      <span className="text-white/80 font-light text-sm leading-relaxed">{rift.shippingAddress}</span>
+                    <div className="pt-4 border-t border-gray-200">
+                      <span className="text-[#86868b] font-light text-xs block mb-2 uppercase tracking-wide">Shipping Address</span>
+                      <span className="text-gray-700 font-light text-sm leading-relaxed">{rift.shippingAddress}</span>
                     </div>
                   )}
                   {rift.notes && (
-                    <div className="pt-4 border-t border-white/10">
-                      <span className="text-white/60 font-light text-xs block mb-2 uppercase tracking-wide">Notes</span>
-                      <span className="text-white/80 font-light text-sm leading-relaxed">{rift.notes}</span>
+                    <div className="pt-4 border-t border-gray-200">
+                      <span className="text-[#86868b] font-light text-xs block mb-2 uppercase tracking-wide">Notes</span>
+                      <span className="text-gray-700 font-light text-sm leading-relaxed">{rift.notes}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center pt-4 border-t border-white/10">
-                    <span className="text-white/50 font-light text-xs uppercase tracking-wide">Created</span>
-                    <span className="text-white/70 font-light text-sm">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <span className="text-[#86868b] font-light text-xs uppercase tracking-wide">Created</span>
+                    <span className="text-gray-600 font-light text-sm">
                       {new Date(rift.createdAt).toLocaleDateString('en-US', { 
                         year: 'numeric', 
                         month: 'short', 
@@ -646,7 +646,7 @@ export default function RiftDetailPage() {
         <>
           {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
           <div
-            className="fixed inset-0 bg-black pointer-events-auto"
+            className="fixed inset-0 bg-white pointer-events-auto"
             data-modal-backdrop
             style={{ 
               zIndex: 2147483647,
@@ -682,14 +682,14 @@ export default function RiftDetailPage() {
                 setShowDisputeWizard(false)
                 setSelectedDisputeId(null)
               }}
-              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              className="absolute top-6 right-6 z-30 text-gray-700 hover:text-[#1d1d1f] transition-colors p-3 rounded-lg hover:bg-gray-100 pointer-events-auto"
               style={{ zIndex: 2147483647 }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-gray-200 bg-white/90 shadow-2xl pointer-events-auto">
               <div className="overflow-y-auto max-h-[90vh]">
                 <DisputeWizard
                   riftId={rift.id}
@@ -716,7 +716,7 @@ export default function RiftDetailPage() {
         <>
           {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
           <div
-            className="fixed inset-0 bg-black pointer-events-auto"
+            className="fixed inset-0 bg-white pointer-events-auto"
             data-modal-backdrop
             style={{ 
               zIndex: 2147483647,
@@ -754,14 +754,14 @@ export default function RiftDetailPage() {
                 setSelectedDisputeId(null)
                 setDisputeSummary(null)
               }}
-              className="absolute top-6 right-6 z-30 text-white/80 hover:text-white transition-colors p-3 rounded-lg hover:bg-white/10 pointer-events-auto"
+              className="absolute top-6 right-6 z-30 text-gray-700 hover:text-[#1d1d1f] transition-colors p-3 rounded-lg hover:bg-gray-100 pointer-events-auto"
               style={{ zIndex: 2147483647 }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl pointer-events-auto">
+            <div className="relative w-[min(800px,90vw)] max-h-[90vh] overflow-hidden rounded-2xl border border-gray-200 bg-white/90 shadow-2xl pointer-events-auto">
               <div className="overflow-y-auto max-h-[90vh] p-4">
                 <GlassCard variant="strong" className="p-6 space-y-5">
                   <div className="text-center space-y-2">
@@ -771,30 +771,30 @@ export default function RiftDetailPage() {
                       </svg>
                     </div>
                     <div className="space-y-1.5">
-                      <h2 className="text-2xl font-light text-white tracking-tight">Dispute Summary</h2>
-                      <p className="text-white/60 font-light text-sm">Review of submitted dispute information</p>
+                      <h2 className="text-2xl font-light text-[#1d1d1f] tracking-tight">Dispute Summary</h2>
+                      <p className="text-[#86868b] font-light text-sm">Review of submitted dispute information</p>
                     </div>
                   </div>
                   
                   <div className="space-y-5 max-w-3xl mx-auto">
-                    <div className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm space-y-5 overflow-hidden">
+                    <div className="p-6 rounded-xl bg-gray-50 border border-gray-200 backdrop-blur-sm space-y-5 overflow-hidden">
                       <div className="space-y-4 min-w-0">
-                        <div className="pb-4 border-b border-white/10 min-w-0">
+                        <div className="pb-4 border-b border-gray-200 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-2 h-2 rounded-full bg-white/40"></div>
-                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Reason</span>
+                            <span className="text-[#86868b] font-light text-xs uppercase tracking-wider">Reason</span>
                           </div>
-                          <p className="text-white/90 font-light text-base pl-5 leading-relaxed break-words">
+                          <p className="text-gray-800 font-light text-base pl-5 leading-relaxed break-words">
                             {disputeSummary.reason.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                           </p>
                         </div>
 
-                        <div className="pb-4 border-b border-white/10 min-w-0">
+                        <div className="pb-4 border-b border-gray-200 min-w-0">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-2 h-2 rounded-full bg-white/40"></div>
-                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Summary</span>
+                            <span className="text-[#86868b] font-light text-xs uppercase tracking-wider">Summary</span>
                           </div>
-                          <p className="text-white/80 font-light text-sm leading-relaxed pl-5 whitespace-pre-wrap break-words overflow-wrap-anywhere max-w-full">
+                          <p className="text-gray-700 font-light text-sm leading-relaxed pl-5 whitespace-pre-wrap break-words overflow-wrap-anywhere max-w-full">
                             {disputeSummary.summary || 'No summary provided'}
                           </p>
                         </div>
@@ -802,20 +802,20 @@ export default function RiftDetailPage() {
                         <div>
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-2 h-2 rounded-full bg-white/40"></div>
-                            <span className="text-white/60 font-light text-xs uppercase tracking-wider">Evidence</span>
+                            <span className="text-[#86868b] font-light text-xs uppercase tracking-wider">Evidence</span>
                           </div>
                           <div className="pl-5 space-y-2">
                             {disputeSummary.evidence && disputeSummary.evidence.length > 0 ? (
                               disputeSummary.evidence.map((ev, idx) => (
-                                <div key={idx} className="flex items-center gap-3 text-white/70 font-light text-sm">
+                                <div key={idx} className="flex items-center gap-3 text-gray-600 font-light text-sm">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white/30"></span>
                                   <span className="capitalize">{ev.type}</span>
-                                  <span className="text-white/50">•</span>
+                                  <span className="text-[#86868b]">•</span>
                                   <span className="truncate">{ev.fileName || ev.textContent || ev.url || 'Evidence'}</span>
                                 </div>
                               ))
                             ) : (
-                              <p className="text-white/50 font-light text-sm italic">No evidence provided</p>
+                              <p className="text-[#86868b] font-light text-sm italic">No evidence provided</p>
                             )}
                           </div>
                         </div>
@@ -830,7 +830,7 @@ export default function RiftDetailPage() {
                           </svg>
                         </div>
                         <div className="space-y-1 flex-1">
-                          <h3 className="text-white/90 font-light text-sm">What Happens Next?</h3>
+                          <h3 className="text-gray-800 font-light text-sm">What Happens Next?</h3>
                           <p className="text-blue-300/90 text-xs font-light">
                             Our team will review the timeline, delivery logs, and chat transcript. You may be contacted for more information during the review process.
                           </p>

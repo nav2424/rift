@@ -59,48 +59,48 @@ export default function ShipmentProofForm({ escrowId }: ShipmentProofFormProps) 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Tracking Number
         </label>
         <input
           type="text"
           value={formData.trackingNumber}
           onChange={(e) => setFormData({ ...formData, trackingNumber: e.target.value })}
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all"
           placeholder="Enter tracking number"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Shipping Carrier
         </label>
         <input
           type="text"
           value={formData.shippingCarrier}
           onChange={(e) => setFormData({ ...formData, shippingCarrier: e.target.value })}
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all"
           placeholder="e.g., Canada Post, FedEx"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Proof File (Image/PDF)
         </label>
         <input
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
           accept="image/*,.pdf"
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-white/10 file:text-white file:cursor-pointer hover:file:bg-white/20 transition-all"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-gray-100 file:text-[#1d1d1f] file:cursor-pointer hover:file:bg-white/20 transition-all"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Notes
         </label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
           rows={3}
           placeholder="Additional notes..."
         />

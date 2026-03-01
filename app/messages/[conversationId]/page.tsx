@@ -120,7 +120,7 @@ export default async function ConversationDetail({
   const displayName = otherParticipant?.name || otherParticipant?.email || 'Unknown User'
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div 
         className="fixed inset-0 opacity-[0.02] pointer-events-none" 
@@ -131,7 +131,7 @@ export default async function ConversationDetail({
       />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -145,13 +145,13 @@ export default async function ConversationDetail({
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl md:text-3xl font-light text-white mb-2 tracking-tight truncate">
+                <h1 className="text-2xl md:text-3xl font-light text-[#1d1d1f] mb-2 tracking-tight truncate">
                   {displayName}
                 </h1>
                 {transaction && (
                   <Link 
                     href={`/rifts/${transaction.id}`}
-                    className="text-white/60 hover:text-white/80 font-light text-sm transition-colors"
+                    className="text-[#86868b] hover:text-gray-700 font-light text-sm transition-colors"
                   >
                     View Transaction: {transaction.itemTitle}
                   </Link>
@@ -161,7 +161,7 @@ export default async function ConversationDetail({
             {transaction ? (
               <Link 
                 href={`/rifts/${transaction.id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
+                className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[#1d1d1f] bg-gray-100 hover:bg-white/20 border border-gray-300 hover:border-gray-300 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -171,7 +171,7 @@ export default async function ConversationDetail({
             ) : (
               <Link 
                 href="/messages"
-                className="inline-flex items-center gap-2 px-4 py-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
+                className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[#1d1d1f] bg-gray-100 hover:bg-white/20 border border-gray-300 hover:border-gray-300 rounded-lg font-light text-sm transition-all duration-200 flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

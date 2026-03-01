@@ -286,15 +286,15 @@ export default function UGCDealPanels(props: {
     <div className="space-y-8">
       {/* Trust panel */}
       <GlassCard className="p-8">
-        <h2 className="text-sm font-light text-white/60 mb-5 tracking-wider uppercase">Trust Panel</h2>
+        <h2 className="text-sm font-light text-[#86868b] mb-5 tracking-wider uppercase">Trust Panel</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-5 rounded-xl bg-white/[0.03] border border-white/10">
-            <p className="text-white/70 text-sm mb-3">Creator</p>
-            <pre className="text-white/60 text-xs whitespace-pre-wrap">{JSON.stringify(trust?.creator ?? {}, null, 2)}</pre>
+          <div className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+            <p className="text-gray-600 text-sm mb-3">Creator</p>
+            <pre className="text-[#86868b] text-xs whitespace-pre-wrap">{JSON.stringify(trust?.creator ?? {}, null, 2)}</pre>
           </div>
-          <div className="p-5 rounded-xl bg-white/[0.03] border border-white/10">
-            <p className="text-white/70 text-sm mb-3">Brand</p>
-            <pre className="text-white/60 text-xs whitespace-pre-wrap">{JSON.stringify(trust?.brand ?? {}, null, 2)}</pre>
+          <div className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+            <p className="text-gray-600 text-sm mb-3">Brand</p>
+            <pre className="text-[#86868b] text-xs whitespace-pre-wrap">{JSON.stringify(trust?.brand ?? {}, null, 2)}</pre>
           </div>
         </div>
       </GlassCard>
@@ -302,23 +302,23 @@ export default function UGCDealPanels(props: {
       {/* Contract */}
       <GlassCard className="p-8">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-light text-white/60 tracking-wider uppercase">UGC Contract</h2>
+          <h2 className="text-sm font-light text-[#86868b] tracking-wider uppercase">UGC Contract</h2>
           <PremiumButton variant="outline" size="sm" onClick={handleProposeAmendment}>
             Propose change
           </PremiumButton>
         </div>
-        <div className="p-5 rounded-xl bg-white/[0.03] border border-white/10">
-          <pre className="text-white/70 text-xs whitespace-pre-wrap">{JSON.stringify(contract?.contractJson ?? {}, null, 2)}</pre>
+        <div className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+          <pre className="text-gray-600 text-xs whitespace-pre-wrap">{JSON.stringify(contract?.contractJson ?? {}, null, 2)}</pre>
         </div>
         {amendments.length > 0 && (
           <div className="mt-6">
-            <p className="text-white/60 text-xs uppercase tracking-wider mb-3">Amendments</p>
+            <p className="text-[#86868b] text-xs uppercase tracking-wider mb-3">Amendments</p>
             <div className="space-y-3">
               {amendments.map((a) => (
-                <div key={a.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
+                <div key={a.id} className="p-4 rounded-xl bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70 text-sm">{a.status}</span>
-                    <span className="text-white/40 text-xs">{new Date(a.createdAt).toLocaleString()}</span>
+                    <span className="text-gray-600 text-sm">{a.status}</span>
+                    <span className="text-gray-400 text-xs">{new Date(a.createdAt).toLocaleString()}</span>
                   </div>
                   {a.status === 'PENDING' && (
                     <div className="flex gap-3 mt-3">
@@ -340,7 +340,7 @@ export default function UGCDealPanels(props: {
                       </PremiumButton>
                     </div>
                   )}
-                  <pre className="text-white/60 text-xs whitespace-pre-wrap mt-2">{JSON.stringify(a.patchJson ?? {}, null, 2)}</pre>
+                  <pre className="text-[#86868b] text-xs whitespace-pre-wrap mt-2">{JSON.stringify(a.patchJson ?? {}, null, 2)}</pre>
                 </div>
               ))}
             </div>
@@ -350,28 +350,28 @@ export default function UGCDealPanels(props: {
 
       {/* Milestones */}
       <GlassCard className="p-8">
-        <h2 className="text-sm font-light text-white/60 mb-5 tracking-wider uppercase">Milestones</h2>
+        <h2 className="text-sm font-light text-[#86868b] mb-5 tracking-wider uppercase">Milestones</h2>
         <div className="space-y-4">
           {(milestones || []).map((m) => {
             const countdown = getCountdownText(m)
             const disputeOpen = (m.Dispute || []).length > 0
             return (
-              <div key={m.id} className="p-5 rounded-xl bg-white/[0.03] border border-white/10">
+              <div key={m.id} className="p-5 rounded-xl bg-gray-50 border border-gray-200">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3">
-                      <span className="text-white/80">{`M${m.index + 1}: ${m.title}`}</span>
-                      <span className="text-white/40 text-xs">{m.status}</span>
+                      <span className="text-gray-700">{`M${m.index + 1}: ${m.title}`}</span>
+                      <span className="text-gray-400 text-xs">{m.status}</span>
                       {disputeOpen && <span className="text-red-300 text-xs">DISPUTE OPEN</span>}
                     </div>
-                    {m.description && <p className="text-white/50 text-sm mt-1">{m.description}</p>}
-                    <p className="text-white/60 text-sm mt-2">
+                    {m.description && <p className="text-[#86868b] text-sm mt-1">{m.description}</p>}
+                    <p className="text-[#86868b] text-sm mt-2">
                       {currencySymbol}
                       {m.amount.toFixed(2)} • Acceptance window: {m.acceptanceWindowDays}d
                       {m.autoApprove ? ' • Auto-approve enabled' : ''}
                     </p>
                     {countdown && (
-                      <p className="text-white/50 text-xs mt-2">
+                      <p className="text-[#86868b] text-xs mt-2">
                         {countdown} {m.autoApprove ? '(auto-approve if no response)' : ''}
                       </p>
                     )}
@@ -423,16 +423,16 @@ export default function UGCDealPanels(props: {
 
       {/* Timeline */}
       <GlassCard className="p-8">
-        <h2 className="text-sm font-light text-white/60 mb-5 tracking-wider uppercase">Timeline</h2>
+        <h2 className="text-sm font-light text-[#86868b] mb-5 tracking-wider uppercase">Timeline</h2>
         <div className="space-y-3">
           {(timeline || []).map((e) => (
-            <div key={e.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
+            <div key={e.id} className="p-4 rounded-xl bg-gray-50 border border-gray-200">
               <div className="flex items-center justify-between">
-                <span className="text-white/80 text-sm">{e.type}</span>
-                <span className="text-white/40 text-xs">{new Date(e.createdAt).toLocaleString()}</span>
+                <span className="text-gray-700 text-sm">{e.type}</span>
+                <span className="text-gray-400 text-xs">{new Date(e.createdAt).toLocaleString()}</span>
               </div>
               {e.metadataJson && (
-                <pre className="text-white/60 text-xs whitespace-pre-wrap mt-2">{JSON.stringify(e.metadataJson, null, 2)}</pre>
+                <pre className="text-[#86868b] text-xs whitespace-pre-wrap mt-2">{JSON.stringify(e.metadataJson, null, 2)}</pre>
               )}
             </div>
           ))}

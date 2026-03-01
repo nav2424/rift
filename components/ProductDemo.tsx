@@ -97,13 +97,13 @@ export default function ProductDemo() {
         <div className="space-y-5">
           {/* Header with search */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-10 bg-white/[0.08] rounded-lg border border-white/20 flex items-center px-4 backdrop-blur-sm">
-              <svg className="w-4 h-4 text-white/60 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex-1 h-10 bg-gray-100 rounded-lg border border-gray-300 flex items-center px-4 backdrop-blur-sm">
+              <svg className="w-4 h-4 text-[#86868b] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <div className="flex-1 h-2 bg-white/10 rounded" />
+              <div className="flex-1 h-2 bg-gray-100 rounded" />
             </div>
-            <div className="w-10 h-10 rounded-lg bg-white/[0.08] border border-white/20 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center backdrop-blur-sm">
               <div className="w-6 h-6 rounded-full bg-white/20" />
             </div>
           </div>
@@ -112,14 +112,14 @@ export default function ProductDemo() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: 'Open', value: '12', color: 'bg-white/15' },
-              { label: 'Disputed', value: '2', color: 'bg-white/10' },
+              { label: 'Disputed', value: '2', color: 'bg-gray-100' },
               { label: 'Released', value: '48', color: 'bg-white/15' },
             ].map((stat, i) => (
-              <div key={i} className="h-28 bg-white/[0.08] rounded-xl border border-white/20 p-4 flex flex-col justify-between backdrop-blur-sm">
+              <div key={i} className="h-28 bg-gray-100 rounded-xl border border-gray-300 p-4 flex flex-col justify-between backdrop-blur-sm">
                 <div className="h-2.5 bg-white/15 rounded w-16" />
                 <div className="flex items-baseline gap-2">
                   <div className={`h-8 ${stat.color} rounded w-12`} />
-                  <div className="h-2 bg-white/10 rounded w-8" />
+                  <div className="h-2 bg-gray-100 rounded w-8" />
                 </div>
               </div>
             ))}
@@ -132,25 +132,25 @@ export default function ProductDemo() {
               { title: 'Instagram Reels', amount: '$2,400', status: 'Awaiting Upload', progress: 50 },
               { title: 'Brand Deal Retainer', amount: '$3,000', status: 'Completed', progress: 100 },
             ].map((item, i) => (
-              <div key={i} className="h-20 bg-white/[0.08] rounded-xl border border-white/20 p-4 flex items-center justify-between group hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
+              <div key={i} className="h-20 bg-gray-100 rounded-xl border border-gray-300 p-4 flex items-center justify-between group hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-white/[0.08] border border-white/20" />
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-300" />
                     <div className="flex-1">
                       <div className="h-3 bg-white/25 rounded w-32 mb-1.5" />
-                      <div className="h-2 bg-white/10 rounded w-20" />
+                      <div className="h-2 bg-gray-100 rounded w-20" />
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <div className="h-1.5 bg-white/15 rounded-full flex-1 max-w-24">
                       <div className="h-full bg-white/40 rounded-full" style={{ width: `${item.progress}%` }} />
                     </div>
-                    <div className="h-2 bg-white/10 rounded w-16" />
+                    <div className="h-2 bg-gray-100 rounded w-16" />
                   </div>
                 </div>
                 <div className="ml-4 text-right">
                   <div className="h-4 bg-white/25 rounded w-20 mb-1" />
-                  <div className="h-2.5 bg-white/10 rounded w-16" />
+                  <div className="h-2.5 bg-gray-100 rounded w-16" />
                 </div>
               </div>
             ))}
@@ -169,26 +169,26 @@ export default function ProductDemo() {
       mockup: (
         <div className="space-y-5">
           {/* Form Header */}
-          <div className="h-12 bg-white/[0.08] rounded-xl border border-white/20 flex items-center px-4 backdrop-blur-sm">
+          <div className="h-12 bg-gray-100 rounded-xl border border-gray-300 flex items-center px-4 backdrop-blur-sm">
             <div className="h-3 bg-white/25 rounded w-40" />
           </div>
 
           {/* Form Fields */}
           <div className="space-y-4">
-            <div className="h-14 bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+            <div className="h-14 bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
               <div className="h-2 bg-white/15 rounded w-24 mb-2" />
               <div className="h-4 bg-white/15 rounded w-full" />
             </div>
-            <div className="h-14 bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+            <div className="h-14 bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
               <div className="h-2 bg-white/15 rounded w-32 mb-2" />
               <div className="h-4 bg-white/15 rounded w-full" />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="h-14 bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+              <div className="h-14 bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
                 <div className="h-2 bg-white/15 rounded w-20 mb-2" />
                 <div className="h-4 bg-white/15 rounded w-full" />
               </div>
-              <div className="h-14 bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+              <div className="h-14 bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
                 <div className="h-2 bg-white/15 rounded w-16 mb-2" />
                 <div className="h-4 bg-white/15 rounded w-full" />
               </div>
@@ -205,19 +205,19 @@ export default function ProductDemo() {
             ].map((step, i) => (
               <div key={i} className="flex items-center flex-1">
                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center backdrop-blur-sm ${
-                  step.active ? 'bg-white/15 border-white/40' : 'bg-white/[0.08] border-white/20'
+                  step.active ? 'bg-white/15 border-white/40' : 'bg-gray-100 border-gray-300'
                 }`}>
                   {step.active && <div className="w-2 h-2 rounded-full bg-white/70" />}
                 </div>
                 {i < 3 && (
-                  <div className={`flex-1 h-0.5 mx-2 ${step.active ? 'bg-white/30' : 'bg-white/10'}`} />
+                  <div className={`flex-1 h-0.5 mx-2 ${step.active ? 'bg-white/30' : 'bg-gray-100'}`} />
                 )}
               </div>
             ))}
           </div>
 
           {/* Action Button */}
-          <div className="h-12 bg-white/[0.12] rounded-xl border border-white/30 flex items-center justify-center backdrop-blur-sm">
+          <div className="h-12 bg-white/[0.12] rounded-xl border border-gray-300 flex items-center justify-center backdrop-blur-sm">
             <div className="h-4 bg-white/40 rounded w-32" />
           </div>
         </div>
@@ -234,12 +234,12 @@ export default function ProductDemo() {
       mockup: (
         <div className="space-y-5">
           {/* Dispute Header */}
-          <div className="h-16 bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+          <div className="h-16 bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-2">
               <div className="h-3 bg-white/25 rounded w-32" />
               <div className="h-5 bg-white/15 rounded w-16" />
             </div>
-            <div className="h-2 bg-white/10 rounded w-full" />
+            <div className="h-2 bg-gray-100 rounded w-full" />
           </div>
 
           {/* Evidence Cards */}
@@ -248,15 +248,15 @@ export default function ProductDemo() {
               { title: 'Buyer Evidence', items: 3 },
               { title: 'Seller Evidence', items: 2 },
             ].map((side, i) => (
-              <div key={i} className="bg-white/[0.08] rounded-xl border border-white/20 p-4 backdrop-blur-sm">
+              <div key={i} className="bg-gray-100 rounded-xl border border-gray-300 p-4 backdrop-blur-sm">
                 <div className="h-3 bg-white/25 rounded w-28 mb-3" />
                 <div className="space-y-2">
                   {Array.from({ length: side.items }).map((_, j) => (
-                    <div key={j} className="h-12 bg-white/[0.08] rounded-lg border border-white/20 p-2 flex items-center gap-2 backdrop-blur-sm">
+                    <div key={j} className="h-12 bg-gray-100 rounded-lg border border-gray-300 p-2 flex items-center gap-2 backdrop-blur-sm">
                       <div className="w-8 h-8 rounded bg-white/15" />
                       <div className="flex-1">
                         <div className="h-2 bg-white/15 rounded w-24 mb-1" />
-                        <div className="h-1.5 bg-white/10 rounded w-16" />
+                        <div className="h-1.5 bg-gray-100 rounded w-16" />
                       </div>
                     </div>
                   ))}
@@ -267,7 +267,7 @@ export default function ProductDemo() {
 
           {/* Timeline */}
           <div className="space-y-3">
-            <div className="h-2 bg-white/10 rounded w-20 mb-2" />
+            <div className="h-2 bg-gray-100 rounded w-20 mb-2" />
             {[
               { time: '2h ago', action: 'Dispute raised' },
               { time: '1h ago', action: 'Evidence submitted' },
@@ -277,19 +277,19 @@ export default function ProductDemo() {
                 <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5" />
                 <div className="flex-1">
                   <div className="h-2.5 bg-white/15 rounded w-32 mb-1" />
-                  <div className="h-2 bg-white/10 rounded w-24" />
+                  <div className="h-2 bg-gray-100 rounded w-24" />
                 </div>
-                <div className="h-2 bg-white/10 rounded w-12" />
+                <div className="h-2 bg-gray-100 rounded w-12" />
               </div>
             ))}
           </div>
 
           {/* Resolution Actions */}
           <div className="flex gap-3">
-            <div className="flex-1 h-12 bg-white/[0.12] rounded-xl border border-white/30 flex items-center justify-center backdrop-blur-sm">
+            <div className="flex-1 h-12 bg-white/[0.12] rounded-xl border border-gray-300 flex items-center justify-center backdrop-blur-sm">
               <div className="h-3 bg-white/40 rounded w-24" />
             </div>
-            <div className="flex-1 h-12 bg-white/[0.08] rounded-xl border border-white/20 flex items-center justify-center backdrop-blur-sm">
+            <div className="flex-1 h-12 bg-gray-100 rounded-xl border border-gray-300 flex items-center justify-center backdrop-blur-sm">
               <div className="h-3 bg-white/15 rounded w-20" />
             </div>
           </div>
@@ -302,14 +302,14 @@ export default function ProductDemo() {
     <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 z-10" style={{ minHeight: '600px' }}>
       <div className="text-center mb-16">
         <div className="inline-block mb-6">
-          <span className="glass px-5 py-2 rounded-full text-xs text-white/70 font-medium uppercase tracking-wider">
+          <span className="glass px-5 py-2 rounded-full text-xs text-gray-600 font-medium uppercase tracking-wider">
             Product Demo
           </span>
         </div>
-        <h2 className="text-4xl md:text-5xl font-medium text-white mb-4 tracking-tight">
+        <h2 className="text-4xl md:text-5xl font-medium text-[#1d1d1f] mb-4 tracking-tight">
           See It In Action
         </h2>
-        <p className="text-lg text-white/60 max-w-2xl mx-auto font-light">
+        <p className="text-lg text-[#86868b] max-w-2xl mx-auto font-light">
           Experience enterprise-grade rift protection
         </p>
       </div>
@@ -320,23 +320,23 @@ export default function ProductDemo() {
           <GlassCard variant="glass" hover className="p-0 overflow-hidden relative group w-full">
             
             {/* Browser Chrome - Enhanced */}
-            <div className="p-6 border-b border-white/10 bg-white/[0.02]">
+            <div className="p-6 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-white/30" />
                   <div className="w-3 h-3 rounded-full bg-white/20" />
                   <div className="w-3 h-3 rounded-full bg-white/20" />
                 </div>
-                <div className="flex-1 h-9 bg-white/5 rounded-lg border border-white/10 ml-4 flex items-center px-4">
-                  <svg className="w-4 h-4 text-white/30 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-1 h-9 bg-gray-50 rounded-lg border border-gray-200 ml-4 flex items-center px-4">
+                  <svg className="w-4 h-4 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  <div className="flex-1 h-2 bg-white/5 rounded" />
-                  <div className="w-4 h-4 rounded bg-white/10 ml-2" />
+                  <div className="flex-1 h-2 bg-gray-50 rounded" />
+                  <div className="w-4 h-4 rounded bg-gray-100 ml-2" />
                 </div>
                 <div className="flex gap-2 ml-2">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10" />
-                  <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10" />
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" />
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200" />
                 </div>
               </div>
             </div>
@@ -348,8 +348,8 @@ export default function ProductDemo() {
           </GlassCard>
 
           {/* Floating Badge */}
-          <div className="absolute -top-4 -right-4 glass px-4 py-2 rounded-full text-xs text-white/70 font-medium flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
+          <div className="absolute -top-4 -right-4 glass px-4 py-2 rounded-full text-xs text-gray-600 font-medium flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-500" />
             Live Preview
           </div>
         </div>
@@ -357,8 +357,8 @@ export default function ProductDemo() {
         {/* Enhanced Demo Controls */}
         <div className="space-y-6 w-full">
           <div>
-            <h3 className="text-2xl font-medium text-white mb-3">{demos[activeTab].title}</h3>
-            <p className="text-white/60 font-light leading-relaxed mb-6 text-sm">
+            <h3 className="text-2xl font-medium text-[#1d1d1f] mb-3">{demos[activeTab].title}</h3>
+            <p className="text-[#86868b] font-light leading-relaxed mb-6 text-sm">
               {demos[activeTab].description}
             </p>
           </div>
@@ -373,7 +373,7 @@ export default function ProductDemo() {
                   className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden ${
                     activeTab === tab
                       ? 'bg-white text-black'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                      : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-gray-50'
                   }`}
                 >
                   <span className="relative z-10">
@@ -391,11 +391,11 @@ export default function ProductDemo() {
                 const IconComponent = getIconComponent(feature.icon);
                 return (
                   <div key={index} className="flex items-center gap-4 group/item">
-                    <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center group-hover/item:bg-white/10 transition-all duration-300">
-                      <IconComponent className="w-5 h-5 text-white/70" />
+                    <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center group-hover/item:bg-gray-100 transition-all duration-300">
+                      <IconComponent className="w-5 h-5 text-gray-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-light text-sm">{feature.text}</p>
+                      <p className="text-[#1d1d1f] font-light text-sm">{feature.text}</p>
                     </div>
                   </div>
                 );
@@ -407,42 +407,42 @@ export default function ProductDemo() {
           <div className="space-y-4">
             <GlassCard variant="glass" hover className="p-6 relative group">
               <div className="relative z-10 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-all duration-300">
-                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 transition-all duration-300">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-base font-medium text-white mb-1">Instant Protection</h4>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">Your funds are secured the moment you create a rift</p>
+                  <h4 className="text-base font-medium text-[#1d1d1f] mb-1">Instant Protection</h4>
+                  <p className="text-[#86868b] font-light text-sm leading-relaxed">Your funds are secured the moment you create a rift</p>
                 </div>
               </div>
             </GlassCard>
 
             <GlassCard variant="glass" hover className="p-6 relative group">
               <div className="relative z-10 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-all duration-300">
-                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 transition-all duration-300">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-base font-medium text-white mb-1">Lightning Fast</h4>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">Complete transactions in minutes, not days</p>
+                  <h4 className="text-base font-medium text-[#1d1d1f] mb-1">Lightning Fast</h4>
+                  <p className="text-[#86868b] font-light text-sm leading-relaxed">Complete transactions in minutes, not days</p>
                 </div>
               </div>
             </GlassCard>
 
             <GlassCard variant="glass" hover className="p-6 relative group">
               <div className="relative z-10 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-all duration-300">
-                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 transition-all duration-300">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-base font-medium text-white mb-1">Transparent Pricing</h4>
-                  <p className="text-white/60 font-light text-sm leading-relaxed">Buyers pay 0%. Sellers pay 8%. Simple and transparent.</p>
+                  <h4 className="text-base font-medium text-[#1d1d1f] mb-1">Transparent Pricing</h4>
+                  <p className="text-[#86868b] font-light text-sm leading-relaxed">Buyers pay 0%. Sellers pay 8%. Simple and transparent.</p>
                 </div>
               </div>
             </GlassCard>

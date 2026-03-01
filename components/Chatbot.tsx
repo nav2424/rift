@@ -150,7 +150,7 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-20 w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
+          className="fixed bottom-4 right-4 z-20 w-14 h-14 bg-gray-100 backdrop-blur-md border border-gray-300 rounded-full flex items-center justify-center text-[#1d1d1f] hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110"
           aria-label="Open chatbot"
         >
           <MessageCircle className="w-6 h-6" />
@@ -162,26 +162,26 @@ export default function Chatbot() {
         <>
           {/* Backdrop - click to close on mobile */}
           <div 
-            className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-white/80 backdrop-blur-sm md:hidden"
             onClick={() => setIsOpen(false)}
           />
           {/* Chat Window Container - Centered on mobile, bottom-right on desktop */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:inset-auto md:bottom-4 md:right-4 md:z-20 md:p-0">
-            <div className="w-full max-w-lg h-[85vh] max-h-[700px] md:w-96 md:h-[600px] bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
+            <div className="w-full max-w-lg h-[85vh] max-h-[700px] md:w-96 md:h-[600px] bg-white/95 backdrop-blur-xl border border-gray-300 rounded-2xl shadow-2xl flex flex-col overflow-hidden relative">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-[#1d1d1f]" />
               </div>
               <div>
-                <h3 className="text-white font-medium">Rift Assistant</h3>
-                <p className="text-xs text-white/60">AI-powered support</p>
+                <h3 className="text-[#1d1d1f] font-medium">Rift Assistant</h3>
+                <p className="text-xs text-[#86868b]">AI-powered support</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-[#86868b] hover:text-[#1d1d1f] hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Close chatbot"
             >
               <X className="w-5 h-5" />
@@ -198,8 +198,8 @@ export default function Chatbot() {
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     message.role === 'user'
-                      ? 'bg-white/10 text-white'
-                      : 'bg-white/5 text-white/90'
+                      ? 'bg-gray-100 text-[#1d1d1f]'
+                      : 'bg-gray-50 text-gray-800'
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap chatbot-message">
@@ -251,8 +251,8 @@ export default function Chatbot() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 rounded-2xl px-4 py-2">
-                  <Loader2 className="w-5 h-5 text-white/60 animate-spin" />
+                <div className="bg-gray-50 rounded-2xl px-4 py-2">
+                  <Loader2 className="w-5 h-5 text-[#86868b] animate-spin" />
                 </div>
               </div>
             )}
@@ -260,7 +260,7 @@ export default function Chatbot() {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSend} className="p-4 border-t border-white/10">
+          <form onSubmit={handleSend} className="p-4 border-t border-gray-200">
             <div className="flex gap-2">
               <input
                 ref={inputRef}
@@ -268,13 +268,13 @@ export default function Chatbot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="w-10 h-10 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center text-white transition-colors"
+                className="w-10 h-10 bg-gray-100 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg flex items-center justify-center text-[#1d1d1f] transition-colors"
                 aria-label="Send message"
               >
                 {isLoading ? (
@@ -284,7 +284,7 @@ export default function Chatbot() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-white/40 mt-2 text-center">
+            <p className="text-xs text-gray-400 mt-2 text-center">
               AI responses may be inaccurate. For critical issues, contact support.
             </p>
           </form>

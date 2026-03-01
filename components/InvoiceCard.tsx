@@ -199,11 +199,11 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
   }
 
   const statusColors: Record<string, string> = {
-    draft: 'bg-white/20 text-white/80',
+    draft: 'bg-white/20 text-gray-700',
     sent: 'bg-blue-500/20 text-blue-400',
-    paid: 'bg-emerald-500/20 text-emerald-400',
+    paid: 'bg-emerald-500/20 text-emerald-600',
     overdue: 'bg-red-500/20 text-red-400',
-    void: 'bg-white/10 text-white/40',
+    void: 'bg-gray-100 text-gray-400',
   }
 
   if (!isSeller) {
@@ -214,7 +214,7 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
   if (loading) {
     return (
       <GlassCard className="p-8">
-        <div className="text-white/60 font-light">Loading invoice...</div>
+        <div className="text-[#86868b] font-light">Loading invoice...</div>
       </GlassCard>
     )
   }
@@ -224,8 +224,8 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
       <GlassCard className="p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 className="text-sm font-light text-white/60 mb-2 tracking-wider uppercase">Invoice</h2>
-            <p className="text-white/80 font-light">Create a professional invoice for this service transaction</p>
+            <h2 className="text-sm font-light text-[#86868b] mb-2 tracking-wider uppercase">Invoice</h2>
+            <p className="text-gray-700 font-light">Create a professional invoice for this service transaction</p>
           </div>
         </div>
 
@@ -249,14 +249,14 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-sm font-light text-white/60 tracking-wider uppercase">Invoice</h2>
+            <h2 className="text-sm font-light text-[#86868b] tracking-wider uppercase">Invoice</h2>
             <span
               className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${statusColors[invoice.status] || statusColors.draft}`}
             >
               {invoice.status.toUpperCase()}
             </span>
           </div>
-          <p className="text-white font-light text-lg">#{invoice.invoice_number}</p>
+          <p className="text-[#1d1d1f] font-light text-lg">#{invoice.invoice_number}</p>
         </div>
       </div>
 
@@ -264,45 +264,45 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
       <div className="space-y-4 mb-6">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-white/60 mb-1">Total</p>
-            <p className="text-white font-light text-xl">{formatCurrency(invoice.total)}</p>
+            <p className="text-[#86868b] mb-1">Total</p>
+            <p className="text-[#1d1d1f] font-light text-xl">{formatCurrency(invoice.total)}</p>
           </div>
           {invoice.due_date && (
             <div>
-              <p className="text-white/60 mb-1">Due Date</p>
-              <p className="text-white/80">{formatDate(invoice.due_date)}</p>
+              <p className="text-[#86868b] mb-1">Due Date</p>
+              <p className="text-gray-700">{formatDate(invoice.due_date)}</p>
             </div>
           )}
         </div>
 
         {invoice.sent_at && (
           <div className="text-sm">
-            <p className="text-white/60 mb-1">Sent</p>
-            <p className="text-white/80">{formatDate(invoice.sent_at)}</p>
+            <p className="text-[#86868b] mb-1">Sent</p>
+            <p className="text-gray-700">{formatDate(invoice.sent_at)}</p>
           </div>
         )}
 
         {isPaid && invoice.paid_at && (
           <div className="text-sm">
-            <p className="text-emerald-400 mb-1">Paid</p>
-            <p className="text-white/80">{formatDate(invoice.paid_at)}</p>
+            <p className="text-emerald-600 mb-1">Paid</p>
+            <p className="text-gray-700">{formatDate(invoice.paid_at)}</p>
           </div>
         )}
       </div>
 
       {/* Invoice Items Preview */}
       {invoice.invoice_items && invoice.invoice_items.length > 0 && (
-        <div className="mb-6 p-4 bg-white/5 rounded-lg">
-          <p className="text-white/60 text-xs mb-2 uppercase tracking-wider">Items</p>
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <p className="text-[#86868b] text-xs mb-2 uppercase tracking-wider">Items</p>
           <div className="space-y-2">
             {invoice.invoice_items.slice(0, 3).map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-white/80">{item.name}</span>
-                <span className="text-white/60">{formatCurrency(item.amount)}</span>
+                <span className="text-gray-700">{item.name}</span>
+                <span className="text-[#86868b]">{formatCurrency(item.amount)}</span>
               </div>
             ))}
             {invoice.invoice_items.length > 3 && (
-              <p className="text-white/60 text-xs pt-2">
+              <p className="text-[#86868b] text-xs pt-2">
                 +{invoice.invoice_items.length - 3} more items
               </p>
             )}
@@ -326,7 +326,7 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
           <button
             onClick={handleGeneratePdf}
             disabled={generatingPdf}
-            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-gray-700 hover:text-[#1d1d1f] transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
           >
             {generatingPdf ? 'Generating...' : 'Generate PDF'}
           </button>
@@ -337,7 +337,7 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
             href={invoice.pdf_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition text-center min-h-[44px] flex items-center justify-center"
+            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-gray-700 hover:text-[#1d1d1f] transition text-center min-h-[44px] flex items-center justify-center"
           >
             Download PDF
           </a>
@@ -346,7 +346,7 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
         {canEdit && (
           <button
             onClick={() => router.push(`/rifts/${riftId}/invoice/edit`)}
-            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition min-h-[44px]"
+            className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-gray-700 hover:text-[#1d1d1f] transition min-h-[44px]"
           >
             Edit Invoice
           </button>
@@ -355,7 +355,7 @@ export default function InvoiceCard({ riftId, isSeller, currency }: InvoiceCardP
 
       {/* Info */}
       {invoice.status === 'sent' && (
-        <p className="text-white/40 text-xs mt-4">
+        <p className="text-gray-400 text-xs mt-4">
           Invoice has been sent to {invoice.buyer_email}
         </p>
       )}

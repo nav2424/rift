@@ -9,7 +9,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({ children, className = '', ...props }: SelectProps) {
   return (
     <select
-      className={`w-full p-2 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-white/30 ${className}`}
+      className={`w-full p-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] focus:outline-none focus:border-gray-300 ${className}`}
       {...props}
     >
       {children}

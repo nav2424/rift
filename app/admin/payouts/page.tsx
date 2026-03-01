@@ -169,7 +169,7 @@ export default function AdminPayoutsPage() {
       FAILED: 'bg-red-500/20 text-red-400 border-red-500/30',
     }
     return (
-      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[status as keyof typeof styles] || 'bg-white/10 text-white/60 border-white/20'}`}>
+      <span className={`px-2 py-1 text-xs font-light rounded border ${styles[status as keyof typeof styles] || 'bg-gray-100 text-[#86868b] border-gray-300'}`}>
         {status}
       </span>
     )
@@ -177,13 +177,13 @@ export default function AdminPayoutsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <div className="animate-pulse space-y-6">
-            <div className="h-10 bg-white/10 rounded w-1/3"></div>
+            <div className="h-10 bg-gray-100 rounded w-1/3"></div>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-white/10 rounded"></div>
+                <div key={i} className="h-32 bg-gray-100 rounded"></div>
               ))}
             </div>
           </div>
@@ -194,12 +194,12 @@ export default function AdminPayoutsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black">
+      <div className="min-h-screen relative overflow-hidden bg-white">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           <GlassCard className="p-8">
             <div className="text-center">
               <p className="text-xl font-light text-red-400 mb-4">Error Loading Payouts</p>
-              <p className="text-white/60 font-light mb-6">{error}</p>
+              <p className="text-[#86868b] font-light mb-6">{error}</p>
               <PremiumButton onClick={loadPayouts} variant="outline">
                 Try Again
               </PremiumButton>
@@ -211,21 +211,21 @@ export default function AdminPayoutsPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-light text-white tracking-tight mb-2">
+            <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] tracking-tight mb-2">
               Payout Tracking
             </h1>
-            <p className="text-white/60 font-light">
+            <p className="text-[#86868b] font-light">
               Track user payouts, scheduled dates, and amounts owed
             </p>
           </div>
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -239,45 +239,45 @@ export default function AdminPayoutsPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <GlassCard>
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Users with Payouts</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">{stats.totalUsers}</p>
-                <p className="text-sm text-white/40 font-light">Active users</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Users with Payouts</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{stats.totalUsers}</p>
+                <p className="text-sm text-gray-400 font-light">Active users</p>
               </div>
             </GlassCard>
             <GlassCard>
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Total Owed</p>
-                <p className="text-4xl font-light text-white mb-2 tracking-tight">
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Total Owed</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                   {formatCurrency(stats.totalOwed)}
                 </p>
-                <p className="text-sm text-white/40 font-light">Pending + Processing</p>
+                <p className="text-sm text-gray-400 font-light">Pending + Processing</p>
               </div>
             </GlassCard>
             <GlassCard>
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Pending</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Pending</p>
                 <p className="text-4xl font-light text-yellow-400 mb-2 tracking-tight">
                   {formatCurrency(stats.totalPending)}
                 </p>
-                <p className="text-sm text-white/40 font-light">Awaiting schedule</p>
+                <p className="text-sm text-gray-400 font-light">Awaiting schedule</p>
               </div>
             </GlassCard>
             <GlassCard>
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Processing</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Processing</p>
                 <p className="text-4xl font-light text-blue-400 mb-2 tracking-tight">
                   {formatCurrency(stats.totalProcessing)}
                 </p>
-                <p className="text-sm text-white/40 font-light">In progress</p>
+                <p className="text-sm text-gray-400 font-light">In progress</p>
               </div>
             </GlassCard>
             <GlassCard>
               <div className="p-6">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider mb-2">Completed</p>
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Completed</p>
                 <p className="text-4xl font-light text-green-400 mb-2 tracking-tight">
                   {formatCurrency(stats.totalCompleted)}
                 </p>
-                <p className="text-sm text-white/40 font-light">All time</p>
+                <p className="text-sm text-gray-400 font-light">All time</p>
               </div>
             </GlassCard>
           </div>
@@ -287,11 +287,11 @@ export default function AdminPayoutsPage() {
         <GlassCard className="p-6 mb-8">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-white/60 font-light">Filter:</label>
+              <label className="text-sm text-[#86868b] font-light">Filter:</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 <option value="all">All Statuses</option>
                 <option value="PENDING">Pending</option>
@@ -301,11 +301,11 @@ export default function AdminPayoutsPage() {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-white/60 font-light">Sort by:</label>
+              <label className="text-sm text-[#86868b] font-light">Sort by:</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 <option value="amount">Amount Owed</option>
                 <option value="date">Next Scheduled Date</option>
@@ -333,17 +333,17 @@ export default function AdminPayoutsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <Link
                         href={`/admin/users/${user.userId}`}
-                        className="text-xl font-light text-white hover:text-blue-400 transition-colors"
+                        className="text-xl font-light text-[#1d1d1f] hover:text-blue-400 transition-colors"
                       >
                         {user.userName || user.userEmail}
                       </Link>
                       {user.riftUserId && (
-                        <span className="text-sm text-white/40 font-light font-mono">
+                        <span className="text-sm text-gray-400 font-light font-mono">
                           ({user.riftUserId})
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-white/60 font-light">{user.userEmail}</p>
+                    <p className="text-sm text-[#86868b] font-light">{user.userEmail}</p>
                     {!user.stripeConnectAccountId && (
                       <p className="text-xs text-yellow-400/80 font-light mt-1">
                         ⚠ No Stripe Connect account
@@ -351,41 +351,41 @@ export default function AdminPayoutsPage() {
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-light text-white mb-1">
+                    <p className="text-2xl font-light text-[#1d1d1f] mb-1">
                       {formatCurrency(user.totalOwed, user.currency)}
                     </p>
-                    <p className="text-xs text-white/50 font-light">Total Owed</p>
+                    <p className="text-xs text-[#86868b] font-light">Total Owed</p>
                   </div>
                 </div>
 
                 {/* Summary Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 p-4 bg-white/5 rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="text-xs text-white/60 font-light mb-1">Wallet Balance</p>
-                    <p className="text-lg font-light text-white">
+                    <p className="text-xs text-[#86868b] font-light mb-1">Wallet Balance</p>
+                    <p className="text-lg font-light text-[#1d1d1f]">
                       {formatCurrency(user.walletBalance, user.currency)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-white/60 font-light mb-1">Pending</p>
+                    <p className="text-xs text-[#86868b] font-light mb-1">Pending</p>
                     <p className="text-lg font-light text-yellow-400">
                       {formatCurrency(user.totalPending, user.currency)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-white/60 font-light mb-1">Processing</p>
+                    <p className="text-xs text-[#86868b] font-light mb-1">Processing</p>
                     <p className="text-lg font-light text-blue-400">
                       {formatCurrency(user.totalProcessing, user.currency)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-white/60 font-light mb-1">Next Scheduled</p>
-                    <p className="text-sm font-light text-white">
+                    <p className="text-xs text-[#86868b] font-light mb-1">Next Scheduled</p>
+                    <p className="text-sm font-light text-[#1d1d1f]">
                       {formatDateShort(user.nextScheduledDate)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-white/60 font-light mb-1">Total All Time</p>
+                    <p className="text-xs text-[#86868b] font-light mb-1">Total All Time</p>
                     <p className="text-lg font-light text-green-400">
                       {formatCurrency(user.totalAllTime, user.currency)}
                     </p>
@@ -406,26 +406,26 @@ export default function AdminPayoutsPage() {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b border-white/10">
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Status</th>
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Amount</th>
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Scheduled</th>
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Processed</th>
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Rift</th>
-                              <th className="text-left py-3 px-4 text-xs text-white/60 font-light uppercase tracking-wider">Created</th>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Status</th>
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Amount</th>
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Scheduled</th>
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Processed</th>
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Rift</th>
+                              <th className="text-left py-3 px-4 text-xs text-[#86868b] font-light uppercase tracking-wider">Created</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/5">
                             {user.payouts.map((payout) => (
-                              <tr key={payout.id} className="hover:bg-white/5 transition-colors">
+                              <tr key={payout.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="py-3 px-4">{getStatusBadge(payout.status)}</td>
-                                <td className="py-3 px-4 text-white font-light">
+                                <td className="py-3 px-4 text-[#1d1d1f] font-light">
                                   {formatCurrency(payout.amount, payout.currency)}
                                 </td>
-                                <td className="py-3 px-4 text-white/80 font-light text-sm">
+                                <td className="py-3 px-4 text-gray-700 font-light text-sm">
                                   {formatDate(payout.scheduledAt)}
                                 </td>
-                                <td className="py-3 px-4 text-white/80 font-light text-sm">
+                                <td className="py-3 px-4 text-gray-700 font-light text-sm">
                                   {formatDate(payout.processedAt)}
                                 </td>
                                 <td className="py-3 px-4">
@@ -437,10 +437,10 @@ export default function AdminPayoutsPage() {
                                       {payout.riftNumber ? `Rift #${payout.riftNumber}` : 'View Rift'}
                                     </Link>
                                   ) : (
-                                    <span className="text-white/40 text-sm">N/A</span>
+                                    <span className="text-gray-400 text-sm">N/A</span>
                                   )}
                                 </td>
-                                <td className="py-3 px-4 text-white/60 font-light text-sm">
+                                <td className="py-3 px-4 text-[#86868b] font-light text-sm">
                                   {formatDateShort(payout.createdAt)}
                                 </td>
                               </tr>
@@ -458,7 +458,7 @@ export default function AdminPayoutsPage() {
 
         {userSummaries.length === 0 && (
           <GlassCard className="p-12 text-center">
-            <p className="text-white/60 font-light text-lg">
+            <p className="text-[#86868b] font-light text-lg">
               No payouts found{filterStatus !== 'all' ? ` with status "${filterStatus}"` : ''}
             </p>
           </GlassCard>

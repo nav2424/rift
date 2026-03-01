@@ -56,13 +56,13 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-light text-white/80 mb-2">
+        <label className="block text-sm font-light text-gray-700 mb-2">
           Dispute Type *
         </label>
         <select
           value={disputeType}
           onChange={(e) => setDisputeType(e.target.value)}
-          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-white/30"
+          className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[#1d1d1f] focus:outline-none focus:border-gray-300"
         >
           <option value="ITEM_NOT_RECEIVED">Item Not Received</option>
           <option value="ITEM_NOT_AS_DESCRIBED">Item Not As Described</option>
@@ -73,13 +73,13 @@ export default function DisputeForm({ escrowId }: DisputeFormProps) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-white/70 mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Reason for Dispute
         </label>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="w-full px-4 py-3 glass-light border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+          className="w-full px-4 py-3 glass-light border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
           rows={4}
           placeholder="Describe the issue..."
           required

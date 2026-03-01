@@ -53,7 +53,7 @@ export default function DeleteAccountPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
         backgroundSize: '50px 50px'
@@ -64,14 +64,14 @@ export default function DeleteAccountPage() {
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-light text-white mb-2 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                 Delete Account
               </h1>
-              <p className="text-white/60 font-light">Permanently delete your account and all associated data</p>
+              <p className="text-[#86868b] font-light">Permanently delete your account and all associated data</p>
             </div>
             <Link
               href="/account"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -86,10 +86,10 @@ export default function DeleteAccountPage() {
             {/* Warning */}
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
               <h3 className="text-red-400 font-light text-lg mb-2">⚠️ Warning: This action cannot be undone</h3>
-              <p className="text-white/80 font-light text-sm">
+              <p className="text-gray-700 font-light text-sm">
                 Deleting your account will permanently remove all your data including:
               </p>
-              <ul className="mt-3 space-y-1 text-white/70 font-light text-sm list-disc list-inside">
+              <ul className="mt-3 space-y-1 text-gray-600 font-light text-sm list-disc list-inside">
                 <li>Your profile and account information</li>
                 <li>All transaction history</li>
                 <li>Wallet balance and ledger entries</li>
@@ -102,10 +102,10 @@ export default function DeleteAccountPage() {
             {/* Requirements */}
             <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
               <h3 className="text-yellow-400 font-light text-lg mb-2">Before you delete</h3>
-              <p className="text-white/80 font-light text-sm mb-2">
+              <p className="text-gray-700 font-light text-sm mb-2">
                 Make sure you have:
               </p>
-              <ul className="space-y-1 text-white/70 font-light text-sm list-disc list-inside">
+              <ul className="space-y-1 text-gray-600 font-light text-sm list-disc list-inside">
                 <li>Completed or cancelled all active transactions</li>
                 <li>Withdrawn all funds from your wallet</li>
                 <li>Downloaded any data you want to keep</li>
@@ -119,17 +119,17 @@ export default function DeleteAccountPage() {
                 id="confirm"
                 checked={checked}
                 onChange={(e) => setChecked(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-red-500 focus:ring-red-500 focus:ring-offset-0"
+                className="mt-1 w-4 h-4 rounded border-gray-300 bg-gray-50 text-red-500 focus:ring-red-500 focus:ring-offset-0"
               />
-              <label htmlFor="confirm" className="flex-1 text-white/80 font-light text-sm">
+              <label htmlFor="confirm" className="flex-1 text-gray-700 font-light text-sm">
                 I understand that this action is permanent and cannot be undone. I have completed all active transactions and withdrawn my funds.
               </label>
             </div>
 
             {/* Type DELETE to confirm */}
             <div>
-              <label htmlFor="delete-confirm" className="block text-white/80 font-light text-sm mb-2">
-                Type <span className="font-semibold text-white">DELETE</span> to confirm:
+              <label htmlFor="delete-confirm" className="block text-gray-700 font-light text-sm mb-2">
+                Type <span className="font-semibold text-[#1d1d1f]">DELETE</span> to confirm:
               </label>
               <input
                 type="text"
@@ -137,7 +137,7 @@ export default function DeleteAccountPage() {
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder="DELETE"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white font-light focus:outline-none focus:border-white/40 transition-colors"
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-300 text-[#1d1d1f] font-light focus:outline-none focus:border-white/40 transition-colors"
                 disabled={deleting}
               />
             </div>
@@ -157,7 +157,7 @@ export default function DeleteAccountPage() {
             <div className="text-center pt-4">
               <Link
                 href="/account"
-                className="text-white/60 hover:text-white font-light text-sm transition-colors"
+                className="text-[#86868b] hover:text-[#1d1d1f] font-light text-sm transition-colors"
               >
                 Cancel and return to account settings
               </Link>

@@ -233,7 +233,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
     return (
       <GlassCard>
         <div className="flex items-center justify-center p-8">
-          <div className="text-white/60 font-light">Loading messages...</div>
+          <div className="text-[#86868b] font-light">Loading messages...</div>
         </div>
       </GlassCard>
     )
@@ -251,7 +251,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
 
   return (
     <GlassCard className="p-8">
-      <h2 className="text-xl font-light text-white mb-6">Messages</h2>
+      <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Messages</h2>
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
@@ -286,7 +286,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
           }
         `}} />
         {messages.length === 0 ? (
-          <div className="text-center py-8 text-white/60 font-light">
+          <div className="text-center py-8 text-[#86868b] font-light">
             Start the conversation.
           </div>
         ) : (
@@ -305,7 +305,7 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex gap-2 border-t border-white/10 pt-4">
+      <div className="flex gap-2 border-t border-gray-200 pt-4">
         <input
           type="text"
           value={messageText}
@@ -317,14 +317,14 @@ export default function ConversationPanel({ conversationId }: ConversationPanelP
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white placeholder-white/40 font-light focus:outline-none focus:border-white/30"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-[#1d1d1f] placeholder-gray-400 font-light focus:outline-none focus:border-gray-300"
           disabled={sending}
           maxLength={1000}
         />
         <button
           onClick={handleSend}
           disabled={!messageText.trim() || sending}
-          className="px-6 py-2 bg-blue-500/30 border border-blue-500/50 rounded-xl text-white font-light hover:bg-blue-500/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-blue-500/30 border border-blue-500/50 rounded-xl text-[#1d1d1f] font-light hover:bg-blue-500/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {sending ? 'Sending...' : 'Send'}
         </button>

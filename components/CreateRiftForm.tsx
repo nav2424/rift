@@ -800,7 +800,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                         ? 'bg-green-500/20 border-green-500/50 text-green-400'
                         : isActive
                         ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                        : 'bg-white/5 border-white/10 text-white/40'
+                        : 'bg-gray-50 border-gray-200 text-gray-400'
                     }`}
                   >
                     {isCompleted ? (
@@ -811,19 +811,19 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                       stepNum
                     )}
                   </div>
-                  <span className={`text-xs font-light mt-2 text-center ${isActive ? 'text-white' : 'text-white/40'}`}>
+                  <span className={`text-xs font-light mt-2 text-center ${isActive ? 'text-[#1d1d1f]' : 'text-gray-400'}`}>
                     {label}
                   </span>
                 </div>
                 {stepNum < totalSteps && (
-                  <div className={`flex-1 h-0.5 mx-2 ${stepNum < currentStep ? 'bg-green-500/50' : 'bg-white/10'}`} />
+                  <div className={`flex-1 h-0.5 mx-2 ${stepNum < currentStep ? 'bg-green-500/50' : 'bg-gray-100'}`} />
                 )}
               </div>
             )
           })}
         </div>
         <div className="text-center">
-          <p className="text-sm text-white/60 font-light">
+          <p className="text-sm text-[#86868b] font-light">
             Step {currentStep} of {totalSteps}
           </p>
         </div>
@@ -839,13 +839,13 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Rift Details</h2>
+              <h2 className="text-2xl font-light text-[#1d1d1f]">Rift Details</h2>
             </div>
 
           <div>
-            <label className="block text-sm font-light text-white/80 mb-3">
+            <label className="block text-sm font-light text-gray-700 mb-3">
               Project Title *
-              <span className="ml-2 text-xs text-white/50 font-light">
+              <span className="ml-2 text-xs text-[#86868b] font-light">
                 ({formData.itemTitle.length}/{TITLE_MAX_LENGTH} characters)
               </span>
             </label>
@@ -863,10 +863,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 const error = validateField('itemTitle', e.target.value)
                 setErrors({ ...errors, itemTitle: error })
               }}
-              className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+              className={`w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all font-light ${
                 errors.itemTitle 
                   ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                  : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                  : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
               }`}
               placeholder={
                 itemType === 'DIGITAL_GOODS' ? 'e.g., Summer 2025 UGC Content' :
@@ -880,9 +880,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
           </div>
 
           <div>
-            <label className="block text-sm font-light text-white/80 mb-3">
+            <label className="block text-sm font-light text-gray-700 mb-3">
               Project Brief / Deliverables *
-              <span className="ml-2 text-xs text-white/50 font-light">
+              <span className="ml-2 text-xs text-[#86868b] font-light">
                 ({formData.itemDescription.length}/{DESCRIPTION_MAX_LENGTH} characters)
               </span>
             </label>
@@ -900,10 +900,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   const error = validateField('itemDescription', e.target.value)
                   setErrors({ ...errors, itemDescription: error })
                 }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                className={`w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
                   errors.itemDescription 
                     ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
                 }`}
                 rows={5}
                 placeholder={
@@ -929,19 +929,19 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-light text-white">Payment Details</h2>
+            <h2 className="text-2xl font-light text-[#1d1d1f]">Payment Details</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Transaction Amount (Subtotal) *
-                <span className="ml-2 text-xs text-white/50 font-light">
+                <span className="ml-2 text-xs text-[#86868b] font-light">
                   Min: {currencySymbols[formData.currency] || ''}{AMOUNT_MIN.toFixed(2)}
                 </span>
               </label>
               <div className="relative">
-                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-white/60 font-light">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[#86868b] font-light">
                   {currencySymbols[formData.currency] || ''}
                 </span>
                 <input
@@ -959,10 +959,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     const error = validateField('amount', e.target.value)
                     setErrors({ ...errors, amount: error })
                   }}
-                  className={`w-full pl-8 pr-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all font-light ${
+                  className={`w-full pl-8 pr-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all font-light ${
                     errors.amount 
                       ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                      : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                      : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
                   }`}
                   placeholder="0.00"
                 />
@@ -971,35 +971,35 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 <p className="mt-2 text-sm text-red-400 font-light">{errors.amount}</p>
               )}
               {formData.amount && parseFloat(formData.amount) > 0 && (
-                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                  <p className="text-xs text-white/60 font-light mb-3 uppercase tracking-wider">Fee Breakdown</p>
+                <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
+                  <p className="text-xs text-[#86868b] font-light mb-3 uppercase tracking-wider">Fee Breakdown</p>
                   {creatorRole === 'BUYER' ? (
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-white/70 font-light text-sm">Listed Price</span>
-                        <span className="text-white font-light">{currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount).toFixed(2)}</span>
+                        <span className="text-gray-600 font-light text-sm">Listed Price</span>
+                        <span className="text-[#1d1d1f] font-light">{currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-white/60 font-light text-sm">Processing Fee (3%)</span>
-                        <span className="text-white/70 font-light">+{currencySymbols[formData.currency] || formData.currency} {calculateBuyerFee(parseFloat(formData.amount)).toFixed(2)}</span>
+                        <span className="text-[#86868b] font-light text-sm">Processing Fee (3%)</span>
+                        <span className="text-gray-600 font-light">+{currencySymbols[formData.currency] || formData.currency} {calculateBuyerFee(parseFloat(formData.amount)).toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-2 border-t border-white/10">
-                        <span className="text-white font-light">You Pay</span>
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span className="text-[#1d1d1f] font-light">You Pay</span>
                         <span className="text-green-400 font-light text-lg">{currencySymbols[formData.currency] || formData.currency} {calculateBuyerTotal(parseFloat(formData.amount)).toFixed(2)}</span>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-white/70 font-light text-sm">Transaction Amount</span>
-                        <span className="text-white font-light">{currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount).toFixed(2)}</span>
+                        <span className="text-gray-600 font-light text-sm">Transaction Amount</span>
+                        <span className="text-[#1d1d1f] font-light">{currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-white/60 font-light text-sm">Platform Fee (5%)</span>
-                        <span className="text-white/70 font-light">-{currencySymbols[formData.currency] || formData.currency} {calculateSellerFee(parseFloat(formData.amount)).toFixed(2)}</span>
+                        <span className="text-[#86868b] font-light text-sm">Platform Fee (5%)</span>
+                        <span className="text-gray-600 font-light">-{currencySymbols[formData.currency] || formData.currency} {calculateSellerFee(parseFloat(formData.amount)).toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-2 border-t border-white/10">
-                        <span className="text-white font-light">You Receive</span>
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span className="text-[#1d1d1f] font-light">You Receive</span>
                         <span className="text-green-400 font-light text-lg">{currencySymbols[formData.currency] || formData.currency} {calculateSellerNet(parseFloat(formData.amount)).toFixed(2)}</span>
                       </div>
                       <p className="text-xs text-green-400/80 font-light mt-2 text-center">
@@ -1011,14 +1011,14 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
             </div>
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Currency *
               </label>
               <select
                 required
                 value={formData.currency}
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light appearance-none cursor-pointer"
+                className="w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-xl text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all font-light appearance-none cursor-pointer"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
@@ -1027,7 +1027,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 }}
               >
                 {currencies.map((curr) => (
-                  <option key={curr.value} value={curr.value} className="bg-black text-white">
+                  <option key={curr.value} value={curr.value} className="bg-white text-[#1d1d1f]">
                     {curr.label}
                   </option>
                 ))}
@@ -1047,10 +1047,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-light text-white">
+                <h2 className="text-2xl font-light text-[#1d1d1f]">
                   {creatorRole === 'BUYER' ? 'Creator / Partner Information' : 'Brand / Agency Information'}
                 </h2>
-                <p className="text-sm text-white/60 font-light mt-1">
+                <p className="text-sm text-[#86868b] font-light mt-1">
                   {creatorRole === 'BUYER' 
                     ? "You are the brand/agency. Enter the creator's Rift User ID to start the Rift."
                     : "You are the creator. Enter the brand/agency's Rift User ID to start the Rift."}
@@ -1059,7 +1059,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             </div>
 
             <div className="relative" ref={searchRef}>
-            <label className="block text-sm font-light text-white/80 mb-3">
+            <label className="block text-sm font-light text-gray-700 mb-3">
               {creatorRole === 'BUYER' ? "Creator's Rift User ID *" : "Brand/Agency's Rift User ID *"}
             </label>
             <div className="relative">
@@ -1072,7 +1072,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     setShowResults(true)
                   }
                 }}
-                className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all font-light font-mono"
+                className="w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all font-light font-mono"
                 placeholder={creatorRole === 'BUYER' 
                   ? "Enter creator's Rift User ID (e.g., RIFT111111)"
                   : "Enter brand/agency's Rift User ID (e.g., RIFT111111)"}
@@ -1080,7 +1080,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               />
               {searchLoading && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <svg className="animate-spin h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -1090,18 +1090,18 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
             {/* Search Results Dropdown */}
             {showResults && searchResults.length > 0 && (
-              <div className="absolute z-50 w-full mt-2 bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+              <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-xl border border-gray-200 rounded-xl shadow-2xl overflow-hidden">
                 <div className="max-h-60 overflow-y-auto">
                   {searchResults.map((user) => (
                     <button
                       key={user.id}
                       type="button"
                       onClick={() => handleUserSelect(user)}
-                      className="w-full px-5 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0"
+                      className="w-full px-5 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
                     >
                       <div className="flex flex-col">
-                        <span className="text-white font-light">{user.name || 'User'}</span>
-                        <span className="text-white/60 text-sm font-light font-mono">{user.riftUserId || 'No Rift ID'}</span>
+                        <span className="text-[#1d1d1f] font-light">{user.name || 'User'}</span>
+                        <span className="text-[#86868b] text-sm font-light font-mono">{user.riftUserId || 'No Rift ID'}</span>
                       </div>
                     </button>
                   ))}
@@ -1112,11 +1112,11 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
             {/* Selected User Display */}
             {selectedUser && (
-              <div className="mt-3 p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-light">{selectedUser.name || 'User'}</p>
-                    <p className="text-white/60 text-sm font-light font-mono">{selectedUser.riftUserId || 'No Rift ID'}</p>
+                    <p className="text-[#1d1d1f] font-light">{selectedUser.name || 'User'}</p>
+                    <p className="text-[#86868b] text-sm font-light font-mono">{selectedUser.riftUserId || 'No Rift ID'}</p>
                   </div>
                   <button
                     type="button"
@@ -1129,7 +1129,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                         setFormData({ ...formData, buyerId: '', buyerEmail: '' })
                       }
                     }}
-                    className="text-white/60 hover:text-white transition-colors"
+                    className="text-[#86868b] hover:text-[#1d1d1f] transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1141,8 +1141,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
             {/* No Results Message */}
             {showResults && searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
-              <div className="mt-2 p-4 bg-white/5 border border-white/10 rounded-xl">
-                <p className="text-white/60 text-sm font-light">
+              <div className="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <p className="text-[#86868b] text-sm font-light">
                   No user found with Rift User ID "{searchQuery}". The {creatorRole === 'BUYER' ? 'creator' : 'brand/agency'} must have a valid Rift User ID.
                 </p>
               </div>
@@ -1150,12 +1150,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
             {/* Info Message / Help Text */}
             {!selectedUser && !searchQuery.trim() && (
-              <p className="text-xs text-white/60 mt-3 flex items-start gap-2">
+              <p className="text-xs text-[#86868b] mt-3 flex items-start gap-2">
                 <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>
-                  <strong className="text-white/80">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'creator' : 'brand/agency'} for their Rift User ID. It looks like <code className="bg-white/10 px-1 rounded font-mono">RIFT111111</code>. Only exact matches will appear in search results.
+                  <strong className="text-gray-700">How to find a Rift User ID:</strong> Ask the {creatorRole === 'BUYER' ? 'creator' : 'brand/agency'} for their Rift User ID. It looks like <code className="bg-gray-100 px-1 rounded font-mono">RIFT111111</code>. Only exact matches will appear in search results.
                 </span>
               </p>
             )}
@@ -1174,7 +1174,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Content Delivery</h2>
+              <h2 className="text-2xl font-light text-[#1d1d1f]">Content Delivery</h2>
             </div>
             
             <div className="p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -1183,8 +1183,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <p className="text-white/90 font-light mb-2">Proof of delivery happens after funding</p>
-                  <p className="text-white/60 text-sm font-light">
+                  <p className="text-gray-800 font-light mb-2">Proof of delivery happens after funding</p>
+                  <p className="text-[#86868b] text-sm font-light">
                     After payment is funded, you'll upload UGC files, creative assets, or delivery links in Rift Vault when submitting proof of delivery.
                   </p>
                 </div>
@@ -1204,12 +1204,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-white">Service Details</h2>
+              <h2 className="text-2xl font-light text-[#1d1d1f]">Service Details</h2>
             </div>
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Service Date / Delivery Date *
-                <span className="ml-2 text-xs text-white/50 font-light">
+                <span className="ml-2 text-xs text-[#86868b] font-light">
                   When will the content be delivered?
                 </span>
               </label>
@@ -1228,9 +1228,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
             </div>
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Scope of Service *
-                <span className="ml-2 text-xs text-white/50 font-light">
+                <span className="ml-2 text-xs text-[#86868b] font-light">
                   What content needs to be created?
                 </span>
               </label>
@@ -1246,10 +1246,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   const error = validateField('serviceScope', e.target.value)
                   setErrors({ ...errors, serviceScope: error })
                 }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                className={`w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
                   errors.serviceScope 
                     ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
                 }`}
                 rows={4}
                 placeholder={
@@ -1263,9 +1263,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
               </div>
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Deliverables *
-                <span className="ml-2 text-xs text-white/50 font-light">
+                <span className="ml-2 text-xs text-[#86868b] font-light">
                   What files/content will be delivered?
                 </span>
               </label>
@@ -1281,10 +1281,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   const error = validateField('serviceDeliverables', e.target.value)
                   setErrors({ ...errors, serviceDeliverables: error })
                 }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                className={`w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
                   errors.serviceDeliverables 
                     ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
                 }`}
                 rows={4}
                 placeholder="List all deliverables: files, reports, designs, code, etc..."
@@ -1294,9 +1294,9 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
             </div>
             <div>
-              <label className="block text-sm font-light text-white/80 mb-3">
+              <label className="block text-sm font-light text-gray-700 mb-3">
                 Completion Criteria *
-                <span className="ml-2 text-xs text-white/50 font-light">
+                <span className="ml-2 text-xs text-[#86868b] font-light">
                   How will content approval be determined?
                 </span>
               </label>
@@ -1312,10 +1312,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   const error = validateField('completionCriteria', e.target.value)
                   setErrors({ ...errors, completionCriteria: error })
                 }}
-                className={`w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
+                className={`w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all resize-none font-light ${
                   errors.completionCriteria 
                     ? 'border-red-500/50 focus:ring-red-500/20 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-white/20 focus:border-white/20'
+                    : 'border-gray-200 focus:ring-gray-300 focus:border-gray-300'
                 }`}
                 rows={3}
                 placeholder="Define clear completion criteria that the brand can verify..."
@@ -1324,28 +1324,28 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 <p className="mt-2 text-sm text-red-400 font-light">{errors.completionCriteria}</p>
               )}
             </div>
-            <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
               <input
                 type="checkbox"
                 id="allowsPartialRelease"
                 checked={formData.allowsPartialRelease ?? false}
                 onChange={(e) => setFormData({ ...formData, allowsPartialRelease: e.target.checked })}
-                className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                className="w-5 h-5 rounded border-2 border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/30"
               />
-              <label htmlFor="allowsPartialRelease" className="text-white/80 font-light cursor-pointer flex-1">
+              <label htmlFor="allowsPartialRelease" className="text-gray-700 font-light cursor-pointer flex-1">
                 <span className="font-medium">Allow partial release per milestone</span>
-                <p className="text-xs text-white/60 font-light mt-1">
+                <p className="text-xs text-[#86868b] font-light mt-1">
                   Enable milestone-based payments. Funds can be released incrementally as milestones are completed.
                 </p>
               </label>
             </div>
 
             {formData.allowsPartialRelease && (
-              <div className="space-y-4 p-6 bg-white/[0.03] border border-white/10 rounded-xl">
+              <div className="space-y-4 p-6 bg-gray-50 border border-gray-200 rounded-xl">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-light text-white">Milestones</h3>
-                    <p className="text-xs text-white/50 font-light mt-1">
+                    <h3 className="text-lg font-light text-[#1d1d1f]">Milestones</h3>
+                    <p className="text-xs text-[#86868b] font-light mt-1">
                       Choose a deal type to set review window defaults per milestone.
                     </p>
                   </div>
@@ -1403,7 +1403,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-white/60 font-light mb-1">Deal type</label>
+                    <label className="block text-xs text-[#86868b] font-light mb-1">Deal type</label>
                     <select
                       value={formData.dealType}
                       onChange={(e) => {
@@ -1415,7 +1415,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                         }))
                         setFormData({ ...formData, dealType, milestones: newMilestones })
                       }}
-                      className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                      className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
                     >
                       <option value="short">Short-term (1–2 deliverables) — 5 days</option>
                       <option value="ongoing">Ongoing / monthly — 3 days</option>
@@ -1425,7 +1425,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                 </div>
 
                 {(!formData.milestones || formData.milestones.length === 0) ? (
-                  <p className="text-white/50 text-sm font-light text-center py-4">
+                  <p className="text-[#86868b] text-sm font-light text-center py-4">
                     No milestones added yet. Click "Add Milestone" to create payment milestones.
                   </p>
                 ) : (
@@ -1444,10 +1444,10 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                             return (
                         <div 
                           key={index} 
-                          className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3"
+                          className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3"
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-white/60 text-sm font-light">Milestone {index + 1}</span>
+                            <span className="text-[#86868b] text-sm font-light">Milestone {index + 1}</span>
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1463,7 +1463,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                           </div>
                           
                           <div>
-                            <label className="block text-xs text-white/60 font-light mb-1">Title *</label>
+                            <label className="block text-xs text-[#86868b] font-light mb-1">Title *</label>
                             <input
                               type="text"
                               value={milestone.title}
@@ -1475,13 +1475,13 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                 setFormData({ ...formData, milestones: newMilestones })
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
                               placeholder="e.g., Initial Design, First Draft, Final Delivery"
                             />
                           </div>
                           
                           <div>
-                            <label className="block text-xs text-white/60 font-light mb-1">Description</label>
+                            <label className="block text-xs text-[#86868b] font-light mb-1">Description</label>
                             <textarea
                               value={milestone.description}
                               onChange={(e) => {
@@ -1492,14 +1492,14 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                 setFormData({ ...formData, milestones: newMilestones })
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                               rows={2}
                               placeholder="What needs to be completed for this milestone?"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-xs text-white/60 font-light mb-1">Deliverables *</label>
+                            <label className="block text-xs text-[#86868b] font-light mb-1">Deliverables *</label>
                             <textarea
                               value={milestone.deliverables}
                               onChange={(e) => {
@@ -1510,7 +1510,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                 setFormData({ ...formData, milestones: newMilestones })
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
                               rows={2}
                               placeholder="e.g., 2 UGC videos + captions, 5 TikTok edits, monthly content batch"
                             />
@@ -1518,7 +1518,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                           
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-white/60 font-light mb-1">Amount ({formData.currency}) *</label>
+                              <label className="block text-xs text-[#86868b] font-light mb-1">Amount ({formData.currency}) *</label>
                               <input
                                 type="number"
                                 step="0.01"
@@ -1532,13 +1532,13 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                   setFormData({ ...formData, milestones: newMilestones })
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
                                 placeholder="0.00"
                               />
                             </div>
                             
                             <div>
-                              <label className="block text-xs text-white/60 font-light mb-1">
+                              <label className="block text-xs text-[#86868b] font-light mb-1">
                                 Due Date *
                               </label>
                               <DatePicker
@@ -1569,7 +1569,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs text-white/60 font-light mb-1">Review window *</label>
+                              <label className="block text-xs text-[#86868b] font-light mb-1">Review window *</label>
                               <select
                                 value={milestone.reviewWindowDays}
                                 onChange={(e) => {
@@ -1580,7 +1580,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                                   setFormData({ ...formData, milestones: newMilestones })
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-[#1d1d1f] text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
                               >
                                 <option value={3}>3 days (monthly / ongoing)</option>
                                 <option value={5}>5 days (standard)</option>
@@ -1588,8 +1588,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-white/60 font-light mb-1">Revisions</label>
-                              <div className="w-full px-3 py-2 bg-white/[0.03] border border-white/10 rounded-lg text-white/70 text-sm">
+                              <label className="block text-xs text-[#86868b] font-light mb-1">Revisions</label>
+                              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-sm">
                                 1 revision included
                               </div>
                             </div>
@@ -1604,15 +1604,15 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                             )
                           })}
                           
-                          <div className="pt-2 border-t border-white/10">
+                          <div className="pt-2 border-t border-gray-200">
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-white/60 font-light">Total Milestone Amount:</span>
+                              <span className="text-[#86868b] font-light">Total Milestone Amount:</span>
                               <span className={`font-light ${existingTotal > totalAmount ? 'text-red-400' : existingTotal < totalAmount ? 'text-yellow-400' : 'text-green-400'}`}>
                                 {currencySymbols[formData.currency] || formData.currency} {existingTotal.toFixed(2)} / {currencySymbols[formData.currency] || formData.currency} {totalAmount.toFixed(2)}
                               </span>
                             </div>
                             {existingTotal !== totalAmount && (
-                              <p className="text-xs text-white/50 font-light mt-1">
+                              <p className="text-xs text-[#86868b] font-light mt-1">
                                 {existingTotal < totalAmount 
                                   ? `Remaining: ${currencySymbols[formData.currency] || formData.currency} ${(totalAmount - existingTotal).toFixed(2)}`
                                   : 'Milestone amounts exceed total rift amount'}
@@ -1635,21 +1635,21 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         {currentStep === 5 && (
           <div className="space-y-8">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex items-center justify-center shadow-lg shadow-black/20">
-                <svg className="w-6 h-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-gray-300 flex items-center justify-center shadow-lg shadow-black/20">
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-3xl font-light text-white mb-1">Review & Submit</h2>
-                <p className="text-white/50 font-light text-sm">Please review all details before creating your rift</p>
+                <h2 className="text-3xl font-light text-[#1d1d1f] mb-1">Review & Submit</h2>
+                <p className="text-[#86868b] font-light text-sm">Please review all details before creating your rift</p>
               </div>
             </div>
 
             {/* Review Summary - Enhanced Design */}
-            <div className="space-y-0 p-0 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl">
+            <div className="space-y-0 p-0 bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-gray-200 rounded-2xl overflow-hidden backdrop-blur-xl shadow-xl">
               {/* Item Section */}
-              <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+              <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1657,15 +1657,15 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Item</h4>
-                    <p className="text-white font-light text-xl mb-2">{formData.itemTitle}</p>
-                    <p className="text-white/60 text-sm font-light leading-relaxed">{formData.itemDescription}</p>
+                    <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">Item</h4>
+                    <p className="text-[#1d1d1f] font-light text-xl mb-2">{formData.itemTitle}</p>
+                    <p className="text-[#86868b] text-sm font-light leading-relaxed">{formData.itemDescription}</p>
                   </div>
                 </div>
               </div>
               
               {/* Payment Section */}
-              <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+              <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10 border border-green-500/30 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1673,8 +1673,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Payment</h4>
-                    <p className="text-white font-light text-2xl mb-2">
+                    <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">Payment</h4>
+                    <p className="text-[#1d1d1f] font-light text-2xl mb-2">
                       {currencySymbols[formData.currency] || formData.currency} {parseFloat(formData.amount || '0').toFixed(2)} {formData.currency}
                     </p>
                     {creatorRole === 'BUYER' ? (
@@ -1701,7 +1701,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               </div>
               
               {/* Partner Section */}
-              <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+              <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1709,16 +1709,16 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">{creatorRole === 'BUYER' ? 'Seller' : 'Buyer'}</h4>
-                    <p className="text-white font-light text-lg mb-1">{selectedUser?.name || 'User'}</p>
-                    <p className="text-white/50 text-sm font-light font-mono">{selectedUser?.riftUserId}</p>
+                    <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">{creatorRole === 'BUYER' ? 'Seller' : 'Buyer'}</h4>
+                    <p className="text-[#1d1d1f] font-light text-lg mb-1">{selectedUser?.name || 'User'}</p>
+                    <p className="text-[#86868b] text-sm font-light font-mono">{selectedUser?.riftUserId}</p>
                   </div>
                 </div>
               </div>
               
               {/* Type-specific Details */}
               {itemType === 'DIGITAL_GOODS' && (
-                <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+                <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1726,8 +1726,8 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Delivery</h4>
-                      <p className="text-white/60 text-sm font-light">
+                      <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">Delivery</h4>
+                      <p className="text-[#86868b] text-sm font-light">
                         Proof of delivery (files, links) will be submitted after payment is funded.
                       </p>
                     </div>
@@ -1736,7 +1736,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
               
               {itemType === 'SERVICES' && (
-                <div className="p-6 border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+                <div className="p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1745,11 +1745,11 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Service Details</h4>
+                      <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">Service Details</h4>
                       <div className="space-y-3">
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Service Date</p>
-                          <p className="text-white font-light">
+                          <p className="text-[#86868b] text-xs font-light mb-1">Service Date</p>
+                          <p className="text-[#1d1d1f] font-light">
                             {formData.serviceDate 
                               ? new Date(formData.serviceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                               : 'Not set'}
@@ -1757,23 +1757,23 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                         </div>
                         {formData.allowsPartialRelease && (
                           <div>
-                            <p className="text-white/50 text-xs font-light mb-1">Deal Type</p>
-                            <p className="text-white font-light text-sm capitalize">
+                            <p className="text-[#86868b] text-xs font-light mb-1">Deal Type</p>
+                            <p className="text-[#1d1d1f] font-light text-sm capitalize">
                               {formData.dealType?.replace('_', ' ') || 'Ongoing / monthly'}
                             </p>
                           </div>
                         )}
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Scope</p>
-                          <p className="text-white font-light text-sm">{formData.serviceScope || 'Not set'}</p>
+                          <p className="text-[#86868b] text-xs font-light mb-1">Scope</p>
+                          <p className="text-[#1d1d1f] font-light text-sm">{formData.serviceScope || 'Not set'}</p>
                         </div>
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Deliverables</p>
-                          <p className="text-white font-light text-sm">{formData.serviceDeliverables || 'Not set'}</p>
+                          <p className="text-[#86868b] text-xs font-light mb-1">Deliverables</p>
+                          <p className="text-[#1d1d1f] font-light text-sm">{formData.serviceDeliverables || 'Not set'}</p>
                         </div>
                         <div>
-                          <p className="text-white/50 text-xs font-light mb-1">Completion Criteria</p>
-                          <p className="text-white font-light text-sm">{formData.completionCriteria || 'Not set'}</p>
+                          <p className="text-[#86868b] text-xs font-light mb-1">Completion Criteria</p>
+                          <p className="text-[#1d1d1f] font-light text-sm">{formData.completionCriteria || 'Not set'}</p>
                         </div>
                         {formData.allowsPartialRelease && (
                           <div className="mt-4 space-y-3">
@@ -1782,22 +1782,22 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                             </div>
                             {formData.milestones && formData.milestones.length > 0 && (
                               <div className="space-y-2">
-                                <p className="text-white/60 text-xs font-light uppercase tracking-widest">Milestones</p>
+                                <p className="text-[#86868b] text-xs font-light uppercase tracking-widest">Milestones</p>
                                 {(formData.milestones || []).map((milestone, idx) => (
-                                  <div key={idx} className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                                  <div key={idx} className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                                     <div className="flex items-start justify-between mb-1">
-                                      <p className="text-white font-light text-sm">{milestone.title || `Milestone ${idx + 1}`}</p>
-                                      <p className="text-white/80 font-light text-sm">
+                                      <p className="text-[#1d1d1f] font-light text-sm">{milestone.title || `Milestone ${idx + 1}`}</p>
+                                      <p className="text-gray-700 font-light text-sm">
                                         {currencySymbols[formData.currency] || formData.currency} {parseFloat(milestone.amount || '0').toFixed(2)}
                                       </p>
                                     </div>
                                     {milestone.description && (
-                                      <p className="text-white/60 text-xs font-light mb-2">{milestone.description}</p>
+                                      <p className="text-[#86868b] text-xs font-light mb-2">{milestone.description}</p>
                                     )}
-                                    <p className="text-white/50 text-xs font-light">
+                                    <p className="text-[#86868b] text-xs font-light">
                                       Due: {milestone.dueDate ? new Date(milestone.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}
                                     </p>
-                                    <p className="text-white/50 text-xs font-light mt-1">
+                                    <p className="text-[#86868b] text-xs font-light mt-1">
                                       Review window: {milestone.reviewWindowDays || getDefaultReviewWindowDays(formData.dealType)} days
                                     </p>
                                   </div>
@@ -1813,16 +1813,16 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               )}
 
               {formData.notes && (
-                <div className="p-6 hover:bg-white/[0.02] transition-colors">
+                <div className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs text-white/50 font-light uppercase tracking-widest mb-3">Additional Notes</h4>
-                      <p className="text-white/70 text-sm font-light leading-relaxed">{formData.notes}</p>
+                      <h4 className="text-xs text-[#86868b] font-light uppercase tracking-widest mb-3">Additional Notes</h4>
+                      <p className="text-gray-600 text-sm font-light leading-relaxed">{formData.notes}</p>
                     </div>
                   </div>
                 </div>
@@ -1830,17 +1830,17 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             </div>
 
             {/* Notes Section */}
-            <div className="p-6 bg-white/[0.03] border border-white/10 rounded-2xl">
-              <label className="block text-sm font-light text-white/80 mb-3 flex items-center gap-2">
-                <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl">
+              <label className="block text-sm font-light text-gray-700 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Additional Notes <span className="text-white/50 font-light">(optional)</span>
+                Additional Notes <span className="text-[#86868b] font-light">(optional)</span>
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-5 py-3.5 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all resize-none font-light"
+                className="w-full px-5 py-3.5 bg-gray-100 backdrop-blur-xl border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all resize-none font-light"
                 rows={3}
                 placeholder="Any additional information or special instructions..."
               />
@@ -1854,7 +1854,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                     type="checkbox"
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="w-5 h-5 rounded border-2 border-white/30 bg-white/5 text-blue-500 focus:ring-2 focus:ring-blue-500/30 cursor-pointer transition-all checked:bg-blue-500/20 checked:border-blue-400/50"
+                    className="w-5 h-5 rounded border-2 border-gray-300 bg-gray-50 text-blue-500 focus:ring-2 focus:ring-blue-500/30 cursor-pointer transition-all checked:bg-blue-500/20 checked:border-blue-400/50"
                   />
                   {acceptedTerms && (
                     <svg className="absolute top-0.5 left-0.5 w-4 h-4 text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1863,7 +1863,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
                   )}
                 </div>
                 <div className="flex-1">
-                  <span className="text-sm text-white/80 font-light leading-relaxed block">
+                  <span className="text-sm text-gray-700 font-light leading-relaxed block">
                     I agree to the{' '}
                     <a href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300 underline transition-colors">
                       Terms of Service
@@ -1889,12 +1889,12 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
         )}
 
         {/* Navigation Buttons */}
-        <div className="pt-8 flex gap-4 border-t border-white/10">
+        <div className="pt-8 flex gap-4 border-t border-gray-200">
           {currentStep > 1 && (
             <button
               type="button"
               onClick={handleBack}
-              className="flex-1 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white font-light flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all text-[#1d1d1f] font-light flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1906,7 +1906,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 px-6 py-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/15 transition-all text-white font-light flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 rounded-xl bg-gray-100 border border-gray-300 hover:bg-white/15 transition-all text-[#1d1d1f] font-light flex items-center justify-center gap-2"
             >
               Next
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1918,7 +1918,7 @@ export default function CreateEscrowForm({ users, itemType, creatorRole }: Creat
               type="submit" 
               disabled={loading || !acceptedTerms} 
               variant="outline"
-              className="flex-1 py-3 text-base backdrop-blur-xl bg-white/[0.06] border border-white/20 hover:border-white/30 hover:bg-white/10 transition-all duration-300 font-light disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 text-base backdrop-blur-xl bg-gray-100 border border-gray-300 hover:border-gray-300 hover:bg-gray-100 transition-all duration-300 font-light disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-3">

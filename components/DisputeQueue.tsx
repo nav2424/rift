@@ -110,14 +110,14 @@ export default function DisputeQueue() {
       case 'resolved_seller':
         return 'bg-green-500/20 text-green-400 border-green-500/30'
       default:
-        return 'bg-white/10 text-white/60 border-white/20'
+        return 'bg-gray-100 text-[#86868b] border-gray-300'
     }
   }
 
   if (loading) {
     return (
       <GlassCard>
-        <div className="text-white/60 font-light text-center py-12">Loading disputes...</div>
+        <div className="text-[#86868b] font-light text-center py-12">Loading disputes...</div>
       </GlassCard>
     )
   }
@@ -128,11 +128,11 @@ export default function DisputeQueue() {
       <GlassCard>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-white/60 text-sm font-light mb-2">Status</label>
+            <label className="block text-[#86868b] text-sm font-light mb-2">Status</label>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:border-white/30"
+              className="w-full p-2 rounded-xl bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:border-gray-300"
             >
               <option value="all">All Disputes</option>
               <option value="active">Active</option>
@@ -146,11 +146,11 @@ export default function DisputeQueue() {
             </select>
           </div>
           <div>
-            <label className="block text-white/60 text-sm font-light mb-2">Category</label>
+            <label className="block text-[#86868b] text-sm font-light mb-2">Category</label>
             <select
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-              className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:border-white/30"
+              className="w-full p-2 rounded-xl bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:border-gray-300"
             >
               <option value="">All</option>
               <option value="DIGITAL_GOODS">Digital Goods</option>
@@ -158,11 +158,11 @@ export default function DisputeQueue() {
             </select>
           </div>
           <div>
-            <label className="block text-white/60 text-sm font-light mb-2">Reason</label>
+            <label className="block text-[#86868b] text-sm font-light mb-2">Reason</label>
             <select
               value={filters.reason}
               onChange={(e) => setFilters({ ...filters, reason: e.target.value })}
-              className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white font-light focus:outline-none focus:border-white/30"
+              className="w-full p-2 rounded-xl bg-gray-50 border border-gray-200 text-[#1d1d1f] font-light focus:outline-none focus:border-gray-300"
             >
               <option value="">All</option>
               <option value="not_received">Not Received</option>
@@ -178,24 +178,24 @@ export default function DisputeQueue() {
       {/* Disputes List */}
       <GlassCard>
         {loading ? (
-          <div className="text-white/60 font-light text-center py-12">
+          <div className="text-[#86868b] font-light text-center py-12">
             Loading disputes...
           </div>
         ) : error ? (
           <div className="text-center py-12">
             <div className="text-red-400 font-light mb-2">Failed to load disputes</div>
-            <div className="text-white/60 font-light text-sm max-w-2xl mx-auto whitespace-pre-line">
+            <div className="text-[#86868b] font-light text-sm max-w-2xl mx-auto whitespace-pre-line">
               {error}
             </div>
             {error.includes('Supabase configuration') && (
-              <div className="mt-4 text-white/40 font-light text-xs">
+              <div className="mt-4 text-gray-400 font-light text-xs">
                 <p>Get your Supabase keys from:</p>
                 <p className="mt-1">https://supabase.com/dashboard/project/zosvdbzroydrwwlwlzvi/settings/api</p>
               </div>
             )}
           </div>
         ) : disputes.length === 0 ? (
-          <div className="text-white/60 font-light text-center py-12">
+          <div className="text-[#86868b] font-light text-center py-12">
             No disputes found
           </div>
         ) : (
@@ -204,26 +204,26 @@ export default function DisputeQueue() {
               <Link
                 key={dispute.id}
                 href={`/admin/disputes/${dispute.id}`}
-                className="block p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                className="block p-4 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="text-white font-medium">
+                      <span className="text-[#1d1d1f] font-medium">
                         Rift #{dispute.rift?.riftNumber || dispute.rift_id.slice(-4)}
                       </span>
                       <span className={`px-2 py-1 rounded text-xs font-medium border ${getStatusColor(dispute.status)}`}>
                         {dispute.status.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    <p className="text-white/80 font-light text-sm">{dispute.rift?.itemTitle}</p>
+                    <p className="text-gray-700 font-light text-sm">{dispute.rift?.itemTitle}</p>
                   </div>
-                  <div className="text-right text-sm text-white/60 font-light">
+                  <div className="text-right text-sm text-[#86868b] font-light">
                     {new Date(dispute.created_at).toLocaleDateString()}
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 font-light mt-3">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-[#86868b] font-light mt-3">
                   <span>Category: {dispute.category_snapshot}</span>
                   <span>Reason: {dispute.reason.replace(/_/g, ' ')}</span>
                   <span>Opened by: {dispute.openedByUser?.email || dispute.opened_by}</span>

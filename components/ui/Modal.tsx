@@ -67,20 +67,20 @@ export default function Modal({
       }}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
-        className={`relative bg-black border border-white/10 rounded-2xl shadow-2xl ${sizeClasses[size]} w-full ${className}`}
+        className={`relative bg-white border border-gray-200 rounded-2xl shadow-2xl ${sizeClasses[size]} w-full ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <h2 className="text-xl font-light text-white">{title}</h2>
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <h2 className="text-xl font-light text-[#1d1d1f]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-2 text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              className="p-2 text-[#86868b] hover:text-[#1d1d1f] transition-colors rounded-lg hover:bg-gray-50"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

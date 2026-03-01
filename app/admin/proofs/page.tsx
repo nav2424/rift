@@ -179,13 +179,13 @@ export default function AdminProofsPage() {
       return (
         <div className="space-y-2">
           {payload.trackingNumber && (
-            <p><span className="text-white/50">Tracking:</span> {payload.trackingNumber}</p>
+            <p><span className="text-[#86868b]">Tracking:</span> {payload.trackingNumber}</p>
           )}
           {payload.carrier && (
-            <p><span className="text-white/50">Carrier:</span> {payload.carrier}</p>
+            <p><span className="text-[#86868b]">Carrier:</span> {payload.carrier}</p>
           )}
           {payload.shippingAddress && (
-            <p><span className="text-white/50">Address:</span> {payload.shippingAddress}</p>
+            <p><span className="text-[#86868b]">Address:</span> {payload.shippingAddress}</p>
           )}
         </div>
       )
@@ -195,13 +195,13 @@ export default function AdminProofsPage() {
       return (
         <div className="space-y-2">
           {payload.downloadLink && (
-            <p><span className="text-white/50">Download Link:</span> <a href={payload.downloadLink} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{payload.downloadLink}</a></p>
+            <p><span className="text-[#86868b]">Download Link:</span> <a href={payload.downloadLink} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{payload.downloadLink}</a></p>
           )}
           {payload.licenseKey && (
-            <p><span className="text-white/50">License Key:</span> {payload.licenseKey}</p>
+            <p><span className="text-[#86868b]">License Key:</span> {payload.licenseKey}</p>
           )}
           {payload.fileHash && (
-            <p><span className="text-white/50">File Hash:</span> <code className="text-xs">{payload.fileHash}</code></p>
+            <p><span className="text-[#86868b]">File Hash:</span> <code className="text-xs">{payload.fileHash}</code></p>
           )}
         </div>
       )
@@ -211,28 +211,28 @@ export default function AdminProofsPage() {
       return (
         <div className="space-y-2">
           {payload.completionConfirmation && (
-            <p><span className="text-white/50">Completion:</span> {payload.completionConfirmation}</p>
+            <p><span className="text-[#86868b]">Completion:</span> {payload.completionConfirmation}</p>
           )}
           {payload.serviceDate && (
-            <p><span className="text-white/50">Service Date:</span> {payload.serviceDate}</p>
+            <p><span className="text-[#86868b]">Service Date:</span> {payload.serviceDate}</p>
           )}
         </div>
       )
     }
 
-    return <pre className="text-xs text-white/60">{JSON.stringify(payload, null, 2)}</pre>
+    return <pre className="text-xs text-[#86868b]">{JSON.stringify(payload, null, 2)}</pre>
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading proofs...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading proofs...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
         backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -240,7 +240,7 @@ export default function AdminProofsPage() {
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -248,14 +248,14 @@ export default function AdminProofsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-5xl md:text-6xl font-light text-white mb-2 tracking-tight">
+              <h1 className="text-5xl md:text-6xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                 Proof Review
               </h1>
-              <p className="text-white/60 font-light">Review and approve/reject proof submissions</p>
+              <p className="text-[#86868b] font-light">Review and approve/reject proof submissions</p>
             </div>
             <button
               onClick={() => router.push('/admin')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -276,8 +276,8 @@ export default function AdminProofsPage() {
                   onClick={() => setFilter(status)}
                   className={`px-4 py-2 rounded-xl font-light text-sm transition-colors ${
                     filter === status
-                      ? 'bg-white/10 text-white border border-white/20'
-                      : 'bg-white/5 text-white/60 hover:bg-white/8 border border-white/10'
+                      ? 'bg-gray-100 text-[#1d1d1f] border border-gray-300'
+                      : 'bg-gray-50 text-[#86868b] hover:bg-white/8 border border-gray-200'
                   }`}
                 >
                   {status} {count > 0 && `(${count})`}
@@ -291,7 +291,7 @@ export default function AdminProofsPage() {
         {proofs.length === 0 ? (
           <GlassCard>
             <div className="p-8 text-center">
-              <p className="text-white/60 font-light">No proofs found with status: {filter}</p>
+              <p className="text-[#86868b] font-light">No proofs found with status: {filter}</p>
             </div>
           </GlassCard>
         ) : (
@@ -302,17 +302,17 @@ export default function AdminProofsPage() {
                 <GlassCard
                   key={proof.id}
                   className={`cursor-pointer transition-all ${
-                    selectedProof?.id === proof.id ? 'border-white/30 bg-white/5' : 'hover:bg-white/5'
+                    selectedProof?.id === proof.id ? 'border-gray-300 bg-gray-50' : 'hover:bg-gray-50'
                   }`}
                   onClick={() => setSelectedProof(proof)}
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-light text-white mb-2">
+                        <h3 className="text-lg font-light text-[#1d1d1f] mb-2">
                           Rift #{proof.RiftTransaction.riftNumber || 'N/A'}: {proof.RiftTransaction.itemTitle}
                         </h3>
-                        <p className="text-sm text-white/60 font-light">
+                        <p className="text-sm text-[#86868b] font-light">
                           {proof.RiftTransaction.itemType} • {proof.RiftTransaction.currency} {proof.RiftTransaction.subtotal?.toFixed(2) || '0.00'}
                         </p>
                       </div>
@@ -324,15 +324,15 @@ export default function AdminProofsPage() {
                       </span>
                     </div>
 
-                    <div className="space-y-2 text-sm text-white/70 font-light">
-                      <p><span className="text-white/50">Seller:</span> {proof.RiftTransaction.seller.name || proof.RiftTransaction.seller.email}</p>
-                      <p><span className="text-white/50">Buyer:</span> {proof.RiftTransaction.buyer.name || proof.RiftTransaction.buyer.email}</p>
-                      <p><span className="text-white/50">Submitted:</span> {new Date(proof.submittedAt).toLocaleString()}</p>
+                    <div className="space-y-2 text-sm text-gray-600 font-light">
+                      <p><span className="text-[#86868b]">Seller:</span> {proof.RiftTransaction.seller.name || proof.RiftTransaction.seller.email}</p>
+                      <p><span className="text-[#86868b]">Buyer:</span> {proof.RiftTransaction.buyer.name || proof.RiftTransaction.buyer.email}</p>
+                      <p><span className="text-[#86868b]">Submitted:</span> {new Date(proof.submittedAt).toLocaleString()}</p>
                       {proof.validatedAt && (
-                        <p><span className="text-white/50">Validated:</span> {new Date(proof.validatedAt).toLocaleString()}</p>
+                        <p><span className="text-[#86868b]">Validated:</span> {new Date(proof.validatedAt).toLocaleString()}</p>
                       )}
                       {proof.rejectionReason && (
-                        <p><span className="text-white/50">Rejection Reason:</span> {proof.rejectionReason}</p>
+                        <p><span className="text-[#86868b]">Rejection Reason:</span> {proof.rejectionReason}</p>
                       )}
                     </div>
                   </div>
@@ -345,25 +345,25 @@ export default function AdminProofsPage() {
               {selectedProof ? (
                 <GlassCard className="sticky top-4">
                   <div className="p-6">
-                    <h2 className="text-xl font-light text-white mb-6">Proof Details</h2>
+                    <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Proof Details</h2>
 
                     {/* Proof Info */}
                     <div className="space-y-4 mb-6">
                       <div>
-                        <p className="text-xs text-white/50 font-light uppercase mb-1">Proof Type</p>
-                        <p className="text-white font-light">{selectedProof.proofType}</p>
+                        <p className="text-xs text-[#86868b] font-light uppercase mb-1">Proof Type</p>
+                        <p className="text-[#1d1d1f] font-light">{selectedProof.proofType}</p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-white/50 font-light uppercase mb-2">Proof Data</p>
-                        <div className="bg-white/5 rounded-lg p-4 text-sm text-white/80 font-light">
+                        <p className="text-xs text-[#86868b] font-light uppercase mb-2">Proof Data</p>
+                        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 font-light">
                           {formatProofPayload(selectedProof.proofPayload, selectedProof.proofType)}
                         </div>
                       </div>
 
                       {selectedProof.uploadedFiles && selectedProof.uploadedFiles.length > 0 && (
                         <div>
-                          <p className="text-xs text-white/50 font-light uppercase mb-2">Uploaded Files</p>
+                          <p className="text-xs text-[#86868b] font-light uppercase mb-2">Uploaded Files</p>
                           <div className="space-y-2">
                             {selectedProof.uploadedFiles.map((file, idx) => (
                               <a
@@ -381,12 +381,12 @@ export default function AdminProofsPage() {
                       )}
 
                       <div>
-                        <p className="text-xs text-white/50 font-light uppercase mb-1">Rift Status</p>
-                        <p className="text-white font-light">{selectedProof.RiftTransaction.status}</p>
+                        <p className="text-xs text-[#86868b] font-light uppercase mb-1">Rift Status</p>
+                        <p className="text-[#1d1d1f] font-light">{selectedProof.RiftTransaction.status}</p>
                       </div>
 
                       <div>
-                        <p className="text-xs text-white/50 font-light uppercase mb-1">View Rift</p>
+                        <p className="text-xs text-[#86868b] font-light uppercase mb-1">View Rift</p>
                         <a
                           href={`/rifts/${selectedProof.RiftTransaction.id}`}
                           target="_blank"
@@ -400,16 +400,16 @@ export default function AdminProofsPage() {
 
                     {/* Actions for PENDING proofs */}
                     {selectedProof.status === 'PENDING' && (
-                      <div className="space-y-4 pt-6 border-t border-white/10">
+                      <div className="space-y-4 pt-6 border-t border-gray-200">
                         <div>
-                          <label className="block text-xs text-white/50 font-light uppercase mb-2">
+                          <label className="block text-xs text-[#86868b] font-light uppercase mb-2">
                             Admin Notes (Optional)
                           </label>
                           <textarea
                             value={adminNotes}
                             onChange={(e) => setAdminNotes(e.target.value)}
                             placeholder="Add any notes about this review..."
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 font-light text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all resize-none"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-[#1d1d1f] placeholder:text-gray-400 font-light text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all resize-none"
                             rows={3}
                           />
                         </div>
@@ -437,8 +437,8 @@ export default function AdminProofsPage() {
 
                     {/* Show rejection reason if rejected */}
                     {selectedProof.status === 'REJECTED' && selectedProof.rejectionReason && (
-                      <div className="pt-6 border-t border-white/10">
-                        <p className="text-xs text-white/50 font-light uppercase mb-2">Rejection Reason</p>
+                      <div className="pt-6 border-t border-gray-200">
+                        <p className="text-xs text-[#86868b] font-light uppercase mb-2">Rejection Reason</p>
                         <p className="text-red-400 text-sm font-light">{selectedProof.rejectionReason}</p>
                       </div>
                     )}
@@ -447,7 +447,7 @@ export default function AdminProofsPage() {
               ) : (
                 <GlassCard>
                   <div className="p-6 text-center">
-                    <p className="text-white/60 font-light">Select a proof to review</p>
+                    <p className="text-[#86868b] font-light">Select a proof to review</p>
                   </div>
                 </GlassCard>
               )}

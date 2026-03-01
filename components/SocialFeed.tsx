@@ -47,7 +47,7 @@ export default function SocialFeed() {
     return (
       <GlassCard>
         <div className="p-6">
-          <div className="text-white/60 font-light">Loading activity...</div>
+          <div className="text-[#86868b] font-light">Loading activity...</div>
         </div>
       </GlassCard>
     )
@@ -57,8 +57,8 @@ export default function SocialFeed() {
     return (
       <GlassCard>
         <div className="p-6">
-          <h2 className="text-xl font-light text-white mb-4">Activity Feed</h2>
-          <p className="text-white/40 font-light text-sm">
+          <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Activity Feed</h2>
+          <p className="text-gray-400 font-light text-sm">
             Activity feed will appear here as users complete transactions
           </p>
         </div>
@@ -81,18 +81,18 @@ export default function SocialFeed() {
   return (
     <GlassCard>
       <div className="p-6">
-        <h2 className="text-xl font-light text-white mb-6">Activity Feed</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f] mb-6">Activity Feed</h2>
         
         <div className="space-y-3">
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
+              className="p-4 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
             >
-              <p className="text-white font-light text-sm leading-relaxed">
+              <p className="text-[#1d1d1f] font-light text-sm leading-relaxed">
                 {activity.summary}
               </p>
-              <p className="text-xs text-white/40 font-light mt-2">
+              <p className="text-xs text-gray-400 font-light mt-2">
                 {formatTime(activity.createdAt)}
               </p>
             </div>

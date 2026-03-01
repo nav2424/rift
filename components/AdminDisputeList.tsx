@@ -31,7 +31,7 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
   if (disputes.length === 0) {
     return (
       <GlassCard variant="strong" className="p-8">
-        <p className="text-white/60 font-light text-center">No disputes found.</p>
+        <p className="text-[#86868b] font-light text-center">No disputes found.</p>
       </GlassCard>
     )
   }
@@ -39,56 +39,56 @@ export default function AdminDisputeList({ disputes }: AdminDisputeListProps) {
   return (
     <GlassCard variant="strong" className="overflow-hidden">
       <table className="w-full">
-        <thead className="border-b border-white/10">
+        <thead className="border-b border-gray-200">
           <tr>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Rift #
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Buyer
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Seller
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Raised By
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Reason
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Created
             </th>
-            <th className="px-6 py-4 text-left text-xs font-light text-white/60 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-xs font-light text-[#86868b] uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
           {disputes.map((dispute) => (
-            <tr key={dispute.id} className="hover:bg-white/5 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-light">
+            <tr key={dispute.id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-[#1d1d1f] font-light">
                 #{dispute.EscrowTransaction.riftNumber}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-light">
                 {dispute.EscrowTransaction.buyer.email}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-light">
                 {dispute.EscrowTransaction.seller.email}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <EscrowStatusBadge status={dispute.EscrowTransaction.status} />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/80 font-light">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-light">
                 {dispute.raisedBy.email}
               </td>
-              <td className="px-6 py-4 text-sm text-white/70 font-light max-w-xs truncate">
+              <td className="px-6 py-4 text-sm text-gray-600 font-light max-w-xs truncate">
                 {dispute.reason}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-white/60 font-light">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-[#86868b] font-light">
                 {new Date(dispute.createdAt).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">

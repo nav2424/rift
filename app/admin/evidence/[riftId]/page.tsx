@@ -18,8 +18,8 @@ export default async function AdminEvidencePage({
     return <EvidencePrintView packet={packet} />
   } catch (error: any) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">
           Error generating evidence: {error.message}
         </div>
       </div>

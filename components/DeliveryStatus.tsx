@@ -35,8 +35,8 @@ export default function DeliveryStatus({ riftId, itemType, status }: DeliverySta
 
   if (loading || !rift || !session) {
     return (
-      <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-        <div className="text-white/60 font-light text-sm">Loading delivery status...</div>
+      <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+        <div className="text-[#86868b] font-light text-sm">Loading delivery status...</div>
       </div>
     )
   }
@@ -54,14 +54,14 @@ export default function DeliveryStatus({ riftId, itemType, status }: DeliverySta
   // For sellers, show simple status message
   if (!isBuyer) {
     return (
-      <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-        <h3 className="text-sm font-medium text-white/90 uppercase tracking-wide">
+      <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
+        <h3 className="text-sm font-medium text-gray-800 uppercase tracking-wide">
           Delivery Status
         </h3>
         {canViewVault ? (
           <div className="text-green-400/80 text-sm">✓ Proof submitted - awaiting buyer review</div>
         ) : (
-          <div className="text-white/60 text-sm">Proof not yet submitted</div>
+          <div className="text-[#86868b] text-sm">Proof not yet submitted</div>
         )}
       </div>
     )
@@ -69,11 +69,11 @@ export default function DeliveryStatus({ riftId, itemType, status }: DeliverySta
 
   // For buyers before proof is submitted
   return (
-    <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-      <h3 className="text-sm font-medium text-white/90 uppercase tracking-wide">
+    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
+      <h3 className="text-sm font-medium text-gray-800 uppercase tracking-wide">
         Delivery Status
       </h3>
-      <div className="text-white/60 text-sm">Awaiting seller to submit proof</div>
+      <div className="text-[#86868b] text-sm">Awaiting seller to submit proof</div>
     </div>
   )
 }

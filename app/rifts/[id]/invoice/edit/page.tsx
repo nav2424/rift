@@ -223,8 +223,8 @@ export default function InvoiceEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading invoice...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading invoice...</div>
       </div>
     )
   }
@@ -234,17 +234,17 @@ export default function InvoiceEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
       <div className="max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-light text-white mb-2 truncate">Edit Invoice</h1>
-            <p className="text-white/60 truncate">#{invoice.invoice_number}</p>
+            <h1 className="text-2xl sm:text-3xl font-light text-[#1d1d1f] mb-2 truncate">Edit Invoice</h1>
+            <p className="text-[#86868b] truncate">#{invoice.invoice_number}</p>
           </div>
           <Link
             href={`/rifts/${riftId}`}
-            className="text-white/60 hover:text-white transition flex-shrink-0"
+            className="text-[#86868b] hover:text-[#1d1d1f] transition flex-shrink-0"
           >
             Cancel
           </Link>
@@ -253,33 +253,33 @@ export default function InvoiceEditPage() {
         <GlassCard className="p-4 sm:p-6 lg:p-8 overflow-hidden">
           {/* Buyer Information */}
           <div className="mb-8 overflow-hidden">
-            <h2 className="text-sm font-light text-white/60 mb-4 tracking-wider uppercase">
+            <h2 className="text-sm font-light text-[#86868b] mb-4 tracking-wider uppercase">
               Bill To
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="min-w-0">
-                  <label className="block text-white/80 text-sm mb-2 font-medium">
-                    Buyer Name <span className="text-white/40 font-normal">(optional)</span>
+                  <label className="block text-gray-700 text-sm mb-2 font-medium">
+                    Buyer Name <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <input
                     type="text"
                     value={formData.buyer_name}
                     onChange={(e) => setFormData({ ...formData, buyer_name: e.target.value })}
-                    className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                    className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                     placeholder="Company or individual name"
                     maxLength={255}
                   />
                 </div>
                 <div className="min-w-0">
-                  <label className="block text-white/80 text-sm mb-2 font-medium">
+                  <label className="block text-gray-700 text-sm mb-2 font-medium">
                     Buyer Email <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="email"
                     value={formData.buyer_email}
                     onChange={(e) => setFormData({ ...formData, buyer_email: e.target.value })}
-                    className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                    className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                     placeholder="buyer@example.com"
                     required
                     maxLength={255}
@@ -287,42 +287,42 @@ export default function InvoiceEditPage() {
                 </div>
               </div>
               <div className="min-w-0">
-                <label className="block text-white/80 text-sm mb-2 font-medium">
-                  Tax ID / VAT Number <span className="text-white/40 font-normal">(optional)</span>
+                <label className="block text-gray-700 text-sm mb-2 font-medium">
+                  Tax ID / VAT Number <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={formData.buyer_tax_id}
                   onChange={(e) => setFormData({ ...formData, buyer_tax_id: e.target.value })}
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                  className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                   placeholder="EIN, VAT, GST, etc."
                   maxLength={100}
                 />
-                <p className="text-white/40 text-xs mt-1">For tax reporting purposes</p>
+                <p className="text-gray-400 text-xs mt-1">For tax reporting purposes</p>
               </div>
             </div>
           </div>
 
           {/* Invoice Details */}
           <div className="mb-8 overflow-hidden">
-            <h2 className="text-sm font-light text-white/60 mb-4 tracking-wider uppercase">
+            <h2 className="text-sm font-light text-[#86868b] mb-4 tracking-wider uppercase">
               Invoice Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="min-w-0">
-                <label className="block text-white/80 text-sm mb-2 font-medium">
-                  Due Date <span className="text-white/40 font-normal">(optional)</span>
+                <label className="block text-gray-700 text-sm mb-2 font-medium">
+                  Due Date <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <input
                   type="date"
                   value={formData.due_date}
                   onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-white/30 max-w-full"
+                  className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-[#1d1d1f] focus:outline-none focus:border-gray-300 max-w-full"
                 />
               </div>
               <div className="min-w-0">
-                <label className="block text-white/80 text-sm mb-2 font-medium">
-                  Tax Rate <span className="text-white/40 font-normal">(%)</span>
+                <label className="block text-gray-700 text-sm mb-2 font-medium">
+                  Tax Rate <span className="text-gray-400 font-normal">(%)</span>
                 </label>
                 <div className="relative">
                   <input
@@ -339,20 +339,20 @@ export default function InvoiceEditPage() {
                         tax_amount: 0 // Clear fixed amount when using rate
                       })
                     }}
-                    className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 pr-12 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                    className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 pr-12 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                     placeholder="0.00"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm">%</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
                 </div>
-                <p className="text-white/40 text-xs mt-1">Tax as percentage of subtotal</p>
+                <p className="text-gray-400 text-xs mt-1">Tax as percentage of subtotal</p>
               </div>
             </div>
             <div className="mt-4">
-              <label className="block text-white/80 text-sm mb-2 font-medium">
-                Or Fixed Tax Amount <span className="text-white/40 font-normal">(optional)</span>
+              <label className="block text-gray-700 text-sm mb-2 font-medium">
+                Or Fixed Tax Amount <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 text-sm">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#86868b] text-sm">
                   {invoice.currency === 'USD' ? '$' : invoice.currency === 'EUR' ? '€' : invoice.currency === 'GBP' ? '£' : invoice.currency}
                 </span>
                 <input
@@ -368,31 +368,31 @@ export default function InvoiceEditPage() {
                       tax_rate: 0 // Clear rate when using fixed amount
                     })
                   }}
-                  className="w-full rounded-lg bg-white/5 border border-white/10 pl-8 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                  className="w-full rounded-lg bg-gray-50 border border-gray-200 pl-8 pr-4 py-3 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                   placeholder="0.00"
                 />
               </div>
-              <p className="text-white/40 text-xs mt-1">Use fixed amount instead of percentage</p>
+              <p className="text-gray-400 text-xs mt-1">Use fixed amount instead of percentage</p>
             </div>
           </div>
 
           {/* Invoice Items */}
           <div className="mb-8 overflow-hidden">
             <div className="flex items-center justify-between mb-6 gap-4">
-              <h2 className="text-sm font-light text-white/60 tracking-wider uppercase flex-shrink-0">
+              <h2 className="text-sm font-light text-[#86868b] tracking-wider uppercase flex-shrink-0">
                 Items
               </h2>
               <button
                 onClick={handleAddItem}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium transition flex-shrink-0 whitespace-nowrap"
+                className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-white/20 border border-gray-300 text-[#1d1d1f] text-sm font-medium transition flex-shrink-0 whitespace-nowrap"
               >
                 + Add Item
               </button>
             </div>
 
             {formData.items.length > 0 && (
-              <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
-                <div className="grid grid-cols-12 gap-2 text-xs text-white/60 font-medium uppercase tracking-wider">
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="grid grid-cols-12 gap-2 text-xs text-[#86868b] font-medium uppercase tracking-wider">
                   <div className="col-span-5 sm:col-span-6">Item Name</div>
                   <div className="col-span-2 text-center">Qty</div>
                   <div className="col-span-2 text-right">Unit Price</div>
@@ -404,18 +404,18 @@ export default function InvoiceEditPage() {
 
             <div className="space-y-3">
               {formData.items.map((item, index) => (
-                <div key={index} className="p-4 bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
                   <div className="grid grid-cols-12 gap-3 items-start">
                     {/* Item Name */}
                     <div className="col-span-12 sm:col-span-6 min-w-0">
-                      <label className="block text-white/60 text-xs mb-1.5 font-medium">
+                      <label className="block text-[#86868b] text-xs mb-1.5 font-medium">
                         Item Name <span className="text-red-400">*</span>
                       </label>
                       <input
                         type="text"
                         value={item.name}
                         onChange={(e) => handleItemChange(index, 'name', e.target.value)}
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-white/30 max-w-full"
+                        className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-2.5 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 max-w-full"
                         placeholder="e.g., Video Production, Content Creation"
                         required
                         maxLength={255}
@@ -424,7 +424,7 @@ export default function InvoiceEditPage() {
 
                     {/* Quantity */}
                     <div className="col-span-4 sm:col-span-2 min-w-0">
-                      <label className="block text-white/60 text-xs mb-1.5 font-medium">
+                      <label className="block text-[#86868b] text-xs mb-1.5 font-medium">
                         Quantity
                       </label>
                       <input
@@ -433,18 +433,18 @@ export default function InvoiceEditPage() {
                         min="0"
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-white/30 text-center"
+                        className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 text-center"
                         placeholder="1"
                       />
                     </div>
 
                     {/* Unit Price */}
                     <div className="col-span-4 sm:col-span-2 min-w-0">
-                      <label className="block text-white/60 text-xs mb-1.5 font-medium">
+                      <label className="block text-[#86868b] text-xs mb-1.5 font-medium">
                         Unit Price
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-xs">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] text-xs">
                           {invoice.currency === 'USD' ? '$' : invoice.currency === 'EUR' ? '€' : invoice.currency === 'GBP' ? '£' : invoice.currency}
                         </span>
                         <input
@@ -453,7 +453,7 @@ export default function InvoiceEditPage() {
                           min="0"
                           value={item.unit_price}
                           onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
-                          className="w-full rounded-lg bg-white/5 border border-white/10 pl-7 pr-3 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-white/30 text-right"
+                          className="w-full rounded-lg bg-gray-50 border border-gray-200 pl-7 pr-3 py-2.5 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 text-right"
                           placeholder="0.00"
                         />
                       </div>
@@ -461,10 +461,10 @@ export default function InvoiceEditPage() {
 
                     {/* Amount (calculated) */}
                     <div className="col-span-4 sm:col-span-2 min-w-0">
-                      <label className="block text-white/60 text-xs mb-1.5 font-medium">
+                      <label className="block text-[#86868b] text-xs mb-1.5 font-medium">
                         Amount
                       </label>
-                      <div className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2.5 text-white/80 text-right font-medium">
+                      <div className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-gray-700 text-right font-medium">
                         {formatCurrency(item.amount)}
                       </div>
                     </div>
@@ -488,13 +488,13 @@ export default function InvoiceEditPage() {
 
                   {/* Description */}
                   <div className="mt-3">
-                    <label className="block text-white/60 text-xs mb-1.5 font-medium">
-                      Description <span className="text-white/40 font-normal">(optional)</span>
+                    <label className="block text-[#86868b] text-xs mb-1.5 font-medium">
+                      Description <span className="text-gray-400 font-normal">(optional)</span>
                     </label>
                     <textarea
                       value={item.description || ''}
                       onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-white/30 resize-y max-w-full"
+                      className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-2.5 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 resize-y max-w-full"
                       placeholder="Additional details about this item..."
                       rows={2}
                       maxLength={1000}
@@ -505,11 +505,11 @@ export default function InvoiceEditPage() {
             </div>
 
             {formData.items.length === 0 && (
-              <div className="text-center py-8 text-white/60">
+              <div className="text-center py-8 text-[#86868b]">
                 <p className="mb-4">No items added yet</p>
                 <button
                   onClick={handleAddItem}
-                  className="text-white/80 hover:text-white transition"
+                  className="text-gray-700 hover:text-[#1d1d1f] transition"
                 >
                   Add your first item
                 </button>
@@ -519,11 +519,11 @@ export default function InvoiceEditPage() {
 
           {/* Notes */}
           <div className="mb-8 overflow-hidden">
-            <label className="block text-white/60 text-sm mb-2">Notes</label>
+            <label className="block text-[#86868b] text-sm mb-2">Notes</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/30 resize-y max-w-full"
+              className="w-full rounded-lg bg-gray-50 border border-gray-200 px-4 py-2 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 resize-y max-w-full"
               placeholder="Additional notes or terms..."
               rows={4}
               maxLength={2000}
@@ -531,25 +531,25 @@ export default function InvoiceEditPage() {
           </div>
 
           {/* Totals */}
-          <div className="mb-8 p-6 bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+          <div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-white/80 gap-4">
+              <div className="flex justify-between items-center text-gray-700 gap-4">
                 <span className="font-medium">Subtotal</span>
                 <span className="text-right font-medium">{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between items-center text-white/80 gap-4">
+              <div className="flex justify-between items-center text-gray-700 gap-4">
                 <span className="font-medium">
                   Tax
                   {formData.tax_rate > 0 && (
-                    <span className="text-white/40 text-sm font-normal ml-2">
+                    <span className="text-gray-400 text-sm font-normal ml-2">
                       ({formData.tax_rate.toFixed(2)}%)
                     </span>
                   )}
                 </span>
                 <span className="text-right font-medium">{formatCurrency(tax)}</span>
               </div>
-              <div className="pt-4 border-t border-white/20">
-                <div className="flex justify-between items-center text-white text-2xl font-light gap-4">
+              <div className="pt-4 border-t border-gray-300">
+                <div className="flex justify-between items-center text-[#1d1d1f] text-2xl font-light gap-4">
                   <span className="font-medium">Total</span>
                   <span className="text-right font-medium">{formatCurrency(total)}</span>
                 </div>
@@ -568,7 +568,7 @@ export default function InvoiceEditPage() {
             </button>
             <Link
               href={`/rifts/${riftId}`}
-              className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-white/85 hover:text-white transition text-center min-h-[44px] flex items-center justify-center whitespace-nowrap"
+              className="flex-1 rounded-xl glass-soft px-6 py-3 text-sm font-medium text-gray-700 hover:text-[#1d1d1f] transition text-center min-h-[44px] flex items-center justify-center whitespace-nowrap"
             >
               Cancel
             </Link>

@@ -41,9 +41,9 @@ export default function RiftBalanceCard() {
 
   if (loading) {
     return (
-      <GlassCard variant="liquid" className="backdrop-blur-xl border border-white/10">
+      <GlassCard variant="liquid" className="backdrop-blur-xl border border-gray-200">
         <div className="p-6">
-          <div className="text-white/40 font-light text-sm">Loading balance...</div>
+          <div className="text-gray-400 font-light text-sm">Loading balance...</div>
         </div>
       </GlassCard>
     )
@@ -54,31 +54,31 @@ export default function RiftBalanceCard() {
   }
 
   return (
-    <GlassCard variant="liquid" className="backdrop-blur-xl border border-white/10">
+    <GlassCard variant="liquid" className="backdrop-blur-xl border border-gray-200">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm font-light text-white/50 tracking-wide uppercase">
+          <h2 className="text-sm font-light text-[#86868b] tracking-wide uppercase">
             Balance
           </h2>
         </div>
         
         <div className="mb-6">
-          <div className="text-4xl md:text-5xl font-light text-white mb-1 tracking-tight">
+          <div className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-1 tracking-tight">
             ${balance.availableBalance.toFixed(2)}
           </div>
-          <p className="text-xs text-white/40 font-light">Available to withdraw</p>
+          <p className="text-xs text-gray-400 font-light">Available to withdraw</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/5">
+        <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-100">
           <div>
-            <p className="text-xs text-white/40 font-light mb-1">In transit</p>
-            <p className="text-base text-white/80 font-light">
+            <p className="text-xs text-gray-400 font-light mb-1">In transit</p>
+            <p className="text-base text-gray-700 font-light">
               ${balance.pendingBalance.toFixed(2)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-white/40 font-light mb-1">Total processed</p>
-            <p className="text-base text-white/80 font-light">
+            <p className="text-xs text-gray-400 font-light mb-1">Total processed</p>
+            <p className="text-base text-gray-700 font-light">
               ${balance.totalProcessedAmount.toFixed(2)}
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function RiftBalanceCard() {
 
         <button 
           disabled
-          className="liquid-glass w-full px-6 py-3 rounded-xl text-white/60 font-light text-sm tracking-wide border border-white/10 backdrop-blur-xl cursor-not-allowed opacity-50"
+          className="liquid-glass w-full px-6 py-3 rounded-xl text-[#86868b] font-light text-sm tracking-wide border border-gray-200 backdrop-blur-xl cursor-not-allowed opacity-50"
         >
           <span className="flex items-center justify-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -6,7 +6,7 @@ interface RiftStatusBadgeProps {
 
 export default function RiftStatusBadge({ status }: RiftStatusBadgeProps) {
   const statusConfig: Record<string, { label: string; color: string }> = {
-    DRAFT: { label: 'Draft', color: 'bg-white/5 text-white/60 border-white/10' },
+    DRAFT: { label: 'Draft', color: 'bg-gray-50 text-[#86868b] border-gray-200' },
     FUNDED: { label: 'Paid', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' }, // Paid - Blue
     PAID: { label: 'Paid', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' }, // Paid - Blue
     PROOF_SUBMITTED: { label: 'Proof Submitted', color: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
@@ -15,7 +15,7 @@ export default function RiftStatusBadge({ status }: RiftStatusBadgeProps) {
     DISPUTED: { label: 'Disputed', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' }, // Disputed - Yellow
     RESOLVED: { label: 'Resolved', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' },
     PAYOUT_SCHEDULED: { label: 'Payout Scheduled', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
-    PAID_OUT: { label: 'Paid Out', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' },
+    PAID_OUT: { label: 'Paid Out', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' },
     CANCELED: { label: 'Canceled', color: 'bg-gray-500/10 text-gray-400 border-gray-500/30' },
     // Legacy statuses
     AWAITING_PAYMENT: { label: 'Awaiting Payment', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' }, // Paid - Blue

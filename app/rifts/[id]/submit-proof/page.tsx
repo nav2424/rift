@@ -170,8 +170,8 @@ export default function SubmitProofPage() {
 
   if (sessionStatus === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -181,24 +181,24 @@ export default function SubmitProofPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-light text-white mb-2 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] mb-2 tracking-tight">
                 {rift.itemType === 'DIGITAL_GOODS' ? 'Add Content Proof to Vault' : 'Add Completion Proof to Vault'}
               </h1>
-              <p className="text-white/60 font-light">
+              <p className="text-[#86868b] font-light">
                 {rift.itemTitle}
               </p>
-              <p className="text-white/40 text-sm font-light mt-2">
+              <p className="text-gray-400 text-sm font-light mt-2">
                 {getProofTypeText()}
               </p>
             </div>
             <Link
               href={`/rifts/${riftId}`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/70 hover:text-white font-light transition-all duration-200 group flex-shrink-0 mt-1"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] font-light transition-all duration-200 group flex-shrink-0 mt-1"
             >
               <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -222,10 +222,10 @@ export default function SubmitProofPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* File Upload - Required for all item types */}
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Proof Files {rift.itemType === 'DIGITAL_GOODS' && <span className="text-red-400">*</span>}
               </label>
-              <p className="text-white/50 text-xs font-light mb-3">
+              <p className="text-[#86868b] text-xs font-light mb-3">
                 {rift.itemType === 'DIGITAL_GOODS' && 'Upload files, PDFs, or screenshots of the final deliverables'}
                 {rift.itemType === 'SERVICES' && 'Upload photos, completion certificate, or service proof'}
               </p>
@@ -235,10 +235,10 @@ export default function SubmitProofPage() {
                 accept={rift.itemType === 'DIGITAL_GOODS' ? "image/*,.pdf,.zip" : "image/*,.pdf"}
                 multiple
                 required={rift.itemType === 'DIGITAL_GOODS'}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-white/10 file:text-white file:cursor-pointer hover:file:bg-white/20 transition-all"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[#1d1d1f] text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-light file:bg-gray-100 file:text-[#1d1d1f] file:cursor-pointer hover:file:bg-white/20 transition-all"
               />
               {files.length > 0 && (
-                <p className="text-white/60 text-xs mt-2">
+                <p className="text-[#86868b] text-xs mt-2">
                   {files.length} file(s) selected
                 </p>
               )}
@@ -248,34 +248,34 @@ export default function SubmitProofPage() {
             {rift.itemType === 'SERVICES' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
                     Delivery Summary <span className="text-red-400">*</span>
                   </label>
-                  <p className="text-white/50 text-xs font-light mb-3">
+                  <p className="text-[#86868b] text-xs font-light mb-3">
                     Describe what was delivered or completed
                   </p>
                   <textarea
                     value={formData.deliverySummary}
                     onChange={(e) => setFormData({ ...formData, deliverySummary: e.target.value })}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
                     rows={3}
                     placeholder="Describe what was delivered..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-white/70 mb-2">
+                  <label className="block text-sm font-medium text-gray-600 mb-2">
                     Scope Completion <span className="text-red-400">*</span>
                   </label>
-                  <p className="text-white/50 text-xs font-light mb-3">
+                  <p className="text-[#86868b] text-xs font-light mb-3">
                     Confirm that the agreed scope of work has been completed
                   </p>
                   <textarea
                     value={formData.scopeCompletion}
                     onChange={(e) => setFormData({ ...formData, scopeCompletion: e.target.value })}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
                     rows={3}
                     placeholder="Confirm scope completion..."
                   />
@@ -284,13 +284,13 @@ export default function SubmitProofPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Notes (Optional)
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all resize-none"
                 rows={4}
                 placeholder="Additional notes or instructions..."
               />
@@ -319,7 +319,7 @@ export default function SubmitProofPage() {
               </PremiumButton>
             </div>
 
-            <p className="text-white/40 text-xs font-light pt-4 border-t border-white/10">
+            <p className="text-gray-400 text-xs font-light pt-4 border-t border-gray-200">
               Your proof will be reviewed by our team. Once approved, the buyer will have 24-48 hours to review before funds are automatically released.
             </p>
           </form>

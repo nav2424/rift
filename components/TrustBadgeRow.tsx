@@ -49,10 +49,10 @@ export default function TrustBadgeRow({ userId, className = '' }: TrustBadgeRowP
       {badges.map((badge) => (
         <div
           key={badge.id}
-          className="group relative px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg hover:bg-white/15 transition-colors"
+          className="group relative px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg hover:bg-white/15 transition-colors"
           title={badge.description}
         >
-          <span className="text-xs font-light text-white/80">
+          <span className="text-xs font-light text-gray-700">
             {badge.label}
           </span>
         </div>

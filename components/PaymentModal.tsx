@@ -314,8 +314,8 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
   if (!clientSecret) {
     return (
       <div className="p-8 text-center">
-        <div className="animate-spin h-8 w-8 border-2 border-white/20 border-t-white rounded-full mx-auto mb-4"></div>
-        <p className="text-white/60 font-light">Initializing payment...</p>
+        <div className="animate-spin h-8 w-8 border-2 border-gray-300 border-t-white rounded-full mx-auto mb-4"></div>
+        <p className="text-[#86868b] font-light">Initializing payment...</p>
       </div>
     )
   }
@@ -334,7 +334,7 @@ function PaymentForm({ escrowId, amount, buyerTotal, currency, onSuccess, onClos
         </div>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm transition-colors"
+          className="mt-4 px-4 py-2 bg-gray-100 hover:bg-white/20 border border-gray-300 rounded-lg text-[#1d1d1f] text-sm transition-colors"
         >
           Refresh Page
         </button>
@@ -496,7 +496,7 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
       <>
         <div
           data-modal-backdrop
-          className="fixed inset-0 bg-black pointer-events-auto"
+          className="fixed inset-0 bg-white pointer-events-auto"
           style={{
             zIndex: 2147483647,
             position: 'fixed',
@@ -524,7 +524,7 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
           <GlassCard variant="strong" className="relative w-full max-w-lg p-8 pointer-events-auto">
             <div className="text-center">
               <p className="text-red-400 mb-4">Payment system is not configured</p>
-              <p className="text-white/60 text-sm mb-4">
+              <p className="text-[#86868b] text-sm mb-4">
                 Stripe publishable key is missing. Please contact support.
               </p>
               <PremiumButton onClick={onClose}>Close</PremiumButton>
@@ -542,7 +542,7 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
       {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
       <div
         data-modal-backdrop
-        className="fixed inset-0 bg-black pointer-events-auto"
+        className="fixed inset-0 bg-white pointer-events-auto"
         style={{
           zIndex: 2147483647,
           position: 'fixed',
@@ -570,10 +570,10 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
       >
         <GlassCard variant="strong" className="relative w-full max-w-lg p-8 max-h-[90vh] overflow-y-auto pointer-events-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-light text-white">Complete Payment</h2>
+          <h2 className="text-2xl font-light text-[#1d1d1f]">Complete Payment</h2>
           <button
             onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
+            className="text-[#86868b] hover:text-[#1d1d1f] transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -581,13 +581,13 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
           </button>
         </div>
 
-        <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-          <p className="text-sm text-white/60 font-light mb-1">Total Amount</p>
-          <p className="text-2xl font-light text-white">
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+          <p className="text-sm text-[#86868b] font-light mb-1">Total Amount</p>
+          <p className="text-2xl font-light text-[#1d1d1f]">
             {currency} {(buyerTotal || amount || 0).toFixed(2)}
           </p>
           {buyerTotal && amount && buyerTotal > amount && (
-            <p className="text-xs text-white/40 font-light mt-1">
+            <p className="text-xs text-gray-400 font-light mt-1">
               {currency} {amount.toFixed(2)} + {currency} {(buyerTotal - amount).toFixed(2)} processing fee
             </p>
           )}
@@ -600,10 +600,10 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div className="flex-1 space-y-1">
-              <p className="text-sm text-white/90 font-light">
-                <strong className="text-white">Disputes are free</strong> when handled through Rift.
+              <p className="text-sm text-gray-800 font-light">
+                <strong className="text-[#1d1d1f]">Disputes are free</strong> when handled through Rift.
               </p>
-              <p className="text-xs text-white/60 font-light leading-relaxed">
+              <p className="text-xs text-[#86868b] font-light leading-relaxed">
                 Filing a bank or card chargeback instead may result in a $15 processing fee, refunded if you win.
               </p>
             </div>
@@ -612,8 +612,8 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
 
         {!stripeLoaded ? (
           <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-2 border-white/20 border-t-white rounded-full mx-auto mb-4"></div>
-            <p className="text-white/60 font-light">Loading payment system...</p>
+            <div className="animate-spin h-8 w-8 border-2 border-gray-300 border-t-white rounded-full mx-auto mb-4"></div>
+            <p className="text-[#86868b] font-light">Loading payment system...</p>
           </div>
         ) : clientSecret && paymentIntentId ? (
           <Elements stripe={stripePromise} options={options} key={clientSecret}>
@@ -630,8 +630,8 @@ export default function PaymentModal({ isOpen, onClose, escrowId, amount, buyerT
           </Elements>
         ) : (
           <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-2 border-white/20 border-t-white rounded-full mx-auto mb-4"></div>
-            <p className="text-white/60 font-light">Initializing payment...</p>
+            <div className="animate-spin h-8 w-8 border-2 border-gray-300 border-t-white rounded-full mx-auto mb-4"></div>
+            <p className="text-[#86868b] font-light">Initializing payment...</p>
           </div>
         )}
         </GlassCard>

@@ -203,7 +203,7 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
   if (loading) {
     return (
       <GlassCard className="p-4">
-        <div className="text-white/60 font-light text-sm">Loading delivery assets...</div>
+        <div className="text-[#86868b] font-light text-sm">Loading delivery assets...</div>
       </GlassCard>
     )
   }
@@ -211,7 +211,7 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
   if (assets.length === 0) {
     return (
       <GlassCard className="p-4">
-        <div className="text-white/60 font-light text-sm">
+        <div className="text-[#86868b] font-light text-sm">
           {isBuyer ? 'No delivery assets available yet. Seller has not submitted proof.' : 'No assets uploaded yet.'}
         </div>
       </GlassCard>
@@ -221,7 +221,7 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
   return (
     <>
       <GlassCard className="p-5 space-y-4">
-        <h3 className="text-sm font-light text-white/90 uppercase tracking-wider">
+        <h3 className="text-sm font-light text-gray-800 uppercase tracking-wider">
           Delivery Assets
         </h3>
 
@@ -229,16 +229,16 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
           {assets.map((asset) => (
             <div
               key={asset.id}
-              className="group relative p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all duration-200"
+              className="group relative p-4 rounded-xl bg-gray-50 border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all duration-200"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                    <span className="text-white font-light text-sm">
+                    <span className="text-[#1d1d1f] font-light text-sm">
                       {getAssetTypeLabel(asset.assetType)}
                     </span>
                     {asset.fileName && (
-                      <span className="text-white/50 text-xs font-mono truncate max-w-xs">
+                      <span className="text-[#86868b] text-xs font-mono truncate max-w-xs">
                         {asset.fileName}
                       </span>
                     )}
@@ -254,7 +254,7 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-white/35 font-light">
+                  <div className="text-xs text-gray-400 font-light">
                     {new Date(asset.createdAt).toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric', 
@@ -300,12 +300,12 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
       {viewing && viewerUrl && (
         <div className="fixed inset-0 z-[99999] isolate" style={{ isolation: 'isolate' }}>
           {/* Backdrop - fully opaque, blocks all interaction, highest z-index */}
-          <div className="fixed inset-0 bg-black pointer-events-auto" style={{ zIndex: 99998 }} onClick={() => setViewing(null)}></div>
+          <div className="fixed inset-0 bg-white pointer-events-auto" style={{ zIndex: 99998 }} onClick={() => setViewing(null)}></div>
           {/* Modal */}
           <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 99999 }}>
-            <div className="bg-black/95 border border-white/20 rounded-xl w-full max-w-4xl h-[80vh] flex flex-col shadow-2xl pointer-events-auto">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-white font-light text-sm">File Viewer</h3>
+            <div className="bg-white/95 border border-gray-300 rounded-xl w-full max-w-4xl h-[80vh] flex flex-col shadow-2xl pointer-events-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-[#1d1d1f] font-light text-sm">File Viewer</h3>
               <div className="flex gap-2">
                 <PremiumButton
                   variant="ghost"
@@ -319,7 +319,7 @@ export default function VaultAssetsViewer({ riftId, isBuyer }: VaultAssetsViewer
                     setViewing(null)
                     setViewerUrl(null)
                   }}
-                  className="text-white/50 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+                  className="text-[#86868b] hover:text-[#1d1d1f] transition-colors p-1.5 rounded-lg hover:bg-gray-100"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

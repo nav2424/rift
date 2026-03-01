@@ -163,26 +163,26 @@ export default function Timeline({ events, isBuyer, isSeller, riftValue, currenc
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-light text-white/90 mb-6 tracking-wide uppercase text-xs">Timeline</h3>
+      <h3 className="text-lg font-light text-gray-800 mb-6 tracking-wide uppercase text-xs">Timeline</h3>
       <div className="relative">
         <div className="space-y-6">
           {sortedEvents.map((event, index) => {
             const filteredMessage = filterMessageForRole(event.message, isBuyer, isSeller, riftValue, currency)
             return (
               <div key={event.id} className="relative flex items-start group">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 border border-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/10 transition-colors">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-50 border border-gray-300 flex items-center justify-center backdrop-blur-sm group-hover:bg-gray-100 transition-colors">
                   <div className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-lg shadow-blue-500/30"></div>
                 </div>
-                <div className="ml-5 flex-1 pb-6 border-b border-white/5 last:border-0 last:pb-0">
+                <div className="ml-5 flex-1 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
                   <div className="flex items-start justify-between gap-4 mb-1">
-                    <p className="text-sm font-light text-white/90 leading-relaxed flex-1">{filteredMessage}</p>
-                    <time className="text-xs text-white/50 font-light whitespace-nowrap">
+                    <p className="text-sm font-light text-gray-800 leading-relaxed flex-1">{filteredMessage}</p>
+                    <time className="text-xs text-[#86868b] font-light whitespace-nowrap">
                       {new Date(event.createdAt).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric', 
                         year: 'numeric' 
                       })}
-                      <span className="text-white/40 ml-1">
+                      <span className="text-gray-400 ml-1">
                         {new Date(event.createdAt).toLocaleTimeString('en-US', { 
                           hour: 'numeric', 
                           minute: '2-digit' 
@@ -191,7 +191,7 @@ export default function Timeline({ events, isBuyer, isSeller, riftValue, currenc
                     </time>
                   </div>
                   {event.createdBy && (
-                    <p className="text-xs text-white/50 font-light mt-2">
+                    <p className="text-xs text-[#86868b] font-light mt-2">
                       by {event.createdBy?.name || event.createdBy?.email.split('@')[0]}
                     </p>
                   )}

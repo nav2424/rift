@@ -190,14 +190,14 @@ export default function VerificationPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
       <div 
         className="fixed inset-0 opacity-[0.02] pointer-events-none" 
@@ -208,15 +208,15 @@ export default function VerificationPage() {
       />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
       <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-light text-white mb-4 tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-light text-[#1d1d1f] mb-4 tracking-tight">
             Verify Your Account
           </h1>
-          <p className="text-white/60 font-light">
+          <p className="text-[#86868b] font-light">
             Verify your email and phone number to enable withdrawals
           </p>
         </div>
@@ -237,8 +237,8 @@ export default function VerificationPage() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-light text-white mb-2">Email Verification</h2>
-                  <p className="text-sm text-white/60 font-light">
+                  <h2 className="text-xl font-light text-[#1d1d1f] mb-2">Email Verification</h2>
+                  <p className="text-sm text-[#86868b] font-light">
                     {user.email}
                   </p>
                 </div>
@@ -254,7 +254,7 @@ export default function VerificationPage() {
               {!user.emailVerified ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-white/50 font-light mb-2">
+                    <label className="block text-sm text-[#86868b] font-light mb-2">
                       Enter Verification Code
                     </label>
                     <input
@@ -263,7 +263,7 @@ export default function VerificationPage() {
                       onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="000000"
                       maxLength={6}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-[#1d1d1f] placeholder:text-gray-400 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
                     />
                   </div>
                   <div className="flex gap-3">
@@ -296,8 +296,8 @@ export default function VerificationPage() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-light text-white mb-2">Phone Verification</h2>
-                  <p className="text-sm text-white/60 font-light">
+                  <h2 className="text-xl font-light text-[#1d1d1f] mb-2">Phone Verification</h2>
+                  <p className="text-sm text-[#86868b] font-light">
                     {user.phone || 'No phone number set'}
                   </p>
                 </div>
@@ -313,7 +313,7 @@ export default function VerificationPage() {
               {!user.phoneVerified ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-white/50 font-light mb-2">
+                    <label className="block text-sm text-[#86868b] font-light mb-2">
                       Phone Number
                     </label>
                     <input
@@ -321,11 +321,11 @@ export default function VerificationPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+1234567890"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-[#1d1d1f] placeholder:text-gray-400 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-white/50 font-light mb-2">
+                    <label className="block text-sm text-[#86868b] font-light mb-2">
                       Enter Verification Code
                     </label>
                     <input
@@ -334,7 +334,7 @@ export default function VerificationPage() {
                       onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="000000"
                       maxLength={6}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/30 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-[#1d1d1f] placeholder:text-gray-400 font-light focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all"
                     />
                   </div>
                   <div className="flex gap-3">
@@ -365,21 +365,21 @@ export default function VerificationPage() {
           {/* Withdrawal Requirements */}
           <GlassCard>
             <div className="p-6">
-              <h2 className="text-xl font-light text-white mb-4">Withdrawal Requirements</h2>
+              <h2 className="text-xl font-light text-[#1d1d1f] mb-4">Withdrawal Requirements</h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/70 font-light">Email Verified</span>
+                  <span className="text-gray-600 font-light">Email Verified</span>
                   <span className={user.emailVerified ? 'text-green-400' : 'text-yellow-400'}>
                     {user.emailVerified ? '✓' : '⚠ Optional (required for mobile)'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/70 font-light">Phone Verified</span>
+                  <span className="text-gray-600 font-light">Phone Verified</span>
                   <span className={user.phoneVerified ? 'text-green-400' : 'text-red-400'}>
                     {user.phoneVerified ? '✓' : '✗ Required'}
                   </span>
                 </div>
-                <div className="pt-3 border-t border-white/10">
+                <div className="pt-3 border-t border-gray-200">
                   {user.phoneVerified ? (
                     <p className="text-green-400 text-sm font-light">
                       ✓ Phone verified. You can withdraw funds on web. (Email verification required for mobile withdrawals)

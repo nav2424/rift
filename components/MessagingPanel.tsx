@@ -241,7 +241,7 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-white/60 font-light">Loading messages...</div>
+        <div className="text-[#86868b] font-light">Loading messages...</div>
       </div>
     )
   }
@@ -256,13 +256,13 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
 
   return (
     <div className="p-8">
-      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-white/10">
+      <div className="flex items-center gap-3 mb-8 pb-5 border-b border-gray-200">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-400/30 flex items-center justify-center">
           <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </div>
-        <h2 className="text-xl font-light text-white">Messages</h2>
+        <h2 className="text-xl font-light text-[#1d1d1f]">Messages</h2>
       </div>
 
       <div 
@@ -275,12 +275,12 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <p className="text-white/50 font-light text-sm">Start the conversation for this transaction</p>
+            <p className="text-[#86868b] font-light text-sm">Start the conversation for this transaction</p>
           </div>
         ) : (
           messages.map((message) => {
@@ -295,12 +295,12 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
                   className={`max-w-[75%] rounded-2xl px-5 py-3.5 shadow-xl transition-all duration-200 ${
                     isMine
                       ? 'bg-gradient-to-br from-blue-500/50 to-blue-600/40 border border-blue-400/40 backdrop-blur-md hover:from-blue-500/60 hover:to-blue-600/50'
-                      : 'bg-white/8 border border-white/15 backdrop-blur-md hover:bg-white/12 hover:border-white/20'
+                      : 'bg-white/8 border border-gray-300 backdrop-blur-md hover:bg-white/12 hover:border-gray-300'
                   }`}
                 >
-                  <p className="text-white text-[15px] font-light leading-relaxed mb-2 break-words">{message.body}</p>
+                  <p className="text-[#1d1d1f] text-[15px] font-light leading-relaxed mb-2 break-words">{message.body}</p>
                   <div className="flex items-center justify-end gap-1.5">
-                    <p className={`text-[11px] ${isMine ? 'text-blue-100/60' : 'text-white/35'} font-light tracking-wide`}>
+                    <p className={`text-[11px] ${isMine ? 'text-blue-100/60' : 'text-gray-400'} font-light tracking-wide`}>
                       {formatTime(message.createdAt)}
                     </p>
                   </div>
@@ -312,7 +312,7 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex gap-4 border-t border-white/10 pt-6 mt-6">
+      <div className="flex gap-4 border-t border-gray-200 pt-6 mt-6">
         <div className="flex-1 relative">
           <input
             type="text"
@@ -325,20 +325,20 @@ export default function MessagingPanel({ transactionId }: MessagingPanelProps) {
               }
             }}
             placeholder="Type a message..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-white/35 font-light text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all backdrop-blur-sm hover:bg-white/8 hover:border-white/15"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 text-[#1d1d1f] placeholder:text-gray-400 font-light text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/40 transition-all backdrop-blur-sm hover:bg-gray-100 hover:border-gray-300"
             disabled={sending}
             maxLength={1000}
           />
           {messageText.length > 0 && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <span className="text-[10px] text-white/30 font-light">{messageText.length}/1000</span>
+              <span className="text-[10px] text-gray-400 font-light">{messageText.length}/1000</span>
             </div>
           )}
         </div>
         <button
           onClick={handleSend}
           disabled={!messageText.trim() || sending}
-          className="px-6 py-3.5 bg-gradient-to-r from-blue-500/60 to-blue-600/50 border border-blue-400/40 rounded-xl text-white font-light text-sm hover:from-blue-500/70 hover:to-blue-600/60 hover:border-blue-400/50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-blue-500/60 disabled:hover:to-blue-600/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:shadow-blue-500/20 active:scale-[0.98] flex items-center gap-2"
+          className="px-6 py-3.5 bg-gradient-to-r from-blue-500/60 to-blue-600/50 border border-blue-400/40 rounded-xl text-[#1d1d1f] font-light text-sm hover:from-blue-500/70 hover:to-blue-600/60 hover:border-blue-400/50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:from-blue-500/60 disabled:hover:to-blue-600/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:shadow-blue-500/20 active:scale-[0.98] flex items-center gap-2"
         >
           {sending ? (
             <>
