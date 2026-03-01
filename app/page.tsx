@@ -66,7 +66,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── HERO ── */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-28 sm:pt-36 md:pt-44 pb-16 sm:pb-24">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-24 sm:pt-32 md:pt-40 pb-16 sm:pb-24">
         <div className={`mx-auto max-w-4xl text-center transition-all duration-[1200ms] ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
           <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs tracking-wide text-[#86868b] mb-8">
             <span className="relative flex h-2 w-2">

@@ -7,32 +7,21 @@ interface RiftLogoProps {
 }
 
 export default function RiftLogo({ size = 'md', className = '', variant = 'dark' }: RiftLogoProps) {
-  const heights = {
-    sm: 28,
-    md: 36,
-    lg: 48,
-    xl: 64,
+  const styles = {
+    sm: 'text-[15px]',
+    md: 'text-[17px]',
+    lg: 'text-[22px]',
+    xl: 'text-[28px]',
   }
 
-  const h = heights[size]
-  const src = variant === 'light' ? '/rift-logo.png' : '/rift-logo-dark.png'
+  const color = variant === 'light' ? 'text-white' : 'text-[#1d1d1f]'
 
   return (
-    <div
-      className={`inline-flex items-center ${className}`}
-      style={{ margin: 0, padding: 0, lineHeight: 0 }}
+    <span
+      className={`${styles[size]} ${color} font-semibold tracking-[0.08em] select-none ${className}`}
+      style={{ fontFeatureSettings: '"kern" 1' }}
     >
-      <img
-        src={src}
-        alt="Rift"
-        height={h}
-        style={{
-          height: h,
-          width: 'auto',
-          display: 'block',
-          ...(variant === 'light' ? { mixBlendMode: 'screen' as const } : {}),
-        }}
-      />
-    </div>
+      RIFT
+    </span>
   )
 }
