@@ -446,33 +446,33 @@ export default function SignUp() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4">
+    <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
         backgroundSize: '50px 50px'
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-gray-50 rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <GlassCard variant="liquid" className="max-w-md w-full p-8 relative z-10">
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-light text-white/50">Step {currentStepNumber} of {totalSteps}</span>
-            <span className="text-xs font-light text-white/50">{Math.round(progress)}%</span>
+            <span className="text-xs font-light text-[#86868b]">Step {currentStepNumber} of {totalSteps}</span>
+            <span className="text-xs font-light text-[#86868b]">{Math.round(progress)}%</span>
           </div>
-          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-white/20 transition-all duration-500 ease-out"
+              className="h-full bg-gray-300 transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        <h1 className="text-4xl font-light text-white mb-6 text-center tracking-tight">
+        <h1 className="text-4xl font-light text-[#1d1d1f] mb-6 text-center tracking-tight">
           {currentStep === 'personal-info' && 'Personal Information'}
           {currentStep === 'verify-email' && 'Email Verification'}
           {currentStep === 'verify-phone' && 'Phone Verification'}
@@ -480,8 +480,8 @@ export default function SignUp() {
         </h1>
         
         {error && (
-          <div className="bg-white/[0.08] border border-white/20 rounded-lg p-4 mb-4 backdrop-blur-sm">
-            <p className="text-white/80 text-sm font-light">{error}</p>
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
+            <p className="text-gray-700 text-sm font-light">{error}</p>
           </div>
         )}
 
@@ -490,7 +490,7 @@ export default function SignUp() {
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 First Name *
               </label>
               <input
@@ -498,12 +498,12 @@ export default function SignUp() {
                 required
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
                 placeholder="First name"
               />
             </div>
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 Last Name *
               </label>
               <input
@@ -511,13 +511,13 @@ export default function SignUp() {
                 required
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
                 placeholder="Last name"
               />
             </div>
           </div>
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 Birthday *
               </label>
               <DatePicker
@@ -536,7 +536,7 @@ export default function SignUp() {
         {currentStep === 'verify-email' && !emailCodeSent && (
           <form onSubmit={handleEmailSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-light text-white/70 mb-2">
+            <label className="block text-sm font-light text-gray-600 mb-2">
                 Email Address *
             </label>
             <input
@@ -544,7 +544,7 @@ export default function SignUp() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
               placeholder="you@example.com"
             />
           </div>
@@ -554,7 +554,7 @@ export default function SignUp() {
             <button
               type="button"
               onClick={() => setCurrentStep('personal-info')}
-              className="w-full text-center text-sm text-white/50 hover:text-white/70 font-light transition-colors"
+              className="w-full text-center text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors"
             >
               ← Back
             </button>
@@ -563,18 +563,18 @@ export default function SignUp() {
 
         {currentStep === 'verify-email' && emailCodeSent && (
           <form onSubmit={handleEmailVerify} className="space-y-5">
-            <div className="bg-white/[0.05] border border-white/10 rounded-lg p-4 mb-4">
-              <p className="text-white/70 text-sm font-light text-center">
-                We sent a verification code to <span className="text-white font-normal">{email}</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+              <p className="text-gray-600 text-sm font-light text-center">
+                We sent a verification code to <span className="text-[#1d1d1f] font-normal">{email}</span>
               </p>
               {devEmailCode && (
-                <p className="text-center mt-3 text-xs text-cyan-400/80 font-mono bg-black/20 px-3 py-2 rounded">
+                <p className="text-center mt-3 text-xs text-cyan-600 font-mono bg-gray-100 px-3 py-2 rounded">
                   Dev Code: {devEmailCode}
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 Enter Verification Code *
               </label>
               <input
@@ -583,7 +583,7 @@ export default function SignUp() {
                 maxLength={6}
                 value={emailCode}
                 onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light text-center text-2xl tracking-widest"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light text-center text-2xl tracking-widest"
                 placeholder="000000"
               />
             </div>
@@ -603,7 +603,7 @@ export default function SignUp() {
                     localStorage.removeItem('signupSessionId')
                   }
                 }}
-                className="text-sm text-white/50 hover:text-white/70 font-light transition-colors"
+                className="text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors"
               >
                 ← Back
               </button>
@@ -611,7 +611,7 @@ export default function SignUp() {
                 type="button"
                 onClick={handleResendEmailCode}
                 disabled={resendEmailCooldown > 0}
-                className="text-sm text-white/50 hover:text-white/70 font-light transition-colors disabled:opacity-50"
+                className="text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors disabled:opacity-50"
               >
                 {resendEmailCooldown > 0 
                   ? `Resend in ${resendEmailCooldown}s`
@@ -625,7 +625,7 @@ export default function SignUp() {
         {currentStep === 'verify-phone' && !phoneCodeSent && (
           <form onSubmit={handlePhoneSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 Phone Number *
               </label>
               <input
@@ -633,10 +633,10 @@ export default function SignUp() {
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
                 placeholder="+1 (123) 456-7890"
               />
-              <p className="mt-1 text-xs text-white/40 font-light">Include country code (e.g., +1 for US/Canada)</p>
+              <p className="mt-1 text-xs text-[#86868b] font-light">Include country code (e.g., +1 for US/Canada)</p>
             </div>
             <PremiumButton type="submit" className="w-full" disabled={loading}>
               {loading ? 'Sending Code...' : 'Send Verification Code'}
@@ -647,7 +647,7 @@ export default function SignUp() {
                 setEmailCode('')
                 setCurrentStep('verify-email')
               }}
-              className="w-full text-center text-sm text-white/50 hover:text-white/70 font-light transition-colors"
+              className="w-full text-center text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors"
             >
               ← Back
             </button>
@@ -656,18 +656,18 @@ export default function SignUp() {
 
         {currentStep === 'verify-phone' && phoneCodeSent && (
           <form onSubmit={handlePhoneVerify} className="space-y-5">
-            <div className="bg-white/[0.05] border border-white/10 rounded-lg p-4 mb-4">
-              <p className="text-white/70 text-sm font-light text-center">
-                We sent a verification code to <span className="text-white font-normal">{phone}</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+              <p className="text-gray-600 text-sm font-light text-center">
+                We sent a verification code to <span className="text-[#1d1d1f] font-normal">{phone}</span>
               </p>
               {devPhoneCode && (
-                <p className="text-center mt-3 text-xs text-cyan-400/80 font-mono bg-black/20 px-3 py-2 rounded">
+                <p className="text-center mt-3 text-xs text-cyan-600 font-mono bg-gray-100 px-3 py-2 rounded">
                   Dev Code: {devPhoneCode}
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-light text-white/70 mb-2">
+              <label className="block text-sm font-light text-gray-600 mb-2">
                 Enter Verification Code *
               </label>
               <input
@@ -676,7 +676,7 @@ export default function SignUp() {
                 maxLength={6}
                 value={phoneCode}
                 onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light text-center text-2xl tracking-widest"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light text-center text-2xl tracking-widest"
                 placeholder="000000"
               />
             </div>
@@ -692,7 +692,7 @@ export default function SignUp() {
                   setPhoneCode('')
                   setDevPhoneCode(null)
                 }}
-                className="text-sm text-white/50 hover:text-white/70 font-light transition-colors"
+                className="text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors"
               >
                 ← Back
               </button>
@@ -700,7 +700,7 @@ export default function SignUp() {
                 type="button"
                 onClick={handleResendPhoneCode}
                 disabled={resendPhoneCooldown > 0}
-                className="text-sm text-white/50 hover:text-white/70 font-light transition-colors disabled:opacity-50"
+                className="text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors disabled:opacity-50"
               >
                 {resendPhoneCooldown > 0 
                   ? `Resend in ${resendPhoneCooldown}s`
@@ -714,7 +714,7 @@ export default function SignUp() {
         {currentStep === 'password' && (
           <form onSubmit={handlePasswordSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-light text-white/70 mb-2">
+            <label className="block text-sm font-light text-gray-600 mb-2">
               Password *
             </label>
             <input
@@ -722,33 +722,33 @@ export default function SignUp() {
               required
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
               placeholder="••••••••"
             />
             {/* Password Requirements */}
             <div className="mt-2 space-y-1.5">
-              <p className="text-xs text-white/50 font-light mb-1.5">Password must contain:</p>
+              <p className="text-xs text-[#86868b] font-light mb-1.5">Password must contain:</p>
               {(() => {
                 const validation = validatePassword(formData.password || '')
                 return (
                   <>
-                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.minLength ? 'text-green-400' : 'text-white/40'}`}>
+                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.minLength ? 'text-green-600' : 'text-[#86868b]'}`}>
                       <span>{validation.requirements.minLength ? '✓' : '○'}</span>
                       <span>At least 8 characters</span>
                     </div>
-                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasUppercase ? 'text-green-400' : 'text-white/40'}`}>
+                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasUppercase ? 'text-green-600' : 'text-[#86868b]'}`}>
                       <span>{validation.requirements.hasUppercase ? '✓' : '○'}</span>
                       <span>One uppercase letter</span>
                     </div>
-                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasLowercase ? 'text-green-400' : 'text-white/40'}`}>
+                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasLowercase ? 'text-green-600' : 'text-[#86868b]'}`}>
                       <span>{validation.requirements.hasLowercase ? '✓' : '○'}</span>
                       <span>One lowercase letter</span>
                     </div>
-                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasNumber ? 'text-green-400' : 'text-white/40'}`}>
+                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasNumber ? 'text-green-600' : 'text-[#86868b]'}`}>
                       <span>{validation.requirements.hasNumber ? '✓' : '○'}</span>
                       <span>One number</span>
                     </div>
-                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasSpecialChar ? 'text-green-400' : 'text-white/40'}`}>
+                    <div className={`text-xs font-light flex items-center gap-2 ${validation.requirements.hasSpecialChar ? 'text-green-600' : 'text-[#86868b]'}`}>
                       <span>{validation.requirements.hasSpecialChar ? '✓' : '○'}</span>
                       <span>One special character (!@#$%^&*()_+-=[]&#123;&#125;|;:,&lt;&gt;?)</span>
                     </div>
@@ -758,7 +758,7 @@ export default function SignUp() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-light text-white/70 mb-2">
+            <label className="block text-sm font-light text-gray-600 mb-2">
               Confirm Password *
             </label>
             <input
@@ -766,20 +766,20 @@ export default function SignUp() {
               required
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className={`w-full px-4 py-3 bg-white/[0.05] border rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all backdrop-blur-sm font-light ${
+              className={`w-full px-4 py-3 bg-white border rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all font-light ${
                 formData.confirmPassword && formData.password !== formData.confirmPassword
                   ? 'border-red-500/50 focus:border-red-500/50'
                   : formData.confirmPassword && formData.password === formData.confirmPassword
                   ? 'border-green-500/50 focus:border-green-500/50'
-                  : 'border-white/10 focus:border-white/20'
+                  : 'border-gray-200 focus:border-gray-400'
               }`}
               placeholder="••••••••"
             />
             {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-              <p className="mt-1 text-xs text-red-400 font-light">Passwords do not match</p>
+              <p className="mt-1 text-xs text-red-500 font-light">Passwords do not match</p>
             )}
             {formData.confirmPassword && formData.password === formData.confirmPassword && (
-              <p className="mt-1 text-xs text-green-400 font-light">✓ Passwords match</p>
+              <p className="mt-1 text-xs text-green-600 font-light">✓ Passwords match</p>
             )}
           </div>
           <PremiumButton type="submit" className="w-full" disabled={loading}>
@@ -792,16 +792,16 @@ export default function SignUp() {
                 setPhoneCodeSent(false)
                 setCurrentStep('verify-phone')
               }}
-              className="w-full text-center text-sm text-white/50 hover:text-white/70 font-light transition-colors"
+              className="w-full text-center text-sm text-[#86868b] hover:text-gray-600 font-light transition-colors"
             >
               ← Back
             </button>
         </form>
         )}
 
-        <p className="mt-6 text-center text-white/60 text-sm font-light">
+        <p className="mt-6 text-center text-[#86868b] text-sm font-light">
           Already have an account?{' '}
-          <Link href="/auth/signin" className="text-white/80 hover:text-white transition-colors underline underline-offset-2">
+          <Link href="/auth/signin" className="text-gray-700 hover:text-[#1d1d1f] transition-colors underline underline-offset-2">
             Sign In
           </Link>
         </p>

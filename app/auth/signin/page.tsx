@@ -93,56 +93,56 @@ function SignInForm() {
   const passwordReset = searchParams?.get('passwordReset')
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4 pt-12 pb-24">
+    <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4 pt-12 pb-24">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-medium text-white mb-4 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-medium text-[#1d1d1f] mb-4 tracking-tight">
             Sign in
           </h1>
-          <p className="text-white/50 font-light text-base">
+          <p className="text-[#86868b] font-light text-base">
             Enter your credentials to access your account
           </p>
         </div>
 
         {/* Form Card */}
-        <GlassCard className="p-8 lg:p-10 glass-highlight">
+        <GlassCard className="p-8 lg:p-10 bg-white border border-gray-200 shadow-sm">
           {registered && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <p className="text-emerald-400 text-sm font-light">Account created successfully! Please sign in.</p>
+                <p className="text-emerald-600 text-sm font-light">Account created successfully! Please sign in.</p>
               </div>
             </div>
           )}
 
           {passwordReset && (
-            <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <p className="text-emerald-400 text-sm font-light">Password reset successfully! Please sign in with your new password.</p>
+                <p className="text-emerald-600 text-sm font-light">Password reset successfully! Please sign in with your new password.</p>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-red-400 text-sm font-light">{error}</p>
+                <p className="text-red-500 text-sm font-light">{error}</p>
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Email
               </label>
               <input
@@ -150,13 +150,13 @@ function SignInForm() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
+                className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light hover:bg-gray-100 hover:border-gray-300"
                 placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-white/70 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Password
               </label>
               <input
@@ -164,7 +164,7 @@ function SignInForm() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50 transition-all backdrop-blur-sm font-light hover:bg-white/[0.07] hover:border-white/15"
+                className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light hover:bg-gray-100 hover:border-gray-300"
                 placeholder="••••••••"
               />
             </div>
@@ -172,7 +172,7 @@ function SignInForm() {
             <div className="flex items-center justify-between pt-1">
               <Link 
                 href="/auth/forgot-password" 
-                className="text-white/50 hover:text-emerald-400/60 text-sm font-light transition-colors"
+                className="text-[#86868b] hover:text-emerald-600 text-sm font-light transition-colors"
               >
                 Forgot password?
               </Link>
@@ -193,12 +193,12 @@ function SignInForm() {
             </PremiumButton>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-center text-white/50 text-sm font-light">
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-center text-[#86868b] text-sm font-light">
               Don't have an account?{' '}
               <Link 
                 href="/auth/signup" 
-                className="text-emerald-400/70 hover:text-emerald-400 font-medium transition-colors"
+                className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
               >
                 Sign up
               </Link>
@@ -213,8 +213,8 @@ function SignInForm() {
 export default function SignIn() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     }>
       <SignInForm />

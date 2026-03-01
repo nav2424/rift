@@ -318,7 +318,7 @@ export default function Dashboard() {
       case 'UNDER_REVIEW': return 'text-yellow-400'
       case 'RELEASED': return 'text-green-400'
       case 'PAYOUT_SCHEDULED': return 'text-indigo-400'
-      case 'PAID_OUT': return 'text-emerald-400'
+      case 'PAID_OUT': return 'text-emerald-600'
       case 'DISPUTED': return 'text-red-400'
       case 'RESOLVED': return 'text-cyan-400'
       case 'CANCELED': return 'text-gray-400'
@@ -329,14 +329,14 @@ export default function Dashboard() {
       case 'AWAITING_SHIPMENT': return 'text-purple-400'
       case 'IN_TRANSIT': return 'text-cyan-400'
       case 'DELIVERED_PENDING_RELEASE': return 'text-teal-400'
-      default: return 'text-white/60'
+      default: return 'text-[#86868b]'
     }
   }
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     )
   }
@@ -365,7 +365,7 @@ export default function Dashboard() {
             {/* Notifications Badge */}
             {unreadCount > 0 && (
               <Link href="/wallet" className="relative group">
-                <button className="p-2.5 sm:p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white/70 hover:text-white backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center">
+                <button className="p-2.5 sm:p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
@@ -376,7 +376,7 @@ export default function Dashboard() {
               </Link>
             )}
             <Link href="/rifts/new" className="group" data-onboarding="create-rift">
-              <button className="px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-xs sm:text-sm backdrop-blur-sm shadow-lg min-h-[44px] flex items-center justify-center">
+              <button className="px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 text-[#1d1d1f] font-light text-xs sm:text-sm backdrop-blur-sm shadow-lg min-h-[44px] flex items-center justify-center">
                 <span className="flex items-center gap-1.5 sm:gap-2">
                   <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -393,18 +393,18 @@ export default function Dashboard() {
               <div className="flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="mb-2">
-                    <p className="text-xs text-white/40 font-light uppercase tracking-wider mb-2 sm:mb-3">{greeting}</p>
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-light text-white tracking-tight mb-3 sm:mb-4 break-words">
-                      Welcome back, <span className="text-white/90">{userName}</span>
+                    <p className="text-xs text-gray-400 font-light uppercase tracking-wider mb-2 sm:mb-3">{greeting}</p>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-light text-[#1d1d1f] tracking-tight mb-3 sm:mb-4 break-words">
+                      Welcome back, <span className="text-gray-800">{userName}</span>
                     </h1>
                   </div>
                   {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
-                    <p className="text-xs sm:text-sm text-white/50 font-light">You're all set! Ready to create your first rift?</p>
+                    <p className="text-xs sm:text-sm text-[#86868b] font-light">You're all set! Ready to create your first rift?</p>
                   )}
                   {metrics.pendingActionsCount > 0 && (
-                    <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-                      <p className="text-xs sm:text-sm text-white/70 font-light">
+                      <p className="text-xs sm:text-sm text-gray-600 font-light">
                         {metrics.pendingActionsCount} {metrics.pendingActionsCount === 1 ? 'action' : 'actions'} waiting
                       </p>
                     </div>
@@ -429,7 +429,7 @@ export default function Dashboard() {
                 
                 return (
                   <Link key={notification.id} href="/wallet">
-                    <GlassCard className={`cursor-pointer hover:bg-white/10 transition-all ${
+                    <GlassCard className={`cursor-pointer hover:bg-gray-100 transition-all ${
                       isApproved ? 'border-green-500/30 bg-green-500/5' :
                       isRejected ? 'border-red-500/30 bg-red-500/5' :
                       isRestricted ? 'border-yellow-500/30 bg-yellow-500/5' :
@@ -467,12 +467,12 @@ export default function Dashboard() {
                               }`}>
                                 {notification.summary}
                               </p>
-                              <p className="text-xs text-white/40 font-light mt-1">
+                              <p className="text-xs text-gray-400 font-light mt-1">
                                 {new Date(notification.createdAt).toLocaleString()}
                               </p>
                             </div>
                           </div>
-                          <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </div>
@@ -505,7 +505,7 @@ export default function Dashboard() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <h2 className="text-base sm:text-lg font-light text-white truncate">Recent Activity</h2>
+                      <h2 className="text-base sm:text-lg font-light text-[#1d1d1f] truncate">Recent Activity</h2>
                     </div>
                     {recentActivity.length > 0 && (
                       <Link href="/activity" className="text-xs text-cyan-400/80 hover:text-cyan-400 font-light flex items-center gap-1.5 transition-colors group flex-shrink-0 ml-2">
@@ -518,28 +518,28 @@ export default function Dashboard() {
                   </div>
                 </div>
                 {recentActivity.length > 0 ? (
-                  <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex flex-col">
+                  <div className="pt-4 sm:pt-6 border-t border-gray-200 flex-1 flex flex-col">
                     <div className="space-y-2 sm:space-y-2.5 flex-1">
                       {recentActivity.slice(0, 3).map((activity) => (
                         <Link
                           key={activity.id}
                           href={`/rifts/${activity.id}`}
-                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 hover:shadow-md hover:shadow-cyan-500/5 group min-h-[72px] sm:h-20 flex items-center"
+                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-cyan-500/30 hover:shadow-md hover:shadow-cyan-500/5 group min-h-[72px] sm:h-20 flex items-center"
                         >
-                          <p className="text-xs sm:text-sm text-white/80 group-hover:text-white font-light leading-relaxed line-clamp-2 transition-colors">{activity.message}</p>
+                          <p className="text-xs sm:text-sm text-gray-700 group-hover:text-[#1d1d1f] font-light leading-relaxed line-clamp-2 transition-colors">{activity.message}</p>
                         </Link>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex items-center justify-center">
+                  <div className="pt-4 sm:pt-6 border-t border-gray-200 flex-1 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <p className="text-xs sm:text-sm text-white/40 font-light">No recent activity</p>
+                      <p className="text-xs sm:text-sm text-gray-400 font-light">No recent activity</p>
                     </div>
                   </div>
                 )}
@@ -561,7 +561,7 @@ export default function Dashboard() {
                       </svg>
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-base sm:text-lg font-light text-white truncate">Action Required</h2>
+                      <h2 className="text-base sm:text-lg font-light text-[#1d1d1f] truncate">Action Required</h2>
                     </div>
                   </div>
                   {metrics.pendingActionsCount > 0 && (
@@ -574,7 +574,7 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-              <div className="pt-4 sm:pt-6 border-t border-white/10 flex-1 flex flex-col">
+              <div className="pt-4 sm:pt-6 border-t border-gray-200 flex-1 flex flex-col">
                 {metrics.pendingActionsCount > 0 ? (
                   <div className="space-y-2 sm:space-y-2.5 flex-1">
                     {metrics.pendingActions.slice(0, 3).map((action) => {
@@ -611,14 +611,14 @@ export default function Dashboard() {
                         <Link
                           key={action.id}
                           href={`/rifts/${action.id}#actions`}
-                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/5 group min-h-[72px] sm:h-20 flex items-center"
+                          className="block p-3 sm:p-4 rounded-xl transition-all duration-300 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-blue-500/30 hover:shadow-md hover:shadow-blue-500/5 group min-h-[72px] sm:h-20 flex items-center"
                         >
                           <div className="flex items-center justify-between gap-3 w-full">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm text-white font-medium truncate mb-1 sm:mb-1.5">{actionText}</p>
-                              <p className="text-xs text-white/60 font-light line-clamp-2 leading-relaxed">{actionDescription}</p>
+                              <p className="text-xs sm:text-sm text-[#1d1d1f] font-medium truncate mb-1 sm:mb-1.5">{actionText}</p>
+                              <p className="text-xs text-[#86868b] font-light line-clamp-2 leading-relaxed">{actionDescription}</p>
                             </div>
-                            <svg className="w-5 h-5 text-white/30 group-hover:text-blue-400 group-hover:translate-x-1 flex-shrink-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-gray-300 group-hover:text-blue-400 group-hover:translate-x-1 flex-shrink-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>
@@ -628,7 +628,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center flex-1 py-6 sm:py-8">
-                    <p className="text-white/60 font-light text-xs sm:text-sm text-center px-2">No actions required at this time</p>
+                    <p className="text-[#86868b] font-light text-xs sm:text-sm text-center px-2">No actions required at this time</p>
                   </div>
                 )}
               </div>
@@ -646,10 +646,10 @@ export default function Dashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h2 className="text-xl sm:text-2xl font-light text-white truncate">Your Rifts</h2>
+              <h2 className="text-xl sm:text-2xl font-light text-[#1d1d1f] truncate">Your Rifts</h2>
             </div>
             {rifts.length > 0 && (
-              <Link href="/rifts" className="text-xs sm:text-sm text-white/50 hover:text-white font-light flex items-center gap-1.5 transition-colors group flex-shrink-0">
+              <Link href="/rifts" className="text-xs sm:text-sm text-[#86868b] hover:text-[#1d1d1f] font-light flex items-center gap-1.5 transition-colors group flex-shrink-0">
                 View All
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -666,13 +666,13 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-light text-white mb-2 sm:mb-3">No rifts yet</h3>
-                <p className="text-white/50 font-light text-xs sm:text-sm mb-4 sm:mb-6 px-4">
+                <h3 className="text-xl sm:text-2xl font-light text-[#1d1d1f] mb-2 sm:mb-3">No rifts yet</h3>
+                <p className="text-[#86868b] font-light text-xs sm:text-sm mb-4 sm:mb-6 px-4">
                   Create your first rift to get started
                 </p>
                 <Link 
                   href="/rifts/new"
-                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-white font-light text-xs sm:text-sm shadow-lg min-h-[44px]"
+                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 text-[#1d1d1f] font-light text-xs sm:text-sm shadow-lg min-h-[44px]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -689,31 +689,31 @@ export default function Dashboard() {
 
                 return (
                   <Link key={rift.id} href={`/rifts/${rift.id}`}>
-                    <GlassCard className="hover:bg-white/5 hover:border-white/20 transition-all duration-300 cursor-pointer group">
+                    <GlassCard className="hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 cursor-pointer group">
                       <div className="p-4 sm:p-5">
                         <div className="flex items-start justify-between gap-3 sm:gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                              <h3 className="text-base sm:text-lg font-light text-white truncate">
+                              <h3 className="text-base sm:text-lg font-light text-[#1d1d1f] truncate">
                                 Rift #{rift.riftNumber ?? rift.id.slice(-4)}
                               </h3>
                               <StatusPill status={rift.status} />
                             </div>
-                            <p className="text-sm sm:text-base text-white/90 font-light truncate mb-1 sm:mb-1.5">{rift.itemTitle}</p>
-                            <p className="text-xs sm:text-sm text-white/50 font-light truncate">
+                            <p className="text-sm sm:text-base text-gray-800 font-light truncate mb-1 sm:mb-1.5">{rift.itemTitle}</p>
+                            <p className="text-xs sm:text-sm text-[#86868b] font-light truncate">
                               {otherParty.name || otherParty.email.split('@')[0]} • {getItemTypeShortLabel(rift.itemType)}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 flex flex-col items-end">
-                            <p className="text-base sm:text-lg font-light text-white mb-1">
+                            <p className="text-base sm:text-lg font-light text-[#1d1d1f] mb-1">
                               {formatCurrency((rift as any).subtotal || rift.amount || 0, rift.currency)}
                             </p>
                             {(rift as any).buyerFee && (rift as any).buyerFee > 0 && isBuyer && (
-                              <p className="text-xs text-white/40 font-light">
+                              <p className="text-xs text-gray-400 font-light">
                                 + {formatCurrency((rift as any).buyerFee, rift.currency)} fee
                               </p>
                             )}
-                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/30 group-hover:text-white/50 group-hover:translate-x-1 mt-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-[#86868b] group-hover:translate-x-1 mt-2 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>

@@ -142,24 +142,24 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
+    <div className="min-h-screen bg-white text-[#1d1d1f] flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Left Sidebar */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 bg-black border-r border-white/8 transition-all duration-300 md:translate-x-0 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } ${sidebarCollapsed ? 'md:w-16' : 'md:w-64'} w-64`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-white/8">
+          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <Link 
               href="/dashboard" 
               className={`flex items-center hover:opacity-80 transition-opacity ${sidebarCollapsed ? 'justify-center w-full' : ''}`}
@@ -168,7 +168,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden p-2 text-white/60 hover:text-white transition-colors"
+              className="md:hidden p-2 text-[#86868b] hover:text-[#1d1d1f] transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -183,7 +183,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className={`hidden md:flex items-center rounded-lg transition-colors group w-full mb-2 min-h-[44px] ${
                 sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
-              } text-white/60 hover:text-white hover:bg-white/5`}
+              } text-[#86868b] hover:text-[#1d1d1f] hover:bg-gray-50`}
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               <svg 
@@ -211,8 +211,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
                   } ${
                     active
-                      ? 'bg-white/5 text-white border-l-2 border-white/30'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                      ? 'bg-gray-100 text-[#1d1d1f] border-l-2 border-gray-300'
+                      : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-gray-50'
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
@@ -229,16 +229,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
           {/* User Section */}
           {session && (
-            <div className={`border-t border-white/8 ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
+            <div className={`border-t border-gray-200 ${sidebarCollapsed ? 'p-2' : 'p-4'}`}>
               <div className={`flex items-center py-2 ${sidebarCollapsed ? 'justify-center' : 'gap-3 px-4'}`}>
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-medium text-white">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-medium text-[#1d1d1f]">
                     {session.user?.email?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
                 {!sidebarCollapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-light text-white truncate">{session.user?.email}</p>
+                    <p className="text-xs font-light text-[#1d1d1f] truncate">{session.user?.email}</p>
                   </div>
                 )}
               </div>
@@ -250,12 +250,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-black/95 backdrop-blur-sm border-b border-white/8">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              className="md:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-[#86868b] hover:text-[#1d1d1f] transition-colors rounded-lg hover:bg-gray-50"
               aria-label="Open menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,10 +273,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   value={searchValue}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2.5 sm:py-2 pl-9 sm:pl-10 pr-9 sm:pr-10 text-white placeholder-white/40 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all text-sm sm:text-base font-light"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-2 pl-9 sm:pl-10 pr-9 sm:pr-10 text-[#1d1d1f] placeholder-gray-400 focus:outline-none focus:border-gray-300 focus:bg-gray-100 transition-all text-sm sm:text-base font-light"
                 />
                 <svg
-                  className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none"
+                  className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -286,7 +286,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {searchValue && (
                   <button
                     onClick={() => handleSearchChange('')}
-                    className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 min-h-[44px] min-w-[44px] flex items-center justify-center text-white/40 hover:text-white/60 transition-colors"
+                    className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-[#86868b] transition-colors"
                     aria-label="Clear search"
                   >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -302,15 +302,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-white/5 transition-colors min-h-[44px] min-w-[44px] md:min-w-0"
+                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors min-h-[44px] min-w-[44px] md:min-w-0"
                 >
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-medium text-white">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-medium text-[#1d1d1f]">
                       {session.user?.email?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   </div>
                   <svg
-                    className={`hidden sm:block w-4 h-4 text-white/60 transition-transform flex-shrink-0 ${profileMenuOpen ? 'rotate-180' : ''}`}
+                    className={`hidden sm:block w-4 h-4 text-[#86868b] transition-transform flex-shrink-0 ${profileMenuOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -320,11 +320,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </button>
 
                 {profileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 rounded-lg shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                     <div className="p-2">
                       <Link
                         href="/account"
-                        className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 rounded-lg transition-colors min-h-[44px] flex items-center"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         Account
@@ -332,19 +332,19 @@ export default function AppLayout({ children }: AppLayoutProps) {
                       {session.user?.role === 'ADMIN' && (
                         <Link
                           href="/admin"
-                          className="block px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
+                          className="block px-4 py-3 text-sm text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 rounded-lg transition-colors min-h-[44px] flex items-center"
                           onClick={() => setProfileMenuOpen(false)}
                         >
                           Admin
                         </Link>
                       )}
-                      <div className="border-t border-white/10 my-2" />
+                      <div className="border-t border-gray-200 my-2" />
                       <button
                         onClick={() => {
                           setProfileMenuOpen(false)
                           signOut()
                         }}
-                        className="w-full text-left px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors min-h-[44px] flex items-center"
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 rounded-lg transition-colors min-h-[44px] flex items-center"
                       >
                         Sign Out
                       </button>

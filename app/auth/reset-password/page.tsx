@@ -138,10 +138,10 @@ function ResetPasswordForm() {
 
   if (validating) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4">
         <GlassCard variant="liquid" className="max-w-md w-full p-8 relative z-10">
           <div className="text-center">
-            <div className="text-white/60 font-light">Validating reset token...</div>
+            <div className="text-[#86868b] font-light">Validating reset token...</div>
           </div>
         </GlassCard>
       </div>
@@ -150,26 +150,26 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4">
         {/* Subtle grid background */}
         <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
         }} />
         
         {/* Minimal floating elements */}
-        <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-        <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
+        <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-gray-50 rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
         <GlassCard variant="liquid" className="max-w-md w-full p-8 relative z-10">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-4xl font-light text-white mb-2 tracking-tight">Password Reset</h1>
-            <p className="text-white/80 text-sm font-light">
+            <h1 className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">Password Reset</h1>
+            <p className="text-gray-700 text-sm font-light">
               Your password has been successfully reset. Redirecting to sign in...
             </p>
             <Link href="/auth/signin">
@@ -185,27 +185,27 @@ function ResetPasswordForm() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4">
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4">
         {/* Subtle grid background */}
         <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
         }} />
         
         {/* Minimal floating elements */}
-        <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-        <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
+        <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-gray-50 rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
         <GlassCard variant="liquid" className="max-w-md w-full p-8 relative z-10">
-          <h1 className="text-4xl font-light text-white mb-6 text-center tracking-tight">Invalid Token</h1>
+          <h1 className="text-4xl font-light text-[#1d1d1f] mb-6 text-center tracking-tight">Invalid Token</h1>
           
           {error && (
-            <div className="bg-white/[0.08] border border-white/20 rounded-lg p-4 mb-4 backdrop-blur-sm">
-              <p className="text-white/80 text-sm font-light">{error}</p>
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
+              <p className="text-gray-700 text-sm font-light">{error}</p>
             </div>
           )}
 
-          <p className="text-white/60 text-sm font-light mb-6 text-center">
+          <p className="text-[#86868b] text-sm font-light mb-6 text-center">
             This password reset link is invalid or has expired. Please request a new one.
           </p>
 
@@ -215,8 +215,8 @@ function ResetPasswordForm() {
             </PremiumButton>
           </Link>
 
-          <p className="mt-6 text-center text-white/60 text-sm font-light">
-            <Link href="/auth/signin" className="text-white/80 hover:text-white transition-colors underline underline-offset-2">
+          <p className="mt-6 text-center text-[#86868b] text-sm font-light">
+            <Link href="/auth/signin" className="text-gray-700 hover:text-[#1d1d1f] transition-colors underline underline-offset-2">
               Back to Sign In
             </Link>
           </p>
@@ -226,33 +226,33 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center px-4">
+    <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center px-4">
       {/* Subtle grid background */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)',
         backgroundSize: '50px 50px'
       }} />
       
       {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
+      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-gray-50 rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <GlassCard variant="liquid" className="max-w-md w-full p-8 relative z-10">
-        <h1 className="text-4xl font-light text-white mb-6 text-center tracking-tight">Reset Password</h1>
+        <h1 className="text-4xl font-light text-[#1d1d1f] mb-6 text-center tracking-tight">Reset Password</h1>
         
-        <p className="text-white/60 text-sm font-light mb-6 text-center">
+        <p className="text-[#86868b] text-sm font-light mb-6 text-center">
           Enter your new password below.
         </p>
 
         {error && (
-          <div className="bg-white/[0.08] border border-white/20 rounded-lg p-4 mb-4 backdrop-blur-sm">
-            <p className="text-white/80 text-sm font-light">{error}</p>
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
+            <p className="text-gray-700 text-sm font-light">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-light text-white/70 mb-2">
+            <label className="block text-sm font-light text-gray-600 mb-2">
               New Password
             </label>
             <input
@@ -261,13 +261,13 @@ function ResetPasswordForm() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
               placeholder="••••••••"
             />
-            <p className="mt-1 text-xs text-white/40 font-light">Must be at least 8 characters</p>
+            <p className="mt-1 text-xs text-[#86868b] font-light">Must be at least 8 characters</p>
           </div>
           <div>
-            <label className="block text-sm font-light text-white/70 mb-2">
+            <label className="block text-sm font-light text-gray-600 mb-2">
               Confirm Password
             </label>
             <input
@@ -276,7 +276,7 @@ function ResetPasswordForm() {
               minLength={8}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white/[0.05] border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm font-light"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-[#1d1d1f] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all font-light"
               placeholder="••••••••"
             />
           </div>
@@ -285,8 +285,8 @@ function ResetPasswordForm() {
           </PremiumButton>
         </form>
 
-        <p className="mt-6 text-center text-white/60 text-sm font-light">
-          <Link href="/auth/signin" className="text-white/80 hover:text-white transition-colors underline underline-offset-2">
+        <p className="mt-6 text-center text-[#86868b] text-sm font-light">
+          <Link href="/auth/signin" className="text-gray-700 hover:text-[#1d1d1f] transition-colors underline underline-offset-2">
             Back to Sign In
           </Link>
         </p>
@@ -298,12 +298,11 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen relative overflow-hidden bg-black flex items-center justify-center">
-        <div className="text-white/60 font-light">Loading...</div>
+      <div className="min-h-screen relative overflow-hidden bg-white flex items-center justify-center">
+        <div className="text-[#86868b] font-light">Loading...</div>
       </div>
     }>
       <ResetPasswordForm />
     </Suspense>
   )
 }
-
