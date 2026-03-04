@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import {
   ensureInfluencerProspectsSchema,
   isMissingInfluencerProspectsTableError,
+  ProspectsSchemaNotReadyError,
 } from '@/lib/influencer-prospects-schema'
 
 const ALLOWED_STATUSES = new Set<InfluencerProspectStatus>([
@@ -117,6 +118,12 @@ export async function PATCH(
 
     return NextResponse.json({ prospect })
   } catch (error: any) {
+    if (error instanceof ProspectsSchemaNotReadyError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 503 }
+      )
+    }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
@@ -154,6 +161,12 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    if (error instanceof ProspectsSchemaNotReadyError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 503 }
+      )
+    }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }

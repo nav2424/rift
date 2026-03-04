@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import {
   ensureInfluencerProspectsSchema,
   isMissingInfluencerProspectsTableError,
+  ProspectsSchemaNotReadyError,
 } from '@/lib/influencer-prospects-schema'
 
 const ALLOWED_STATUSES = new Set<InfluencerProspectStatus>([
@@ -108,6 +109,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ prospects })
   } catch (error: any) {
+    if (error instanceof ProspectsSchemaNotReadyError) {
+      // Keep page load functional even when schema migration has not been applied yet.
+      return NextResponse.json({
+        prospects: [],
+        schemaNotReady: true,
+        message: error.message,
+      })
+    }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
@@ -165,6 +174,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ prospect }, { status: 201 })
   } catch (error: any) {
+    if (error instanceof ProspectsSchemaNotReadyError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 503 }
+      )
+    }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
