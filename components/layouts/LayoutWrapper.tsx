@@ -25,6 +25,8 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     '/auth/reset-password',
   ].includes(pathname)
 
+  const isOnboardingRoute = pathname?.startsWith('/onboarding')
+
   const isAuthenticated = status === 'authenticated'
 
   // Render loading state if session is still loading
@@ -44,7 +46,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     <>
       <BackgroundLayer />
       {isAuthenticated && !isMarketingRoute ? (
-        <AppLayout>{children}</AppLayout>
+        isOnboardingRoute ? children : <AppLayout>{children}</AppLayout>
       ) : (
         <MarketingLayout>{children}</MarketingLayout>
       )}
