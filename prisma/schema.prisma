@@ -145,6 +145,7 @@ model RiftTransaction {
   Milestone                 Milestone[]
   DealTimelineEvent         DealTimelineEvent[]
   LedgerTransaction         LedgerTransaction[]
+  DealAnalytics                          DealAnalytics[]
 
   @@index([status, createdAt])
   @@index([buyerId, status])
@@ -438,6 +439,9 @@ model User {
   MilestoneDelivery                      MilestoneDelivery[]
   MilestoneRevision                      MilestoneRevision[]
   ReputationRollup                       ReputationRollup[]
+  platformRole                           PlatformRole?
+  CreatorProfile                         CreatorProfile?
+  BrandProfile                           BrandProfile?
 
   @@index([riftUserId])
 }
@@ -833,6 +837,147 @@ model vault_events {
   @@index([eventType])
   @@index([logHash])
   @@index([riftId, timestampUtc])
+}
+
+// ─── Platform Role + Profiles ───
+
+enum PlatformRole {
+  CREATOR
+  BRAND
+}
+
+enum ContentNiche {
+  LIFESTYLE
+  FASHION
+  BEAUTY
+  FITNESS
+  FOOD
+  TRAVEL
+  TECH
+  GAMING
+  FINANCE
+  EDUCATION
+  ENTERTAINMENT
+  MUSIC
+  SPORTS
+  HEALTH
+  PARENTING
+  PETS
+  HOME
+  AUTO
+  OTHER
+}
+
+model CreatorProfile {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  displayName     String
+  bio             String?
+  niche           ContentNiche  @default(OTHER)
+  secondaryNiches ContentNiche[]
+  // Social stats (self-reported or synced)
+  platform        String        @default("instagram") // primary platform
+  handle          String?
+  followers       Int           @default(0)
+  avgViews        Int           @default(0)
+  avgLikes        Int           @default(0)
+  engagementRate  Float         @default(0) // percentage
+  // Rate card
+  postRate        Float?        // per post
+  storyRate       Float?        // per story
+  videoRate       Float?        // per video/reel
+  packageRate     Float?        // bundle rate
+  currency        String        @default("CAD")
+  // Portfolio
+  portfolioUrls   String[]
+  // Metadata
+  verified        Boolean       @default(false)
+  featured        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  DealAnalytics   DealAnalytics[]
+
+  @@index([niche])
+  @@index([followers])
+  @@index([engagementRate])
+}
+
+model BrandProfile {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  companyName     String
+  industry        String?
+  website         String?
+  logo            String?
+  bio             String?
+  // Budget
+  monthlyBudget   Float?
+  currency        String        @default("CAD")
+  // Metadata
+  verified        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  DealAnalytics   DealAnalytics[]
+  SavedCreators   SavedCreator[]
+
+  @@index([industry])
+}
+
+model SavedCreator {
+  id              String        @id @default(uuid())
+  brandProfileId  String
+  creatorUserId   String
+  notes           String?
+  tags            String[]
+  savedAt         DateTime      @default(now())
+
+  brandProfile    BrandProfile  @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([brandProfileId, creatorUserId])
+  @@index([brandProfileId])
+}
+
+model DealAnalytics {
+  id                String          @id @default(uuid())
+  riftId            String
+  // Parties
+  creatorProfileId  String?
+  brandProfileId    String?
+  // Deal metrics
+  dealValue         Float
+  currency          String          @default("CAD")
+  // Creator metrics at time of deal
+  creatorFollowers  Int             @default(0)
+  creatorEngRate    Float           @default(0)
+  // Performance (filled after delivery)
+  actualViews       Int?
+  actualLikes       Int?
+  actualComments    Int?
+  actualShares      Int?
+  impressions       Int?
+  reach             Int?
+  clicks            Int?
+  // Calculated
+  cpm               Float?          // cost per mille (per 1000 impressions)
+  cpv               Float?          // cost per view
+  cpe               Float?          // cost per engagement
+  roi               Float?          // return on investment percentage
+  // Status
+  completedAt       DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  rift              RiftTransaction @relation(fields: [riftId], references: [id], onDelete: Cascade)
+  creatorProfile    CreatorProfile? @relation(fields: [creatorProfileId], references: [id])
+  brandProfile      BrandProfile?   @relation(fields: [brandProfileId], references: [id])
+
+  @@index([creatorProfileId])
+  @@index([brandProfileId])
+  @@index([riftId])
 }
 
 enum AdminAuditAction {

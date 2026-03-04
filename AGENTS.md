@@ -12,8 +12,8 @@ Rift is a Next.js 16 escrow/secure transaction platform. See `README.md` for ful
 | Next.js dev server | `npm run dev` | Runs on port 3000 with `next dev -H 0.0.0.0`. |
 
 ### Key commands
-- **Lint:** `npm run lint` (pre-existing lint errors in codebase; ~1300 errors, mostly `@typescript-eslint/no-explicit-any`)
-- **Unit tests:** `npx vitest run tests/unit` (1 pre-existing failure in `ledger-constraints.test.ts`)
+- **Lint:** `npm run lint` (pre-existing lint errors in codebase; ~1700+ errors, mostly `@typescript-eslint/no-explicit-any`)
+- **Unit tests:** `npx vitest run tests/unit` (14 files, 122 tests)
 - **All tests:** `npm test` (integration/e2e tests require a running database)
 - **Build:** `npm run build`
 - **Prisma generate:** `npx prisma generate`
