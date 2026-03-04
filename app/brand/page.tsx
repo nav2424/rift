@@ -119,6 +119,12 @@ export default function BrandHubPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link
+            href="/brand/prospects"
+            className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-[#1d1d1f] hover:bg-gray-50 transition-all"
+          >
+            Prospect Pipeline
+          </Link>
+          <Link
             href="/brand/discover"
             className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-[#1d1d1f] hover:bg-gray-50 transition-all"
           >
