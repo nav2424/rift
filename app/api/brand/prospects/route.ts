@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { InfluencerProspectStatus } from '@prisma/client'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
+import {
+  ensureInfluencerProspectsSchema,
+  isMissingInfluencerProspectsTableError,
+} from '@/lib/influencer-prospects-schema'
 
 const ALLOWED_STATUSES = new Set<InfluencerProspectStatus>([
   'LEAD',
@@ -67,6 +71,19 @@ async function ensureBrandProfile(userId: string) {
   return brandProfile.id
 }
 
+async function withProspectsSchemaRetry<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation()
+  } catch (error) {
+    if (!isMissingInfluencerProspectsTableError(error)) {
+      throw error
+    }
+
+    await ensureInfluencerProspectsSchema()
+    return operation()
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await getAuthenticatedUser(request)
@@ -82,10 +99,12 @@ export async function GET(request: NextRequest) {
       ? { brandProfileId, status: requestedStatus as InfluencerProspectStatus }
       : { brandProfileId }
 
-    const prospects = await prisma.influencerProspect.findMany({
-      where: whereClause,
-      orderBy: [{ updatedAt: 'desc' }],
-    })
+    const prospects = await withProspectsSchemaRetry(() =>
+      prisma.influencerProspect.findMany({
+        where: whereClause,
+        orderBy: [{ updatedAt: 'desc' }],
+      })
+    )
 
     return NextResponse.json({ prospects })
   } catch (error: any) {
@@ -124,23 +143,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid prospect status.' }, { status: 400 })
     }
 
-    const prospect = await prisma.influencerProspect.create({
-      data: {
-        brandProfileId,
-        name: name.trim(),
-        handle: typeof handle === 'string' ? handle.trim() || null : null,
-        platform: typeof platform === 'string' ? platform.trim() || null : null,
-        contactEmail: typeof contactEmail === 'string' ? contactEmail.trim() || null : null,
-        contactPhone: typeof contactPhone === 'string' ? contactPhone.trim() || null : null,
-        outreachDate: parseOptionalDate(outreachDate),
-        quotedRate: parseOptionalNumber(quotedRate),
-        quotedCurrency: typeof quotedCurrency === 'string' && quotedCurrency.trim() ? quotedCurrency.trim().toUpperCase() : 'CAD',
-        expectedDeliverables: typeof expectedDeliverables === 'string' ? expectedDeliverables.trim() || null : null,
-        status: (status as InfluencerProspectStatus) || 'LEAD',
-        nextFollowUpDate: parseOptionalDate(nextFollowUpDate),
-        notes: typeof notes === 'string' ? notes.trim() || null : null,
-      },
-    })
+    const prospect = await withProspectsSchemaRetry(() =>
+      prisma.influencerProspect.create({
+        data: {
+          brandProfileId,
+          name: name.trim(),
+          handle: typeof handle === 'string' ? handle.trim() || null : null,
+          platform: typeof platform === 'string' ? platform.trim() || null : null,
+          contactEmail: typeof contactEmail === 'string' ? contactEmail.trim() || null : null,
+          contactPhone: typeof contactPhone === 'string' ? contactPhone.trim() || null : null,
+          outreachDate: parseOptionalDate(outreachDate),
+          quotedRate: parseOptionalNumber(quotedRate),
+          quotedCurrency: typeof quotedCurrency === 'string' && quotedCurrency.trim() ? quotedCurrency.trim().toUpperCase() : 'CAD',
+          expectedDeliverables: typeof expectedDeliverables === 'string' ? expectedDeliverables.trim() || null : null,
+          status: (status as InfluencerProspectStatus) || 'LEAD',
+          nextFollowUpDate: parseOptionalDate(nextFollowUpDate),
+          notes: typeof notes === 'string' ? notes.trim() || null : null,
+        },
+      })
+    )
 
     return NextResponse.json({ prospect }, { status: 201 })
   } catch (error: any) {
