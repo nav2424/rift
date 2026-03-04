@@ -38,6 +38,35 @@ async function getBrandProfileId(userId: string) {
   return brandProfile?.id ?? null
 }
 
+async function ensureBrandProfile(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true },
+  })
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  const brandProfile = await prisma.brandProfile.upsert({
+    where: { userId },
+    update: {},
+    create: {
+      userId,
+      companyName: user.name?.trim() || 'My Brand',
+      currency: 'CAD',
+    },
+    select: { id: true },
+  })
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { platformRole: 'BRAND' } as any,
+  })
+
+  return brandProfile.id
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await getAuthenticatedUser(request)
@@ -69,13 +98,7 @@ export async function POST(request: NextRequest) {
     const auth = await getAuthenticatedUser(request)
     if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const brandProfileId = await getBrandProfileId(auth.userId)
-    if (!brandProfileId) {
-      return NextResponse.json(
-        { error: 'Please complete your brand profile before adding prospects.' },
-        { status: 400 }
-      )
-    }
+    const brandProfileId = await ensureBrandProfile(auth.userId)
 
     const body = await request.json()
     const {
