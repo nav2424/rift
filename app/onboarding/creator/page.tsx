@@ -67,7 +67,7 @@ export default function CreatorOnboardingPage() {
     setError('')
     try {
       const res = await fetch('/api/me/profile/creator', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({

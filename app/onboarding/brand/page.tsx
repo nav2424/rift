@@ -52,7 +52,7 @@ export default function BrandOnboardingPage() {
     setError('')
     try {
       const res = await fetch('/api/me/profile/brand', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
