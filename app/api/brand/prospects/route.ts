@@ -8,6 +8,10 @@ import {
   upsertLegacyBrandProfile,
 } from '@/lib/brand-profile-compat'
 import {
+  createProspectInActivity,
+  listProspectsFromActivity,
+} from '@/lib/brand-activity-store'
+import {
   ensureInfluencerProspectsSchema,
   isMissingInfluencerProspectsTableError,
   ProspectsSchemaNotReadyError,
@@ -111,16 +115,18 @@ async function withProspectsSchemaRetry<T>(operation: () => Promise<T>): Promise
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    const auth = await getAuthenticatedUser(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAuthenticatedUser(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const requestedStatus = request.nextUrl.searchParams.get('status')
+
+  try {
     const brandProfileId = await getBrandProfileId(auth.userId)
     if (!brandProfileId) {
-      return NextResponse.json({ prospects: [] })
+      const fallbackProspects = await listProspectsFromActivity(auth.userId, requestedStatus)
+      return NextResponse.json({ prospects: fallbackProspects, storage: 'activity-fallback' })
     }
 
-    const requestedStatus = request.nextUrl.searchParams.get('status')
     const whereClause = requestedStatus && ALLOWED_STATUSES.has(requestedStatus as InfluencerProspectStatus)
       ? { brandProfileId, status: requestedStatus as InfluencerProspectStatus }
       : { brandProfileId }
@@ -135,11 +141,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ prospects })
   } catch (error: any) {
     if (error instanceof ProspectsSchemaNotReadyError) {
-      // Keep page load functional even when schema migration has not been applied yet.
+      const fallbackProspects = await listProspectsFromActivity(auth.userId, requestedStatus)
       return NextResponse.json({
-        prospects: [],
+        prospects: fallbackProspects,
         schemaNotReady: true,
         message: error.message,
+        storage: 'activity-fallback',
       })
     }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
@@ -147,35 +154,35 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await getAuthenticatedUser(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const body = await request.json()
+
+  const {
+    name,
+    handle,
+    platform,
+    contactEmail,
+    contactPhone,
+    outreachDate,
+    quotedRate,
+    quotedCurrency,
+    expectedDeliverables,
+    status,
+    nextFollowUpDate,
+    notes,
+  } = body
+
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return NextResponse.json({ error: 'Prospect name is required.' }, { status: 400 })
+  }
+
+  if (status && !ALLOWED_STATUSES.has(status)) {
+    return NextResponse.json({ error: 'Invalid prospect status.' }, { status: 400 })
+  }
+
   try {
-    const auth = await getAuthenticatedUser(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
     const brandProfileId = await ensureBrandProfile(auth.userId)
-
-    const body = await request.json()
-    const {
-      name,
-      handle,
-      platform,
-      contactEmail,
-      contactPhone,
-      outreachDate,
-      quotedRate,
-      quotedCurrency,
-      expectedDeliverables,
-      status,
-      nextFollowUpDate,
-      notes,
-    } = body
-
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json({ error: 'Prospect name is required.' }, { status: 400 })
-    }
-
-    if (status && !ALLOWED_STATUSES.has(status)) {
-      return NextResponse.json({ error: 'Invalid prospect status.' }, { status: 400 })
-    }
 
     const prospect = await withProspectsSchemaRetry(() =>
       prisma.influencerProspect.create({
@@ -200,9 +207,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ prospect }, { status: 201 })
   } catch (error: any) {
     if (error instanceof ProspectsSchemaNotReadyError) {
+      const prospect = await createProspectInActivity(auth.userId, body)
       return NextResponse.json(
-        { error: error.message },
-        { status: 503 }
+        {
+          prospect,
+          schemaNotReady: true,
+          message: error.message,
+          storage: 'activity-fallback',
+        },
+        { status: 201 }
       )
     }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })

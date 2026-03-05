@@ -95,8 +95,7 @@ ON "InfluencerProspect"("brandProfileId", "updatedAt");
 export async function ensureInfluencerProspectsSchema() {
   if (schemaReady) return
 
-  const runtimeSchemaChangesAllowed =
-    process.env.NODE_ENV !== 'production' || process.env.ALLOW_RUNTIME_DB_SCHEMA_CHANGES === 'true'
+  const runtimeSchemaChangesAllowed = process.env.ALLOW_RUNTIME_DB_SCHEMA_CHANGES === 'true'
 
   if (!runtimeSchemaChangesAllowed) {
     throw new ProspectsSchemaNotReadyError(

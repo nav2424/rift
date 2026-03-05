@@ -7,6 +7,10 @@ import {
   isMissingInfluencerProspectsTableError,
   ProspectsSchemaNotReadyError,
 } from '@/lib/influencer-prospects-schema'
+import {
+  deleteProspectInActivity,
+  updateProspectInActivity,
+} from '@/lib/brand-activity-store'
 
 const ALLOWED_STATUSES = new Set<InfluencerProspectStatus>([
   'LEAD',
@@ -62,17 +66,22 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ prospectId: string }> }
 ) {
-  try {
-    const auth = await getAuthenticatedUser(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAuthenticatedUser(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { prospectId } = await params
+  const { prospectId } = await params
+  const body = await request.json()
+
+  try {
     const brandProfileId = await getBrandProfileId(auth.userId)
     if (!brandProfileId) {
-      return NextResponse.json(
-        { error: 'Please complete your brand profile before editing prospects.' },
-        { status: 400 }
-      )
+      const fallback = await updateProspectInActivity(auth.userId, prospectId, body)
+      if (!fallback) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({ prospect: fallback, storage: 'activity-fallback' })
+    }
+
+    if (body.status && !ALLOWED_STATUSES.has(body.status)) {
+      return NextResponse.json({ error: 'Invalid prospect status.' }, { status: 400 })
     }
 
     const existing = await withProspectsSchemaRetry(() =>
@@ -83,13 +92,9 @@ export async function PATCH(
     )
 
     if (!existing) {
-      return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
-    }
-
-    const body = await request.json()
-
-    if (body.status && !ALLOWED_STATUSES.has(body.status)) {
-      return NextResponse.json({ error: 'Invalid prospect status.' }, { status: 400 })
+      const fallback = await updateProspectInActivity(auth.userId, prospectId, body)
+      if (!fallback) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({ prospect: fallback, storage: 'activity-fallback' })
     }
 
     const prospect = await withProspectsSchemaRetry(() =>
@@ -119,10 +124,14 @@ export async function PATCH(
     return NextResponse.json({ prospect })
   } catch (error: any) {
     if (error instanceof ProspectsSchemaNotReadyError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 503 }
-      )
+      const fallback = await updateProspectInActivity(auth.userId, prospectId, body)
+      if (!fallback) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({
+        prospect: fallback,
+        schemaNotReady: true,
+        message: error.message,
+        storage: 'activity-fallback',
+      })
     }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
@@ -132,14 +141,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ prospectId: string }> }
 ) {
-  try {
-    const auth = await getAuthenticatedUser(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAuthenticatedUser(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { prospectId } = await params
+  const { prospectId } = await params
+
+  try {
     const brandProfileId = await getBrandProfileId(auth.userId)
     if (!brandProfileId) {
-      return NextResponse.json({ error: 'Brand profile not found.' }, { status: 404 })
+      const deleted = await deleteProspectInActivity(auth.userId, prospectId)
+      if (!deleted) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({ success: true, storage: 'activity-fallback' })
     }
 
     const existing = await withProspectsSchemaRetry(() =>
@@ -150,7 +162,9 @@ export async function DELETE(
     )
 
     if (!existing) {
-      return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      const deleted = await deleteProspectInActivity(auth.userId, prospectId)
+      if (!deleted) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({ success: true, storage: 'activity-fallback' })
     }
 
     await withProspectsSchemaRetry(() =>
@@ -162,10 +176,14 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error: any) {
     if (error instanceof ProspectsSchemaNotReadyError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 503 }
-      )
+      const deleted = await deleteProspectInActivity(auth.userId, prospectId)
+      if (!deleted) return NextResponse.json({ error: 'Prospect not found.' }, { status: 404 })
+      return NextResponse.json({
+        success: true,
+        schemaNotReady: true,
+        message: error.message,
+        storage: 'activity-fallback',
+      })
     }
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
