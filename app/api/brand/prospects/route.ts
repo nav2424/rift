@@ -3,6 +3,11 @@ import { InfluencerProspectStatus } from '@prisma/client'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import {
+  getLegacyBrandProfileIdByUserId,
+  isMissingBrandCurrencyColumnError,
+  upsertLegacyBrandProfile,
+} from '@/lib/brand-profile-compat'
+import {
   ensureInfluencerProspectsSchema,
   isMissingInfluencerProspectsTableError,
   ProspectsSchemaNotReadyError,
@@ -35,12 +40,19 @@ function parseOptionalNumber(value: unknown): number | null {
 }
 
 async function getBrandProfileId(userId: string) {
-  const brandProfile = await prisma.brandProfile.findUnique({
-    where: { userId },
-    select: { id: true },
-  })
+  try {
+    const brandProfile = await prisma.brandProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    })
 
-  return brandProfile?.id ?? null
+    return brandProfile?.id ?? null
+  } catch (error) {
+    if (!isMissingBrandCurrencyColumnError(error)) {
+      throw error
+    }
+    return getLegacyBrandProfileIdByUserId(userId)
+  }
 }
 
 async function ensureBrandProfile(userId: string) {
@@ -53,23 +65,36 @@ async function ensureBrandProfile(userId: string) {
     throw new Error('User not found')
   }
 
-  const brandProfile = await prisma.brandProfile.upsert({
-    where: { userId },
-    update: {},
-    create: {
+  let brandProfileId: string
+  try {
+    const brandProfile = await prisma.brandProfile.upsert({
+      where: { userId },
+      update: {},
+      create: {
+        userId,
+        companyName: user.name?.trim() || 'My Brand',
+      },
+      select: { id: true },
+    })
+    brandProfileId = brandProfile.id
+  } catch (error) {
+    if (!isMissingBrandCurrencyColumnError(error)) {
+      throw error
+    }
+
+    const legacyProfile = await upsertLegacyBrandProfile({
       userId,
       companyName: user.name?.trim() || 'My Brand',
-      currency: 'CAD',
-    },
-    select: { id: true },
-  })
+    })
+    brandProfileId = legacyProfile.id
+  }
 
   await prisma.user.update({
     where: { id: userId },
     data: { platformRole: 'BRAND' } as any,
   })
 
-  return brandProfile.id
+  return brandProfileId
 }
 
 async function withProspectsSchemaRetry<T>(operation: () => Promise<T>): Promise<T> {
