@@ -21,40 +21,90 @@ export function isMissingBrandCurrencyColumnError(error: unknown): boolean {
   return (
     maybePrismaError?.code === 'P2022' ||
     (message.includes('BrandProfile') &&
-      message.includes('currency') &&
+      message.includes('column') &&
       message.includes('does not exist'))
   )
 }
 
-export async function getLegacyBrandProfileIdByUserId(userId: string): Promise<string | null> {
-  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT id
-    FROM "BrandProfile"
-    WHERE "userId" = ${userId}
-    LIMIT 1
+const BASE_SELECT_COLUMNS = [
+  'id',
+  'userId',
+  'companyName',
+  'industry',
+  'website',
+  'logo',
+  'bio',
+  'monthlyBudget',
+  'verified',
+  'createdAt',
+  'updatedAt',
+]
+
+function qid(identifier: string) {
+  return `"${identifier.replace(/"/g, '""')}"`
+}
+
+function buildSelectClause(columns: Set<string>) {
+  return BASE_SELECT_COLUMNS.map((column) =>
+    columns.has(column) ? qid(column) : `NULL AS ${qid(column)}`
+  ).join(', ')
+}
+
+function mapLegacyProfileRow(row: any): LegacyBrandProfile {
+  return {
+    id: row.id,
+    userId: row.userId,
+    companyName: row.companyName || 'Brand',
+    industry: row.industry ?? null,
+    website: row.website ?? null,
+    logo: row.logo ?? null,
+    bio: row.bio ?? null,
+    monthlyBudget: row.monthlyBudget ?? null,
+    verified: Boolean(row.verified),
+    createdAt: row.createdAt ? new Date(row.createdAt) : new Date(),
+    updatedAt: row.updatedAt ? new Date(row.updatedAt) : new Date(),
+  }
+}
+
+async function getBrandProfileColumns(): Promise<Set<string>> {
+  const rows = await prisma.$queryRaw<Array<{ column_name: string }>>`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND lower(table_name) = lower('BrandProfile')
   `
+  return new Set(rows.map((row) => row.column_name))
+}
+
+async function getLegacyBrandProfileIdByUserIdWithColumns(
+  userId: string,
+  columns: Set<string>
+): Promise<string | null> {
+  if (!columns.has('id') || !columns.has('userId')) return null
+
+  const rows = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
+    `SELECT ${qid('id')} FROM ${qid('BrandProfile')} WHERE ${qid('userId')} = $1 LIMIT 1`,
+    userId
+  )
   return rows[0]?.id ?? null
 }
 
+export async function getLegacyBrandProfileIdByUserId(userId: string): Promise<string | null> {
+  const columns = await getBrandProfileColumns()
+  return getLegacyBrandProfileIdByUserIdWithColumns(userId, columns)
+}
+
 export async function getLegacyBrandProfileByUserId(userId: string): Promise<LegacyBrandProfile | null> {
-  const rows = await prisma.$queryRaw<Array<LegacyBrandProfile>>`
-    SELECT
-      id,
-      "userId",
-      "companyName",
-      industry,
-      website,
-      logo,
-      bio,
-      "monthlyBudget",
-      verified,
-      "createdAt",
-      "updatedAt"
-    FROM "BrandProfile"
-    WHERE "userId" = ${userId}
-    LIMIT 1
-  `
-  return rows[0] ?? null
+  const columns = await getBrandProfileColumns()
+  if (!columns.has('userId')) return null
+
+  const selectClause = buildSelectClause(columns)
+  const rows = await prisma.$queryRawUnsafe<Array<any>>(
+    `SELECT ${selectClause} FROM ${qid('BrandProfile')} WHERE ${qid('userId')} = $1 LIMIT 1`,
+    userId
+  )
+  if (!rows[0]) return null
+  return mapLegacyProfileRow(rows[0])
 }
 
 interface UpsertLegacyBrandProfileInput {
@@ -70,76 +120,120 @@ interface UpsertLegacyBrandProfileInput {
 export async function upsertLegacyBrandProfile(
   input: UpsertLegacyBrandProfileInput
 ): Promise<LegacyBrandProfile> {
-  const existingId = await getLegacyBrandProfileIdByUserId(input.userId)
-
-  if (existingId) {
-    const updatedRows = await prisma.$queryRaw<Array<LegacyBrandProfile>>`
-      UPDATE "BrandProfile"
-      SET
-        "companyName" = ${input.companyName},
-        industry = ${input.industry ?? null},
-        website = ${input.website ?? null},
-        logo = ${input.logo ?? null},
-        bio = ${input.bio ?? null},
-        "monthlyBudget" = ${input.monthlyBudget ?? null},
-        "updatedAt" = NOW()
-      WHERE "userId" = ${input.userId}
-      RETURNING
-        id,
-        "userId",
-        "companyName",
-        industry,
-        website,
-        logo,
-        bio,
-        "monthlyBudget",
-        verified,
-        "createdAt",
-        "updatedAt"
-    `
-    return updatedRows[0]
+  const columns = await getBrandProfileColumns()
+  if (!columns.has('userId')) {
+    throw new Error('BrandProfile schema missing required userId column.')
   }
 
-  const insertedId = randomUUID()
-  const insertedRows = await prisma.$queryRaw<Array<LegacyBrandProfile>>`
-    INSERT INTO "BrandProfile" (
-      id,
-      "userId",
-      "companyName",
-      industry,
-      website,
-      logo,
-      bio,
-      "monthlyBudget",
-      verified,
-      "createdAt",
-      "updatedAt"
+  const existingId = await getLegacyBrandProfileIdByUserIdWithColumns(input.userId, columns)
+  const selectClause = buildSelectClause(columns)
+
+  if (existingId) {
+    const assignments: string[] = []
+    const values: unknown[] = []
+
+    if (columns.has('companyName')) {
+      values.push(input.companyName)
+      assignments.push(`${qid('companyName')} = $${values.length}`)
+    }
+    if (columns.has('industry')) {
+      values.push(input.industry ?? null)
+      assignments.push(`${qid('industry')} = $${values.length}`)
+    }
+    if (columns.has('website')) {
+      values.push(input.website ?? null)
+      assignments.push(`${qid('website')} = $${values.length}`)
+    }
+    if (columns.has('logo')) {
+      values.push(input.logo ?? null)
+      assignments.push(`${qid('logo')} = $${values.length}`)
+    }
+    if (columns.has('bio')) {
+      values.push(input.bio ?? null)
+      assignments.push(`${qid('bio')} = $${values.length}`)
+    }
+    if (columns.has('monthlyBudget')) {
+      values.push(input.monthlyBudget ?? null)
+      assignments.push(`${qid('monthlyBudget')} = $${values.length}`)
+    }
+    if (columns.has('updatedAt')) {
+      assignments.push(`${qid('updatedAt')} = NOW()`)
+    }
+
+    if (assignments.length > 0) {
+      values.push(input.userId)
+      const updatedRows = await prisma.$queryRawUnsafe<Array<any>>(
+        `UPDATE ${qid('BrandProfile')} SET ${assignments.join(', ')} WHERE ${qid('userId')} = $${values.length} RETURNING ${selectClause}`,
+        ...values
+      )
+      return mapLegacyProfileRow(updatedRows[0])
+    }
+
+    const existingRows = await prisma.$queryRawUnsafe<Array<any>>(
+      `SELECT ${selectClause} FROM ${qid('BrandProfile')} WHERE ${qid('userId')} = $1 LIMIT 1`,
+      input.userId
     )
-    VALUES (
-      ${insertedId},
-      ${input.userId},
-      ${input.companyName},
-      ${input.industry ?? null},
-      ${input.website ?? null},
-      ${input.logo ?? null},
-      ${input.bio ?? null},
-      ${input.monthlyBudget ?? null},
-      false,
-      NOW(),
-      NOW()
-    )
-    RETURNING
-      id,
-      "userId",
-      "companyName",
-      industry,
-      website,
-      logo,
-      bio,
-      "monthlyBudget",
-      verified,
-      "createdAt",
-      "updatedAt"
-  `
-  return insertedRows[0]
+    return mapLegacyProfileRow(existingRows[0])
+  }
+
+  const insertColumns: string[] = []
+  const insertValues: unknown[] = []
+
+  if (columns.has('id')) {
+    insertColumns.push('id')
+    insertValues.push(randomUUID())
+  }
+  if (columns.has('userId')) {
+    insertColumns.push('userId')
+    insertValues.push(input.userId)
+  }
+  if (columns.has('companyName')) {
+    insertColumns.push('companyName')
+    insertValues.push(input.companyName)
+  }
+  if (columns.has('industry')) {
+    insertColumns.push('industry')
+    insertValues.push(input.industry ?? null)
+  }
+  if (columns.has('website')) {
+    insertColumns.push('website')
+    insertValues.push(input.website ?? null)
+  }
+  if (columns.has('logo')) {
+    insertColumns.push('logo')
+    insertValues.push(input.logo ?? null)
+  }
+  if (columns.has('bio')) {
+    insertColumns.push('bio')
+    insertValues.push(input.bio ?? null)
+  }
+  if (columns.has('monthlyBudget')) {
+    insertColumns.push('monthlyBudget')
+    insertValues.push(input.monthlyBudget ?? null)
+  }
+  if (columns.has('verified')) {
+    insertColumns.push('verified')
+    insertValues.push(false)
+  }
+  if (columns.has('createdAt')) {
+    insertColumns.push('createdAt')
+    insertValues.push(new Date())
+  }
+  if (columns.has('updatedAt')) {
+    insertColumns.push('updatedAt')
+    insertValues.push(new Date())
+  }
+
+  if (insertColumns.length === 0) {
+    throw new Error('BrandProfile schema has no writable columns.')
+  }
+
+  const columnSql = insertColumns.map(qid).join(', ')
+  const placeholderSql = insertValues.map((_, index) => `$${index + 1}`).join(', ')
+
+  const insertedRows = await prisma.$queryRawUnsafe<Array<any>>(
+    `INSERT INTO ${qid('BrandProfile')} (${columnSql}) VALUES (${placeholderSql}) RETURNING ${selectClause}`,
+    ...insertValues
+  )
+  return mapLegacyProfileRow(insertedRows[0])
 }
