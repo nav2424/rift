@@ -13,7 +13,7 @@ import {
 } from '@/lib/brand-activity-store'
 import {
   ensureInfluencerProspectsSchema,
-  isMissingInfluencerProspectsTableError,
+  isProspectsSchemaCompatibilityError,
   ProspectsSchemaNotReadyError,
 } from '@/lib/influencer-prospects-schema'
 
@@ -104,13 +104,41 @@ async function ensureBrandProfile(userId: string) {
 async function withProspectsSchemaRetry<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation()
-  } catch (error) {
-    if (!isMissingInfluencerProspectsTableError(error)) {
-      throw error
+  } catch (initialError) {
+    if (!isProspectsSchemaCompatibilityError(initialError)) {
+      throw initialError
     }
 
     await ensureInfluencerProspectsSchema()
-    return operation()
+
+    try {
+      return await operation()
+    } catch (retryError) {
+      if (!isProspectsSchemaCompatibilityError(retryError)) {
+        throw retryError
+      }
+
+      throw new ProspectsSchemaNotReadyError(
+        'Influencer prospects storage schema is incompatible in this environment. Run Prisma schema migration/db push during deployment.'
+      )
+    }
+  }
+}
+
+function toProspectPayload(body: any) {
+  return {
+    name: body.name,
+    handle: body.handle,
+    platform: body.platform,
+    contactEmail: body.contactEmail,
+    contactPhone: body.contactPhone,
+    outreachDate: body.outreachDate,
+    quotedRate: body.quotedRate,
+    quotedCurrency: body.quotedCurrency,
+    expectedDeliverables: body.expectedDeliverables,
+    status: body.status,
+    nextFollowUpDate: body.nextFollowUpDate,
+    notes: body.notes,
   }
 }
 
@@ -157,6 +185,7 @@ export async function POST(request: NextRequest) {
   const auth = await getAuthenticatedUser(request)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await request.json()
+  const payload = toProspectPayload(body)
 
   const {
     name,
@@ -171,7 +200,7 @@ export async function POST(request: NextRequest) {
     status,
     nextFollowUpDate,
     notes,
-  } = body
+  } = payload
 
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
     return NextResponse.json({ error: 'Prospect name is required.' }, { status: 400 })
@@ -207,7 +236,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ prospect }, { status: 201 })
   } catch (error: any) {
     if (error instanceof ProspectsSchemaNotReadyError) {
-      const prospect = await createProspectInActivity(auth.userId, body)
+      const prospect = await createProspectInActivity(auth.userId, payload)
       return NextResponse.json(
         {
           prospect,

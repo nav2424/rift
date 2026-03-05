@@ -21,6 +21,23 @@ export function isMissingInfluencerProspectsTableError(error: unknown): boolean 
   return message.includes('InfluencerProspect') && message.includes('does not exist')
 }
 
+export function isProspectsSchemaCompatibilityError(error: unknown): boolean {
+  const maybePrismaError = error as { code?: string; message?: string; meta?: { code?: string; message?: string } }
+  const message =
+    (typeof error === 'string' ? error : maybePrismaError?.message) ||
+    String(error ?? '')
+  const metaMessage = maybePrismaError?.meta?.message || ''
+
+  if (maybePrismaError?.code === 'P2021' || maybePrismaError?.code === 'P2022') return true
+  if (maybePrismaError?.meta?.code === '42703') return true
+
+  const combined = `${message}\n${metaMessage}`
+  return (
+    combined.includes('InfluencerProspect') &&
+    (combined.includes('does not exist') || combined.includes('column'))
+  )
+}
+
 function isSchemaPermissionError(error: unknown): boolean {
   const maybePrismaError = error as { code?: string; message?: string; meta?: { code?: string; message?: string } }
   const message =

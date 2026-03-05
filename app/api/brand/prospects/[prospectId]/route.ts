@@ -3,8 +3,12 @@ import { InfluencerProspectStatus } from '@prisma/client'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import {
+  getLegacyBrandProfileIdByUserId,
+  isMissingBrandCurrencyColumnError,
+} from '@/lib/brand-profile-compat'
+import {
   ensureInfluencerProspectsSchema,
-  isMissingInfluencerProspectsTableError,
+  isProspectsSchemaCompatibilityError,
   ProspectsSchemaNotReadyError,
 } from '@/lib/influencer-prospects-schema'
 import {
@@ -41,24 +45,38 @@ function parseOptionalNumber(value: unknown): number | null | undefined {
 }
 
 async function getBrandProfileId(userId: string) {
-  const brandProfile = await prisma.brandProfile.findUnique({
-    where: { userId },
-    select: { id: true },
-  })
-
-  return brandProfile?.id ?? null
+  try {
+    const brandProfile = await prisma.brandProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    })
+    return brandProfile?.id ?? null
+  } catch (error) {
+    if (!isMissingBrandCurrencyColumnError(error)) throw error
+    return getLegacyBrandProfileIdByUserId(userId)
+  }
 }
 
 async function withProspectsSchemaRetry<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation()
-  } catch (error) {
-    if (!isMissingInfluencerProspectsTableError(error)) {
-      throw error
+  } catch (initialError) {
+    if (!isProspectsSchemaCompatibilityError(initialError)) {
+      throw initialError
     }
 
     await ensureInfluencerProspectsSchema()
-    return operation()
+
+    try {
+      return await operation()
+    } catch (retryError) {
+      if (!isProspectsSchemaCompatibilityError(retryError)) {
+        throw retryError
+      }
+      throw new ProspectsSchemaNotReadyError(
+        'Influencer prospects storage schema is incompatible in this environment. Run Prisma schema migration/db push during deployment.'
+      )
+    }
   }
 }
 
