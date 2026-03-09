@@ -430,6 +430,7 @@ model User {
   UserRiskProfile                        UserRiskProfile?
   BrandProfile                           BrandProfile?
   InfluencerProspect                     InfluencerProspect[]
+  BrandProspect                          BrandProspect[]
   VerificationCode                       VerificationCode[]
   WalletAccount                          WalletAccount?
   admin_reviews                          admin_reviews[]
@@ -509,17 +510,35 @@ model UserRiskProfile {
 }
 
 model InfluencerProspect {
-  id        String   @id
+  id        String   @id @default(uuid())
   brandId   String
   email     String?
   handle    String?
-  status    String   @default("PENDING")
+  name      String?
+  status    String   @default("PENDING") // PENDING = prospect, WORKING = confirmed influencer
   metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   User      User     @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId])
+  @@index([status])
+}
+
+model BrandProspect {
+  id          String   @id @default(uuid())
+  creatorId   String
+  companyName String?
+  email       String?
+  website     String?
+  name        String?
+  status      String   @default("PENDING") // PENDING = prospect, WORKING = confirmed brand
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
   @@index([status])
 }
 
