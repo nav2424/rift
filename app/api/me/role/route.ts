@@ -8,9 +8,20 @@ export async function GET(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: auth.userId },
-    select: { platformRole: true },
+    select: {
+      platformRole: true,
+      BrandProfile: { select: { id: true } },
+      CreatorProfile: { select: { id: true } },
+    },
   })
-  return NextResponse.json({ platformRole: (user as any)?.platformRole || null })
+
+  let platformRole = (user as any)?.platformRole || null
+  if (!platformRole) {
+    if ((user as any)?.BrandProfile) platformRole = 'BRAND'
+    else if ((user as any)?.CreatorProfile) platformRole = 'CREATOR'
+  }
+
+  return NextResponse.json({ platformRole })
 }
 
 export async function POST(request: NextRequest) {

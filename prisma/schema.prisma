@@ -958,6 +958,7 @@ model BrandProfile {
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   DealAnalytics   DealAnalytics[]
   SavedCreators   SavedCreator[]
+  prospects       InfluencerProspect[]
 
   @@index([industry])
 }
@@ -1013,6 +1014,38 @@ model DealAnalytics {
   @@index([creatorProfileId])
   @@index([brandProfileId])
   @@index([riftId])
+}
+
+enum InfluencerProspectStatus {
+  LEAD
+  CONTACTED
+  NEGOTIATING
+  READY_TO_DEAL
+  PASSED
+}
+
+model InfluencerProspect {
+  id                   String                   @id @default(uuid())
+  brandProfileId       String
+  name                 String
+  handle               String?
+  platform             String?
+  contactEmail         String?
+  contactPhone         String?
+  outreachDate         DateTime?
+  quotedRate           Float?
+  quotedCurrency       String                   @default("CAD")
+  expectedDeliverables String?
+  status               InfluencerProspectStatus @default(LEAD)
+  nextFollowUpDate     DateTime?
+  notes                String?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  brandProfile         BrandProfile             @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+
+  @@index([brandProfileId, status])
+  @@index([brandProfileId, updatedAt])
 }
 
 enum AdminAuditAction {
