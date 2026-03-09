@@ -428,6 +428,8 @@ model User {
   UserBlock_UserBlock_userIdToUser       UserBlock[]        @relation("UserBlock_userIdToUser")
   UserMilestone                          UserMilestone[]
   UserRiskProfile                        UserRiskProfile?
+  BrandProfile                           BrandProfile?
+  InfluencerProspect                     InfluencerProspect[]
   VerificationCode                       VerificationCode[]
   WalletAccount                          WalletAccount?
   admin_reviews                          admin_reviews[]
@@ -505,6 +507,33 @@ model UserRiskProfile {
 
   @@index([tier])
   @@index([userId])
+}
+
+model BrandProfile {
+  id          String   @id
+  userId      String   @unique
+  companyName String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model InfluencerProspect {
+  id        String   @id
+  brandId   String
+  email     String?
+  handle    String?
+  status    String   @default("PENDING")
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@index([status])
 }
 
 model SupportTicket {
