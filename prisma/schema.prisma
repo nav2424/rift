@@ -443,7 +443,6 @@ model User {
   ReputationRollup                       ReputationRollup[]
   platformRole                           PlatformRole?
   CreatorProfile                         CreatorProfile?
-  BrandProfile                           BrandProfile?
 
   @@index([riftUserId])
 }
@@ -506,18 +505,6 @@ model UserRiskProfile {
   User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tier])
-  @@index([userId])
-}
-
-model BrandProfile {
-  id          String   @id
-  userId      String   @unique
-  companyName String?
-  website     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId])
 }
 
