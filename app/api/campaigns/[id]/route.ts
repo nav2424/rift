@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { buildSanitizedBrief, completeCampaignMilestone } from '@/lib/campaigns'
+import { sendCampaignDeliveredEmail } from '@/lib/campaign-email'
 import { CampaignStatus } from '@prisma/client'
 
 export async function GET(
@@ -59,7 +60,10 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const campaign = await prisma.campaign.findUnique({ where: { id } })
+    const campaign = await prisma.campaign.findUnique({
+      where: { id },
+      include: { brand: { select: { email: true } } },
+    })
 
     if (!campaign) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 })
 
@@ -110,6 +114,16 @@ export async function PATCH(
         where: { id },
         data: { deliveredAt: new Date() },
       })
+
+      const approvedCount = updated.assignments.filter((a) => a.status === 'APPROVED').length
+      if (campaign.brand.email) {
+        sendCampaignDeliveredEmail(
+          campaign.brand.email,
+          campaign.campaignNumber,
+          campaign.productName,
+          approvedCount || campaign.videoCount
+        ).catch((err) => console.error('Delivery email failed:', err))
+      }
     }
 
     return NextResponse.json({ campaign: updated })

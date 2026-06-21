@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
+import CampaignPaymentModal from '@/components/CampaignPaymentModal'
 import { campaignStatusColor, campaignStatusLabel } from '@/lib/campaigns'
 
 interface Campaign {
@@ -41,6 +42,7 @@ export default function BrandCampaignsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [payCampaign, setPayCampaign] = useState<Campaign | null>(null)
   const [form, setForm] = useState({
     productName: '',
     talkingPoints: '',
@@ -105,20 +107,9 @@ export default function BrandCampaignsPage() {
     }
   }
 
-  const handlePay = async (campaignId: string) => {
-    const res = await fetch(`/api/campaigns/${campaignId}/payment-intent`, {
-      method: 'POST',
-      credentials: 'include',
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data.clientSecret?.startsWith('mock_')) {
-        alert('Payment simulated in dev mode. Campaign marked awaiting payment.')
-      } else {
-        alert('Payment intent created. Complete checkout via Stripe (integration pending UI).')
-      }
-      await loadCampaigns()
-    }
+  const handlePaySuccess = async () => {
+    setPayCampaign(null)
+    await loadCampaigns()
   }
 
   if (status === 'loading' || loading) {
@@ -275,7 +266,7 @@ export default function BrandCampaignsPage() {
                   {!campaign.paidAt && ['BRIEF_SUBMITTED', 'AWAITING_PAYMENT'].includes(campaign.status) && (
                     <button
                       type="button"
-                      onClick={() => handlePay(campaign.id)}
+                      onClick={() => setPayCampaign(campaign)}
                       className="mt-3 text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                     >
                       Pay campaign budget
@@ -327,6 +318,17 @@ export default function BrandCampaignsPage() {
         <Link href="/messages" className="text-blue-600 hover:underline">Message the Rift team</Link>
         {' '}— creators never see your brand details.
       </p>
+
+      {payCampaign && (
+        <CampaignPaymentModal
+          isOpen={!!payCampaign}
+          onClose={() => setPayCampaign(null)}
+          campaignId={payCampaign.id}
+          amount={payCampaign.budget}
+          currency={payCampaign.currency}
+          onSuccess={handlePaySuccess}
+        />
+      )}
     </div>
   )
 }

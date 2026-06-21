@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { completeCampaignMilestone } from '@/lib/campaigns'
+import { sendCampaignAssignmentEmail } from '@/lib/campaign-email'
 import { randomUUID } from 'crypto'
 
 export async function POST(
@@ -67,6 +68,17 @@ export async function POST(
     })
 
     await completeCampaignMilestone(campaignId, 'creators_assigned', prisma)
+
+    if (assignment.creator.email) {
+      sendCampaignAssignmentEmail(
+        assignment.creator.email,
+        campaign.campaignNumber,
+        campaign.productName,
+        campaign.deadline,
+        rate,
+        campaign.currency
+      ).catch((err) => console.error('Assignment email failed:', err))
+    }
 
     return NextResponse.json({ assignment }, { status: 201 })
   } catch (error: unknown) {

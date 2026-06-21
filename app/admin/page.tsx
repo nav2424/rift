@@ -1,7 +1,6 @@
 import { requireAdmin } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
 import AdminUserList from '@/components/AdminUserList'
-import RiftList from '@/components/RiftList'
 import GlassCard from '@/components/ui/GlassCard'
 import CollapsibleSection from '@/components/ui/CollapsibleSection'
 import Link from 'next/link'
@@ -55,40 +54,6 @@ export default async function AdminPage() {
     },
   }))
 
-  // Get all rifts (no limit - show all data)
-  const allRifts = await prisma.riftTransaction.findMany({
-    select: {
-      id: true,
-      riftNumber: true,
-      itemTitle: true,
-      amount: true,
-      currency: true,
-      status: true,
-      buyer: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-      seller: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
-
-  // Get pending proofs count
-  const pendingProofsCount = await prisma.proof.count({
-    where: {
-      status: 'PENDING',
-    },
-  })
-
   return (
     <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
@@ -140,24 +105,6 @@ export default async function AdminPage() {
               </div>
             </GlassCard>
           </Link>
-          <Link href="/admin/proofs">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Pending Proofs</p>
-                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{pendingProofsCount}</p>
-                <p className="text-sm text-gray-400 font-light">Awaiting review</p>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/admin/payouts">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Payout Tracking</p>
-                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
-                <p className="text-sm text-gray-400 font-light">Track payouts & amounts owed</p>
-              </div>
-            </GlassCard>
-          </Link>
           <Link href="/admin/support">
             <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="p-6">
@@ -182,21 +129,6 @@ export default async function AdminPage() {
 
         <CollapsibleSection title="All Users" count={allUsers.length}>
           <AdminUserList users={allUsers} />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="All Campaigns" count={allRifts.length}>
-          <div className="mb-4">
-            <Link
-              href="/admin/campaigns"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 text-[#1d1d1f] font-light text-sm"
-            >
-              Manage UGC campaigns
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <RiftList rifts={allRifts} title="Legacy transactions" showAdminActions={true} />
         </CollapsibleSection>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 import { completeCampaignMilestone } from '@/lib/campaigns'
+import { sendCampaignRevisionEmail } from '@/lib/campaign-email'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { randomBytes } from 'crypto'
@@ -31,6 +32,8 @@ export async function PATCH(
 
     const contentType = request.headers.get('content-type') || ''
     const data: Record<string, unknown> = { updatedAt: new Date() }
+    let requestRevision = false
+    let revisionNotes = ''
 
     if (contentType.includes('multipart/form-data') && isCreator) {
       const formData = await request.formData()
@@ -61,6 +64,8 @@ export async function PATCH(
         if (body.status === 'REVISION_REQUESTED') {
           data.status = 'REVISION_REQUESTED'
           data.revisionNotes = body.revisionNotes || 'Please revise your video.'
+          requestRevision = true
+          revisionNotes = String(data.revisionNotes)
         }
         if (body.status === 'APPROVED') {
           data.status = 'APPROVED'
@@ -112,6 +117,14 @@ export async function PATCH(
         data: { status: 'CONTENT_REVIEWED', updatedAt: new Date() },
       })
       await completeCampaignMilestone(assignment.campaignId, 'content_reviewed', prisma)
+    }
+
+    if (requestRevision && updated.creator.email) {
+      sendCampaignRevisionEmail(
+        updated.creator.email,
+        updated.campaign.campaignNumber,
+        revisionNotes
+      ).catch((err) => console.error('Revision email failed:', err))
     }
 
     return NextResponse.json({ assignment: updated })
