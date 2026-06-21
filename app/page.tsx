@@ -117,7 +117,7 @@ export default function Home() {
           ].map((stat, i) => (
             <div key={i} className="text-center">
               <div className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1d1d1f] mb-2">
-                <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={'prefix' in stat ? stat.prefix : ''} />
+                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
               </div>
               <div className="text-sm text-[#86868b]">{stat.label}</div>
             </div>
