@@ -1,6 +1,5 @@
 import { requireAdmin } from '@/lib/auth-helpers'
 import { prisma } from '@/lib/prisma'
-import AdminDisputeList from '@/components/AdminDisputeList'
 import AdminUserList from '@/components/AdminUserList'
 import RiftList from '@/components/RiftList'
 import GlassCard from '@/components/ui/GlassCard'
@@ -90,18 +89,6 @@ export default async function AdminPage() {
     },
   })
 
-  // Get disputes from Supabase (new dispute system)
-  // Note: Disputes are now stored in Supabase, not Prisma
-  // We'll fetch a count for the stats, but the full list is in /admin/disputes page
-  const { createServerClient } = await import('@/lib/supabase')
-  const supabase = createServerClient()
-  const { count: disputesCount } = await supabase
-    .from('disputes')
-    .select('*', { count: 'exact', head: true })
-    .in('status', ['submitted', 'needs_info', 'under_review'])
-  
-  const openDisputesCount = disputesCount || 0
-
   return (
     <div className="min-h-screen relative overflow-hidden bg-white">
       {/* Subtle grid background */}
@@ -119,7 +106,7 @@ export default async function AdminPage() {
           <h1 className="text-5xl md:text-6xl font-light text-[#1d1d1f] mb-3 tracking-tight">
             Admin Panel
           </h1>
-          <p className="text-[#86868b] font-light">Manage all users, transactions, and disputes</p>
+          <p className="text-[#86868b] font-light">Manage campaigns, creators, and content delivery</p>
         </div>
 
         {/* Summary Stats */}
@@ -144,14 +131,14 @@ export default async function AdminPage() {
               </p>
             </div>
           </GlassCard>
-          <Link href="/admin/disputes">
+          <Link href="/admin/campaigns">
             <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="p-6">
-              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Open Disputes</p>
-              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{openDisputesCount}</p>
-                <p className="text-sm text-gray-400 font-light">Click to review →</p>
-            </div>
-          </GlassCard>
+              <div className="p-6">
+                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Campaigns</p>
+                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
+                <p className="text-sm text-gray-400 font-light">Assign creators, review content, payouts</p>
+              </div>
+            </GlassCard>
           </Link>
           <Link href="/admin/proofs">
             <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
@@ -197,27 +184,19 @@ export default async function AdminPage() {
           <AdminUserList users={allUsers} />
         </CollapsibleSection>
 
-        <CollapsibleSection title="Open Disputes" count={openDisputesCount}>
-          <div className="mb-6">
-            <Link 
-              href="/admin/disputes"
+        <CollapsibleSection title="All Campaigns" count={allRifts.length}>
+          <div className="mb-4">
+            <Link
+              href="/admin/campaigns"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 text-[#1d1d1f] font-light text-sm"
             >
-              View All Disputes ({openDisputesCount})
+              Manage UGC campaigns
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
           </div>
-          <GlassCard variant="strong" className="p-8">
-            <p className="text-[#86868b] font-light text-center">
-              View all disputes in the <Link href="/admin/disputes" className="text-gray-700 hover:text-[#1d1d1f] underline">Dispute Queue</Link>
-            </p>
-          </GlassCard>
-        </CollapsibleSection>
-
-        <CollapsibleSection title="All Transactions" count={allRifts.length}>
-          <RiftList rifts={allRifts} title="All Transactions" showAdminActions={true} />
+          <RiftList rifts={allRifts} title="Legacy transactions" showAdminActions={true} />
         </CollapsibleSection>
       </div>
     </div>

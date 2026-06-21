@@ -73,16 +73,16 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            TRUSTED BY CREATORS & AGENCIES
+            TRUSTED BY BRANDS & CREATORS
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-semibold tracking-[-0.04em] text-[#1d1d1f] leading-[1.05]">
-            The payment layer for<br />
-            <span className="text-[#86868b]">creator deals.</span>
+            UGC content,<br />
+            <span className="text-[#86868b]">managed end-to-end.</span>
           </h1>
 
           <p className="mx-auto mt-6 sm:mt-8 max-w-2xl text-lg sm:text-xl text-[#86868b] leading-relaxed font-light">
-            Rift secures payments between creators and brands. Funds are locked on day one and released when work is delivered.
+            Rift is a UGC agency platform. Brands submit campaign briefs and pay upfront. We match creators, review every video, and deliver finished content — with zero direct brand↔creator contact.
           </p>
 
           <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -110,14 +110,14 @@ export default function Home() {
           className={`max-w-5xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-8 transition-all duration-1000 ${stats.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
         >
           {[
-            { value: 10000, suffix: '+', label: 'Transactions secured' },
-            { value: 2, prefix: '$', suffix: 'M+', label: 'Funds protected' },
-            { value: 99, suffix: '%', label: 'Dispute resolution' },
-            { value: 4, suffix: '.9', label: 'Creator rating' },
+            { value: 500, suffix: '+', label: 'Videos delivered' },
+            { value: 120, suffix: '+', label: 'Brand campaigns' },
+            { value: 48, suffix: 'hr', label: 'Avg. turnaround' },
+            { value: 4, suffix: '.9', label: 'Brand satisfaction' },
           ].map((stat, i) => (
             <div key={i} className="text-center">
               <div className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1d1d1f] mb-2">
-                <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} />
+                <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={'prefix' in stat ? stat.prefix : ''} />
               </div>
               <div className="text-sm text-[#86868b]">{stat.label}</div>
             </div>
@@ -131,17 +131,17 @@ export default function Home() {
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">Process</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-[#1d1d1f]">
-              Five steps to get paid.
+              How Rift works.
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-10 md:gap-4">
             {[
-              { num: '01', title: 'Create', desc: 'Set terms, deliverables, and milestones', icon: 'M12 4v16m8-8H4' },
-              { num: '02', title: 'Secure', desc: 'Brand funds the deal upfront', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-              { num: '03', title: 'Deliver', desc: 'Upload content to the vault', icon: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' },
-              { num: '04', title: 'Approve', desc: 'Brand reviews and signs off', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { num: '05', title: 'Release', desc: 'Funds transfer instantly', icon: 'M13 7l5 5m0 0l-5 5m5-5H6' },
+              { num: '01', title: 'Brief', desc: 'Brand submits product, talking points, format & deadline', icon: 'M12 4v16m8-8H4' },
+              { num: '02', title: 'Pay', desc: 'Campaign budget secured upfront via Stripe', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+              { num: '03', title: 'Create', desc: 'Creators get a sanitized brief — no brand info', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+              { num: '04', title: 'Review', desc: 'Rift approves content or requests revisions', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+              { num: '05', title: 'Deliver', desc: 'Brand receives final videos in their portal', icon: 'M13 7l5 5m0 0l-5 5m5-5H6' },
             ].map((step, i) => (
               <div key={step.num} className="group text-center md:text-left">
                 <div className="mb-4 flex justify-center md:justify-start">
@@ -167,16 +167,16 @@ export default function Home() {
             <div className="text-center mb-16">
               <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">Use Cases</p>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-[#1d1d1f]">
-                Built for the creator economy.
+                Built for UGC at scale.
               </h2>
-              <p className="mt-4 text-[#86868b] text-lg max-w-2xl mx-auto">From solo creators to enterprise agencies — one platform for every deal.</p>
+              <p className="mt-4 text-[#86868b] text-lg max-w-2xl mx-auto">One agency layer between brands and creators — you stay in control, they stay anonymous.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { title: 'Brand Deals', desc: 'Sponsored posts, ambassador programs, and influencer partnerships with milestone-based payouts.', metric: 'Up to 50% faster payments', icon: 'M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z' },
-                { title: 'UGC Content', desc: 'Video production, photo shoots, and social content with secure file delivery through the vault.', metric: 'Zero-trust file delivery', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
-                { title: 'Agency Work', desc: 'Multi-milestone projects, creative retainers, and production work with transparent fee tracking.', metric: 'Full audit trail', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+                { title: 'For Brands', desc: 'Submit briefs, pay upfront, and download approved UGC from your campaign portal. Never manage creators directly.', metric: 'Campaign dashboard', icon: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75H21m-3.75 0H21' },
+                { title: 'For Creators', desc: 'Receive sanitized briefs, upload videos, get paid a flat rate per approved video. Brand identity never revealed.', metric: 'Flat-rate payouts', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+                { title: 'For Agencies', desc: 'Assign creators internally, review uploads, request revisions, and trigger payouts — all from one admin panel.', metric: 'Full workflow control', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
               ].map((item, i) => (
                 <div key={i} className="group bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-lg hover:-translate-y-1 transition-all duration-400">
                   <div className="mb-5 inline-flex items-center justify-center rounded-xl p-3 bg-gray-50 text-[#86868b] group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all duration-400">
@@ -203,16 +203,16 @@ export default function Home() {
           <div className="text-center mb-16">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-3">Security</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-[#1d1d1f]">
-              Enterprise-grade trust layer.
+              Agency-grade workflow.
             </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {[
-              { title: 'Private Rift IDs', desc: 'No directory lookup. Counterparties identified by secure IDs only — your identity stays yours.', icon: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z' },
-              { title: 'Immutable audit trail', desc: 'Every action is logged. Transparent status updates, timestamped events, and complete deal history.', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-              { title: 'Encrypted vault', desc: 'AES-256 encrypted file storage with magic-byte scanning, hash verification, and view-only access controls.', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-              { title: 'Dispute resolution', desc: 'Structured issue submission with evidence packets, admin review path, and automated freeze controls.', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+              { title: 'Blind matching', desc: 'Creators never see brand names. Brands never contact creators. Rift is the only bridge.', icon: 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' },
+              { title: 'Milestone tracking', desc: 'Every campaign moves through clear stages — brief, assignment, upload, review, delivery.', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+              { title: 'Secure payments', desc: 'Brands pay campaign budgets upfront via Stripe. Creators receive flat-rate payouts after approval.', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+              { title: 'Managed messaging', desc: 'Brand↔Rift and creator↔Rift communication only. No direct messages between parties.', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
             ].map((item, i) => (
               <div key={i} className="group rounded-2xl border border-gray-200 bg-white p-7 hover:shadow-md transition-all duration-400">
                 <div className="flex items-start gap-5">
@@ -237,13 +237,13 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div ref={social.ref} className={`text-center transition-all duration-1000 ${social.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <blockquote className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#1d1d1f] leading-snug tracking-tight mb-8">
-              "Rift changed how we handle brand deals. Funds secured upfront, released on approval. Game changer."
+              "We switched to Rift for all our UGC. Submit a brief, pay once, get videos back — no creator management overhead."
             </blockquote>
             <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center text-sm font-semibold text-emerald-700">J</div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center text-sm font-semibold text-emerald-700">S</div>
               <div className="text-left">
-                <div className="text-sm font-semibold text-[#1d1d1f]">Jamie R.</div>
-                <div className="text-xs text-[#86868b]">Content Creator • 500K+ Followers</div>
+                <div className="text-sm font-semibold text-[#1d1d1f]">Sarah K.</div>
+                <div className="text-xs text-[#86868b]">DTC Brand Manager</div>
               </div>
             </div>
           </div>
@@ -254,17 +254,17 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-24 sm:py-32 md:py-40">
         <div ref={cta.ref} className={`text-center transition-all duration-1000 ${cta.inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.03em] text-[#1d1d1f] leading-tight mb-6">
-            Stop chasing payments.<br />
-            <span className="text-[#86868b]">Start closing deals.</span>
+            Launch your next<br />
+            <span className="text-[#86868b]">UGC campaign.</span>
           </h2>
           <p className="text-[#86868b] text-lg max-w-xl mx-auto mb-10">
-            Join thousands of creators and agencies securing their brand deals with Rift.
+            Brands submit briefs. Creators deliver content. Rift handles everything in between.
           </p>
           <Link href="/auth/signup" className="group inline-flex items-center gap-2 rounded-full bg-[#1d1d1f] px-10 py-4.5 text-[15px] font-semibold text-white hover:bg-white transition-all duration-300">
             Get Started Free
             <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
           </Link>
-          <p className="mt-5 text-xs text-[#86868b]">No credit card required • Free for your first deal</p>
+          <p className="mt-5 text-xs text-[#86868b]">No credit card required to sign up</p>
         </div>
       </section>
     </div>
