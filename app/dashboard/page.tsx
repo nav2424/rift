@@ -5,12 +5,12 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlassCard from '@/components/ui/GlassCard'
-import WalletCard from '@/components/WalletCard'
 import StatusPill from '@/components/ui/StatusPill'
 import EmptyState from '@/components/ui/EmptyState'
 import { subscribeToUserRifts } from '@/lib/realtime-rifts'
 import { useToast } from '@/components/ui/Toast'
 import { getItemTypeShortLabel } from '@/lib/item-type-labels'
+import { getPrimaryActionHref, getPrimaryActionLabel } from '@/lib/nav-items'
 
 interface RiftTransaction {
   id: string
@@ -44,6 +44,15 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [platformRole, setPlatformRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetch('/api/me/role', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => setPlatformRole(d.platformRole || null))
+      .catch(() => {})
+  }, [status])
 
   const loadRifts = async () => {
     try {
@@ -355,6 +364,8 @@ export default function Dashboard() {
   const userName = getFirstName(session?.user?.name)
   const greeting = new Date().getHours() < 12 ? 'Good morning' : 
                    new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'
+  const primaryActionHref = getPrimaryActionHref(platformRole)
+  const primaryActionLabel = getPrimaryActionLabel(platformRole)
 
   return (
     <div className="space-y-8" data-onboarding="dashboard">
@@ -364,7 +375,7 @@ export default function Dashboard() {
           <div className="absolute top-0 right-0 flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Notifications Badge */}
             {unreadCount > 0 && (
-              <Link href="/wallet" className="relative group">
+              <Link href="/messages" className="relative group">
                 <button className="p-2.5 sm:p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-[#1d1d1f] backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -375,17 +386,19 @@ export default function Dashboard() {
                 </button>
               </Link>
             )}
-            <Link href="/rifts/new" className="group" data-onboarding="create-rift">
+            {primaryActionHref && (
+            <Link href={primaryActionHref} className="group" data-onboarding="create-rift">
               <button className="px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 text-[#1d1d1f] font-light text-xs sm:text-sm backdrop-blur-sm shadow-lg min-h-[44px] flex items-center justify-center">
                 <span className="flex items-center gap-1.5 sm:gap-2">
                   <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  <span className="hidden sm:inline">Create Rift</span>
+                  <span className="hidden sm:inline">{primaryActionLabel}</span>
                   <span className="sm:hidden">New</span>
                 </span>
               </button>
             </Link>
+            )}
           </div>
           
           <div className="flex items-start justify-between mb-4 sm:mb-6 pr-24 sm:pr-32 md:pr-48">
@@ -399,7 +412,7 @@ export default function Dashboard() {
                     </h1>
                   </div>
                   {metrics.activeCount === 0 && metrics.pendingActionsCount === 0 && (
-                    <p className="text-xs sm:text-sm text-[#86868b] font-light">You're all set! Ready to create your first rift?</p>
+                    <p className="text-xs sm:text-sm text-[#86868b] font-light">You&apos;re all set! Ready to start your next campaign?</p>
                   )}
                   {metrics.pendingActionsCount > 0 && (
                     <div className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
@@ -428,7 +441,7 @@ export default function Dashboard() {
                 const isRestricted = stripeStatus === 'restricted'
                 
                 return (
-                  <Link key={notification.id} href="/wallet">
+                  <div key={notification.id}>
                     <GlassCard className={`cursor-pointer hover:bg-gray-100 transition-all ${
                       isApproved ? 'border-green-500/30 bg-green-500/5' :
                       isRejected ? 'border-red-500/30 bg-red-500/5' :
@@ -478,21 +491,14 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </GlassCard>
-                  </Link>
+                  </div>
                 )
               })}
           </div>
         )}
 
-        {/* Main Grid: Wallet (Left), Recent Activity (Middle), Actions Required (Right) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 items-stretch">
-          {/* Left Column: Wallet */}
-          <div className="flex flex-col">
-            <div className="min-h-0 h-full">
-              <WalletCard />
-            </div>
-          </div>
-
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 items-stretch">
           {/* Middle Column: Recent Activity */}
           <div className="flex flex-col">
             <GlassCard className="border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 via-cyan-500/2 to-transparent hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 h-full flex flex-col">
@@ -637,7 +643,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Enhanced Your Rifts Section */}
+        {/* Legacy rifts section — hidden for UGC brand/creator roles */}
+        {!platformRole && (
         <div className="mt-6 sm:mt-8 md:mt-10 mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6 gap-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -726,6 +733,7 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        )}
       </div>
   )
 }

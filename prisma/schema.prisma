@@ -444,6 +444,9 @@ model User {
   ReputationRollup                       ReputationRollup[]
   platformRole                           PlatformRole?
   CreatorProfile                         CreatorProfile?
+  brandCampaigns                         Campaign[]           @relation("CampaignBrand")
+  creatorAssignments                     CreatorAssignment[]  @relation("AssignmentCreator")
+  reviewedAssignments                    CreatorAssignment[]  @relation("AssignmentReviewer")
 
   @@index([riftUserId])
 }
@@ -1306,4 +1309,106 @@ enum SupportTicketCategory {
   PAYMENT
   DISPUTE
   GENERAL
+}
+
+// UGC Agency: campaign workflow
+enum CampaignStatus {
+  BRIEF_SUBMITTED
+  AWAITING_PAYMENT
+  UNDER_REVIEW
+  CREATORS_ASSIGNED
+  IN_PRODUCTION
+  CONTENT_UPLOADED
+  CONTENT_REVIEWED
+  DELIVERED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  UPLOADED
+  REVISION_REQUESTED
+  APPROVED
+}
+
+enum AssignmentPayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+}
+
+enum UsageRightsType {
+  ORGANIC_ONLY
+  PAID_ADS
+  WHITELISTING
+  FULL_BUYOUT
+}
+
+model Campaign {
+  id                    String         @id
+  campaignNumber        Int            @unique
+  brandId               String
+  productName           String
+  talkingPoints         String
+  videoFormat           String
+  videoCount            Int
+  usageRights           UsageRightsType @default(ORGANIC_ONLY)
+  deadline              DateTime
+  sanitizedBrief        String?
+  budget                Float
+  currency              String         @default("CAD")
+  creatorRatePerVideo   Float?
+  status                CampaignStatus @default(BRIEF_SUBMITTED)
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  paidAt                DateTime?
+  deliveredAt           DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime
+  brand                 User           @relation("CampaignBrand", fields: [brandId], references: [id], onDelete: Cascade)
+  assignments           CreatorAssignment[]
+  milestones            CampaignMilestone[]
+
+  @@index([brandId, status])
+  @@index([status, createdAt])
+}
+
+model CampaignMilestone {
+  id          String         @id
+  campaignId  String
+  stage       String
+  label       String
+  sortOrder   Int
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  Campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, stage])
+  @@index([campaignId])
+}
+
+model CreatorAssignment {
+  id              String                 @id
+  campaignId      String
+  creatorId       String
+  status          AssignmentStatus       @default(ASSIGNED)
+  videoFilePath   String?
+  videoFileName   String?
+  uploadedAt      DateTime?
+  revisionNotes   String?
+  reviewedAt      DateTime?
+  reviewedById    String?
+  payoutAmount    Float?
+  payoutStatus    AssignmentPayoutStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime
+  campaign        Campaign               @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creator         User                   @relation("AssignmentCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  reviewer        User?                  @relation("AssignmentReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, creatorId])
+  @@index([creatorId, status])
+  @@index([campaignId])
 }

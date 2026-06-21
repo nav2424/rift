@@ -184,6 +184,68 @@ export async function createRiftPaymentIntent({
   }
 }
 
+type CreateCampaignPIInput = {
+  budget: number
+  currency: string
+  campaignId: string
+  brandEmail: string
+}
+
+/** Create a payment intent for a UGC campaign (brand pays upfront). */
+export async function createCampaignPaymentIntent({
+  budget,
+  currency,
+  campaignId,
+  brandEmail,
+}: CreateCampaignPIInput): Promise<{ clientSecret: string; paymentIntentId: string } | null> {
+  if (!stripe) {
+    return {
+      clientSecret: 'mock_client_secret_' + campaignId,
+      paymentIntentId: 'pi_mock_' + campaignId,
+    }
+  }
+
+  if (!brandEmail || !brandEmail.includes('@')) {
+    throw new Error('Valid brand email is required for payment intent')
+  }
+
+  const amountCents = Math.round(budget * 100)
+  const currencyLower = currency.toLowerCase()
+  const isUSD = currencyLower === 'usd'
+  const paymentMethodTypes: string[] = isUSD ? ['us_bank_account', 'card'] : ['card']
+
+  try {
+    const existing = await stripe.paymentIntents.search({
+      query: `metadata['campaignId']:'${campaignId}'`,
+      limit: 1,
+    })
+    if (existing.data.length > 0 && existing.data[0].client_secret) {
+      return {
+        clientSecret: existing.data[0].client_secret,
+        paymentIntentId: existing.data[0].id,
+      }
+    }
+  } catch {
+    // continue to create
+  }
+
+  const pi = await stripe.paymentIntents.create({
+    amount: amountCents,
+    currency: currencyLower,
+    receipt_email: brandEmail,
+    description: `Rift UGC campaign ${campaignId}`,
+    payment_method_types: paymentMethodTypes,
+    metadata: {
+      campaignId,
+      type: 'campaign',
+      budget: budget.toString(),
+    },
+  })
+
+  if (!pi.client_secret) throw new Error('Payment intent created but no client secret returned')
+  return { clientSecret: pi.client_secret, paymentIntentId: pi.id }
+}
+
 /**
  * @deprecated Use createRiftPaymentIntent instead
  * Legacy function kept for backward compatibility

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import RiftLogo from '@/components/RiftLogo'
+import { getAppNavItems, getAdminNavItems } from '@/lib/nav-items'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -32,6 +33,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   const [platformRole, setPlatformRole] = useState<string | null>(null)
+  const isAdmin = session?.user?.role === 'ADMIN'
 
   useEffect(() => {
     fetch('/api/me/role', { credentials: 'include' })
@@ -40,27 +42,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
       .catch(() => {})
   }, [])
 
-  const baseNavItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { href: '/rifts', label: 'Deals', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-    { href: '/messages', label: 'Messages', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-  ]
-
-  const creatorNavItems = [
-    ...baseNavItems,
-    { href: '/creator', label: 'Creator Hub', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
-    { href: '/activity', label: 'Activity', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-  ]
-
-  const brandNavItems = [
-    ...baseNavItems,
-    { href: '/brand', label: 'Brand Hub', icon: 'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 0h.008v.008h-.008V7.5z' },
-    { href: '/brand/discover', label: 'Discover', icon: 'M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' },
-    { href: '/brand/analytics', label: 'Analytics', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
-    { href: '/activity', label: 'Activity', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-  ]
-
-  const navItems = platformRole === 'BRAND' ? brandNavItems : platformRole === 'CREATOR' ? creatorNavItems : [...baseNavItems, { href: '/activity', label: 'Activity', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' }]
+  const navItems = getAppNavItems(platformRole)
+  const adminNavItems = isAdmin ? getAdminNavItems() : []
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(`${href}/`)
 
@@ -121,9 +104,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
         params.delete('search')
       }
       
-      // If not on rifts page, navigate to rifts with search
-      if (pathname !== '/rifts') {
-        router.push(`/rifts?${params.toString()}`)
+      // If not on a list page, navigate to messages with search
+      if (pathname !== '/messages' && pathname !== '/brand/campaigns' && pathname !== '/creator/assignments') {
+        router.push(`/messages?${params.toString()}`)
       } else {
         const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname
         router.push(newUrl, { scroll: false })
@@ -240,9 +223,33 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   }`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                  </svg>
+                  {item.icon && (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                    </svg>
+                  )}
+                  {!sidebarCollapsed && (
+                    <span className="font-light text-sm whitespace-nowrap">{item.label}</span>
+                  )}
+                </Link>
+              )
+            })}
+            {adminNavItems.map((item) => {
+              const active = isActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center rounded-lg transition-colors group min-h-[44px] ${
+                    sidebarCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3'
+                  } ${
+                    active
+                      ? 'bg-black/[0.06] text-[#1d1d1f] font-medium'
+                      : 'text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/[0.03]'
+                  }`}
+                  title={sidebarCollapsed ? item.label : undefined}
+                >
                   {!sidebarCollapsed && (
                     <span className="font-light text-sm whitespace-nowrap">{item.label}</span>
                   )}
@@ -293,7 +300,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <input
                   ref={searchInputRef}
                   type="search"
-                  placeholder={pathname === '/rifts' ? 'Search rifts...' : pathname === '/messages' ? 'Search messages...' : 'Search...'}
+                  placeholder={pathname === '/messages' ? 'Search messages...' : 'Search...'}
                   value={searchValue}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
