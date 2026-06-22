@@ -444,6 +444,10 @@ model User {
   ReputationRollup                       ReputationRollup[]
   platformRole                           PlatformRole?
   CreatorProfile                         CreatorProfile?
+  brandCampaigns                         Campaign[]           @relation("CampaignBrand")
+  creatorAssignments                     CreatorAssignment[]  @relation("AssignmentCreator")
+  reviewedAssignments                    CreatorAssignment[]  @relation("AssignmentReviewer")
+  videoRequests                          VideoRequest[]       @relation("VideoRequestBrand")
 
   @@index([riftUserId])
 }
@@ -1306,4 +1310,178 @@ enum SupportTicketCategory {
   PAYMENT
   DISPUTE
   GENERAL
+}
+
+// UGC Agency: campaign workflow
+enum CampaignStatus {
+  BRIEF_SUBMITTED
+  AWAITING_PAYMENT
+  UNDER_REVIEW
+  CREATORS_ASSIGNED
+  IN_PRODUCTION
+  CONTENT_UPLOADED
+  CONTENT_REVIEWED
+  DELIVERED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  UPLOADED
+  REVISION_REQUESTED
+  APPROVED
+}
+
+enum AssignmentPayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+}
+
+enum UsageRightsType {
+  ORGANIC_ONLY
+  PAID_ADS
+  WHITELISTING
+  FULL_BUYOUT
+}
+
+model Campaign {
+  id                    String         @id
+  campaignNumber        Int            @unique
+  brandId               String
+  productName           String
+  talkingPoints         String
+  videoFormat           String
+  videoCount            Int
+  usageRights           UsageRightsType @default(ORGANIC_ONLY)
+  deadline              DateTime
+  sanitizedBrief        String?
+  budget                Float
+  currency              String         @default("CAD")
+  creatorRatePerVideo   Float?
+  status                CampaignStatus @default(BRIEF_SUBMITTED)
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  paidAt                DateTime?
+  deliveredAt           DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime
+  brand                 User           @relation("CampaignBrand", fields: [brandId], references: [id], onDelete: Cascade)
+  assignments           CreatorAssignment[]
+  milestones            CampaignMilestone[]
+
+  @@index([brandId, status])
+  @@index([status, createdAt])
+}
+
+model CampaignMilestone {
+  id          String         @id
+  campaignId  String
+  stage       String
+  label       String
+  sortOrder   Int
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  Campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, stage])
+  @@index([campaignId])
+}
+
+model CreatorAssignment {
+  id              String                 @id
+  campaignId      String
+  creatorId       String
+  status          AssignmentStatus       @default(ASSIGNED)
+  videoFilePath   String?
+  videoFileName   String?
+  uploadedAt      DateTime?
+  revisionNotes   String?
+  reviewedAt      DateTime?
+  reviewedById    String?
+  payoutAmount    Float?
+  payoutStatus    AssignmentPayoutStatus @default(PENDING)
+  paidAt          DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime
+  campaign        Campaign               @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creator         User                   @relation("AssignmentCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  reviewer        User?                  @relation("AssignmentReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, creatorId])
+  @@index([creatorId, status])
+  @@index([campaignId])
+}
+
+// UGC video request platform (brand → admin fulfillment)
+enum VideoRequestStatus {
+  PENDING_REVIEW
+  COUNTER_OFFERED
+  NEGOTIATING
+  AGREED
+  IN_PRODUCTION
+  DELIVERED
+  CLOSED
+}
+
+enum VideoFormat {
+  VERTICAL_9_16
+  HORIZONTAL_16_9
+  SQUARE_1_1
+}
+
+enum VideoLength {
+  SEC_15
+  SEC_30
+  SEC_60
+}
+
+model VideoRequest {
+  id                    String             @id
+  requestNumber         Int                @unique
+  brandId               String
+  script                String
+  styleNotes            String?
+  format                VideoFormat
+  length                VideoLength
+  videoCount            Int
+  offeredPricePerVideo  Float
+  counterPricePerVideo  Float?
+  agreedPricePerVideo   Float?
+  status                VideoRequestStatus @default(PENDING_REVIEW)
+  counterMessage        String?
+  adminNotes            String?
+  deadline              DateTime
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime
+  brand                 User               @relation("VideoRequestBrand", fields: [brandId], references: [id], onDelete: Cascade)
+  milestones            RequestMilestone[]
+  deliverables          RequestDeliverable[]
+
+  @@index([brandId, status])
+  @@index([status, createdAt])
+}
+
+model RequestMilestone {
+  id          String       @id
+  requestId   String
+  label       String
+  sortOrder   Int          @default(0)
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  request     VideoRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+}
+
+model RequestDeliverable {
+  id         String       @id
+  requestId  String
+  fileName   String
+  fileUrl    String
+  uploadedAt DateTime     @default(now())
+  request    VideoRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
 }

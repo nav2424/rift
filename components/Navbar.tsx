@@ -5,10 +5,20 @@ import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import PremiumButton from './ui/PremiumButton'
 import RiftLogo from './RiftLogo'
+import { getAppNavItems, getAdminNavItems } from '@/lib/nav-items'
 
 export default function Navbar() {
   const { data: session } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [platformRole, setPlatformRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!session) return
+    fetch('/api/me/role', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => setPlatformRole(d.platformRole || null))
+      .catch(() => {})
+  }, [session])
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -22,63 +32,31 @@ export default function Navbar() {
     }
   }, [mobileMenuOpen])
 
+  const appNav = session ? getAppNavItems(platformRole) : []
+  const adminNav = session?.user?.role === 'ADMIN' ? getAdminNavItems() : []
+
   const navLinks = session ? (
     <>
-      <Link 
-        href="/dashboard" 
-        className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Dashboard
-      </Link>
-      <Link 
-        href="/rifts" 
-        className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Rifts
-      </Link>
-      <Link 
-        href="/activity" 
-        className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Activity
-      </Link>
-      <Link 
-        href="/messages" 
-        className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-        onClick={() => setMobileMenuOpen(false)}
-        data-onboarding="messages"
-      >
-        Messages
-      </Link>
-      <Link 
-        href="/account" 
-        className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-        onClick={() => setMobileMenuOpen(false)}
-        data-onboarding="account"
-      >
-        Account
-      </Link>
-      {session.user.role === 'ADMIN' && (
-        <>
-        <Link 
-          href="/admin" 
+      {appNav.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
           className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
           onClick={() => setMobileMenuOpen(false)}
         >
-          Admin
+          {item.label}
         </Link>
-          <Link 
-            href="/admin/disputes" 
-            className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Disputes
-          </Link>
-        </>
-      )}
+      ))}
+      {adminNav.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="block py-3 px-6 text-gray-700 hover:text-[#1d1d1f] hover:bg-gray-50 transition-colors duration-200 font-medium text-base border-b border-gray-200 text-right w-full"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          {item.label}
+        </Link>
+      ))}
       <div className="p-4 border-t border-gray-200 mt-4 w-full">
         <p className="text-[#86868b] text-sm mb-2 px-6 text-right">{session.user.email}</p>
         <button
@@ -157,38 +135,18 @@ export default function Navbar() {
               <div className="hidden md:flex space-x-8">
                 {session ? (
                   <>
-                    <Link href="/dashboard" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                      Dashboard
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                    <Link href="/rifts" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                      Rifts
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                    <Link href="/activity" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                      Activity
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                    <Link href="/messages" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                      Messages
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                    <Link href="/account" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                      Account
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                    {session.user.role === 'ADMIN' && (
-                      <>
-                      <Link href="/admin" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                        Admin
+                    {appNav.map((item) => (
+                      <Link key={item.href} href={item.href} className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
+                        {item.label}
                         <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
                       </Link>
-                        <Link href="/admin/disputes" className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
-                          Disputes
-                          <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
-                        </Link>
-                      </>
-                    )}
+                    ))}
+                    {adminNav.map((item) => (
+                      <Link key={item.href} href={item.href} className="text-[#86868b] hover:text-[#1d1d1f] transition-colors duration-200 font-medium text-sm relative group">
+                        {item.label}
+                        <span className="absolute bottom-0 left-0 w-0 h-px bg-[#1d1d1f] group-hover:w-full transition-all duration-300"></span>
+                      </Link>
+                    ))}
                   </>
                 ) : (
                   <>

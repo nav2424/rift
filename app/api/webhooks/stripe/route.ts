@@ -167,6 +167,13 @@ export async function POST(request: NextRequest) {
  * Handle payment succeeded
  */
 async function handlePaymentSucceeded(paymentIntent: any, request?: NextRequest) {
+  const campaignId = paymentIntent.metadata?.campaignId
+  if (campaignId && paymentIntent.metadata?.type === 'campaign') {
+    const { markCampaignPaid } = await import('@/lib/campaign-payments')
+    await markCampaignPaid(campaignId, paymentIntent)
+    return
+  }
+
   const riftId = paymentIntent.metadata?.escrowId
   if (!riftId) {
     console.warn('Payment intent missing escrowId metadata')

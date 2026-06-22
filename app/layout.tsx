@@ -42,11 +42,11 @@ function getMetadataBase(): URL {
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
-  title: "Rift - Secure Buyer Protection for Marketplace Deals",
-  description: "Send money safely, receive goods, and release funds only when everything checks out.",
+  title: "Rift — UGC Video Requests",
+  description: "Brands submit video requests. Rift produces and delivers finished UGC — one focused workflow, no marketplace.",
   openGraph: {
-    title: "Rift - Secure Buyer Protection for Marketplace Deals",
-    description: "Send money safely, receive goods, and release funds only when everything checks out.",
+    title: "Rift — UGC Video Requests",
+    description: "Brands submit video requests. Rift produces and delivers finished UGC — one focused workflow, no marketplace.",
     images: [
       {
         url: '/rift-logo.png',

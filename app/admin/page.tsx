@@ -1,226 +1,95 @@
-import { requireAdmin } from '@/lib/auth-helpers'
-import { prisma } from '@/lib/prisma'
-import AdminDisputeList from '@/components/AdminDisputeList'
-import AdminUserList from '@/components/AdminUserList'
-import RiftList from '@/components/RiftList'
-import GlassCard from '@/components/ui/GlassCard'
-import CollapsibleSection from '@/components/ui/CollapsibleSection'
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import FocusLayout from '@/components/layouts/FocusLayout'
+import StatusBadge from '@/components/requests/StatusBadge'
+import { formatUsd, scriptPreview } from '@/lib/video-requests'
 
-export default async function AdminPage() {
-  await requireAdmin()
+const ADMIN_NAV = [
+  { href: '/admin', label: 'Dashboard' },
+  { href: '/admin/requests', label: 'Requests' },
+  { href: '/admin/brands', label: 'Brands' },
+]
 
-  // Get all users with verification status
-  const allUsersRaw = await prisma.user.findMany({
-    select: {
-      id: true,
-      riftUserId: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-      totalProcessedAmount: true,
-      availableBalance: true,
-      pendingBalance: true,
-      numCompletedTransactions: true,
-      averageRating: true,
-      responseTimeMs: true,
-      idVerified: true,
-      bankVerified: true,
-      emailVerified: true,
-      phoneVerified: true,
-      stripeIdentityVerified: true,
-      _count: {
-        select: {
-          sellerTransactions: true,
-          buyerTransactions: true,
-          Activity: true,
-          // Note: disputes are stored in Supabase, not Prisma
-          // Dispute counts would need to be fetched separately from Supabase
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+export default function AdminDashboardPage() {
+  const [requests, setRequests] = useState<Array<{
+    id: string
+    requestNumber: number
+    script: string
+    status: string
+    videoCount: number
+    agreedPricePerVideo: number | null
+    offeredPricePerVideo: number
+    createdAt: string
+    brand: { name: string | null; email: string }
+  }>>([])
 
-  // Map Activity to activities for component compatibility
-  const allUsers = allUsersRaw.map((u) => ({
-    ...u,
-    _count: {
-      ...u._count,
-      activities: u._count.Activity,
-    },
-  }))
+  useEffect(() => {
+    fetch('/api/requests', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setRequests(d.requests || []))
+  }, [])
 
-  // Get all rifts (no limit - show all data)
-  const allRifts = await prisma.riftTransaction.findMany({
-    select: {
-      id: true,
-      riftNumber: true,
-      itemTitle: true,
-      amount: true,
-      currency: true,
-      status: true,
-      buyer: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-      seller: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+  const count = (s: string) => requests.filter((r) => r.status === s).length
+  const negotiating = requests.filter((r) => ['COUNTER_OFFERED', 'NEGOTIATING'].includes(r.status)).length
 
-  // Get pending proofs count
-  const pendingProofsCount = await prisma.proof.count({
-    where: {
-      status: 'PENDING',
-    },
-  })
+  const now = new Date()
+  const monthRevenue = requests
+    .filter((r) => {
+      const d = new Date(r.createdAt)
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    })
+    .reduce((sum, r) => {
+      const p = r.agreedPricePerVideo ?? r.offeredPricePerVideo
+      return sum + p * r.videoCount
+    }, 0)
 
-  // Get disputes from Supabase (new dispute system)
-  // Note: Disputes are now stored in Supabase, not Prisma
-  // We'll fetch a count for the stats, but the full list is in /admin/disputes page
-  const { createServerClient } = await import('@/lib/supabase')
-  const supabase = createServerClient()
-  const { count: disputesCount } = await supabase
-    .from('disputes')
-    .select('*', { count: 'exact', head: true })
-    .in('status', ['submitted', 'needs_info', 'under_review'])
-  
-  const openDisputesCount = disputesCount || 0
+  const stats = [
+    { label: 'Total requests', value: requests.length },
+    { label: 'Pending review', value: count('PENDING_REVIEW') },
+    { label: 'In production', value: count('IN_PRODUCTION') },
+    { label: 'Delivered', value: count('DELIVERED') },
+    { label: 'Revenue this month', value: formatUsd(monthRevenue) },
+  ]
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white">
-      {/* Subtle grid background */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Minimal floating elements */}
-      <div className="fixed top-20 left-10 w-96 h-96 bg-gray-50 rounded-full blur-3xl float pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-[500px] h-[500px] bg-white/[0.01] rounded-full blur-3xl float pointer-events-none" style={{ animationDelay: '2s' }} />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-12">
-        <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-light text-[#1d1d1f] mb-3 tracking-tight">
-            Admin Panel
-          </h1>
-          <p className="text-[#86868b] font-light">Manage all users, transactions, and disputes</p>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
-          <GlassCard>
-            <div className="p-6">
-              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Total Users</p>
-              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{allUsers.length}</p>
-              <p className="text-sm text-gray-400 font-light">
-                {allUsers.filter(u => u.role === 'ADMIN').length} admins
-              </p>
-            </div>
-          </GlassCard>
-          <GlassCard>
-            <div className="p-6">
-              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Total Volume</p>
-              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
-                ${allUsers.reduce((sum, u) => sum + u.totalProcessedAmount, 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-sm text-gray-400 font-light">
-                {allUsers.reduce((sum, u) => sum + u.numCompletedTransactions, 0)} transactions
-              </p>
-            </div>
-          </GlassCard>
-          <Link href="/admin/disputes">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="p-6">
-              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Open Disputes</p>
-              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{openDisputesCount}</p>
-                <p className="text-sm text-gray-400 font-light">Click to review →</p>
-            </div>
-          </GlassCard>
-          </Link>
-          <Link href="/admin/proofs">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Pending Proofs</p>
-                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">{pendingProofsCount}</p>
-                <p className="text-sm text-gray-400 font-light">Awaiting review</p>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/admin/payouts">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Payout Tracking</p>
-                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
-                <p className="text-sm text-gray-400 font-light">Track payouts & amounts owed</p>
-              </div>
-            </GlassCard>
-          </Link>
-          <Link href="/admin/support">
-            <GlassCard className="cursor-pointer hover:bg-gray-50 transition-colors">
-              <div className="p-6">
-                <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Support Tickets</p>
-                <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">→</p>
-                <p className="text-sm text-gray-400 font-light">Manage user support requests</p>
-              </div>
-            </GlassCard>
-          </Link>
-          <GlassCard>
-            <div className="p-6">
-              <p className="text-xs text-[#86868b] font-light uppercase tracking-wider mb-2">Verified Users</p>
-              <p className="text-4xl font-light text-[#1d1d1f] mb-2 tracking-tight">
-                {allUsers.filter(u => u.emailVerified && u.phoneVerified).length}
-              </p>
-              <p className="text-sm text-gray-400 font-light">
-                {allUsers.filter(u => u.emailVerified && u.phoneVerified && u.idVerified && u.bankVerified).length} fully verified
-              </p>
-            </div>
-          </GlassCard>
-        </div>
-
-        <CollapsibleSection title="All Users" count={allUsers.length}>
-          <AdminUserList users={allUsers} />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Open Disputes" count={openDisputesCount}>
-          <div className="mb-6">
-            <Link 
-              href="/admin/disputes"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-white/15 transition-all duration-200 border border-gray-300 text-[#1d1d1f] font-light text-sm"
-            >
-              View All Disputes ({openDisputesCount})
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
+    <FocusLayout nav={ADMIN_NAV} title="Dashboard">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white border border-[#E4E4E7] rounded p-4">
+            <p className="text-xs text-[#71717A] mb-1">{s.label}</p>
+            <p className="text-xl font-medium">{s.value}</p>
           </div>
-          <GlassCard variant="strong" className="p-8">
-            <p className="text-[#86868b] font-light text-center">
-              View all disputes in the <Link href="/admin/disputes" className="text-gray-700 hover:text-[#1d1d1f] underline">Dispute Queue</Link>
-            </p>
-          </GlassCard>
-        </CollapsibleSection>
-
-        <CollapsibleSection title="All Transactions" count={allRifts.length}>
-          <RiftList rifts={allRifts} title="All Transactions" showAdminActions={true} />
-        </CollapsibleSection>
+        ))}
       </div>
-    </div>
+
+      {negotiating > 0 && (
+        <p className="text-sm text-[#71717A] mb-6">{negotiating} request(s) in negotiation</p>
+      )}
+
+      <div className="bg-white border border-[#E4E4E7] rounded">
+        <div className="px-4 py-3 border-b border-[#E4E4E7] flex justify-between items-center">
+          <h2 className="text-sm font-medium">Recent activity</h2>
+          <Link href="/admin/requests" className="text-xs text-[#71717A] hover:text-[#18181B]">View all</Link>
+        </div>
+        <ul className="divide-y divide-[#E4E4E7]">
+          {requests.slice(0, 8).map((r) => (
+            <li key={r.id} className="px-4 py-3 flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm truncate">{scriptPreview(r.script, 60)}</p>
+                <p className="text-xs text-[#71717A]">
+                  {r.brand.name || r.brand.email} · #{r.requestNumber} · {new Date(r.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <StatusBadge status={r.status} />
+            </li>
+          ))}
+          {requests.length === 0 && (
+            <li className="px-4 py-8 text-center text-sm text-[#71717A]">No activity yet</li>
+          )}
+        </ul>
+      </div>
+    </FocusLayout>
   )
 }
-
