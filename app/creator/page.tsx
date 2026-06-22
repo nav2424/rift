@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 export default function CreatorHubRedirect() {
   const router = useRouter()
   useEffect(() => {
-    router.replace('/creator/assignments')
+    router.replace('/dashboard')
   }, [router])
   return null
 }

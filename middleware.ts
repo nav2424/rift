@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
   const response = NextResponse.next()
 
   // Security headers
@@ -11,11 +13,9 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
 
-  // Add request ID for log correlation
   const requestId = crypto.randomUUID().slice(0, 8)
   response.headers.set('X-Request-Id', requestId)
 
-  // CSP header - restrictive but allows Next.js to work
   const cspDirectives = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
@@ -29,8 +29,7 @@ export function middleware(request: NextRequest) {
   ]
   response.headers.set('Content-Security-Policy', cspDirectives.join('; '))
 
-  // CORS for API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin')
     const allowedOrigins = [
       process.env.NEXTAUTH_URL || 'http://localhost:3000',
@@ -44,10 +43,51 @@ export function middleware(request: NextRequest) {
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     response.headers.set('Access-Control-Max-Age', '86400')
 
-    // Handle preflight
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 204, headers: response.headers })
     }
+  }
+
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isBrandRoute = pathname.startsWith('/brand')
+
+  if (isAdminRoute || isBrandRoute) {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    })
+
+    if (!token) {
+      const signIn = new URL('/auth/signin', request.url)
+      signIn.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(signIn)
+    }
+
+    if (isAdminRoute && token.role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    if (isBrandRoute && token.role === 'ADMIN') {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+  }
+
+  // Hide legacy creator portal
+  if (pathname.startsWith('/creator')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  const legacyRedirects: Record<string, string> = {
+    '/brand/campaigns': '/brand/requests',
+    '/brand/discover': '/brand/requests',
+    '/admin/campaigns': '/admin/requests',
+    '/wallet': '/dashboard',
+    '/rifts': '/dashboard',
+    '/activity': '/dashboard',
+  }
+
+  if (legacyRedirects[pathname]) {
+    return NextResponse.redirect(new URL(legacyRedirects[pathname], request.url))
   }
 
   return response

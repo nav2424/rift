@@ -10,27 +10,38 @@ interface LayoutWrapperProps {
   children: React.ReactNode
 }
 
+const MARKETING_ROUTES = [
+  '/',
+  '/landing',
+  '/pricing',
+  '/about',
+  '/auth/signin',
+  '/auth/signup',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+]
+
+function isFocusRoute(pathname: string | null) {
+  return pathname?.startsWith('/admin') || pathname?.startsWith('/brand')
+}
+
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
-  const isMarketingRoute = [
-    '/',
-    '/landing',
-    '/pricing',
-    '/about',
-    '/auth/signin',
-    '/auth/signup',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-  ].includes(pathname)
-
+  const isMarketingRoute = MARKETING_ROUTES.includes(pathname || '')
   const isOnboardingRoute = pathname?.startsWith('/onboarding')
-
+  const isFocus = isFocusRoute(pathname)
   const isAuthenticated = status === 'authenticated'
 
-  // Render loading state if session is still loading
   if (status === 'loading') {
+    if (isFocus) {
+      return (
+        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+          <div className="text-sm text-[#71717A]">Loading…</div>
+        </div>
+      )
+    }
     return (
       <>
         <BackgroundLayer />
@@ -41,7 +52,10 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     )
   }
 
-  // Conditionally render the appropriate layout
+  if (isFocus) {
+    return <>{children}</>
+  }
+
   return (
     <>
       <BackgroundLayer />
@@ -53,4 +67,3 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     </>
   )
 }
-

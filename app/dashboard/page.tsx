@@ -47,6 +47,20 @@ export default function Dashboard() {
   const [platformRole, setPlatformRole] = useState<string | null>(null)
 
   useEffect(() => {
+    if (status !== 'authenticated' || !session?.user) return
+    if (session.user.role === 'ADMIN') {
+      router.replace('/admin')
+      return
+    }
+    fetch('/api/me/role', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.platformRole === 'BRAND') router.replace('/brand/requests')
+      })
+      .catch(() => {})
+  }, [status, session, router])
+
+  useEffect(() => {
     if (status !== 'authenticated') return
     fetch('/api/me/role', { credentials: 'include' })
       .then(r => r.json())
@@ -364,8 +378,8 @@ export default function Dashboard() {
   const userName = getFirstName(session?.user?.name)
   const greeting = new Date().getHours() < 12 ? 'Good morning' : 
                    new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'
-  const primaryActionHref = getPrimaryActionHref(platformRole)
-  const primaryActionLabel = getPrimaryActionLabel(platformRole)
+  const primaryActionHref = getPrimaryActionHref(platformRole, session?.user?.role)
+  const primaryActionLabel = getPrimaryActionLabel(platformRole, session?.user?.role)
 
   return (
     <div className="space-y-8" data-onboarding="dashboard">

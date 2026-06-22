@@ -3,11 +3,10 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-/** Brands no longer discover creators directly — Rift assigns internally. */
-export default function DiscoverCreatorsRedirect() {
+export default function BrandDiscoverRedirect() {
   const router = useRouter()
   useEffect(() => {
-    router.replace('/brand/campaigns')
+    router.replace('/brand/requests')
   }, [router])
   return null
 }
